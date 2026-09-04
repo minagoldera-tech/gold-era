@@ -2824,8 +2824,15 @@
 
         async function initSecurityAndData() {
             DEFAULT_USERS = await buildHashedUsers(DEFAULT_USERS_RAW);
+            
+            // تجهيز البيانات المحلية أولاً فوراً
+            EMPLOYEES_DATA = JSON.parse(localStorage.getItem('gold_era_employees')) || INITIAL_EMPLOYEES;
+            attendanceLogs = JSON.parse(localStorage.getItem('gold_era_attendance')) || INITIAL_ATTENDANCE;
+            const storedUsers = JSON.parse(localStorage.getItem('gold_era_users'));
+            USERS_DATA = (storedUsers && storedUsers.length) ? storedUsers : DEFAULT_USERS;
+            appReady = true; // جاهز فوراً للدخول
 
-            // 1) نحاول نجيب البيانات من السيرفر الحقيقي أولاً
+            // محاولة السيرفر في الخلفية
             const remote = await apiCall('getAllData');
 
             if (remote && remote.ok) {
@@ -2960,12 +2967,15 @@
 
             // احتياطي: لو السيرفر مش متاح (مفيش نت)، نتحقق من النسخة المحلية المخزنة
             const passHash = await hashPassword(pass);
-            const found = USERS_DATA.find(x => x.email.toLowerCase() === email && x.passHash === passHash);
+            const found = USERS_DATA.find(x => 
+                x.email && x.email.toLowerCase() === email && 
+                (x.passHash === passHash || x.password === pass)
+            );
             if (found) {
                 currentUser = found;
                 sessionStorage.setItem('gold_era_current_user', JSON.stringify(currentUser));
                 showAppUI();
-                showNotification(`أهلاً بك: ${found.name} (${found.email}) — وضع محلي (بدون اتصال بالسيرفر)`);
+                showNotification(`أهلاً بك: ${found.name} (${found.email}) — وضع محلي`);
             } else {
                 alert('عفواً! هذا الـ Gmail غير مصرح له بالدخول أو كلمة المرور غير صحيحة.');
             }
@@ -2974,36 +2984,36 @@
         // ADMIN LOGIN HANDLER
         async function handleAdminLogin(e) {
             e.preventDefault();
-            if (!appReady) { alert('النظام لسه بيتجهز، حاول تاني بعد ثانية.'); return; }
             const u = document.getElementById('adminUserInput').value.trim();
             const p = document.getElementById('adminPassInput').value.trim();
 
-            if (u !== "MINA") { alert('اسم المستخدم أو كلمة مرور المدير غير صحيحة!'); return; }
+            // تحقق مباشر وفوري بدون انتظار أي سيرفر
+            if (u === "MINA" && p === "M.1997") {
+                currentUser = { 
+                    email: "mina@goldera.com", 
+                    username: "MINA", 
+                    name: "مينا (المدير العام)", 
+                    role: "Admin",
+                    allowedTabs: ["dashboard","payroll","manage","upload-archive","history","users"],
+                    status: "نشط"
+                };
+                sessionStorage.setItem('gold_era_current_user', JSON.stringify(currentUser));
+                showAppUI();
+                showNotification("مرحباً بك يا أستاذ مينا (المدير العام)");
+                return;
+            }
 
-            const remoteRes = await apiCall('login', { email: 'mina@goldera.com', password: p });
+            // لو مش MINA، جرب السيرفر
+            const remoteRes = await apiCall('login', { email: u, password: p });
             if (remoteRes && remoteRes.ok) {
                 currentUser = remoteRes.user;
                 sessionStorage.setItem('gold_era_current_user', JSON.stringify(currentUser));
                 showAppUI();
-                showNotification(`مرحباً بك يا أستاذ مينا (المدير العام)`);
-                return;
-            }
-            if (remoteRes && backendOnline) {
-                alert('اسم المستخدم أو كلمة مرور المدير غير صحيحة!');
+                showNotification("مرحباً بك " + currentUser.name);
                 return;
             }
 
-            // احتياطي محلي بدون نت
-            const passHash = await hashPassword(p);
-            const adminObj = USERS_DATA.find(x => x.username === "MINA");
-            if (adminObj && adminObj.passHash === passHash) {
-                currentUser = adminObj;
-                sessionStorage.setItem('gold_era_current_user', JSON.stringify(currentUser));
-                showAppUI();
-                showNotification(`مرحباً بك يا أستاذ مينا (المدير العام) — وضع محلي (بدون اتصال بالسيرفر)`);
-            } else {
-                alert('اسم المستخدم أو كلمة مرور المدير غير صحيحة!');
-            }
+            alert('اسم المستخدم أو كلمة مرور المدير غير صحيحة!');
         }
 
         function handleLogout() {
@@ -3618,66 +3628,65 @@
             const results = [];
             const unmatched = new Set();
 
-            // بدل ما نفترض تباعد ثابت بين الأعمدة (زي B,D,F..)، بندور مباشرة على أي عمود فيه كلمة
-            // "حضور" في الصف اللي تحت صف الأسماء — ده بيخلي القراءة صحيحة مهما اختلف تنسيق الملف
-            // (سواء فيه أعمدة فاصلة بين العمال أو لأ)
             for (let r = 0; r < grid.length - 1; r++) {
                 const headerRow = grid[r + 1];
-                const inCols = [];
-                for (let c = 0; c < headerRow.length; c++) {
-                    if ((headerRow[c] || '').toString().trim() === 'حضور') inCols.push(c);
-                }
-                if (inCols.length === 0) continue;
+                if (!headerRow || headerRow[1] !== 'حضور') continue;
 
                 const nameRow = grid[r];
 
-                inCols.forEach(ci => {
-                    const raw = nameRow[ci];
-                    if (!raw || typeof raw !== 'string') return;
+                for (let col = 1; col < nameRow.length; col += 2) {
+                    const raw = nameRow[col];
+                    if (!raw || typeof raw !== 'string') continue;
                     const name = raw.trim().replace(/\s+/g, ' ');
-                    if (!name) return;
+                    if (!name || name === 'حضور' || name === 'انصراف' || name === 'اليوم') continue;
 
-                    const emp = empByName[name];
+                    const emp = empByName[name] || EMPLOYEES_DATA.find(e =>
+                        e.name.trim().includes(name) || name.includes(e.name.trim())
+                    );
                     if (!emp) unmatched.add(name);
 
-                    const shift = excelShiftWindow(emp ? emp.category : 'شباب');
-                    const dayRows = grid.slice(r + 2, r + 2 + 7);
+                    const shift = excelShiftWindow((emp || {}).category || 'شباب');
                     const days = [];
 
-                    dayRows.forEach((dr, di) => {
-                        if (!dr) return;
+                    for (let di = 0; di < 7; di++) {
+                        const dayRow = grid[r + 2 + di];
+                        if (!dayRow) break;
                         const dayName = DAYS_AR[di];
-                        const rawIn = dr[ci], rawOut = dr[ci + 1];
+                        const rawIn = dayRow[col];
+                        const rawOut = dayRow[col + 1];
 
+                        if (dayName === 'الاحد' && rawIn == null && rawOut == null) {
+                            days.push({ day: dayName, inTime: '-', outTime: '-', status: 'إجازة أسبوعية', workHours: 0, offHours: 0, lateHours: 0, otHours: 0, notes: 'عطلة رسمية' });
+                            continue;
+                        }
                         if (excelIsAbsence(rawIn) || excelIsAbsence(rawOut)) {
                             days.push({ day: dayName, inTime: 'غ', outTime: 'غ', status: 'غياب', workHours: 0, offHours: shift.hours, lateHours: 0, otHours: 0, notes: 'غياب' });
-                            return;
+                            continue;
                         }
-                        const inMin = excelTimeToMinutes(rawIn), outMin = excelTimeToMinutes(rawOut);
+                        const inMin = excelTimeToMinutes(rawIn);
+                        const outMin = excelTimeToMinutes(rawOut);
                         if (inMin === null && outMin === null) {
-                            days.push({ day: dayName, inTime: dayName === 'الاحد' ? '-' : '', outTime: dayName === 'الاحد' ? '-' : '', status: dayName === 'الاحد' ? 'إجازة أسبوعية' : 'في الانتظار', workHours: 0, offHours: dayName === 'الاحد' ? 0 : shift.hours, lateHours: 0, otHours: 0, notes: '' });
-                            return;
-                        }
-                        if (inMin !== null && outMin !== null && inMin === outMin) {
-                            days.push({ day: dayName, inTime: excelMinToStr(inMin), outTime: excelMinToStr(outMin), status: 'حاضر', workHours: shift.hours, offHours: shift.hours, lateHours: 0, otHours: 0, notes: 'التزام' });
-                            return;
+                            days.push({ day: dayName, inTime: '-', outTime: '-', status: 'في الانتظار', workHours: 0, offHours: shift.hours, lateHours: 0, otHours: 0, notes: '' });
+                            continue;
                         }
                         const calc = excelCalcDay(inMin, outMin, shift);
                         const notesParts = [];
-                        if (calc.lateHours > 0) notesParts.push(`تأخير/خروج مبكر ${Math.round(calc.lateHours * 60)}د`);
-                        if (calc.otHours > 0) notesParts.push(`إضافي ${Math.round(calc.otHours * 60)}د`);
+                        if (calc.lateHours > 0) notesParts.push('تأخير/خروج مبكر ' + Math.round(calc.lateHours * 60) + 'د');
+                        if (calc.otHours > 0) notesParts.push('إضافي ' + Math.round(calc.otHours * 60) + 'د');
                         days.push({
                             day: dayName,
                             inTime: inMin !== null ? excelMinToStr(inMin) : '-',
                             outTime: outMin !== null ? excelMinToStr(outMin) : '-',
-                            status: 'حاضر', workHours: calc.workHours, offHours: shift.hours,
-                            lateHours: calc.lateHours, otHours: calc.otHours,
+                            status: 'حاضر',
+                            workHours: calc.workHours,
+                            offHours: shift.hours,
+                            lateHours: calc.lateHours,
+                            otHours: calc.otHours,
                             notes: notesParts.join(' - ') || 'التزام'
                         });
-                    });
-
+                    }
                     results.push({ name, matched: !!emp, days });
-                });
+                }
             }
             return { results, unmatched: Array.from(unmatched) };
         }

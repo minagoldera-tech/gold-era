@@ -2927,6 +2927,46 @@
             apiCall('saveAttendance', { attendance: attendanceLogs });
         }
 
+        // مزامنة تلقائية من السيرفر كل 30 ثانية
+        async function autoSyncFromServer() {
+            try {
+                const remote = await apiCall('getAllData');
+                if (remote && remote.ok) {
+                    let changed = false;
+                    if (remote.employees && remote.employees.length > 0) {
+                        const remoteStr = JSON.stringify(remote.employees);
+                        const localStr = JSON.stringify(EMPLOYEES_DATA);
+                        if (remoteStr !== localStr) {
+                            EMPLOYEES_DATA = remote.employees;
+                            localStorage.setItem('gold_era_employees', remoteStr);
+                            changed = true;
+                        }
+                    }
+                    if (remote.attendance && Object.keys(remote.attendance).length > 0) {
+                        const remoteStr = JSON.stringify(remote.attendance);
+                        const localStr = JSON.stringify(attendanceLogs);
+                        if (remoteStr !== localStr) {
+                            attendanceLogs = remote.attendance;
+                            localStorage.setItem('gold_era_attendance', remoteStr);
+                            changed = true;
+                        }
+                    }
+                    if (changed) {
+                        populateSelect();
+                        loadEmployeeData();
+                        renderPayrollTable();
+                        renderManageTable();
+                        showNotification('⚡ تم تحديث البيانات من السيرفر تلقائياً');
+                    }
+                }
+            } catch(e) { /* السيرفر مش متاح */ }
+        }
+
+        // بدء المزامنة التلقائية كل 30 ثانية
+        function startAutoSync() {
+            setInterval(autoSyncFromServer, 30000);
+        }
+
         function showNotification(msg) {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
@@ -3037,6 +3077,7 @@
 
             applyUserMultiPagePermissions();
             initApp();
+            startAutoSync(); // مزامنة تلقائية كل 30 ثانية
         }
 
         // DYNAMIC MULTI-PAGE PERMISSION SYSTEM
@@ -3166,25 +3207,37 @@
 
         function calcEmpFinances(emp, logs) {
             let totalWork = 0, totalLate = 0, totalOt = 0, totalAbs = 0;
+            let workDays = 0;
             logs.forEach(l => {
                 totalWork += Number(l.workHours || 0);
                 totalLate += Number(l.lateHours || 0);
                 totalOt += Number(l.otHours || 0);
                 if (l.status === 'غياب') totalAbs++;
+                if (l.status === 'حاضر') workDays++;
             });
 
             const shiftH = emp.category === 'شباب' ? 12 : 10;
-            const hourlyRate = emp.salary / (6 * shiftH);
+            // سعر الساعة = الراتب الأسبوعي / (7 أيام * ساعات الوردية)
+            const hourlyRate = emp.salary / (7 * shiftH);
             
+            // الراتب المستحق = ساعات العمل الفعلية * سعر الساعة
+            const earnedFromWork = totalWork * hourlyRate;
+            
+            // خصم التأخير (كل ساعة تأخير = خصم ساعتين)
             const latePenaltyHours = totalLate * 2;
-            const otBonusHours = totalOt * 2;
-            
             const lateDeduction = latePenaltyHours * hourlyRate;
+            
+            // استحقاق الإضافي (كل ساعة إضافي = ساعتين)
+            const otBonusHours = totalOt * 2;
+            const otPay = otBonusHours * hourlyRate;
+            
+            // خصم الغياب
             const absDeduction = APP_SETTINGS.deductAbsence ? (totalAbs * shiftH * hourlyRate) : 0;
+            
             const totalDeduction = lateDeduction + absDeduction;
             
-            const otPay = otBonusHours * hourlyRate;
-            const netPay = Math.max(0, emp.salary - totalDeduction + otPay);
+            // صافي الراتب = ساعات العمل * سعر الساعة - خصومات + إضافي
+            const netPay = Math.max(0, earnedFromWork - lateDeduction + otPay - absDeduction);
 
             return {
                 shiftH,
@@ -3193,6 +3246,8 @@
                 totalLate,
                 totalOt,
                 totalAbs,
+                workDays,
+                earnedFromWork,
                 latePenaltyHours,
                 otBonusHours,
                 lateDeduction,
@@ -3996,6 +4051,7 @@
             await initSecurityAndData();
             if (currentUser) {
                 showAppUI();
+                startAutoSync(); // مزامنة تلقائية كل 30 ثانية
             }
         });
     </script>

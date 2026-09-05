@@ -711,7 +711,8 @@
                                     <th>ساعات الإضافي (فعلية)</th>
                                     <th>إجمالي الخصم (تأخير×2 + غياب)</th>
                                     <th>إجمالي الإضافي (إضافي×2)</th>
-                                    <th>صافي الراتب المستحق</th>
+                                    <th style="color:#dc2626;">💰 السلف</th>
+                            <th>صافي الراتب المستحق</th>
                                 </tr>
                             </thead>
                             <tbody id="payrollTbody"><tr>
@@ -2831,6 +2832,8 @@
             attendanceLogs = JSON.parse(localStorage.getItem('gold_era_attendance')) || INITIAL_ATTENDANCE;
             const storedUsers = JSON.parse(localStorage.getItem('gold_era_users'));
             USERS_DATA = (storedUsers && storedUsers.length) ? storedUsers : DEFAULT_USERS;
+            const storedAdv = localStorage.getItem('gold_era_advances');
+            if (storedAdv) try { advancesData = JSON.parse(storedAdv); } catch(e) {}
             appReady = true; // جاهز فوراً للدخول
 
             // محاولة السيرفر في الخلفية
@@ -2918,6 +2921,7 @@
             localStorage.setItem('gold_era_employees', JSON.stringify(EMPLOYEES_DATA));
             localStorage.setItem('gold_era_attendance', JSON.stringify(attendanceLogs));
             localStorage.setItem('gold_era_users', JSON.stringify(USERS_DATA));
+            localStorage.setItem('gold_era_advances', JSON.stringify(advancesData));
 
             if (syncChannel) {
                 syncChannel.postMessage({ type: 'SYNC_UPDATE', timestamp: Date.now() });
@@ -3235,9 +3239,11 @@
             
             const totalDeduction = lateDeduction + absDeduction;
             
-            // صافي = الراتب الكامل - خصم التأخير - خصم الغياب + الإضافي
+            // صافي = الراتب الكامل - خصم التأخير - خصم الغياب + الإضافي - السلف
             const earnedFromWork = totalWork * hourlyRate;
-            const netPay = Math.max(0, emp.salary - lateDeduction - absDeduction + otPay);
+            const empAdvances = advancesData[emp.name] || [];
+            const totalAdvances = empAdvances.reduce((s, a) => s + Number(a.remaining || a.amount || 0), 0);
+            const netPay = Math.max(0, emp.salary - lateDeduction - absDeduction + otPay - totalAdvances);
 
             return {
                 shiftH,
@@ -3254,6 +3260,7 @@
                 absDeduction,
                 totalDeduction,
                 otPay,
+                totalAdvances,
                 netPay
             };
         }
@@ -3320,10 +3327,19 @@
                 const logs = attendanceLogs[emp.name] || generateEmptyWeek(emp);
                 const fin = calcEmpFinances(emp, logs);
 
+                const empAdv = advancesData[emp.name] || [];
+                const advTotal = empAdv.reduce((s,a) => s + Number(a.remaining||a.amount||0), 0);
+                const advTooltip = empAdv.length > 0 
+                    ? empAdv.map(a => `${a.date}: ${Number(a.amount).toLocaleString()} ج.م (متبقي: ${Number(a.remaining||a.amount).toLocaleString()})`).join('\n')
+                    : 'لا توجد سلف';
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${emp.code}</strong></td>
-                    <td style="font-weight: 600;">${emp.name}</td>
+                    <td style="font-weight: 600; cursor:pointer;" title="${advTooltip}" onclick="openAdvancesModal('${emp.name}')">
+                        ${emp.name}
+                        ${advTotal > 0 ? `<span style="color:red;font-size:11px;display:block;">💰 سلف: ${Math.round(advTotal).toLocaleString()} ج.م</span>` : ''}
+                    </td>
                     <td><span class="badge ${emp.category === 'شباب' ? 'badge-holiday' : 'badge-present'}">${emp.category}</span></td>
                     <td>${Number(emp.salary).toLocaleString()}</td>
                     <td>${fin.hourlyRate.toFixed(2)}</td>
@@ -3332,6 +3348,7 @@
                     <td style="color: green; font-weight: bold;">${fin.totalOt.toFixed(2)}</td>
                     <td>${fin.totalDeduction.toFixed(2)}</td>
                     <td>${fin.otPay.toFixed(2)}</td>
+                    <td style="color:${advTotal>0?'#dc2626':'#374151'}; font-size:12px;">${Math.round(advTotal).toLocaleString()}</td>
                     <td style="font-weight: 800; color: var(--gold-dark);">${Math.round(fin.netPay).toLocaleString()} ج.م</td>
                 `;
                 tbody.appendChild(tr);
@@ -3441,9 +3458,15 @@
                     emp.name = name;
                     emp.category = category;
                     emp.salary = salary;
-                    if (origName !== name && attendanceLogs[origName]) {
-                        attendanceLogs[name] = attendanceLogs[origName];
-                        delete attendanceLogs[origName];
+                    if (origName !== name) {
+                        if (attendanceLogs[origName]) {
+                            attendanceLogs[name] = attendanceLogs[origName];
+                            delete attendanceLogs[origName];
+                        }
+                        if (advancesData[origName]) {
+                            advancesData[name] = advancesData[origName];
+                            delete advancesData[origName];
+                        }
                     }
                     showNotification('تم تحديث بيانات العامل وتعميمها!');
                 }
@@ -4079,6 +4102,118 @@
             }
         }
 
+
+        // ==================== نظام السلف ====================
+        
+        function openAdvancesModal(empName) {
+            const emp = EMPLOYEES_DATA.find(e => e.name === empName);
+            if (!emp) return;
+            
+            const modal = document.getElementById('advancesModal');
+            document.getElementById('advModalEmpName').textContent = empName;
+            document.getElementById('advModalEmpName').dataset.empName = empName;
+            document.getElementById('advAmount').value = '';
+            document.getElementById('advNote').value = '';
+            renderAdvancesList(empName);
+            modal.style.display = 'flex';
+        }
+        
+        function closeAdvancesModal() {
+            document.getElementById('advancesModal').style.display = 'none';
+        }
+        
+        function renderAdvancesList(empName) {
+            const list = document.getElementById('advancesList');
+            const advances = advancesData[empName] || [];
+            const total = advances.reduce((s,a) => s + Number(a.remaining||a.amount||0), 0);
+            
+            document.getElementById('advTotalRemaining').textContent = Math.round(total).toLocaleString() + ' ج.م';
+            
+            if (advances.length === 0) {
+                list.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:20px;">لا توجد سلف مسجلة</p>';
+                return;
+            }
+            
+            list.innerHTML = advances.map((a, i) => `
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-weight:700;color:#0f172a;">${Number(a.amount).toLocaleString()} ج.م</div>
+                        <div style="font-size:12px;color:#64748b;">${a.date} | ${a.note || 'بدون ملاحظة'}</div>
+                        <div style="font-size:12px;color:#dc2626;">متبقي: ${Number(a.remaining||a.amount).toLocaleString()} ج.م</div>
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button onclick="deductAdvance('${empName}', ${i})" style="background:#16a34a;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;">خصم من الراتب</button>
+                        <button onclick="deleteAdvance('${empName}', ${i})" style="background:#dc2626;color:white;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;">حذف</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function addAdvance() {
+            const empName = document.getElementById('advModalEmpName').dataset.empName;
+            const amount = parseFloat(document.getElementById('advAmount').value);
+            const note = document.getElementById('advNote').value.trim();
+            
+            if (!amount || amount <= 0) {
+                alert('برجاء إدخال مبلغ صحيح!');
+                return;
+            }
+            
+            if (!advancesData[empName]) advancesData[empName] = [];
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('ar-EG') + ' ' + now.toLocaleTimeString('ar-EG', {hour:'2-digit',minute:'2-digit'});
+            
+            advancesData[empName].push({
+                amount: amount,
+                remaining: amount,
+                date: dateStr,
+                note: note
+            });
+            
+            saveToStorage();
+            renderAdvancesList(empName);
+            renderPayrollTable();
+            document.getElementById('advAmount').value = '';
+            document.getElementById('advNote').value = '';
+            showNotification(`✅ تم تسجيل سلفة ${amount.toLocaleString()} ج.م لـ ${empName}`);
+        }
+        
+        function deductAdvance(empName, idx) {
+            const advances = advancesData[empName];
+            if (!advances || !advances[idx]) return;
+            const adv = advances[idx];
+            if (adv.remaining <= 0) {
+                alert('هذه السلفة تم خصمها بالكامل!');
+                return;
+            }
+            const deductAmount = parseFloat(prompt(`خصم من سلفة ${Number(adv.amount).toLocaleString()} ج.م
+المتبقي: ${Number(adv.remaining).toLocaleString()} ج.م
+
+أدخل المبلغ المراد خصمه:`, adv.remaining));
+            if (!deductAmount || deductAmount <= 0) return;
+            
+            advances[idx].remaining = Math.max(0, adv.remaining - deductAmount);
+            if (advances[idx].remaining === 0) {
+                advances.splice(idx, 1);
+            }
+            
+            saveToStorage();
+            renderAdvancesList(empName);
+            renderPayrollTable();
+            showNotification(`✅ تم خصم ${deductAmount.toLocaleString()} ج.م من سلفة ${empName}`);
+        }
+        
+        function deleteAdvance(empName, idx) {
+            if (!confirm('هل تريد حذف هذه السلفة نهائياً؟')) return;
+            advancesData[empName].splice(idx, 1);
+            saveToStorage();
+            renderAdvancesList(empName);
+            renderPayrollTable();
+            showNotification('تم حذف السلفة');
+        }
+        // ==================== نهاية نظام السلف ====================
+
         document.addEventListener('DOMContentLoaded', async () => {
             await initSecurityAndData();
             if (currentUser) {
@@ -4088,5 +4223,42 @@
         });
     </script>
 
+
+
+    <!-- Modal السلف -->
+    <div id="advancesModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:center;">
+        <div style="background:white;border-radius:16px;padding:28px;width:90%;max-width:520px;max-height:85vh;overflow-y:auto;direction:rtl;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h3 style="margin:0;color:#0f172a;font-size:18px;">💰 سجل السلف - <span id="advModalEmpName"></span></h3>
+                <button onclick="closeAdvancesModal()" style="background:none;border:none;font-size:22px;cursor:pointer;">✕</button>
+            </div>
+            
+            <!-- إجمالي السلف -->
+            <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;margin-bottom:20px;text-align:center;">
+                <div style="color:#dc2626;font-size:13px;font-weight:600;">إجمالي السلف المتبقية</div>
+                <div id="advTotalRemaining" style="color:#dc2626;font-size:24px;font-weight:800;">0 ج.م</div>
+            </div>
+            
+            <!-- إضافة سلفة جديدة -->
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:20px;">
+                <div style="font-weight:700;color:#15803d;margin-bottom:12px;">➕ تسجيل سلفة جديدة</div>
+                <div style="display:flex;gap:10px;margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">المبلغ (ج.م)</label>
+                        <input type="number" id="advAmount" placeholder="0" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                    </div>
+                    <div style="flex:2;">
+                        <label style="font-size:12px;color:#64748b;display:block;margin-bottom:4px;">ملاحظة (اختياري)</label>
+                        <input type="text" id="advNote" placeholder="سبب السلفة..." style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                    </div>
+                </div>
+                <button onclick="addAdvance()" style="width:100%;background:#15803d;color:white;border:none;border-radius:8px;padding:10px;font-size:15px;font-weight:700;cursor:pointer;">✅ تسجيل السلفة</button>
+            </div>
+            
+            <!-- قائمة السلف -->
+            <div style="font-weight:700;color:#0f172a;margin-bottom:10px;">📋 سجل السلف السابقة</div>
+            <div id="advancesList"></div>
+        </div>
+    </div>
 
 </body></html>

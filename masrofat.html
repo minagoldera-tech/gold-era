@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -129,6 +130,16 @@ input,select{font-family:'Tajawal',sans-serif}
 .frow.main{grid-template-columns:150px 1fr 190px 150px 110px}
 .frow.sub{grid-template-columns:230px 200px 220px;margin-top:12px}
 .balbox{padding:9px 12px;background:var(--card2);border:1px solid var(--border);border-radius:8px;font-variant-numeric:tabular-nums;font-family:'Cairo',sans-serif;font-weight:700;font-size:.88rem}
+/* per-person / per-party statement */
+.stmt{border:1px solid var(--gold-d);border-radius:12px;overflow:hidden}
+.stmt-hd{display:flex;background:var(--gold-bg)}
+.stmt-hd .c{flex:1;padding:12px 14px;text-align:center;border-left:1px solid var(--gold-d)}
+.stmt-hd .c:last-child{border-left:none}
+.stmt-hd .l{font-size:.64rem;color:var(--gold);margin-bottom:4px}
+.stmt-hd .v{font-family:'Cairo',sans-serif;font-weight:800;font-size:1.2rem;font-variant-numeric:tabular-nums}
+.stmt-form{display:flex;gap:10px;align-items:end;flex-wrap:wrap;padding:12px 14px;background:var(--card2);border-top:1px solid var(--gold-d);border-bottom:1px solid var(--border)}
+.stmt-form .fg{width:145px}
+@media(max-width:700px){.stmt-form .fg{width:100%}}
 
 /* ═══ TABLES ═══ */
 .tw{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
@@ -518,12 +529,32 @@ tr:hover .ed-btn{opacity:1}
 
     <!-- ═══ ADVANCES ═══ -->
     <div class="section" id="sec-advances">
+      <div class="entry-block">
+        <div class="entry-title">🔍 بحث وخصم — كشف حساب سلف عامل</div>
+        <div class="frow" style="grid-template-columns:1fr">
+          <div class="fg"><label>اكتب اسم العامل لعرض كشف سلفه والخصم منه</label>
+            <input type="text" id="adv-q" list="adv-q-list" placeholder="اسم العامل…" oninput="renderStmt('adv')">
+            <datalist id="adv-q-list"></datalist>
+          </div>
+        </div>
+        <div id="adv-statement" style="margin-top:12px"></div>
+      </div>
       <div class="tw" id="tw-advbal"></div>
       <div class="tw" id="tw-advlog"></div>
     </div>
 
     <!-- ═══ DEPOSIT ═══ -->
     <div class="section" id="sec-deposit">
+      <div class="entry-block">
+        <div class="entry-title">🔍 بحث وخصم — كشف عربون جهة</div>
+        <div class="frow" style="grid-template-columns:1fr">
+          <div class="fg"><label>اكتب اسم الجهة لعرض كشف عربونها والخصم منه</label>
+            <input type="text" id="dep-q" list="dep-q-list" placeholder="اسم الجهة / المورد…" oninput="renderStmt('dep')">
+            <datalist id="dep-q-list"></datalist>
+          </div>
+        </div>
+        <div id="dep-statement" style="margin-top:12px"></div>
+      </div>
       <div class="tw" id="tw-deposit-sum"></div>
       <div class="tw" id="tw-deposit"></div>
     </div>
@@ -941,19 +972,23 @@ async function boot(){
   }catch(e){}
   $('q-date').value=td(); $('sal-date').value=td();
 
-  Object.keys(CATS).forEach(cat=>{
-    db.collection('entries').where('category','==',cat).onSnapshot(snap=>{
-      markSync(snap.metadata);
-      catDocs[cat]=snap.docs;
-      const tot=snap.docs.reduce((s,d)=>s+(+d.data().amount||0),0);
-      totals[cat]=tot; counts[cat]=snap.size;
-      if(cat==='deposit') totals['depositCash']=snap.docs.reduce((s,d)=>s+(d.data().carry?0:(+d.data().amount||0)),0);
+  // اشتراك واحد على كل القيود (أسرع وأخف من فتح اشتراك لكل ورقة)
+  db.collection('entries').onSnapshot(snap=>{
+    markSync(snap.metadata);
+    const byCat={}; Object.keys(CATS).forEach(c=>byCat[c]=[]);
+    snap.docs.forEach(d=>{const c=d.data().category; if(byCat[c]) byCat[c].push(d);});
+    Object.keys(CATS).forEach(cat=>{
+      catDocs[cat]=byCat[cat];
+      const isDep=cat==='deposit';
+      const tot=byCat[cat].reduce((s,d)=>s+((isDep&&d.data().deduct?-1:1)*(+d.data().amount||0)),0);
+      totals[cat]=tot; counts[cat]=byCat[cat].length;
+      if(isDep) totals['depositCash']=byCat[cat].reduce((s,d)=>s+((d.data().carry||d.data().deduct)?0:(+d.data().amount||0)),0);
       const el=$('st-'+cat); if(el) el.textContent=fmts(tot);
       if(cur===cat) $('tb-total').textContent=fmt(tot);
-      if(cat==='deposit'){ renderDeposit(); fillPartyList(); } else renderCat(cat);
-      renderRecent(); refreshDash(); updateBal();
-    },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
-  });
+      if(isDep){ renderDeposit(); fillPartyList(); } else renderCat(cat);
+    });
+    renderRecent(); refreshDash(); updateBal();
+  },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
   db.collection('advances').onSnapshot(snap=>{
     advDocs=snap.docs;
     let take=0,repay=0;
@@ -997,7 +1032,7 @@ async function boot(){
       return (a.data().name||'').localeCompare(b.data().name||'','ar');
     });
     // تعديل/إضافة/حذف اسم ينعكس فوراً في كل المنظومة
-    renderSalGrid(); fillRpList(); fillEmpSelect(); renderSalHist(); renderAdvances(); renderReport(); renderRecent();
+    renderSalGrid(); fillRpList(); fillEmpSelect(); renderSalHist(); renderAdvances(); renderReport(); renderRecent(); fillStmtLists(); renderAdvStmt();
   },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
 }
 // recompute advance balances (سلف مصروفة − سداد نقدي − مخصوم من المرتبات)
@@ -1009,7 +1044,7 @@ function updateAdvDerived(){
   const out=Object.values(m).reduce((s,v)=>s+(v>0?v:0),0);
   const el=$('st-advances'); if(el) el.textContent=fmts(out);
   if(cur==='advances') $('tb-total').textContent=fmt(out);
-  renderAdvances(); renderSalGrid(); renderReport();
+  renderAdvances(); renderSalGrid(); renderReport(); renderAdvStmt();
   if(!$('q-advbal-wrap').hidden) showAdvBal();
 }
 
@@ -1242,7 +1277,7 @@ function renderDeposit(){
   const sumW=$('tw-deposit-sum'), logW=$('tw-deposit'); if(!sumW) return;
   const docs=catDocs['deposit']||[];
   const by={};
-  docs.forEach(d=>{const x=d.data();const p=x.party||x.desc||'غير محدد';by[p]=(by[p]||0)+(+x.amount||0);});
+  docs.forEach(d=>{const x=d.data();const p=x.party||x.desc||'غير محدد';by[p]=(by[p]||0)+((x.deduct?-1:1)*(+x.amount||0));});
   const parties=Object.entries(by).sort((a,b)=>b[1]-a[1]);
   sumW.innerHTML=`
     <div class="tw-head"><span class="tt">🪙 إجمالي العربون لكل جهة</span>
@@ -1265,12 +1300,120 @@ function renderDeposit(){
         :rows.map(d=>{const x=d.data();return`<tr>
           <td class="muted">${fmtd(x.date)}</td>
           <td style="font-weight:600">${esc(x.party||'—')}</td>
-          <td>${esc(x.desc)||'—'}</td>
-          <td class="num">${fmtN(x.amount)}</td>
+          <td>${x.deduct?'<span class="badge in" style="margin-left:5px">خصم</span>':''}${esc(x.desc)||'—'}</td>
+          <td class="num" style="color:var(--${x.deduct?'green':'text'})">${x.deduct?'−':''}${fmtN(x.amount)}</td>
           <td class="muted">${esc(x.by||'—')}</td>
           <td style="text-align:left"><button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
         </tr>`}).join('')}
       </tbody></table></div>`;
+  renderDepStmt(); fillStmtLists();
+}
+
+// ═══ كشف حساب فرد/جهة + خصم (بحث بالاسم) ═══
+let stmtEmpId=null, stmtParty=null;
+function fillStmtLists(){
+  const al=$('adv-q-list'); if(al) al.innerHTML=empDocs.map(d=>`<option value="${esc(d.data().name)}">`).join('');
+  const parties=[...new Set((catDocs['deposit']||[]).map(d=>d.data().party||d.data().desc||'').filter(Boolean))];
+  const dl=$('dep-q-list'); if(dl) dl.innerHTML=parties.map(p=>`<option value="${esc(p)}">`).join('');
+}
+function renderStmt(kind){ kind==='adv'?renderAdvStmt():renderDepStmt(); }
+const stmtFocused=pre=>{const a=document.activeElement;return a&&a.id&&a.id.indexOf(pre+'-d-')===0;};
+function stmtHead(a,b,c){return `<div class="stmt-hd">
+  <div class="c"><div class="l">${a[0]}</div><div class="v" style="color:var(--red)">${fmtN(a[1])}</div></div>
+  <div class="c"><div class="l">${b[0]}</div><div class="v" style="color:var(--green)">${fmtN(b[1])}</div></div>
+  <div class="c"><div class="l">${c[0]}</div><div class="v" style="color:var(--gold-l)">${fmtN(c[1])}</div></div>
+</div>`;}
+function renderAdvStmt(){
+  const box=$('adv-statement'); if(!box) return;
+  if(stmtFocused('adv')) return; // لا تُعِد الرسم أثناء كتابة الخصم
+  const q=($('adv-q').value||'').trim();
+  let emp=empDocs.find(d=>d.data().name===q); if(!emp&&q.length>1) emp=empDocs.find(d=>(d.data().name||'').includes(q));
+  if(!emp){ stmtEmpId=null; box.innerHTML=q?'<div style="padding:8px;color:var(--text3);font-size:.8rem">اكتب اسم عامل موجود لعرض كشفه…</div>':''; return; }
+  stmtEmpId=emp.id; const name=emp.data().name;
+  const recs=advDocs.filter(d=>d.data().empId===emp.id).map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.at||'').localeCompare(b.at||''));
+  const took=recs.filter(r=>r.kind!=='repay').reduce((s,r)=>s+(+r.amount||0),0);
+  const paid=recs.filter(r=>r.kind==='repay').reduce((s,r)=>s+(+r.amount||0),0);
+  let run=0;
+  const rows=recs.map(r=>{const rep=r.kind==='repay';run+=rep?-(+r.amount||0):(+r.amount||0);
+    const typ=rep?(r.fromPayroll?'خصم من المرتب':'خصم/سداد'):'سلفة';
+    return `<tr><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}</td>
+      <td><span class="badge ${rep?'in':'out'}">${typ}</span></td><td>${esc(r.desc||'—')}</td>
+      <td class="num" style="color:var(--${rep?'green':'red'})">${rep?'−':'+'}${fmtN(r.amount)}</td>
+      <td class="num" style="font-weight:800;color:var(--gold-l)">${fmtN(run)}</td>
+      <td style="text-align:left">${r.fromPayroll?'<span class="muted" style="font-size:.7rem">تلقائي</span>':'<button class="btn-del" onclick="delTwo(this,()=>delDoc(\'advances\',\''+r.id+'\'))">✕</button>'}</td></tr>`;}).join('');
+  box.innerHTML=`<div class="stmt">
+    ${stmtHead(['إجمالي ما أخذه',took],['إجمالي المسدد/المخصوم',paid],['المتبقي عليه',took-paid])}
+    <div class="stmt-form">
+      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">تاريخ الخصم</label><input type="date" id="adv-d-date" value="${td()}"></div>
+      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">مبلغ الخصم</label><input type="number" id="adv-d-amt" placeholder="0" min="0" step="any" onkeydown="if(event.key==='Enter'){event.preventDefault();addAdvDeduct();}"></div>
+      <div class="fg" style="width:170px"><label style="font-size:.66rem;color:var(--text2)">النوع</label><select id="adv-d-type"><option value="cash">سداد نقدي (يدخل الخزنة)</option><option value="settle">تسوية بدون نقد</option></select></div>
+      <button class="btn btn-gold" style="padding:9px 16px" onclick="addAdvDeduct()">خصم من السلفة ←</button>
+    </div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ (ج.م)</th><th>المتبقي</th><th></th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:16px">لا حركات</td></tr>'}</tbody>
+    </table></div>
+  </div>`;
+}
+async function addAdvDeduct(){
+  const emp=empDocs.find(d=>d.id===stmtEmpId); if(!emp){ toast('اختر عامل أولاً'); return; }
+  const date=$('adv-d-date').value||td();
+  const amt=parseFloat($('adv-d-amt').value);
+  const type=$('adv-d-type').value;
+  if(!amt||amt<=0){ $('adv-d-amt').focus(); toast('أدخل مبلغ الخصم'); return; }
+  try{
+    await db.collection('advances').add({kind:'repay',carry:type==='settle',empId:emp.id,empName:emp.data().name,date,desc:type==='settle'?'تسوية سلفة':'سداد سلفة (نقدي)',amount:amt,by:me.u,at:new Date().toISOString()});
+    const i=$('adv-d-amt'); if(i){ i.value=''; i.blur(); }
+    toast('خُصم '+fmt(amt)+' من سلفة '+emp.data().name+' ✓');
+    setTimeout(renderAdvStmt,120);
+  }catch(e){ toast('خطأ: '+(e.message||e.code||'')); }
+}
+function renderDepStmt(){
+  const box=$('dep-statement'); if(!box) return;
+  if(stmtFocused('dep')) return;
+  const q=($('dep-q').value||'').trim();
+  const docs=(catDocs['deposit']||[]).map(d=>({id:d.id,...d.data()}));
+  const parties=[...new Set(docs.map(x=>x.party||x.desc||'').filter(Boolean))];
+  let party=parties.find(p=>p===q); if(!party&&q.length>1) party=parties.find(p=>p.includes(q));
+  if(!party){ stmtParty=null; box.innerHTML=q?'<div style="padding:8px;color:var(--text3);font-size:.8rem">اكتب اسم جهة موجودة لعرض كشفها…</div>':''; return; }
+  stmtParty=party;
+  const recs=docs.filter(x=>(x.party||x.desc||'')===party).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.at||'').localeCompare(b.at||''));
+  const added=recs.filter(r=>!r.deduct).reduce((s,r)=>s+(+r.amount||0),0);
+  const deducted=recs.filter(r=>r.deduct).reduce((s,r)=>s+(+r.amount||0),0);
+  let run=0;
+  const rows=recs.map(r=>{run+=r.deduct?-(+r.amount||0):(+r.amount||0);
+    return `<tr><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}</td>
+      <td><span class="badge ${r.deduct?'in':'out'}">${r.deduct?'خصم':'عربون'}</span></td><td>${esc(r.desc||'—')}</td>
+      <td class="num" style="color:var(--${r.deduct?'green':'red'})">${r.deduct?'−':'+'}${fmtN(r.amount)}</td>
+      <td class="num" style="font-weight:800;color:var(--gold-l)">${fmtN(run)}</td>
+      <td style="text-align:left"><button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${r.id}'))">✕</button></td></tr>`;}).join('');
+  box.innerHTML=`<div class="stmt">
+    ${stmtHead(['إجمالي العربون',added],['إجمالي المخصوم',deducted],['المتبقي',added-deducted])}
+    <div class="stmt-form">
+      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">تاريخ الخصم</label><input type="date" id="dep-d-date" value="${td()}"></div>
+      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">مبلغ الخصم</label><input type="number" id="dep-d-amt" placeholder="0" min="0" step="any" onkeydown="if(event.key==='Enter'){event.preventDefault();addDepDeduct();}"></div>
+      <div class="fg" style="flex:1;min-width:160px"><label style="font-size:.66rem;color:var(--text2)">البيان (اختياري)</label><input type="text" id="dep-d-desc" placeholder="سبب الخصم…"></div>
+      <button class="btn btn-gold" style="padding:9px 16px" onclick="addDepDeduct()">خصم من العربون ←</button>
+    </div>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>التاريخ</th><th>النوع</th><th>البيان</th><th>المبلغ (ج.م)</th><th>المتبقي</th><th></th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:16px">لا حركات</td></tr>'}</tbody>
+    </table></div>
+  </div>`;
+}
+async function addDepDeduct(){
+  if(!stmtParty){ toast('اختر جهة أولاً'); return; }
+  const date=$('dep-d-date').value||td();
+  const amt=parseFloat($('dep-d-amt').value);
+  const desc=($('dep-d-desc').value||'').trim()||'خصم من العربون';
+  if(!amt||amt<=0){ $('dep-d-amt').focus(); toast('أدخل مبلغ الخصم'); return; }
+  try{
+    await db.collection('entries').add({category:'deposit',deduct:true,party:stmtParty,date,desc,amount:amt,by:me.u,at:new Date().toISOString()});
+    const i=$('dep-d-amt'); if(i){ i.value=''; i.blur(); } $('dep-d-desc').value='';
+    toast('خُصم '+fmt(amt)+' من عربون '+stmtParty+' ✓');
+    setTimeout(renderDepStmt,120);
+  }catch(e){ toast('خطأ: '+(e.message||e.code||'')); }
 }
 
 // ═══ DASHBOARD ════════════════════════════════════════════════════════════

@@ -359,9 +359,10 @@ tr:hover .ed-btn{opacity:1}
       <div class="bl2">بدون المعلم والمهندس</div>
       <div class="bv2" id="sb-bal2">—</div>
     </div>
-    <div class="sync-row" id="sync-row" title="البيانات محفوظة على السحابة وتتزامن تلقائياً مع كل جهاز يفتح نفس الرابط">
+    <div class="sync-row" id="sync-row" style="cursor:pointer" onclick="syncNow()" title="اضغط لجلب آخر البيانات من كل الأجهزة (مزامنة الآن)">
       <span class="sync-dot" id="sync-dot"></span>
       <span id="sync-txt">جارٍ الاتصال…</span>
+      <span style="margin-right:auto;font-size:.7rem;color:var(--gold-l);white-space:nowrap">🔄 مزامنة</span>
     </div>
   </div>
 
@@ -452,7 +453,7 @@ tr:hover .ed-btn{opacity:1}
               <option value="kassa-out">🏦 الخزنة — منصرف</option>
             </select>
           </div>
-          <div class="fg"><label>المبلغ (ج.م)</label><input type="number" id="q-amt" placeholder="0" min="0" step="any"></div>
+          <div class="fg"><label>المبلغ (ج.م)</label><input type="text" inputmode="decimal" id="q-amt" placeholder="0" oninput="grp(this)"></div>
           <div class="fg"><button class="btn btn-gold" style="width:100%;padding:10px 0" onclick="saveEntry()">حفظ ←</button></div>
         </div>
         <div class="frow sub" id="q-extra" hidden>
@@ -683,6 +684,11 @@ tr:hover .ed-btn{opacity:1}
 
     <!-- ═══ SALARIES ═══ -->
     <div class="section" id="sec-salaries">
+      <div id="sal-unsaved" hidden style="background:#7a3;background:linear-gradient(90deg,#B87A1A,#8A5A12);color:#fff;border-radius:10px;padding:11px 15px;margin-bottom:12px;font-weight:700;font-size:.86rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.2)">
+        <span style="font-size:1.1rem">🟠</span>
+        <span id="sal-unsaved-txt">لديك مبالغ مكتوبة لم تُصرف بعد</span>
+        <button class="btn btn-gold" style="padding:6px 14px;margin-right:auto" onclick="payAll()">💰 صرف الكل الآن</button>
+      </div>
       <div class="sal-top">
         <div class="fg"><label>تاريخ صرف الأسبوع</label><input type="date" id="sal-date" onchange="renderSalGrid()"></div>
         <button class="btn btn-ghost" onclick="copyLastWeek()" title="ملء الكشف بأرقام آخر أسبوع">⧉ انسخ الأسبوع السابق</button>
@@ -699,8 +705,8 @@ tr:hover .ed-btn{opacity:1}
       <div class="tw">
         <div class="addemp-form" id="addemp">
           <div class="fg"><label>اسم الموظف</label><input type="text" id="ae-name" placeholder="الاسم…"></div>
-          <div class="fg sm"><label>الأساسي الأسبوعي</label><input type="number" id="ae-basic" placeholder="0" min="0"></div>
-          <div class="fg sm"><label>سعر اليوم (اختياري)</label><input type="number" id="ae-rate" placeholder="0" min="0"></div>
+          <div class="fg sm"><label>الأساسي الأسبوعي</label><input type="text" inputmode="decimal" id="ae-basic" placeholder="0" oninput="grp(this)"></div>
+          <div class="fg sm"><label>سعر اليوم (اختياري)</label><input type="text" inputmode="decimal" id="ae-rate" placeholder="0" oninput="grp(this)"></div>
           <div class="fg sm"><label>الوردية</label><select id="ae-group"><option value="boys">👦 الأولاد</option><option value="girls">👧 البنات</option></select></div>
           <button class="btn btn-gold" onclick="addEmp()">حفظ</button>
           <button class="btn btn-ghost" onclick="toggleAddEmp()">إلغاء</button>
@@ -797,7 +803,7 @@ tr:hover .ed-btn{opacity:1}
     <div class="modal-body">
       <div style="font-size:.85rem;line-height:1.9;color:var(--text)">سيتم حذف <b style="color:var(--red)">كل البيانات نهائياً</b> — المصروفات، المرتبات، الخزنة، السلف، العربون، وحافظة الأشهر، وحافظة الأسابيع. لا يمكن التراجع بعد التأكيد.</div>
       <div class="m-sec">💰 المبلغ الذي ستبدأ به الخزنة (ج.م)</div>
-      <div class="m-form"><input type="number" id="reset-amount" placeholder="0" min="0" step="any" style="font-size:1.1rem;font-weight:700;text-align:center"></div>
+      <div class="m-form"><input type="text" inputmode="decimal" id="reset-amount" placeholder="0" style="font-size:1.1rem;font-weight:700;text-align:center"></div>
       <div id="reset-amount-preview" style="text-align:center;font-family:'Cairo';font-weight:800;font-size:1.15rem;color:var(--gold-l);margin-top:8px">ستبدأ الخزنة بـ 0 ج.م</div>
       <div class="m-sec">اسم الشهر الجديد</div>
       <div class="m-form"><input type="text" id="reset-month" placeholder="مثال: سبتمبر 2026"></div>
@@ -895,6 +901,10 @@ const $=id=>document.getElementById(id);
 const fmt =n=>(n==null||isNaN(n))?'—':Math.round(n).toLocaleString('en-US')+' ج.م';
 const fmtN=n=>(n==null||isNaN(n))?'—':Math.round(n).toLocaleString('en-US');
 const fmts=n=>!n?'—':Math.abs(n)>=1e6?(n/1e6).toFixed(1)+'M':Math.abs(n)>=1e3?Math.round(n/1e3)+'K':String(Math.round(n));
+// أرقام إنجليزية بفواصل داخل الخانات + قراءة تتجاهل الفواصل
+const gnum=v=>{v=String(v==null?'':v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'');if(v==='')return '';const parts=v.split('.');let i=(parts[0]||'').replace(/^0+(?=\d)/,'');i=i.replace(/\B(?=(\d{3})+(?!\d))/g,',');return i+(parts.length>1?'.'+parts.slice(1).join(''):'');};
+const numv=v=>{const n=parseFloat(String(v==null?'':v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,''));return isNaN(n)?0:n;};
+function grp(el){ if(!el) return; el.value=gnum(el.value); try{el.setSelectionRange(el.value.length,el.value.length);}catch(e){} }
 const fmtd=d=>{try{return new Date(d+'T00:00').toLocaleDateString('ar-EG-u-nu-latn',{day:'2-digit',month:'short',year:'numeric'})}catch{return d||'—'}};
 const td=()=>new Date().toISOString().split('T')[0];
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -915,7 +925,12 @@ async function sha256(s){
   return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 }
 const hashPass=(u,p)=>sha256('goldera:'+u.trim().toLowerCase()+':'+p);
-function sess(v){try{if(v===undefined)return JSON.parse(sessionStorage.getItem('ge2')||'null');if(v===null)sessionStorage.removeItem('ge2');else sessionStorage.setItem('ge2',JSON.stringify(v));}catch{ return null }}
+// تسجيل الدخول يفضل محفوظ على الجهاز (localStorage) فلا يطلبه كل مرة
+function sess(v){try{if(v===undefined)return JSON.parse(localStorage.getItem('ge2')||sessionStorage.getItem('ge2')||'null');if(v===null){localStorage.removeItem('ge2');sessionStorage.removeItem('ge2');}else localStorage.setItem('ge2',JSON.stringify(v));}catch{ return null }}
+// حفظ/استرجاع مسودّات المرتبات على الجهاز حتى لا تضيع لو أُغلق قبل الصرف
+function persistDrafts(){try{localStorage.setItem('ge-sal-drafts',JSON.stringify(salDraft||{}));}catch(e){}}
+function restoreDrafts(){try{const s=localStorage.getItem('ge-sal-drafts');if(s){const o=JSON.parse(s);if(o&&typeof o==='object')salDraft=o;}}catch(e){}}
+function syncNow(){ toast('جارٍ جلب آخر البيانات…'); setTimeout(()=>location.reload(),300); }
 
 // two-click delete
 function delTwo(btn,fn){
@@ -998,6 +1013,7 @@ function sheetOrderOf(name){
   return null;
 }
 async function boot(){
+  restoreDrafts(); // استرجاع أي مبالغ مرتبات مكتوبة ولم تُصرف بعد
   try{
     const seeded=await db.doc('config/seeded').get();
     if(!seeded.exists){
@@ -1173,7 +1189,7 @@ async function saveEntry(){
   const date=$('q-date').value||td();
   let desc=$('q-desc').value.trim();
   const sheet=$('q-sheet').value;
-  const amt=parseFloat($('q-amt').value);
+  const amt=numv($('q-amt').value);
   const isAdv=sheet==='advances', isDep=sheet==='deposit';
   if(!desc&&!isAdv){ $('q-desc').focus(); toast('اكتب البند أولاً'); return; }
   if(!amt||amt<=0){ $('q-amt').focus(); toast('أدخل المبلغ'); return; }
@@ -1414,7 +1430,7 @@ function renderAdvStmt(){
     ${stmtHead(['إجمالي ما أخذه',took],['إجمالي المسدد/المخصوم',paid],['المتبقي عليه',took-paid])}
     <div class="stmt-form">
       <div class="fg"><label style="font-size:.66rem;color:var(--text2)">تاريخ الخصم</label><input type="date" id="adv-d-date" value="${td()}"></div>
-      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">مبلغ الخصم</label><input type="number" id="adv-d-amt" placeholder="0" min="0" step="any" onkeydown="if(event.key==='Enter'){event.preventDefault();addAdvDeduct();}"></div>
+      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">مبلغ الخصم</label><input type="text" inputmode="decimal" id="adv-d-amt" placeholder="0" oninput="grp(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();addAdvDeduct();}"></div>
       <div class="fg" style="width:170px"><label style="font-size:.66rem;color:var(--text2)">النوع</label><select id="adv-d-type"><option value="cash">سداد نقدي (يدخل الخزنة)</option><option value="settle">تسوية بدون نقد</option></select></div>
       <button class="btn btn-gold" style="padding:9px 16px" onclick="addAdvDeduct()">خصم من السلفة ←</button>
     </div>
@@ -1427,7 +1443,7 @@ function renderAdvStmt(){
 async function addAdvDeduct(){
   const emp=empDocs.find(d=>d.id===stmtEmpId); if(!emp){ toast('اختر عامل أولاً'); return; }
   const date=$('adv-d-date').value||td();
-  const amt=parseFloat($('adv-d-amt').value);
+  const amt=numv($('adv-d-amt').value);
   const type=$('adv-d-type').value;
   if(!amt||amt<=0){ $('adv-d-amt').focus(); toast('أدخل مبلغ الخصم'); return; }
   try{
@@ -1460,7 +1476,7 @@ function renderDepStmt(){
     ${stmtHead(['إجمالي العربون',added],['إجمالي المخصوم',deducted],['المتبقي',added-deducted])}
     <div class="stmt-form">
       <div class="fg"><label style="font-size:.66rem;color:var(--text2)">تاريخ الخصم</label><input type="date" id="dep-d-date" value="${td()}"></div>
-      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">مبلغ الخصم</label><input type="number" id="dep-d-amt" placeholder="0" min="0" step="any" onkeydown="if(event.key==='Enter'){event.preventDefault();addDepDeduct();}"></div>
+      <div class="fg"><label style="font-size:.66rem;color:var(--text2)">مبلغ الخصم</label><input type="text" inputmode="decimal" id="dep-d-amt" placeholder="0" oninput="grp(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();addDepDeduct();}"></div>
       <div class="fg" style="flex:1;min-width:160px"><label style="font-size:.66rem;color:var(--text2)">البيان (اختياري)</label><input type="text" id="dep-d-desc" placeholder="سبب الخصم…"></div>
       <button class="btn btn-gold" style="padding:9px 16px" onclick="addDepDeduct()">خصم من العربون ←</button>
     </div>
@@ -1473,7 +1489,7 @@ function renderDepStmt(){
 async function addDepDeduct(){
   if(!stmtParty){ toast('اختر جهة أولاً'); return; }
   const date=$('dep-d-date').value||td();
-  const amt=parseFloat($('dep-d-amt').value);
+  const amt=numv($('dep-d-amt').value);
   const desc=($('dep-d-desc').value||'').trim()||'خصم من العربون';
   if(!amt||amt<=0){ $('dep-d-amt').focus(); toast('أدخل مبلغ الخصم'); return; }
   try{
@@ -1505,7 +1521,7 @@ function renderMaster(){
       ${stmtHead(['إجمالي المصروف',spent],['إجمالي المُسترد',recovered],['الصافي المتبقي',spent-recovered])}
       <div class="stmt-form">
         <div class="fg"><label style="font-size:.66rem;color:var(--text2)">التاريخ</label><input type="date" id="mst-d-date" value="${td()}"></div>
-        <div class="fg"><label style="font-size:.66rem;color:var(--text2)">المبلغ</label><input type="number" id="mst-d-amt" placeholder="0" min="0" step="any" onkeydown="if(event.key==='Enter'){event.preventDefault();addMaster('spend');}"></div>
+        <div class="fg"><label style="font-size:.66rem;color:var(--text2)">المبلغ</label><input type="text" inputmode="decimal" id="mst-d-amt" placeholder="0" oninput="grp(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();addMaster('spend');}"></div>
         <div class="fg" style="flex:1;min-width:150px"><label style="font-size:.66rem;color:var(--text2)">البيان (اختياري)</label><input type="text" id="mst-d-desc" placeholder="البند / السبب…"></div>
         <button class="btn btn-ghost" style="padding:9px 14px" onclick="addMaster('spend')" title="تسجيل مصروف جديد على المعلم">＋ مصروف</button>
         <button class="btn btn-gold" style="padding:9px 16px" onclick="addMaster('recover')" title="استرداد مبلغ من المعلم — يعود إلى رصيد الخزنة">↩ استرداد</button>
@@ -1520,7 +1536,7 @@ function renderMaster(){
 async function addMaster(kind){
   if(!db) return;
   const date=$('mst-d-date').value||td();
-  const amt=parseFloat($('mst-d-amt').value);
+  const amt=numv($('mst-d-amt').value);
   const desc=($('mst-d-desc').value||'').trim();
   if(!amt||amt<=0){ $('mst-d-amt').focus(); toast('أدخل المبلغ'); return; }
   const isRec=kind==='recover';
@@ -1597,7 +1613,7 @@ function payrollEmps(){ return empDocs.filter(d=>d.data().inPayroll!==false); }
 function isGirlEmp(x){ return x && x.group==='girls'; }
 function isPinLast(x){ return !!x && (x.pinLast===true || (x.pinLast==null && /مينا\s*وجيه/.test(x.name||''))); }
 const SAL_FIELDS=['days','b','e','bo','pe','a'];
-function salVals(id){const g=f=>$('sg-'+f+'-'+id);return{days:g('days')?g('days').value:'',b:g('b')?g('b').value:'',e:g('e')?g('e').value:'',bo:g('bo')?g('bo').value:'',pe:g('pe')?g('pe').value:'',a:g('a')?g('a').value:''};}
+function salVals(id){const g=f=>{const el=$('sg-'+f+'-'+id);return el?el.value.replace(/,/g,''):'';};return{days:g('days'),b:g('b'),e:g('e'),bo:g('bo'),pe:g('pe'),a:g('a')};}
 function salNet(v){return (+v.b||0)+(+v.e||0)+(+v.bo||0)-(+v.pe||0)-(+v.a||0);}
 function renderSalGrid(){
   const tb=$('tb-salgrid'); if(!tb) return;
@@ -1617,7 +1633,7 @@ function renderSalGrid(){
   }
   const balCell=id=>{const bl=advBalMap[id]||0;return bl>0?`<td class="num" style="color:var(--red)" title="سلف مستحقة">${fmtN(bl)}</td>`:`<td class="muted" style="color:var(--text3)">—</td>`;};
   const nameTip=id=>{const bl=advBalMap[id]||0; return bl>0.01?('عليه سلف مستحقة: '+fmt(bl)):'لا سلف مستحقة عليه';};
-  const IN=(f,id,val,col)=>`<td><input class="sg-in" type="number" min="0" step="any" id="sg-${f}-${id}" value="${val}" placeholder="0" oninput="${f==='days'?'salDays':'salInput'}('${id}')" onkeydown="salKey(event,'${id}',${col})"></td>`;
+  const IN=(f,id,val,col)=>`<td><input class="sg-in" type="text" inputmode="decimal" id="sg-${f}-${id}" value="${gnum(val)}" placeholder="0" oninput="grp(this);${f==='days'?'salDays':'salInput'}('${id}')" onkeydown="salKey(event,'${id}',${col})"></td>`;
   const rowsArr=gridEmps.map((d,idx)=>{
     const x=d.data(); const id=d.id; const p=paid[id];
     if(p){
@@ -1657,6 +1673,7 @@ function renderSalGrid(){
   if(firstGirl>0) rowsArr.splice(firstGirl,0,'<tr><td colspan="10" style="background:var(--gold-bg);color:var(--gold-l);font-weight:800;font-size:.82rem;padding:8px 12px;text-align:right;border-top:2px solid var(--gold-d)">👧 وردية البنات</td></tr>');
   tb.innerHTML=rowsArr.join('');
   if(actId){const el=$(actId);if(el){el.focus();try{el.select()}catch{}}}
+  updateUnsaved();
 }
 function renderOutside(){
   const w=$('sal-outside'); if(!w) return;
@@ -1674,16 +1691,29 @@ async function includeInPayroll(id){
   try{ await db.collection('employees').doc(id).update({inPayroll:true}); toast('تم إدراج «'+emp.data().name+'» في كشف المرتبات ✓'); }
   catch(e){ toast('خطأ: '+(e.message||e.code||'')); }
 }
+// تنبيه: مبالغ مكتوبة في كشف المرتبات لم تُصرف بعد
+function updateUnsaved(){
+  const bar=$('sal-unsaved'); if(!bar) return;
+  const date=$('sal-date')?.value||td();
+  const paid=paidMap(date);
+  let n=0;
+  payrollEmps().forEach(d=>{ if(paid[d.id]) return; const v=salDraft[d.id]||{}; if((+v.b||0)+(+v.e||0)+(+v.bo||0)>0) n++; });
+  const t=$('sal-unsaved-txt');
+  if(n>0){ bar.hidden=false; if(t) t.textContent='⚠️ لديك '+n+' موظف بمبالغ مكتوبة ولم تُصرف بعد — اضغط «صرف الكل» (أو «حفظ» لكل صف) عشان تتسجّل وتتزامن'; }
+  else bar.hidden=true;
+}
 function salInput(id){
   salDraft[id]=salVals(id);
+  persistDrafts(); // احفظ المبالغ على الجهاز فوراً حتى لا تضيع
   const net=salNet(salDraft[id]); const n=$('sg-n-'+id); if(n) n.textContent=net?fmtN(net):'—';
+  updateUnsaved();
   const ee=$('sal-week-exp'); // تحديث المتوقّع أثناء الكتابة
   if(ee){const paid=paidMap($('sal-date').value||td());const exp=payrollEmps().filter(d=>!paid[d.id]).reduce((s,d)=>{const v=salDraft[d.id]||{};return s+((v.b!=null&&v.b!=='')?(+v.b||0):(+d.data().basic||0));},0);ee.textContent=fmtN(exp);}
 }
 function salDays(id){
   const emp=empDocs.find(d=>d.id===id); const rate=+(emp&&emp.data().rate)||0;
-  const days=parseFloat($('sg-days-'+id)?.value)||0;
-  if(rate>0&&days>0){ const bi=$('sg-b-'+id); if(bi) bi.value=Math.round(rate*days); }
+  const days=numv($('sg-days-'+id)?.value);
+  if(rate>0&&days>0){ const bi=$('sg-b-'+id); if(bi) bi.value=gnum(String(Math.round(rate*days))); }
   salInput(id);
 }
 function salKey(ev,id,col){
@@ -1700,7 +1730,7 @@ async function _savePay(emp,date,v){
   await pref.set({empId:id,empName:emp.data().name,date,days,basic:b,extra:e,bonus:bo,penalty:pe,advance:a,total:net,by:me.u,at:now});
   if(a>0) await db.collection('advances').add({kind:'repay',carry:true,fromPayroll:true,payrollId:pref.id,empId:id,empName:emp.data().name,date,desc:'خصم من مرتب أسبوع '+fmtd(date),amount:a,by:me.u,at:now});
   if(b>0&&b!==(+emp.data().basic||0)){ try{ await db.collection('employees').doc(id).update({basic:b}); }catch{} }
-  delete salDraft[id]; return net;
+  delete salDraft[id]; persistDrafts(); return net;
 }
 async function saveSalRow(id){
   const emp=empDocs.find(d=>d.id===id); if(!emp) return;
@@ -1736,6 +1766,7 @@ function copyLastWeek(){
     if(rec){ const y=rec.data(); salDraft[emp.id]={days:y.days||'',b:y.basic||'',e:y.extra||'',bo:y.bonus||'',pe:'',a:''}; n++; }
     else salDraft[emp.id]={b:emp.data().basic||''};
   });
+  persistDrafts();
   renderSalGrid();
   toast('نُسخت أرقام '+n+' موظف من '+fmtd(prev)+' — عدّل واصرف',3500);
 }
@@ -1818,6 +1849,7 @@ async function saveWeekToKeeper(){
     // جهّز الأسبوع الجديد: كل الأسماء جاهزة بمرتباتها الأساسية فقط (تُمسح إضافيات الأسبوع الماضي)
     salDraft={};
     payrollEmps().forEach(e=>{ salDraft[e.id]={b:e.data().basic||''}; });
+    persistDrafts();
     // انتقل تلقائياً لتاريخ الأسبوع التالي (+7 أيام)
     const nd=new Date(date+'T00:00'); nd.setDate(nd.getDate()+7);
     if($('sal-date')) $('sal-date').value=nd.toISOString().slice(0,10);
@@ -1892,6 +1924,7 @@ function reopenWeek(id){
   const d=weekDocs.find(x=>x.id===id); if(!d) return;
   const x=d.data();
   (x.rows||[]).forEach(r=>{ if(r.empId) salDraft[r.empId]={days:r.days||'',b:r.basic||'',e:r.extra||'',bo:r.bonus||'',pe:'',a:''}; });
+  persistDrafts();
   go('salaries');
   renderSalGrid();
   toast('نُسخت أرقام '+(x.label||'الأسبوع')+' إلى كشف المرتبات (بتاريخ اليوم) — عدّل التاريخ واصرف',4600);
@@ -1977,8 +2010,8 @@ function renderReport(){
 function toggleAddEmp(){ const f=$('addemp'); f.classList.toggle('on'); if(f.classList.contains('on'))$('ae-name').focus(); }
 async function addEmp(){
   const name=$('ae-name').value.trim();
-  const basic=parseFloat($('ae-basic').value)||0;
-  const rate=parseFloat($('ae-rate').value)||0;
+  const basic=numv($('ae-basic').value);
+  const rate=numv($('ae-rate').value);
   const group=$('ae-group')?$('ae-group').value:'boys';
   if(!name){ $('ae-name').focus(); return; }
   try{
@@ -1994,7 +2027,7 @@ function editEmp(id){
   const e=emp.data(); const inPay=e.inPayroll!==false; const grp=e.group==='girls'?'girls':'boys'; const pin=isPinLast(e);
   row.cells[0].innerHTML=`<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
     <input class="sg-in" style="max-width:120px;direction:rtl;text-align:right" type="text" id="en-${id}" value="${esc(e.name)}" placeholder="الاسم">
-    <input class="sg-in" style="max-width:64px" type="number" id="er-${id}" value="${e.rate||''}" placeholder="سعر اليوم" title="سعر اليوم">
+    <input class="sg-in" style="max-width:64px" type="text" inputmode="decimal" id="er-${id}" value="${gnum(e.rate||'')}" placeholder="سعر اليوم" title="سعر اليوم" oninput="grp(this)">
     <select class="sg-in" id="eg-${id}" style="max-width:96px" title="الوردية"><option value="boys" ${grp==='boys'?'selected':''}>👦 أولاد</option><option value="girls" ${grp==='girls'?'selected':''}>👧 بنات</option></select>
     <label style="display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap"><input type="checkbox" id="ep-${id}" ${inPay?'checked':''} style="width:15px;height:15px">بالمرتبات</label>
     <label style="display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap"><input type="checkbox" id="el-${id}" ${pin?'checked':''} style="width:15px;height:15px">دائماً بالآخر</label>
@@ -2005,7 +2038,7 @@ function editEmp(id){
 }
 async function saveEmpName(id){
   const name=($('en-'+id)?.value||'').trim();
-  const rate=parseFloat($('er-'+id)?.value)||0;
+  const rate=numv($('er-'+id)?.value);
   const inPay=$('ep-'+id)?$('ep-'+id).checked:true;
   const group=$('eg-'+id)?$('eg-'+id).value:'boys';
   const pinLast=$('el-'+id)?$('el-'+id).checked:false;
@@ -2506,7 +2539,7 @@ function openFinalReset(){
 function closeFinalReset(){ $('modal-reset').style.display='none'; }
 async function doFinalReset(){
   const err=m=>{$('reset-err').textContent=m};
-  const amt=parseFloat($('reset-amount').value)||0;
+  const amt=numv($('reset-amount').value);
   const label=$('reset-month').value.trim()||arMonth(new Date());
   if(($('reset-confirm').value||'').trim()!=='تصفير'){ err('اكتب كلمة «تصفير» للتأكيد'); return; }
   const btn=$('reset-go'); btn.disabled=true; btn.textContent='جارٍ التصفير…';
@@ -2679,7 +2712,8 @@ async function doImport(){
 // live preview of reset amount
 document.addEventListener('input',e=>{
   if(e.target.id==='reset-amount'){
-    const v=parseFloat(e.target.value)||0;
+    grp(e.target);
+    const v=numv(e.target.value);
     $('reset-amount-preview').textContent='ستبدأ الخزنة بـ '+fmt(v);
   }
 });

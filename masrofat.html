@@ -620,6 +620,17 @@ tr:hover .ed-btn{opacity:1}
       </div>
 
       <div class="pcard">
+        <h3>💾 نسخة احتياطية للبيانات</h3>
+        <div class="muted" style="line-height:1.8">احفظ نسخة كاملة من كل بياناتك (المصروفات، المرتبات، الخزنة، السلف، العربون، الموظفين، الحوافظ، الأشهر) في ملف على جهازك — احتفظ بها للأمان. وتقدر ترجّع البيانات من الملف في أي وقت.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px">
+          <button class="btn btn-gold" style="padding:9px 16px" onclick="backupData()">⬇ تنزيل نسخة احتياطية</button>
+          <button class="btn-exp" onclick="document.getElementById('restore-file').click()">↩ استرجاع من ملف</button>
+          <input type="file" id="restore-file" accept=".json,application/json" style="display:none" onchange="restoreData(event)">
+          <span class="muted" id="backup-status"></span>
+        </div>
+      </div>
+
+      <div class="pcard">
         <h3>📥 استيراد السلف والعربون من Excel</h3>
         <div class="muted" style="line-height:1.8">حمّل القالب، اكتب فيه السلف الموجودة على العمال والعربون لدى الموردين، ثم ارفعه — تُضاف كلها دفعة واحدة كأرصدة قائمة دون التأثير على رصيد الخزنة.</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px">
@@ -690,6 +701,7 @@ tr:hover .ed-btn{opacity:1}
           <div class="fg"><label>اسم الموظف</label><input type="text" id="ae-name" placeholder="الاسم…"></div>
           <div class="fg sm"><label>الأساسي الأسبوعي</label><input type="number" id="ae-basic" placeholder="0" min="0"></div>
           <div class="fg sm"><label>سعر اليوم (اختياري)</label><input type="number" id="ae-rate" placeholder="0" min="0"></div>
+          <div class="fg sm"><label>الوردية</label><select id="ae-group"><option value="boys">👦 الأولاد</option><option value="girls">👧 البنات</option></select></div>
           <button class="btn btn-gold" onclick="addEmp()">حفظ</button>
           <button class="btn btn-ghost" onclick="toggleAddEmp()">إلغاء</button>
         </div>
@@ -1061,11 +1073,14 @@ async function boot(){
   },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
   db.collection('employees').onSnapshot(snap=>{
     empDocs=snap.docs.slice().sort((a,b)=>{
-      const oa=a.data().order,ob=b.data().order;
+      const A=a.data(),B=b.data();
+      const pa=isPinLast(A)?1:0, pb=isPinLast(B)?1:0; if(pa!==pb) return pa-pb; // «مينا وجيه» دائماً في الآخر
+      const ga=isGirlEmp(A)?1:0, gb=isGirlEmp(B)?1:0; if(ga!==gb) return ga-gb; // الأولاد فوق ثم البنات
+      const oa=A.order,ob=B.order;
       if(oa!=null&&ob!=null&&oa!==ob) return oa-ob;
       if(oa!=null&&ob==null) return -1;
       if(oa==null&&ob!=null) return 1;
-      return (a.data().name||'').localeCompare(b.data().name||'','ar');
+      return (A.name||'').localeCompare(B.name||'','ar');
     });
     // تعديل/إضافة/حذف اسم ينعكس فوراً في كل المنظومة
     renderSalGrid(); fillRpList(); fillEmpSelect(); renderSalHist(); renderAdvances(); renderReport(); renderRecent(); fillStmtLists(); renderAdvStmt();
@@ -1578,6 +1593,9 @@ function paidMap(date){
 }
 // موظفو كشف المرتبات فقط (يُستبعد من أُضيف للسلف/العربون دون إدراجه في المرتبات)
 function payrollEmps(){ return empDocs.filter(d=>d.data().inPayroll!==false); }
+// المجموعة (وردية): أولاد فوق ثم بنات — و«مينا وجيه» دائماً في الآخر
+function isGirlEmp(x){ return x && x.group==='girls'; }
+function isPinLast(x){ return !!x && (x.pinLast===true || (x.pinLast==null && /مينا\s*وجيه/.test(x.name||''))); }
 const SAL_FIELDS=['days','b','e','bo','pe','a'];
 function salVals(id){const g=f=>$('sg-'+f+'-'+id);return{days:g('days')?g('days').value:'',b:g('b')?g('b').value:'',e:g('e')?g('e').value:'',bo:g('bo')?g('bo').value:'',pe:g('pe')?g('pe').value:'',a:g('a')?g('a').value:''};}
 function salNet(v){return (+v.b||0)+(+v.e||0)+(+v.bo||0)-(+v.pe||0)-(+v.a||0);}
@@ -1600,7 +1618,7 @@ function renderSalGrid(){
   const balCell=id=>{const bl=advBalMap[id]||0;return bl>0?`<td class="num" style="color:var(--red)" title="سلف مستحقة">${fmtN(bl)}</td>`:`<td class="muted" style="color:var(--text3)">—</td>`;};
   const nameTip=id=>{const bl=advBalMap[id]||0; return bl>0.01?('عليه سلف مستحقة: '+fmt(bl)):'لا سلف مستحقة عليه';};
   const IN=(f,id,val,col)=>`<td><input class="sg-in" type="number" min="0" step="any" id="sg-${f}-${id}" value="${val}" placeholder="0" oninput="${f==='days'?'salDays':'salInput'}('${id}')" onkeydown="salKey(event,'${id}',${col})"></td>`;
-  tb.innerHTML=gridEmps.map((d,idx)=>{
+  const rowsArr=gridEmps.map((d,idx)=>{
     const x=d.data(); const id=d.id; const p=paid[id];
     if(p){
       const y=p.data();
@@ -1633,7 +1651,11 @@ function renderSalGrid(){
       <td class="sg-net" id="sg-n-${id}">${net?fmtN(net):'—'}</td>
       <td style="text-align:left"><button class="btn btn-gold" style="padding:5px 12px;font-size:.75rem" onclick="saveSalRow('${id}')">حفظ</button></td>
     </tr>`;
-  }).join('');
+  });
+  // فاصل «وردية البنات» قبل أول بنت (الأولاد فوق، البنات مجمّعين تحت)
+  const firstGirl=gridEmps.findIndex(d=>isGirlEmp(d.data())&&!isPinLast(d.data()));
+  if(firstGirl>0) rowsArr.splice(firstGirl,0,'<tr><td colspan="10" style="background:var(--gold-bg);color:var(--gold-l);font-weight:800;font-size:.82rem;padding:8px 12px;text-align:right;border-top:2px solid var(--gold-d)">👧 وردية البنات</td></tr>');
+  tb.innerHTML=rowsArr.join('');
   if(actId){const el=$(actId);if(el){el.focus();try{el.select()}catch{}}}
 }
 function renderOutside(){
@@ -1957,22 +1979,25 @@ async function addEmp(){
   const name=$('ae-name').value.trim();
   const basic=parseFloat($('ae-basic').value)||0;
   const rate=parseFloat($('ae-rate').value)||0;
+  const group=$('ae-group')?$('ae-group').value:'boys';
   if(!name){ $('ae-name').focus(); return; }
   try{
     const maxO=empDocs.reduce((m,d)=>Math.max(m,d.data().order??-1),-1);
-    await db.collection('employees').add({name,basic,rate,active:true,inPayroll:true,order:maxO+1});
-    $('ae-name').value=''; $('ae-basic').value=''; $('ae-rate').value=''; $('addemp').classList.remove('on');
-    toast('أُضيف الموظف ✓');
+    await db.collection('employees').add({name,basic,rate,active:true,inPayroll:true,group,order:maxO+1});
+    $('ae-name').value=''; $('ae-basic').value=''; $('ae-rate').value=''; if($('ae-group'))$('ae-group').value='boys'; $('addemp').classList.remove('on');
+    toast(group==='girls'?'أُضيفت في وردية البنات ✓':'أُضيف الموظف ✓');
   }catch(e){ toast('خطأ: '+(e.message||e.code||'')); }
 }
 function editEmp(id){
   const emp=empDocs.find(d=>d.id===id); if(!emp) return;
   const inp=$('sg-days-'+id); const row=inp?inp.closest('tr'):null; if(!row) return;
-  const inPay=emp.data().inPayroll!==false;
+  const e=emp.data(); const inPay=e.inPayroll!==false; const grp=e.group==='girls'?'girls':'boys'; const pin=isPinLast(e);
   row.cells[0].innerHTML=`<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-    <input class="sg-in" style="max-width:130px;direction:rtl;text-align:right" type="text" id="en-${id}" value="${esc(emp.data().name)}" placeholder="الاسم">
-    <input class="sg-in" style="max-width:70px" type="number" id="er-${id}" value="${emp.data().rate||''}" placeholder="سعر اليوم" title="سعر اليوم">
-    <label style="display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap"><input type="checkbox" id="ep-${id}" ${inPay?'checked':''} style="width:15px;height:15px">ضمن المرتبات</label>
+    <input class="sg-in" style="max-width:120px;direction:rtl;text-align:right" type="text" id="en-${id}" value="${esc(e.name)}" placeholder="الاسم">
+    <input class="sg-in" style="max-width:64px" type="number" id="er-${id}" value="${e.rate||''}" placeholder="سعر اليوم" title="سعر اليوم">
+    <select class="sg-in" id="eg-${id}" style="max-width:96px" title="الوردية"><option value="boys" ${grp==='boys'?'selected':''}>👦 أولاد</option><option value="girls" ${grp==='girls'?'selected':''}>👧 بنات</option></select>
+    <label style="display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap"><input type="checkbox" id="ep-${id}" ${inPay?'checked':''} style="width:15px;height:15px">بالمرتبات</label>
+    <label style="display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap"><input type="checkbox" id="el-${id}" ${pin?'checked':''} style="width:15px;height:15px">دائماً بالآخر</label>
     <button class="btn btn-gold" style="padding:4px 10px;font-size:.72rem" onclick="saveEmpName('${id}')">حفظ</button>
     <button class="btn-del" onclick="delTwo(this,()=>delEmp('${id}'))">حذف</button>
   </span>`;
@@ -1982,7 +2007,9 @@ async function saveEmpName(id){
   const name=($('en-'+id)?.value||'').trim();
   const rate=parseFloat($('er-'+id)?.value)||0;
   const inPay=$('ep-'+id)?$('ep-'+id).checked:true;
-  try{ const patch={rate,inPayroll:inPay}; if(name)patch.name=name; await db.collection('employees').doc(id).update(patch); toast('تم التعديل ✓'); }catch{}
+  const group=$('eg-'+id)?$('eg-'+id).value:'boys';
+  const pinLast=$('el-'+id)?$('el-'+id).checked:false;
+  try{ const patch={rate,inPayroll:inPay,group,pinLast}; if(name)patch.name=name; await db.collection('employees').doc(id).update(patch); toast('تم التعديل ✓'); }catch{}
   renderSalGrid();
 }
 async function delEmp(id){
@@ -2504,6 +2531,51 @@ async function doFinalReset(){
     go('dash');
   }catch(e){ err('خطأ: '+(e.message||e.code||'')); }
   btn.disabled=false; btn.textContent='تأكيد التصفير النهائي';
+}
+
+// ═══ نسخة احتياطية / استرجاع ═══
+async function backupData(){
+  if(!db){ toast('لا يوجد اتصال'); return; }
+  const st=$('backup-status'); if(st) st.textContent='جارٍ تجهيز النسخة…';
+  try{
+    const dump={ _app:'GoldEra', _version:1, _at:new Date().toISOString(), by:me?me.u:'',
+      entries:Object.values(catDocs).flat().map(d=>({id:d.id,...d.data()})),
+      kassa:kassaDocs.map(d=>({id:d.id,...d.data()})),
+      payroll:payDocs.map(d=>({id:d.id,...d.data()})),
+      advances:advDocs.map(d=>({id:d.id,...d.data()})),
+      employees:empDocs.map(d=>({id:d.id,...d.data()})),
+      payweeks:weekDocs.map(d=>({id:d.id,...d.data()})),
+      archives:arcDocs.map(d=>({id:d.id,...d.data()})),
+      archiveSnaps:{}, period:period||null };
+    for(const d of arcDocs){ try{ const s=await db.doc('archives/'+d.id+'/snap/data').get(); if(s.exists) dump.archiveSnaps[d.id]=s.data(); }catch(e){} }
+    const total=dump.entries.length+dump.kassa.length+dump.payroll.length+dump.advances.length+dump.employees.length+dump.payweeks.length+dump.archives.length;
+    const blob=new Blob([JSON.stringify(dump)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='gold-era-backup-'+td()+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    if(st) st.textContent='تم الحفظ ('+total+' سجل)';
+    toast('تم تنزيل نسخة احتياطية كاملة ✓ ('+total+' سجل)',4200);
+  }catch(e){ if(st) st.textContent=''; toast('خطأ في النسخ: '+(e.message||e.code||'')); }
+}
+async function restoreData(ev){
+  const file=ev.target.files&&ev.target.files[0]; if(!file) return; ev.target.value='';
+  if(!db){ toast('لا يوجد اتصال'); return; }
+  let dump; try{ dump=JSON.parse(await file.text()); }catch(e){ toast('الملف غير صالح — ليس نسخة صحيحة'); return; }
+  if(!dump||typeof dump!=='object'){ toast('الملف غير صالح'); return; }
+  if(dump._app!=='GoldEra' && !confirm('هذا الملف قد لا يكون نسخة من البرنامج. المتابعة على أي حال؟')) return;
+  const groups=[['entries',dump.entries],['kassa',dump.kassa],['payroll',dump.payroll],['advances',dump.advances],['employees',dump.employees],['payweeks',dump.payweeks],['archives',dump.archives]];
+  const summary=groups.map(([k,a])=>({entries:'المصروفات',kassa:'الخزنة',payroll:'المرتبات',advances:'السلف',employees:'الموظفين',payweeks:'الحوافظ',archives:'الأشهر'}[k]+': '+((a||[]).length))).join(' · ');
+  if(!confirm('استرجاع النسخة سيكتب البيانات التالية فوق الحالية (يُدمج بحسب المُعرّف):\n\n'+summary+'\n\nمتأكد من المتابعة؟')) return;
+  const st=$('backup-status'); if(st) st.textContent='جارٍ الاسترجاع…';
+  try{
+    const write=async(coll,arr)=>{ for(const r of (arr||[])){ if(!r||!r.id) continue; const {id,...data}=r; try{ await db.collection(coll).doc(id).set(data); }catch(e){} } };
+    for(const [coll,arr] of groups) await write(coll,arr);
+    if(dump.archiveSnaps) for(const [aid,snap] of Object.entries(dump.archiveSnaps)){ try{ await db.doc('archives/'+aid+'/snap/data').set(snap); }catch(e){} }
+    if(dump.period) { try{ await db.doc('config/period').set(dump.period); }catch(e){} }
+    if(st) st.textContent='تم الاسترجاع ✓';
+    toast('تم استرجاع النسخة الاحتياطية بنجاح ✓',4500);
+  }catch(e){ if(st) st.textContent=''; toast('خطأ في الاسترجاع: '+(e.message||e.code||'')); }
 }
 
 // ═══ EXCEL IMPORT ═══

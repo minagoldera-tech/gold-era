@@ -487,14 +487,14 @@ tr:hover .ed-btn{opacity:1}
     <div class="section" id="sec-dash">
       <div class="bal-hero">
         <div class="bal-card main">
-          <div class="bh-l">الرصيد الفعلي للخزنة — شامل مصاريف المعلم والمهندس ابرام</div>
-          <div class="bh-v" id="d-bal-with">0</div>
-          <div class="bh-s">إجمالي الوارد − إجمالي المنصرف (بكل البنود)</div>
+          <div class="bh-l">الرصيد الفعلي للخزنة — بدون مصاريف المعلم</div>
+          <div class="bh-v" id="d-bal-without">0</div>
+          <div class="bh-s">إجمالي الوارد − المنصرف (مع إرجاع مصاريف المعلم للرصيد)</div>
         </div>
         <div class="bal-card alt">
-          <div class="bh-l">الرصيد الفعلي — بدون مصاريف المعلم والمهندس ابرام</div>
-          <div class="bh-v" id="d-bal-without">0</div>
-          <div class="bh-s">الفرق (معلم + مهندس): <span id="d-bal-diff">0</span></div>
+          <div class="bh-l">الرصيد الفعلي — شامل كل البنود (معلم + مهندس)</div>
+          <div class="bh-v" id="d-bal-with">0</div>
+          <div class="bh-s">الفرق (مصاريف المعلم): <span id="d-bal-diff">0</span></div>
         </div>
       </div>
       <div class="kpi-row k6">
@@ -1560,7 +1560,7 @@ function totalSpend(){
 // treasury income excluding carried opening (new money this month)
 function kassaInAll(){ return totals['kassa-in']||0; }
 function closingCash(){ return kassaInAll()-totalSpend(); }
-function meTotal(){ return (totals['master']||0)+(totals['engineer']||0); } // مصاريف المعلم + المهندس ابرام
+function meTotal(){ return (totals['master']||0); } // مصاريف المعلم فقط (المهندس ابرام أصبح مصروفاً عادياً يُخصم من الرصيد)
 function balanceWith(){ return kassaInAll()-totalSpend(); }          // شامل الكل
 function balanceWithout(){ return balanceWith()+meTotal(); }          // بدون المعلم والمهندس
 function updateBal(){
@@ -2312,14 +2312,16 @@ function collectCurrentReport(){
   const opening=kassaDocs.filter(d=>d.data().type==='in'&&d.data().opening).map(d=>d.data());
   const income =kassaDocs.filter(d=>d.data().type==='in'&&!d.data().opening).map(d=>d.data());
   const kout   =kassaDocs.filter(d=>d.data().type==='out').map(d=>d.data());
-  const cats={}; Object.keys(CATS).filter(c=>c!=='deposit'&&c!=='master').forEach(c=>{ cats[c]=(catDocs[c]||[]).filter(d=>!d.data().carry).map(d=>d.data()); });
-  return {label:period?period.label:arMonth(new Date()),opening,income,kout,cats,salariesTotal:totals['salaries']||0,by:me?me.u:''};
+  const cats={}; Object.keys(CATS).filter(c=>c!=='deposit'&&c!=='master'&&c!=='engineer').forEach(c=>{ cats[c]=(catDocs[c]||[]).filter(d=>!d.data().carry).map(d=>d.data()); });
+  const engineerTotal=(catDocs['engineer']||[]).filter(d=>!d.data().carry).reduce((s,d)=>s+((d.data().deduct?-1:1)*(+d.data().amount||0)),0);
+  return {label:period?period.label:arMonth(new Date()),opening,income,kout,cats,engineerTotal,salariesTotal:totals['salaries']||0,by:me?me.u:''};
 }
 function collectArchiveReport(m,snap){
   const K=snap?(snap.kassa||[]):[];
-  const cats={}; Object.keys(CATS).filter(c=>c!=='deposit'&&c!=='master').forEach(c=>cats[c]=[]);
-  (snap?(snap.entries||[]):[]).forEach(x=>{ if(x.category&&x.category!=='deposit'&&x.category!=='master'&&!x.carry&&cats[x.category]) cats[x.category].push(x); });
-  return {label:m.label,opening:K.filter(x=>x.type==='in'&&x.opening),income:K.filter(x=>x.type==='in'&&!x.opening),kout:K.filter(x=>x.type==='out'),cats,salariesTotal:m.salariesTotal||0,by:m.closedBy||''};
+  const cats={}; Object.keys(CATS).filter(c=>c!=='deposit'&&c!=='master'&&c!=='engineer').forEach(c=>cats[c]=[]);
+  (snap?(snap.entries||[]):[]).forEach(x=>{ if(x.category&&x.category!=='deposit'&&x.category!=='master'&&x.category!=='engineer'&&!x.carry&&cats[x.category]) cats[x.category].push(x); });
+  const engineerTotal=(m.expByCat&&m.expByCat['engineer'])||0;
+  return {label:m.label,opening:K.filter(x=>x.type==='in'&&x.opening),income:K.filter(x=>x.type==='in'&&!x.opening),kout:K.filter(x=>x.type==='out'),cats,engineerTotal,salariesTotal:m.salariesTotal||0,by:m.closedBy||''};
 }
 function itemTable(header,items){
   const rows=items.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))
@@ -2334,8 +2336,9 @@ function buildDetailedReport(D){
   const koutTot=D.kout.reduce((s,x)=>s+(+x.amount||0),0);
   let expTot=0; const catTots={};
   Object.keys(D.cats).forEach(c=>{ catTots[c]=D.cats[c].reduce((s,x)=>s+(+x.amount||0),0); expTot+=catTots[c]; });
-  const outflow=expTot+koutTot+D.salariesTotal;
-  const balance=totalIn-outflow;
+  const engTot=+D.engineerTotal||0;
+  const outflow=expTot+koutTot+D.salariesTotal+engTot;
+  const balance=totalIn-outflow; // مصاريف المعلم مُستبعدة (تُضاف للرصيد)؛ المهندس ابرام مخصوم كبند مستقل
   // income section
   let inHtml='<table><thead><tr><th style="width:120px">التاريخ</th><th>البيان</th><th class="rpt-num">المبلغ (ج.م)</th></tr></thead><tbody>';
   D.opening.forEach(x=>{ inHtml+=`<tr><td class="rpt-d">${fmtd(x.date)}</td><td>${esc(x.desc||'رصيد افتتاحي')}</td><td class="rpt-num rpt-pos">${fmtN(x.amount)}</td></tr>`; });
@@ -2365,10 +2368,15 @@ function buildDetailedReport(D){
     ${exHtml||'<div style="color:#999;padding:10px">لا توجد مصروفات</div>'}
     <div class="rpt-sec">المرتبات</div>
     <table><tbody><tr><td>إجمالي المرتبات المدفوعة</td><td class="rpt-num">${fmtN(D.salariesTotal)}</td></tr></tbody></table>
+    ${engTot?`<div class="rpt-sec">بند مستقل</div>
+    <table><tbody><tr><td>مصاريف المهندس ابرام (بند مستقل)</td><td class="rpt-num">${fmtN(engTot)}</td></tr></tbody></table>`:''}
+    <div class="rpt-title">الملخص المالي</div>
     <table><tbody>
-      <tr class="total-row"><td>إجمالي المنصرف</td><td class="rpt-num">${fmtN(outflow)}</td></tr>
+      <tr class="total-row"><td>إجمالي المُستلَم (الوارد)</td><td class="rpt-num rpt-pos">${fmtN(totalIn)}</td></tr>
+      <tr class="total-row"><td>إجمالي المنصرف</td><td class="rpt-num rpt-neg">${fmtN(outflow)}</td></tr>
       <tr class="balance-row"><td>الرصيد الفعلي</td><td class="rpt-num">${fmtN(balance)} ج.م</td></tr>
     </tbody></table>
+    <div style="font-size:.72rem;color:#777;margin-top:6px;line-height:1.7">• مصاريف المعلم مُستبعدة من التقرير ومُضافة إلى الرصيد الفعلي.<br>• مصاريف المهندس ابرام بند مستقل مخصوم من الرصيد (غير مُدرَج في تفاصيل البنود).</div>
     <div class="rpt-foot"><span>Gold Era Factory — نظام داخلي</span><span>${fmtd(now.toISOString().slice(0,10))}</span></div>`;
 }
 function buildAnnualReport(year){

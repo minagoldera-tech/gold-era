@@ -154,7 +154,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
     <label>كلمة المرور</label>
     <input id="f-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')tryLogin()">
     <div class="err" id="f-err">اسم المستخدم أو كلمة المرور غير صحيحة</div>
-    <button onclick="tryLogin()">دخول &larr;</button>
+    <button onclick="tryLogin()" class="login-btn">دخول &larr;</button>
   </div>
 </div>
 
@@ -1845,8 +1845,11 @@ var _USERS = (function(){
 var _CU = null;
 
 // Pull users from GitHub on startup to sync across devices
+var _usersReady = false;
 (async function(){
   try{
+    var btn = document.querySelector('#lgo .login-btn');
+    if(btn){ btn.disabled=true; btn.textContent='جاري التحميل...'; }
     var r = await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json?t='+Date.now(),
       {headers:{'Authorization':'token '+_GH_TOKEN}});
     if(r.ok){
@@ -1858,6 +1861,11 @@ var _CU = null;
       }
     }
   }catch(e){}
+  finally{
+    _usersReady = true;
+    var btn = document.querySelector('#lgo .login-btn');
+    if(btn){ btn.disabled=false; btn.textContent='دخول ←'; }
+  }
 })();
 
 function _saveUsers(){

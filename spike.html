@@ -3,6 +3,7 @@
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚜️</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>سبايك بلدي — منظومة إدارة الذهب</title>
 <style>
@@ -191,7 +192,55 @@ tbody tr.row-sel td{background:#FFF8E7;}
           </select>
         </div>
       </div>
+      <!-- Pages Permissions -->
+      <div id="adm-pages-wrap" style="margin:12px 0;background:#fff;border:1px solid #E8E5DF;border-radius:9px;padding:12px">
+        <div style="font-size:12px;font-weight:700;color:#5C5849;margin-bottom:9px">📋 الصفحات المسموح بها</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-dash" checked style="accent-color:#C8860A"> 📊 لوحة التحكم</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-in" checked style="accent-color:#C8860A"> 📥 الوارد والمرتجع</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-out" checked style="accent-color:#C8860A"> 📤 المنصرف</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-scan" checked style="accent-color:#C8860A"> 📷 رفع صورة</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-pdf2xl" checked style="accent-color:#C8860A"> 🔄 تحويل PDF</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-cat" checked style="accent-color:#C8860A"> 📋 جدول الأصناف</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-inv" checked style="accent-color:#C8860A"> 🏦 المخزون</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-rep" checked style="accent-color:#C8860A"> 📈 التقارير</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#F5F4F1"><input type="checkbox" id="pg-overview" checked style="accent-color:#C8860A"> 🔭 النظرة العامة</label>
+        </div>
+      </div>
       <button onclick="admAddUser()" style="background:#C8860A;color:#fff;border:none;border-radius:9px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">✅ إضافة المستخدم</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT USER MODAL -->
+<div id="edit-user-modal" onclick="if(event.target===this)admCloseEdit()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99999;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;">
+  <div style="background:#fff;border-radius:14px;padding:22px;width:420px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div id="edit-user-title" style="font-size:15px;font-weight:700">تعديل المستخدم</div>
+      <button onclick="admCloseEdit()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#9C9488">×</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:12px;font-weight:700;color:#5C5849;display:block;margin-bottom:5px">كلمة المرور الجديدة</label>
+      <input id="edit-pass" type="text" style="width:100%;border:1px solid #C8C4BC;border-radius:8px;padding:9px 11px;font-size:13px;font-family:'Cairo',sans-serif;outline:none">
+      <div id="edit-pass-hint" style="font-size:11px;color:#9C9488;margin-top:4px"></div>
+    </div>
+    <div style="margin-bottom:14px;background:#F5F4F1;border-radius:9px;padding:12px">
+      <div style="font-size:12px;font-weight:700;color:#5C5849;margin-bottom:9px">📋 الصفحات المسموح بها</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-dash" style="accent-color:#C8860A"> 📊 لوحة التحكم</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-in" style="accent-color:#C8860A"> 📥 الوارد والمرتجع</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-out" style="accent-color:#C8860A"> 📤 المنصرف</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-scan" style="accent-color:#C8860A"> 📷 رفع صورة</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-pdf2xl" style="accent-color:#C8860A"> 🔄 تحويل PDF</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-cat" style="accent-color:#C8860A"> 📋 جدول الأصناف</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-inv" style="accent-color:#C8860A"> 🏦 المخزون</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-rep" style="accent-color:#C8860A"> 📈 التقارير</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 8px;border-radius:7px;background:#fff"><input type="checkbox" id="ep-overview" style="accent-color:#C8860A"> 🔭 النظرة العامة</label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button onclick="admCloseEdit()" style="background:#F5F4F1;border:1px solid #C8C4BC;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif">إلغاء</button>
+      <button onclick="admSaveEdit()" style="background:#C8860A;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif">✅ حفظ التعديلات</button>
     </div>
   </div>
 </div>
@@ -1808,37 +1857,45 @@ function tryLogin(){
   // Show admin button if admin
   var ab=document.getElementById('adm-btn');
   if(ab) ab.style.display = found.role==='admin'?'inline-flex':'none';
+  // Apply page permissions
+  applyPerms(found);
   // Load saved data for this user
-  var saved = localStorage.getItem('sb_data_'+u);
+  // Load shared data (same for all users)
+  var saved = localStorage.getItem('sb_shared_data');
   if(saved){
     try{
       var d=JSON.parse(saved);
       if(d.inc && d.inc.length>0){INC=d.inc; OUT=d.out||[];}
     }catch(e){}
   }
-  // Try to pull from GitHub first, fallback to localStorage
+  // Try to pull from GitHub
   ghPull().then(function(remote){
     if(remote && remote.inc && remote.inc.length > 0){
       var localRaw = localStorage.getItem('sb_data_'+_CU.u);
       var localData = null;
       if(localRaw){ try{ localData=JSON.parse(localRaw); }catch(e){} }
-      // Use whichever is newer
-      var useRemote = true;
-      if(localData && localData.ts && remote.ts){
-        useRemote = new Date(remote.ts) >= new Date(localData.ts);
-      }
+      var useRemote = !localData || !localData.ts || !remote.ts || new Date(remote.ts) >= new Date(localData.ts);
       if(useRemote){
         INC = remote.inc; OUT = remote.out||[];
         showSyncStatus('✅ تم التحميل من GitHub');
       }
     }
     updateKPIs(); renderIn(); renderOut();
+    applyPerms(_CU);
+    if(INC.length===0) toast('💡 لا توجد بيانات محفوظة لهذا المستخدم - ابدأ بإضافة عمليات جديدة');
   }).catch(function(){
     updateKPIs(); renderIn(); renderOut();
+    applyPerms(_CU);
   });
   // Auto-save every 30s
   setInterval(_autoSave, 30000);
 }
+
+function loadBuiltinData(){
+  // Built-in data is loaded at startup via the LOAD DATA IIFE
+  // This is called for new users - data is already in INC/OUT from the IIFE
+}
+
 
 function manualSync(){
   if(!_CU){toast('⚠️ يرجى تسجيل الدخول أولاً','err');return;}
@@ -1847,8 +1904,19 @@ function manualSync(){
   ghPush().then(function(){}).catch(function(){});
 }
 
+
+
+function applyPerms(user){
+  var allPgs=['dash','in','out','scan','pdf2xl','cat','inv','rep','overview'];
+  var allowed=(user.role==='admin')?allPgs:(user.pages||allPgs);
+  for(var i=0;i<allPgs.length;i++){
+    var nb=document.getElementById('nb-'+allPgs[i]);
+    if(nb) nb.style.display=(allowed.indexOf(allPgs[i])>=0)?'flex':'none';
+  }
+}
+
 function _autoSave(){
-  if(_CU) localStorage.setItem('sb_data_'+_CU.u, JSON.stringify({inc:INC, out:OUT, ts:new Date().toISOString()}));
+  if(_CU) localStorage.setItem('sb_shared_data', JSON.stringify({inc:INC, out:OUT, ts:new Date().toISOString()}));
 }
 
 function doLogout(){
@@ -1883,19 +1951,19 @@ function admRender(){
     var isCur = _CU && u.u===_CU.u;
     // Count records
     var cnt='لا توجد بيانات';
-    var raw=localStorage.getItem('sb_data_'+u.u);
+    var raw=localStorage.getItem('sb_shared_data');
     if(raw){try{var d=JSON.parse(raw);cnt=((d.inc||[]).length)+' وارد، '+((d.out||[]).length)+' منصرف';}catch(e){}}
     h+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:'+(isCur?'#FFF8E7':'#F5F4F1')+';border:1px solid '+(isCur?'#E8C547':'#E8E5DF')+';border-radius:10px;margin-bottom:8px;">'
       +'<div style="width:38px;height:38px;background:'+(u.role==='admin'?'#C8860A':'#2B5FA6')+';border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;">'+(u.role==='admin'?'👑':'👤')+'</div>'
       +'<div style="flex:1;">'
       +'<div style="font-size:14px;font-weight:700;color:#1A1916;">'+u.name+(isCur?' <span style="font-size:11px;color:#2D7A4F;font-weight:500;">(أنت)</span>':'')+'</div>'
-      +'<div style="font-size:12px;color:#9C9488;margin-top:2px;">@'+u.u+' &nbsp;·&nbsp; '+(u.role==='admin'?'<span style="color:#C8860A;font-weight:600;">مدير</span>':'مستخدم')+' &nbsp;·&nbsp; '+cnt+'</div>'
+      +'<div style="font-size:12px;color:#9C9488;margin-top:2px;">@'+u.u+' &nbsp;·&nbsp; '+(u.role==='admin'?'<span style="color:#C8860A;font-weight:600;">مدير</span>':'مستخدم | '+( u.pages?u.pages.length:'كل')+' صفحة')+' &nbsp;·&nbsp; '+cnt+'</div>'
       +'</div>'
       +'<div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;">'
       +'<div style="background:#fff;border:1px solid #E8E5DF;border-radius:7px;padding:4px 10px;font-size:12px;color:#5C5849;font-family:monospace;letter-spacing:.05em;">'+u.p+'</div>'
       +(isCur?'':'<div style="display:flex;gap:5px;">'
-        +'<button data-u="'+u.u+'" onclick="admResetData(this.dataset.u)" style="background:#EBF0FA;border:1px solid #b8cbef;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:#2B5FA6;font-family:Cairo,sans-serif;font-weight:600;">&#x1F504; مسح البيانات</button>'
-        +'<button data-u="'+u.u+'" onclick="admDelUser(this.dataset.u)" style="background:#FCEAEA;border:1px solid #f0c4c4;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:#B83232;font-family:Cairo,sans-serif;font-weight:600;">&#x1F5D1; حذف</button>'
+        +'<button data-u="'+u.u+'" onclick="admEditUser(this.dataset.u)" style="background:#EBF5EF;border:1px solid #b8dfc8;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:#2D7A4F;font-family:Cairo,sans-serif;font-weight:600;">✏️ تعديل</button>'
+        +'<button data-u="'+u.u+'" onclick="admDelUser(this.dataset.u)" style="background:#FCEAEA;border:1px solid #f0c4c4;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:#B83232;font-family:Cairo,sans-serif;font-weight:600;">🗑 حذف</button>'
         +'</div>')
       +'</div>'
       +'</div>';
@@ -1908,9 +1976,21 @@ function admAddUser(){
   var p=(document.getElementById('adm-np').value||'').trim();
   var n=(document.getElementById('adm-nn').value||'').trim();
   var r=document.getElementById('adm-nr').value;
-  if(!u||!p||!n){alert('يرجى تعبئة جميع الحقول');return;}
-  for(var i=0;i<_USERS.length;i++) if(_USERS[i].u===u){alert('اسم المستخدم موجود مسبقاً');return;}
-  _USERS.push({u:u,p:p,name:n,role:r});
+  if(!u||!p||!n){toast('⚠️ يرجى تعبئة جميع الحقول','err');return;}
+  for(var i=0;i<_USERS.length;i++) if(_USERS[i].u===u){toast('⚠️ اسم المستخدم موجود','err');return;}
+  // Collect pages
+  var allPgs=['dash','in','out','scan','pdf2xl','cat','inv','rep','overview'];
+  var pages=[];
+  if(r==='admin'){
+    pages=allPgs;
+  } else {
+    for(var i=0;i<allPgs.length;i++){
+      var cb=document.getElementById('pg-'+allPgs[i]);
+      if(cb&&cb.checked) pages.push(allPgs[i]);
+    }
+    if(!pages.length){toast('⚠️ حدد صفحة واحدة على الأقل','err');return;}
+  }
+  _USERS.push({u:u,p:p,name:n,role:r,pages:pages});
   _saveUsers();
   document.getElementById('adm-nu').value='';
   document.getElementById('adm-np').value='';
@@ -1920,19 +2000,69 @@ function admAddUser(){
 }
 
 function admDelUser(u){
-  if(!confirm('حذف المستخدم @'+u+' نهائياً مع كل بياناته؟'))return;
+  if(!confirm('حذف المستخدم @'+u+' نهائياً؟'))return;
   _USERS=_USERS.filter(function(x){return x.u!==u;});
   _saveUsers();
-  localStorage.removeItem('sb_data_'+u);
   admRender();
-  toast('🗑️ تم حذف المستخدم');
+  toast('🗑️ تم حذف المستخدم @'+u);
 }
 
 function admResetData(u){
-  if(!confirm('مسح كل بيانات @'+u+'؟ لا يمكن التراجع!'))return;
-  localStorage.removeItem('sb_data_'+u);
+  if(!confirm('تحذير: سيتم مسح كل البيانات المشتركة لجميع المستخدمين. هل أنت متأكد؟'))return;
+  localStorage.removeItem('sb_shared_data');
+  INC=[]; OUT=[];
+  updateKPIs(); renderIn(); renderOut();
   admRender();
-  toast('🔄 تم مسح بيانات '+u);
+  toast('🔄 تم مسح كل البيانات');
+}
+
+function admEditUser(u){
+  var user=null;
+  for(var i=0;i<_USERS.length;i++) if(_USERS[i].u===u){user=_USERS[i];break;}
+  if(!user)return;
+  // Show edit modal
+  _editingUser=u;
+  document.getElementById('edit-user-title').textContent='تعديل: '+user.name;
+  document.getElementById('edit-pass').value='';
+  document.getElementById('edit-pass-hint').textContent='اتركها فارغة للإبقاء على: '+user.p;
+  // Check pages
+  var allPgs=['dash','in','out','scan','pdf2xl','cat','inv','rep','overview'];
+  var allowed=user.role==='admin'?allPgs:(user.pages||allPgs);
+  for(var i=0;i<allPgs.length;i++){
+    var cb=document.getElementById('ep-'+allPgs[i]);
+    if(cb) cb.checked=allowed.indexOf(allPgs[i])>=0;
+  }
+  document.getElementById('edit-user-modal').style.display='flex';
+}
+
+var _editingUser=null;
+
+function admSaveEdit(){
+  if(!_editingUser)return;
+  var user=null;
+  for(var i=0;i<_USERS.length;i++) if(_USERS[i].u===_editingUser){user=_USERS[i];break;}
+  if(!user)return;
+  var newPass=document.getElementById('edit-pass').value.trim();
+  if(newPass) user.p=newPass;
+  var allPgs=['dash','in','out','scan','pdf2xl','cat','inv','rep','overview'];
+  if(user.role!=='admin'){
+    var pages=[];
+    for(var i=0;i<allPgs.length;i++){
+      var cb=document.getElementById('ep-'+allPgs[i]);
+      if(cb&&cb.checked) pages.push(allPgs[i]);
+    }
+    if(!pages.length){toast('⚠️ حدد صفحة واحدة على الأقل','err');return;}
+    user.pages=pages;
+  }
+  _saveUsers();
+  admCloseEdit();
+  admRender();
+  toast('✅ تم تعديل بيانات '+user.name);
+}
+
+function admCloseEdit(){
+  document.getElementById('edit-user-modal').style.display='none';
+  _editingUser=null;
 }
 // ===== END LOGIN & USER MANAGEMENT =====
 
@@ -1949,7 +2079,7 @@ function _ghUrl(){
 
 async function ghPush(){
   if(!_CU) return;
-  var payload = JSON.stringify({inc:INC,out:OUT,ts:new Date().toISOString(),user:_CU.u});
+  var payload = JSON.stringify({inc:INC,out:OUT,ts:new Date().toISOString(),shared:true});
   var content = btoa(unescape(encodeURIComponent(payload)));
   var body = {message:'sync '+_CU.u,content:content};
   if(_GH_SHA) body.sha = _GH_SHA;
@@ -3688,7 +3818,7 @@ function admRender(){
     var isCur = _CU && u.u===_CU.u;
     // Count records
     var cnt='لا توجد بيانات';
-    var raw=localStorage.getItem('sb_data_'+u.u);
+    var raw=localStorage.getItem('sb_shared_data');
     if(raw){try{var d=JSON.parse(raw);cnt=((d.inc||[]).length)+' وارد، '+((d.out||[]).length)+' منصرف';}catch(e){}}
     h+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:'+(isCur?'#FFF8E7':'#F5F4F1')+';border:1px solid '+(isCur?'#E8C547':'#E8E5DF')+';border-radius:10px;margin-bottom:8px;">'
       +'<div style="width:38px;height:38px;background:'+(u.role==='admin'?'#C8860A':'#2B5FA6')+';border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;">'+(u.role==='admin'?'👑':'👤')+'</div>'

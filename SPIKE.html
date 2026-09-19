@@ -1941,8 +1941,8 @@ function tryLogin(){
       if(d.inc && d.inc.length>0){INC=d.inc; OUT=d.out||[];}
     }catch(e){}
   }
-  // Try to pull from GitHub
-  ghPull().then(function(remote){
+  // GitHub pull disabled - data is built-in
+  Promise.resolve(null).then(function(remote){
     if(remote && remote.inc && remote.inc.length > 0){
       var localRaw = localStorage.getItem('sb_data_'+_CU.u);
       var localData = null;
@@ -3605,8 +3605,8 @@ function tryLogin(){
       if(d.inc && d.inc.length>0){INC=d.inc; OUT=d.out||[];}
     }catch(e){}
   }
-  // Try to pull from GitHub first, fallback to localStorage
-  ghPull().then(function(remote){
+  // GitHub pull disabled - data is built-in
+  Promise.resolve(null).then(function(remote){
     if(remote && remote.inc && remote.inc.length > 0){
       var localRaw = localStorage.getItem('sb_data_'+_CU.u);
       var localData = null;

@@ -1950,10 +1950,14 @@ function tryLogin(){
   if(saved){
     try{
       var d=JSON.parse(saved);
-      if(d.inc && d.inc.length>0){INC=d.inc; OUT=d.out||[];}
+      // استخدم البيانات المحفوظة حتى لو كانت فاضية (المستخدم صفّر البيانات)
+      if(d && typeof d === 'object' && ('inc' in d)){
+        INC = d.inc || [];
+        OUT = d.out || [];
+      }
     }catch(e){}
   }
-  // If no data in localStorage, keep built-in data (already loaded at startup)
+  // If no localStorage at all, keep built-in data (already loaded at startup)
   updateKPIs(); renderIn(); renderOut();
   applyPerms(_CU);
   // Auto-save every 30s
@@ -1965,6 +1969,16 @@ function loadBuiltinData(){
 }
 
 // ===== MISSING FUNCTIONS FIX =====
+
+// _autoSave: حفظ البيانات في localStorage
+function _autoSave(){
+  try{
+    var data = {inc: INC, out: OUT};
+    localStorage.setItem('sb_shared_data', JSON.stringify(data));
+  }catch(e){
+    console.warn('AutoSave failed:', e);
+  }
+}
 
 // _syncMsg: تحديث رسالة حالة المزامنة في الواجهة
 function _syncMsg(elId, msg){

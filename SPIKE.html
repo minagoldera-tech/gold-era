@@ -348,6 +348,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
       <span id="user-name-badge" style="font-size:12px;color:#9C9488;font-weight:600;padding:4px 8px;background:#FFF8E7;border:1px solid #E8C547;border-radius:6px" id="unb">👤 MINA</span>
       <button id="adm-btn" onclick="admOpen()" style="display:none;padding:5px 11px;background:#1C1A16;color:#F5C842;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">⚙️ المستخدمون</button>
       <button class="btn bsucc bsm" onclick="manualSync()" title="مزامنة مع GitHub">🔄 مزامنة</button>
+      <button id="reset-btn" onclick="resetAll()" style="display:none;background:#c0392b;color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">🗑️ تصفير</button>
       <button class="btn bd bsm" onclick="doLogout()">🚪 خروج</button>
       <button class="btn bg bsm" onclick="G('out')">📤 منصرف جديد</button>
     </div>
@@ -996,6 +997,15 @@ tbody tr.row-sel td{background:#FFF8E7;}
 
 <script>
 // ===================== CATALOG =====================
+var _GH_TOKEN = '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';
+var _GH_USER  = 'minagoldera-tech';
+var _GH_REPO  = 'gold-era';
+var _GH_FILE  = 'golddata.json';
+var _GH_SHA   = null;
+
+function _ghUrl(){ return 'https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/'+_GH_FILE; }
+
+
 var CAT=[
   {n:'جنيه',k:875,w:8,w875:8},
   {n:'نصف جنيه',k:875,w:4,w875:4},
@@ -1930,6 +1940,8 @@ function tryLogin(){
   // Show admin button if admin
   var ab=document.getElementById('adm-btn');
   if(ab) ab.style.display = found.role==='admin'?'inline-flex':'none';
+  var rb=document.getElementById('reset-btn');
+  if(rb) rb.style.display = found.role==='admin'?'inline-flex':'none';
   // Apply page permissions
   applyPerms(found);
   // Load saved data for this user
@@ -2513,6 +2525,27 @@ function p2xlConfirm(){
 }
 // ===== END PDF2XL =====
 
+function doLogout(){
+  if(typeof _autoSave==='function') _autoSave();
+  _CU=null;
+  document.getElementById('lgo').style.display='flex';
+  var rb=document.getElementById('reset-btn');
+  if(rb) rb.style.display='none';
+}
+
+function resetAll(){
+  if(!confirm('⚠️ تحذير: سيتم حذف جميع البيانات نهائياً. هل أنت متأكد؟')) return;
+  if(!confirm('⚠️ تأكيد أخير: سيتم مسح كل السجلات والمتابعة؟')) return;
+  INC=[]; OUT=[];
+  localStorage.removeItem('sb_shared_data');
+  if(_CU) localStorage.removeItem('sb_data_'+_CU.u);
+  updateKPIs();
+  try{renderIn();}catch(e){}
+  try{renderOut();}catch(e){}
+  try{renderCat();}catch(e){}
+  toast('✅ تم التصفير النهائي','ok');
+  setTimeout(function(){ghPush();},500);
+}
 </script>
 </body>
 </html><!-- SCAN PAGE -->

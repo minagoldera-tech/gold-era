@@ -1941,25 +1941,9 @@ function tryLogin(){
       if(d.inc && d.inc.length>0){INC=d.inc; OUT=d.out||[];}
     }catch(e){}
   }
-  // GitHub pull disabled - data is built-in
-  Promise.resolve(null).then(function(remote){
-    if(remote && remote.inc && remote.inc.length > 0){
-      var localRaw = localStorage.getItem('sb_data_'+_CU.u);
-      var localData = null;
-      if(localRaw){ try{ localData=JSON.parse(localRaw); }catch(e){} }
-      var useRemote = !localData || !localData.ts || !remote.ts || new Date(remote.ts) >= new Date(localData.ts);
-      if(useRemote){
-        INC = remote.inc; OUT = remote.out||[];
-        showSyncStatus('✅ تم التحميل من GitHub');
-      }
-    }
-    updateKPIs(); renderIn(); renderOut();
-    applyPerms(_CU);
-    if(INC.length===0) toast('💡 لا توجد بيانات محفوظة لهذا المستخدم - ابدأ بإضافة عمليات جديدة');
-  }).catch(function(){
-    updateKPIs(); renderIn(); renderOut();
-    applyPerms(_CU);
-  });
+  // If no data in localStorage, keep built-in data (already loaded at startup)
+  updateKPIs(); renderIn(); renderOut();
+  applyPerms(_CU);
   // Auto-save every 30s
   setInterval(_autoSave, 30000);
 }
@@ -2769,7 +2753,7 @@ var CAT=[
 ];
 
 // ===================== DATA =====================
-var INC=[],OUT=[],CART=[],selIn=null,selOut=null,inMode='item';
+
 
 // ===================== UTILS =====================
 function N(n,d){

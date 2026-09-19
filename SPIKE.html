@@ -1977,7 +1977,6 @@ async function manualSync(){
   toast('✅ تمت المزامنة','ok');
 }
 
-setInterval(function(){if(_CU)ghPush();},120000);
 // ===== END GITHUB SYNC =====
 
 
@@ -3575,66 +3574,6 @@ var _CU = null;
 
 function _saveUsers(){ localStorage.setItem('sb_users_db', JSON.stringify(_USERS)); }
 
-function tryLogin(){
-  var u = document.getElementById('f-user').value.trim();
-  var p = document.getElementById('f-pass').value.trim();
-  var found = null;
-  for(var i=0;i<_USERS.length;i++){
-    if(_USERS[i].u===u && _USERS[i].p===p){found=_USERS[i];break;}
-  }
-  if(!found){
-    document.getElementById('f-err').style.display='block';
-    document.getElementById('f-pass').value='';
-    document.getElementById('f-pass').focus();
-    return;
-  }
-  _CU = found;
-  document.getElementById('lgo').style.display='none';
-
-  // Show user name
-  var nb=document.getElementById('user-name-badge');
-  if(nb) nb.textContent='👤 '+found.name;
-  // Show admin button if admin
-  var ab=document.getElementById('adm-btn');
-  if(ab) ab.style.display = found.role==='admin'?'inline-flex':'none';
-  // Load saved data for this user
-  var saved = localStorage.getItem('sb_data_'+u);
-  if(saved){
-    try{
-      var d=JSON.parse(saved);
-      if(d.inc && d.inc.length>0){INC=d.inc; OUT=d.out||[];}
-    }catch(e){}
-  }
-  // GitHub pull disabled - data is built-in
-  Promise.resolve(null).then(function(remote){
-    if(remote && remote.inc && remote.inc.length > 0){
-      var localRaw = localStorage.getItem('sb_data_'+_CU.u);
-      var localData = null;
-      if(localRaw){ try{ localData=JSON.parse(localRaw); }catch(e){} }
-      // Use whichever is newer
-      var useRemote = true;
-      if(localData && localData.ts && remote.ts){
-        useRemote = new Date(remote.ts) >= new Date(localData.ts);
-      }
-      if(useRemote){
-        INC = remote.inc; OUT = remote.out||[];
-        showSyncStatus('✅ تم التحميل من GitHub');
-      }
-    }
-    updateKPIs(); renderIn(); renderOut();
-  }).catch(function(){
-    updateKPIs(); renderIn(); renderOut();
-  });
-  // Auto-save every 30s
-  setInterval(_autoSave, 30000);
-}
-
-function manualSync(){
-  if(!_CU){toast('⚠️ يرجى تسجيل الدخول أولاً','err');return;}
-  showSyncStatus('⏳ جاري المزامنة...');
-  _autoSave();
-  ghPush().then(function(){}).catch(function(){});
-}
 
 function _autoSave(){
   if(_CU) localStorage.setItem('sb_data_'+_CU.u, JSON.stringify({inc:INC, out:OUT, ts:new Date().toISOString()}));

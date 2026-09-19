@@ -1873,19 +1873,19 @@ async function ghPushUsers(){
   try{
     var payload = JSON.stringify({users:_USERS, ts:new Date().toISOString()});
     var content = btoa(unescape(encodeURIComponent(payload)));
-    // Get current SHA for users file
     var rGet = await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json?t='+Date.now(),
       {headers:{'Authorization':'token '+_GH_TOKEN}});
     var sha = null;
-    if(rGet.ok){ var d=await rGet.json(); sha=d.sha; }
-    var body={message:'users sync',content:content};
+    if(rGet.ok){ try{ var d=await rGet.json(); sha=d.sha; }catch(e){} }
+    var body={message:'users sync '+new Date().toISOString(),content:content};
     if(sha) body.sha=sha;
-    await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json',{
+    var r=await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json',{
       method:'PUT',
       headers:{'Authorization':'token '+_GH_TOKEN,'Content-Type':'application/json'},
       body:JSON.stringify(body)
     });
-  }catch(e){}
+    if(!r.ok){ var err=await r.text(); console.log('ghPushUsers err:',err); }
+  }catch(e){ console.log('ghPushUsers exception:',e); }
 }
 
 async function ghPullUsers(){
@@ -1968,11 +1968,13 @@ function loadBuiltinData(){
   // Data loaded at startup
 }
 
-function manualSync(){
+async function manualSync(){
   if(!_CU){toast('⚠️ يرجى تسجيل الدخول','err');return;}
   _syncMsg('sync-status','⏳ جاري المزامنة...');
   _autoSave();
-  ghPush();
+  await ghPush();
+  await ghPushUsers();
+  toast('✅ تمت المزامنة','ok');
 }
 
 setInterval(function(){if(_CU)ghPush();},120000);

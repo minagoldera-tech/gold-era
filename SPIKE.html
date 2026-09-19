@@ -1964,12 +1964,73 @@ function loadBuiltinData(){
   // Data loaded at startup
 }
 
+// ===== MISSING FUNCTIONS FIX =====
+
+// _syncMsg: تحديث رسالة حالة المزامنة في الواجهة
+function _syncMsg(elId, msg){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._fadeTimer);
+  el._fadeTimer = setTimeout(function(){
+    el.style.opacity = '0';
+  }, 3000);
+}
+
+// applyPerms: تطبيق صلاحيات الصفحات بناءً على دور المستخدم
+function applyPerms(user){
+  if(!user) return;
+
+  // خريطة: اسم الصفحة → id زر التنقل
+  var pageMap = {
+    'dash'     : 'nb-dash',
+    'in'       : 'nb-in',
+    'out'      : 'nb-out',
+    'scan'     : 'nb-scan',
+    'pdf2xl'   : 'nb-pdf2xl',
+    'cat'      : 'nb-cat',
+    'inv'      : 'nb-inv',
+    'rep'      : 'nb-rep',
+    'overview' : 'nb-overview'
+  };
+
+  // المدير يرى كل الصفحات
+  if(user.role === 'admin'){
+    Object.keys(pageMap).forEach(function(pg){
+      var btn = document.getElementById(pageMap[pg]);
+      if(btn) btn.style.display = '';
+    });
+    return;
+  }
+
+  // المستخدم العادي: نحترم قائمة pages المخزنة معه (إن وُجدت)
+  // إذا ما فيش pages → نفتح كل الصفحات (الإعداد الافتراضي)
+  if(!user.pages || Object.keys(user.pages).length === 0){
+    Object.keys(pageMap).forEach(function(pg){
+      var btn = document.getElementById(pageMap[pg]);
+      if(btn) btn.style.display = '';
+    });
+    return;
+  }
+
+  // تطبيق الصلاحيات المحددة
+  Object.keys(pageMap).forEach(function(pg){
+    var btn = document.getElementById(pageMap[pg]);
+    if(!btn) return;
+    btn.style.display = user.pages[pg] === false ? 'none' : '';
+  });
+}
+
+// ===== END MISSING FUNCTIONS FIX =====
+
 async function manualSync(){
   if(!_CU){toast('⚠️ يرجى تسجيل الدخول','err');return;}
   _syncMsg('sync-status','⏳ جاري المزامنة...');
   _autoSave();
   await ghPush();
   await ghPushUsers();
+  _syncMsg('sync-status','✅ تمت المزامنة');
   toast('✅ تمت المزامنة','ok');
 }
 

@@ -997,7 +997,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
 
 <script>
 // ===================== CATALOG =====================
-var _GH_TOKEN = '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';
+var _GH_TOKEN = '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';
 var _GH_USER  = 'minagoldera-tech';
 var _GH_REPO  = 'gold-era';
 var _GH_FILE  = 'golddata.json';
@@ -1879,6 +1879,70 @@ function _saveUsers(){
   ghPushUsers();
 }
 
+// ===== DATA SYNC (INC/OUT) TO/FROM GITHUB =====
+
+// رفع بيانات الحركة إلى GitHub
+async function ghPush(){
+  try{
+    var payload = JSON.stringify({inc:INC, out:OUT, ts:new Date().toISOString()});
+    var content = btoa(unescape(encodeURIComponent(payload)));
+    var sha = _GH_SHA;
+    if(!sha){
+      try{
+        var rGet = await fetch(_ghUrl()+'?t='+Date.now(),
+          {headers:{'Authorization':'token '+_GH_TOKEN}});
+        if(rGet.ok){ var dg=await rGet.json(); sha=dg.sha; _GH_SHA=sha; }
+      }catch(e){}
+    }
+    var body={message:'data sync '+new Date().toISOString(),content:content};
+    if(sha) body.sha=sha;
+    var r=await fetch(_ghUrl(),{
+      method:'PUT',
+      headers:{'Authorization':'token '+_GH_TOKEN,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(r.ok){
+      var rd=await r.json();
+      if(rd.content && rd.content.sha) _GH_SHA=rd.content.sha;
+      _autoSave();
+    } else {
+      var err=await r.text();
+      console.warn('ghPush err:',err);
+    }
+  }catch(e){ console.warn('ghPush exception:',e); }
+}
+
+// سحب بيانات الحركة من GitHub
+async function ghPull(){
+  try{
+    var r = await fetch(_ghUrl()+'?t='+Date.now(),
+      {headers:{'Authorization':'token '+_GH_TOKEN}});
+    if(!r.ok) return false;
+    var d = await r.json();
+    if(!d.content) return false;
+    _GH_SHA = d.sha;
+    var decoded = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
+    if(decoded && decoded.inc !== undefined){
+      INC = decoded.inc;
+      OUT = decoded.out || [];
+      _autoSave();
+      return true;
+    }
+    return false;
+  }catch(e){ console.warn('ghPull exception:',e); return false; }
+}
+
+// مزامنة كاملة عند بدء الجلسة
+async function ghSyncOnLogin(){
+  var pulled = await ghPull();
+  if(!pulled){
+    // GitHub غير متاح، اعمل push بالبيانات المحلية
+    await ghPush();
+  }
+  return pulled;
+}
+// ===== END DATA SYNC =====
+
 async function ghPushUsers(){
   try{
     var payload = JSON.stringify({users:_USERS, ts:new Date().toISOString()});
@@ -1944,24 +2008,37 @@ function tryLogin(){
   if(rb) rb.style.display = found.role==='admin'?'inline-flex':'none';
   // Apply page permissions
   applyPerms(found);
-  // Load saved data for this user
-  // Load shared data (same for all users)
-  var saved = localStorage.getItem('sb_shared_data');
-  if(saved){
-    try{
-      var d=JSON.parse(saved);
-      // استخدم البيانات المحفوظة حتى لو كانت فاضية (المستخدم صفّر البيانات)
-      if(d && typeof d === 'object' && ('inc' in d)){
-        INC = d.inc || [];
-        OUT = d.out || [];
-      }
-    }catch(e){}
-  }
-  // If no localStorage at all, keep built-in data (already loaded at startup)
-  updateKPIs(); renderIn(); renderOut();
-  applyPerms(_CU);
+  // تحميل البيانات: أولوية GitHub، ثم localStorage، ثم البيانات المدمجة
+  (async function(){
+    // اعرض البيانات المحلية فوراً بدون انتظار
+    var saved = localStorage.getItem('sb_shared_data');
+    if(saved){
+      try{
+        var d=JSON.parse(saved);
+        if(d && typeof d === 'object' && ('inc' in d)){
+          INC = d.inc || [];
+          OUT = d.out || [];
+        }
+      }catch(e){}
+    }
+    updateKPIs(); renderIn(); renderOut();
+    applyPerms(_CU);
+
+    // ثم حاول المزامنة مع GitHub في الخلفية
+    _syncMsg('sync-status','⏳ جاري مزامنة البيانات...');
+    var synced = await ghSyncOnLogin();
+    if(synced){
+      _syncMsg('sync-status','✅ تمت المزامنة مع GitHub');
+      updateKPIs(); renderIn(); renderOut();
+    } else {
+      _syncMsg('sync-status','📱 وضع محلي — GitHub غير متاح');
+    }
+  })();
+
   // Auto-save every 30s
   setInterval(_autoSave, 30000);
+  // Auto-sync with GitHub every 5 min
+  setInterval(function(){ if(_CU) ghPush(); }, 300000);
 }
 
 function loadBuiltinData(){
@@ -2041,11 +2118,25 @@ function applyPerms(user){
 async function manualSync(){
   if(!_CU){toast('⚠️ يرجى تسجيل الدخول','err');return;}
   _syncMsg('sync-status','⏳ جاري المزامنة...');
-  _autoSave();
+  _autoSave(); // حفظ محلي أولاً
+
+  // سحب من GitHub ثم رفع
+  var pulled = await ghPull();
+  if(pulled){
+    // تم السحب، دمج ثم رفع
+    _syncMsg('sync-status','⬇️ تم السحب، جاري الرفع...');
+    updateKPIs(); renderIn(); renderOut();
+  }
   await ghPush();
   await ghPushUsers();
-  _syncMsg('sync-status','✅ تمت المزامنة');
-  toast('✅ تمت المزامنة','ok');
+
+  if(pulled){
+    _syncMsg('sync-status','✅ مزامنة كاملة');
+    toast('✅ تمت المزامنة مع GitHub','ok');
+  } else {
+    _syncMsg('sync-status','⚠️ تم الحفظ محلياً فقط — تحقق من التوكن');
+    toast('⚠️ GitHub غير متاح — تحقق من التوكن','err');
+  }
 }
 
 // ===== END GITHUB SYNC =====

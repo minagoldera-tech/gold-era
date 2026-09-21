@@ -1896,11 +1896,15 @@ async function ghPush(){
     }
     var body={message:'data sync '+new Date().toISOString(),content:content};
     if(sha) body.sha=sha;
+    var pushCtrl = new AbortController();
+    var pushTid = setTimeout(function(){ pushCtrl.abort(); }, 10000);
     var r=await fetch(_ghUrl(),{
       method:'PUT',
       headers:{'Authorization':'token '+_GH_TOKEN,'Content-Type':'application/json'},
-      body:JSON.stringify(body)
+      body:JSON.stringify(body),
+      signal: pushCtrl.signal
     });
+    clearTimeout(pushTid);
     if(r.ok){
       var rd=await r.json();
       if(rd.content && rd.content.sha) _GH_SHA=rd.content.sha;
@@ -1915,8 +1919,12 @@ async function ghPush(){
 // سحب بيانات الحركة من GitHub
 async function ghPull(){
   try{
+    // timeout 8 ثواني عشان الموقع ما يهنجش
+    var controller = new AbortController();
+    var tid = setTimeout(function(){ controller.abort(); }, 8000);
     var r = await fetch(_ghUrl()+'?t='+Date.now(),
-      {headers:{'Authorization':'token '+_GH_TOKEN}});
+      {headers:{'Authorization':'token '+_GH_TOKEN}, signal: controller.signal});
+    clearTimeout(tid);
     if(!r.ok) return false;
     var d = await r.json();
     if(!d.content) return false;
@@ -2024,15 +2032,16 @@ function tryLogin(){
     updateKPIs(); renderIn(); renderOut();
     applyPerms(_CU);
 
-    // ثم حاول المزامنة مع GitHub في الخلفية
-    _syncMsg('sync-status','⏳ جاري مزامنة البيانات...');
-    var synced = await ghSyncOnLogin();
-    if(synced){
-      _syncMsg('sync-status','✅ تمت المزامنة مع GitHub');
-      updateKPIs(); renderIn(); renderOut();
-    } else {
-      _syncMsg('sync-status','📱 وضع محلي — GitHub غير متاح');
-    }
+    // مزامنة في الخلفية بدون تعليق الموقع
+    _syncMsg('sync-status','⏳ مزامنة...');
+    ghSyncOnLogin().then(function(synced){
+      if(synced){
+        _syncMsg('sync-status','✅ تمت المزامنة');
+        updateKPIs(); renderIn(); renderOut();
+      } else {
+        _syncMsg('sync-status','📱 وضع محلي');
+      }
+    }).catch(function(){ _syncMsg('sync-status','📱 وضع محلي'); });
   })();
 
   // Auto-save every 30s

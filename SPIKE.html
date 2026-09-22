@@ -997,13 +997,11 @@ tbody tr.row-sel td{background:#FFF8E7;}
 
 <script>
 // ===================== CATALOG =====================
-var _GH_TOKEN = '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';
-var _GH_USER  = 'minagoldera-tech';
-var _GH_REPO  = 'gold-era';
-var _GH_FILE  = 'golddata.json';
-var _GH_SHA   = null;
-
-function _ghUrl(){ return 'https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/'+_GH_FILE; }
+// ===== JSONBin Config (بديل GitHub - لا يحتاج توكن ثابت) =====
+var _JB_KEY  = '$2a$10$4sJ/64rfFD2coOsM9o.dUeqVhHeLy.DYKGOAvfiSz5S6mEApBR8xq';
+var _JB_DATA_BIN  = '6ab27e78ac6210605ae97edf'; // bin البيانات
+var _JB_USERS_BIN = '6ab27e7cffd5d16053231682'; // bin المستخدمين
+var _JB_URL = 'https://api.jsonbin.io/v3/b/';
 
 
 var CAT=[
@@ -1879,79 +1877,68 @@ function _saveUsers(){
   ghPushUsers();
 }
 
-// ===== DATA SYNC (INC/OUT) TO/FROM GITHUB =====
+// ===== DATA SYNC via JSONBin =====
 
-// رفع بيانات الحركة إلى GitHub
+// رفع بيانات الحركة إلى JSONBin
 async function ghPush(){
   try{
-    var payload = JSON.stringify({inc:INC, out:OUT, ts:new Date().toISOString()});
-    var content = btoa(unescape(encodeURIComponent(payload)));
-    var sha = _GH_SHA;
-    if(!sha){
-      try{
-        var rGet = await fetch(_ghUrl()+'?t='+Date.now(),
-          {headers:{'Authorization':'token '+_GH_TOKEN}});
-        if(rGet.ok){ var dg=await rGet.json(); sha=dg.sha; _GH_SHA=sha; }
-      }catch(e){}
-    }
-    var body={message:'data sync '+new Date().toISOString(),content:content};
-    if(sha) body.sha=sha;
-    var pushCtrl = new AbortController();
-    var pushTid = setTimeout(function(){ pushCtrl.abort(); }, 10000);
-    var r=await fetch(_ghUrl(),{
-      method:'PUT',
-      headers:{'Authorization':'token '+_GH_TOKEN,'Content-Type':'application/json'},
-      body:JSON.stringify(body),
-      signal: pushCtrl.signal
+    var ctrl = new AbortController();
+    var tid = setTimeout(function(){ ctrl.abort(); }, 10000);
+    var r = await fetch(_JB_URL + _JB_DATA_BIN, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': _JB_KEY
+      },
+      body: JSON.stringify({inc:INC, out:OUT, ts:new Date().toISOString()}),
+      signal: ctrl.signal
     });
-    clearTimeout(pushTid);
-    if(r.ok){
-      var rd=await r.json();
-      if(rd.content && rd.content.sha) _GH_SHA=rd.content.sha;
-      _autoSave();
-    } else {
-      var err=await r.text();
-      console.warn('ghPush err:',err);
-    }
-  }catch(e){ console.warn('ghPush exception:',e); }
+    clearTimeout(tid);
+    if(r.ok){ _autoSave(); }
+    else { console.warn('jbPush err:', await r.text()); }
+  }catch(e){ console.warn('jbPush exception:',e); }
 }
 
-// سحب بيانات الحركة من GitHub
+// سحب بيانات الحركة من JSONBin
 async function ghPull(){
   try{
-    // timeout 8 ثواني عشان الموقع ما يهنجش
-    var controller = new AbortController();
-    var tid = setTimeout(function(){ controller.abort(); }, 8000);
-    var r = await fetch(_ghUrl()+'?t='+Date.now(),
-      {headers:{'Authorization':'token '+_GH_TOKEN}, signal: controller.signal});
+    var ctrl = new AbortController();
+    var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
+    var r = await fetch(_JB_URL + _JB_DATA_BIN + '/latest', {
+      headers: {'X-Master-Key': _JB_KEY},
+      signal: ctrl.signal
+    });
     clearTimeout(tid);
     if(!r.ok) return false;
     var d = await r.json();
-    if(!d.content) return false;
-    _GH_SHA = d.sha;
-    var decoded = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
-    if(decoded && decoded.inc !== undefined){
-      INC = decoded.inc;
-      OUT = decoded.out || [];
+    if(d.record && d.record.inc !== undefined){
+      INC = d.record.inc;
+      OUT = d.record.out || [];
       _autoSave();
       return true;
     }
     return false;
-  }catch(e){ console.warn('ghPull exception:',e); return false; }
+  }catch(e){ console.warn('jbPull exception:',e); return false; }
 }
 
-// مزامنة كاملة عند بدء الجلسة
+// مزامنة عند بدء الجلسة
 async function ghSyncOnLogin(){
   var pulled = await ghPull();
-  if(!pulled){
-    // GitHub غير متاح، اعمل push بالبيانات المحلية
-    await ghPush();
-  }
+  if(!pulled){ await ghPush(); }
   return pulled;
 }
 // ===== END DATA SYNC =====
 
 async function ghPushUsers(){
+  try{
+    await fetch(_JB_URL + _JB_USERS_BIN, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json','X-Master-Key':_JB_KEY},
+      body: JSON.stringify({users: _USERS})
+    });
+  }catch(e){ console.warn('jbPushUsers:',e); }
+}
+async function ghPushUsers_OLD(){
   try{
     var payload = JSON.stringify({users:_USERS, ts:new Date().toISOString()});
     var content = btoa(unescape(encodeURIComponent(payload)));
@@ -1971,6 +1958,19 @@ async function ghPushUsers(){
 }
 
 async function ghPullUsers(){
+  try{
+    var r = await fetch(_JB_URL + _JB_USERS_BIN + '/latest',
+      {headers:{'X-Master-Key':_JB_KEY}});
+    if(r.ok){
+      var d = await r.json();
+      if(d.record && d.record.users && d.record.users.length > 0){
+        _USERS = d.record.users;
+        localStorage.setItem('sb_users_db', JSON.stringify(_USERS));
+      }
+    }
+  }catch(e){ console.warn('jbPullUsers:',e); }
+}
+async function ghPullUsers_OLD(){
   try{
     var r = await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json?t='+Date.now(),
       {headers:{'Authorization':'token '+_GH_TOKEN}});

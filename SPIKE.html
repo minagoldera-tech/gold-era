@@ -2705,6 +2705,115 @@ function p2xlConfirm(){
 }
 // ===== END PDF2XL =====
 
+// ===== ADMIN USER MANAGEMENT =====
+
+function openAdmin(){ admOpen(); }
+function admOpen(){
+  if(!_CU || _CU.role!=='admin'){toast('⛔ للمدير فقط','err');return;}
+  var p=document.getElementById('adm-panel');
+  p.style.display='flex';
+  admList();
+}
+
+function admClose(){
+  document.getElementById('adm-panel').style.display='none';
+}
+
+function admList(){
+  var d=document.getElementById('adm-list');
+  if(!d)return;
+  if(_USERS.length===0){d.innerHTML='';return;}
+  var h='<div style="font-size:13px;font-weight:700;color:#1A1916;margin-bottom:10px">👥 المستخدمون الحاليون</div>';
+  _USERS.forEach(function(u,i){
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;background:#F5F4F1;border-radius:9px;padding:10px 14px;margin-bottom:7px;">';
+    h+='<div><span style="font-weight:700;font-size:13px;">'+u.name+'</span>';
+    h+='<span style="font-size:11px;color:#9C9488;margin-right:8px;">@'+u.u+'</span>';
+    h+='<span style="font-size:11px;background:'+(u.role==='admin'?'#C8860A':'#2D7A4F')+';color:#fff;padding:2px 8px;border-radius:5px;margin-right:6px;">'+(u.role==='admin'?'مدير':'مستخدم')+'</span></div>';
+    h+='<div style="display:flex;gap:6px;">';
+    h+='<button onclick="admEdit('+i+')" style="background:#E8E5DF;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">✏️ تعديل</button>';
+    if(u.u!==(_CU?_CU.u:'')){
+      h+='<button onclick="admDelete('+i+')" style="background:#FDECEA;color:#C0392B;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">🗑️ حذف</button>';
+    }
+    h+='</div></div>';
+  });
+  d.innerHTML=h;
+}
+
+function admAddUser(){
+  var u=document.getElementById('adm-nu').value.trim().toUpperCase();
+  var p=document.getElementById('adm-np').value.trim();
+  var n=document.getElementById('adm-nn').value.trim();
+  var r=document.getElementById('adm-nr').value;
+  if(!u||!p||!n){toast('⚠️ كمّل كل الحقول','err');return;}
+  if(_USERS.find(function(x){return x.u===u;})){toast('⚠️ المستخدم موجود بالفعل','err');return;}
+  // اجمع الصلاحيات
+  var pages={};
+  ['dash','in','out','scan','pdf2xl','cat','inv','rep','overview'].forEach(function(pg){
+    var cb=document.getElementById('pg-'+pg);
+    if(cb) pages[pg]=cb.checked;
+  });
+  var newUser={u:u,p:p,name:n,role:r,pages:pages};
+  _USERS.push(newUser);
+  localStorage.setItem('sb_users_db',JSON.stringify(_USERS));
+  ghPushUsers();
+  // مسح الحقول
+  document.getElementById('adm-nu').value='';
+  document.getElementById('adm-np').value='';
+  document.getElementById('adm-nn').value='';
+  document.getElementById('adm-nr').value='user';
+  admList();
+  toast('✅ تم إضافة المستخدم: '+n,'ok');
+}
+
+var _editIdx=-1;
+function admEdit(i){
+  _editIdx=i;
+  var u=_USERS[i];
+  var m=document.getElementById('edit-user-modal');
+  document.getElementById('edit-user-title').textContent='تعديل: '+u.name;
+  document.getElementById('edit-pass').value=u.p||'';
+  document.getElementById('edit-pass-hint').textContent='المرور الحالي: '+u.p;
+  ['dash','in','out','scan','pdf2xl','cat','inv','rep','overview'].forEach(function(pg){
+    var cb=document.getElementById('ep-'+pg);
+    if(cb) cb.checked=!u.pages||u.pages[pg]!==false;
+  });
+  m.style.display='flex';
+}
+
+function admCloseEdit(){
+  document.getElementById('edit-user-modal').style.display='none';
+  _editIdx=-1;
+}
+
+function admSaveEdit(){
+  if(_editIdx<0)return;
+  var newPass=document.getElementById('edit-pass').value.trim();
+  if(newPass) _USERS[_editIdx].p=newPass;
+  var pages={};
+  ['dash','in','out','scan','pdf2xl','cat','inv','rep','overview'].forEach(function(pg){
+    var cb=document.getElementById('ep-'+pg);
+    if(cb) pages[pg]=cb.checked;
+  });
+  _USERS[_editIdx].pages=pages;
+  localStorage.setItem('sb_users_db',JSON.stringify(_USERS));
+  ghPushUsers();
+  admCloseEdit();
+  admList();
+  toast('✅ تم حفظ التعديلات','ok');
+}
+
+function admDelete(i){
+  var u=_USERS[i];
+  if(!confirm('هل تريد حذف المستخدم: '+u.name+'?'))return;
+  _USERS.splice(i,1);
+  localStorage.setItem('sb_users_db',JSON.stringify(_USERS));
+  ghPushUsers();
+  admList();
+  toast('🗑️ تم الحذف','ok');
+}
+
+// ===== END ADMIN USER MANAGEMENT =====
+
 function doLogout(){
   if(typeof _autoSave==='function') _autoSave();
   _CU=null;

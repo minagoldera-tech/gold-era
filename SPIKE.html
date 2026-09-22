@@ -1847,27 +1847,24 @@ var _USERS = (function(){
 })();
 var _CU = null;
 
-// Pull users from GitHub on startup to sync across devices
+// Pull users from JSONBin on startup
 var _usersReady = false;
 (async function(){
   try{
-    var btn = document.querySelector('#lgo .login-btn');
-    if(btn){ btn.disabled=true; btn.textContent='جاري التحميل...'; }
-    var r = await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json?t='+Date.now(),
-      {headers:{'Authorization':'token '+_GH_TOKEN}});
+    var ctrl = new AbortController();
+    setTimeout(function(){ ctrl.abort(); }, 5000);
+    var r = await fetch(_JB_URL + _JB_USERS_BIN + '/latest',
+      {headers:{'X-Master-Key':_JB_KEY}, signal:ctrl.signal});
     if(r.ok){
       var d = await r.json();
-      var decoded = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
-      if(decoded.users && decoded.users.length>0){
-        _USERS = decoded.users;
+      if(d.record && d.record.users && d.record.users.length > 0){
+        _USERS = d.record.users;
         localStorage.setItem('sb_users_db', JSON.stringify(_USERS));
       }
     }
   }catch(e){}
   finally{
     _usersReady = true;
-    var btn = document.querySelector('#lgo .login-btn');
-    if(btn){ btn.disabled=false; btn.textContent='دخول ←'; }
   }
 })();
 
@@ -1943,24 +1940,6 @@ async function ghPushUsers(){
     });
   }catch(e){ console.warn('jbPushUsers:',e); }
 }
-async function ghPushUsers_OLD(){
-  try{
-    var payload = JSON.stringify({users:_USERS, ts:new Date().toISOString()});
-    var content = btoa(unescape(encodeURIComponent(payload)));
-    var rGet = await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json?t='+Date.now(),
-      {headers:{'Authorization':'token '+_GH_TOKEN}});
-    var sha = null;
-    if(rGet.ok){ try{ var d=await rGet.json(); sha=d.sha; }catch(e){} }
-    var body={message:'users sync '+new Date().toISOString(),content:content};
-    if(sha) body.sha=sha;
-    var r=await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json',{
-      method:'PUT',
-      headers:{'Authorization':'token '+_GH_TOKEN,'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
-    if(!r.ok){ var err=await r.text(); console.log('ghPushUsers err:',err); }
-  }catch(e){ console.log('ghPushUsers exception:',e); }
-}
 
 async function ghPullUsers(){
   try{
@@ -1974,19 +1953,6 @@ async function ghPullUsers(){
       }
     }
   }catch(e){ console.warn('jbPullUsers:',e); }
-}
-async function ghPullUsers_OLD(){
-  try{
-    var r = await fetch('https://api.github.com/repos/'+_GH_USER+'/'+_GH_REPO+'/contents/users.json?t='+Date.now(),
-      {headers:{'Authorization':'token '+_GH_TOKEN}});
-    if(!r.ok) return;
-    var d = await r.json();
-    var decoded = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\n/g,'')))));
-    if(decoded.users && decoded.users.length>0){
-      _USERS = decoded.users;
-      localStorage.setItem('sb_users_db', JSON.stringify(_USERS));
-    }
-  }catch(e){}
 }
 
 function tryLogin(){
@@ -2739,9 +2705,9 @@ function admList(){
     h+='<span style="font-size:11px;color:#9C9488;margin-right:8px;">@'+u.u+'</span>';
     h+='<span style="font-size:11px;background:'+(u.role==='admin'?'#C8860A':'#2D7A4F')+';color:#fff;padding:2px 8px;border-radius:5px;margin-right:6px;">'+(u.role==='admin'?'مدير':'مستخدم')+'</span></div>';
     h+='<div style="display:flex;gap:6px;">';
-    h+='<button onclick="admEdit('+i+')" style="background:#E8E5DF;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">✏️ تعديل</button>';
+    h+='<button onclick="admEdit('+i+')" style="background:#E8E5DF;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;">✏️ تعديل</button>';
     if(u.u!==(_CU?_CU.u:'')){
-      h+='<button onclick="admDelete('+i+')" style="background:#FDECEA;color:#C0392B;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Cairo',sans-serif;">🗑️ حذف</button>';
+      h+='<button onclick="admDelete('+i+')" style="background:#FDECEA;color:#C0392B;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;">🗑️ حذف</button>';
     }
     h+='</div></div>';
   });

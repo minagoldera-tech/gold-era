@@ -2707,6 +2707,15 @@ function p2xlConfirm(){
 
 // ===== ADMIN USER MANAGEMENT =====
 
+function closeUserMenu(){
+  var m=document.getElementById('user-menu');
+  if(m) m.style.display='none';
+}
+function toggleUserMenu(){
+  var m=document.getElementById('user-menu');
+  if(!m) return;
+  m.style.display = m.style.display==='block' ? 'none' : 'block';
+}
 function openAdmin(){ admOpen(); }
 function admOpen(){
   if(!_CU || _CU.role!=='admin'){toast('⛔ للمدير فقط','err');return;}

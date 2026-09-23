@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar-u-nu-latn" dir="rtl">
 <head>
@@ -661,6 +662,22 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
     </div>
     <div class="tuser">
+      <!-- Undo + Sync buttons -->
+      <div style="display:flex;gap:6px;align-items:center;margin-left:8px">
+        <button id="UNDO-BTN" onclick="doUndo()" title="تراجع عن آخر عملية"
+          style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--muted);cursor:pointer;font-size:13px;transition:.2s;display:flex;align-items:center;gap:4px"
+          onmouseover="this.style.borderColor='var(--warn)';this.style.color='var(--warn)'"
+          onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--muted)'">
+          ↩️ <span id="UNDO-COUNT" style="font-size:10px;background:#C8983030;color:var(--warn);border-radius:4px;padding:1px 5px;display:none">0</span>
+        </button>
+        <button onclick="doSync()" title="مزامنة البيانات"
+          style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--muted);cursor:pointer;font-size:13px;transition:.2s"
+          onmouseover="this.style.borderColor='var(--ok)';this.style.color='var(--ok)'"
+          onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--muted)'"
+          id="SYNC-BTN">
+          🔄
+        </button>
+      </div>
       <div class="ubadge">
         <div class="uav" id="TAV">م</div>
         <div><div class="uname" id="TN">—</div><div class="urole" id="TR">—</div></div>
@@ -794,7 +811,15 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <div class="thead2">
           <b>الحركات</b>
           <div style="display:flex;gap:8px">
-            <select class="si" onchange="filterMain(this.value)" style="width:120px"><option value="">الكل</option><option value="وارد">وارد</option><option value="منصرف">منصرف</option><option value="سلفة">سلفة</option><option value="استرجاع">استرجاع</option></select>
+            <select class="si" onchange="filterMain(this.value)" style="width:130px">
+              <option value="">الكل</option>
+              <option value="وارد">وارد</option>
+              <option value="وارد استوك">وارد استوك</option>
+              <option value="منصرف">منصرف</option>
+              <option value="سلفة">سلفة</option>
+              <option value="استرجاع">استرجاع</option>
+              <option value="عباسية">عباسية</option>
+            </select>
           </div>
         </div>
         <div id="MAIN-TABLE"></div>
@@ -1524,11 +1549,36 @@ async function saveStock(){
   const cnt=parseFloat(v('STK-CNT'))||0;
   const w875=wt*kt/875;
   const note=v('STK-NOTE').trim();
-  const sid='stk'+Date.now();
-  await DB.doc(`stock/${sid}`).set({id:sid,name,date:v('STK-DATE'),weight:wt,karat:kt,w875,count:cnt,note,by:CU.username,at:Date.now()});
-  clearCache('stock');
-  toast('ok',`✅ تم حفظ الاستوك: ${name} — ${N(wt)} جرام`);
+  const date=v('STK-DATE');
+  const nowTs=Date.now(), timeStr=nowTime();
+
+  // ١. حفظ في الاستوك
+  const sid='stk'+nowTs;
+  await DB.doc(`stock/${sid}`).set({id:sid,name,date,weight:wt,karat:kt,w875,count:cnt,note,by:CU.username,at:nowTs});
+
+  // ٢. إضافة للرصيد الرئيسي كـ وارد استوك
+  const bal=calcBal(mainMovs);
+  const newBal=bal+w875;
+  const mid='m'+nowTs;
+  await DB.doc(`main/${mid}`).set({
+    id:mid,date,type:'وارد استوك',weight:wt,karat:kt,w875,w1000:wt*kt/1000,
+    balance:newBal,note:`[استوك] ${name}${note?' — '+note:''}`,
+    time:timeStr,by:CU.username,at:nowTs+1
+  });
+
+  // ٣. Undo stack
+  pushUndo({
+    label:`إضافة استوك: ${name}`,
+    ops:[
+      {action:'delete',col:'stock',id:sid},
+      {action:'delete',col:'main',id:mid}
+    ]
+  });
+
+  clearCache('stock','main');
+  toast('ok',`✅ ${name} — ${N(wt)} جرام — أُضيف للاستوك والرصيد الرئيسي`);
   cm('MOD-STOCK');
+  loadMain();
   loadStockTable();
 }
 
@@ -2244,7 +2294,7 @@ function renderMainTable(){
     data.map(m=>`<tr>
       <td style="white-space:nowrap;font-size:12px">${arabicDate(m.date)}</td>
       <td style="font-family:monospace;font-size:11px;color:var(--muted)">${m.time||'—'}</td>
-      <td><span class="b ${m.type==='وارد'?'bg':m.type==='سلفة'?'bo':m.type==='استرجاع'?'bbl':'br'}">${m.type}</span></td>
+      <td><span class="b ${ m.type==="وارد"||m.type==="وارد استوك"?"bg":m.type==="سلفة"||m.type==="استرجاع"?"bo":m.type==="عباسية"?"br":"br" }" style="${ m.type==="وارد استوك"?"background:#C8983025;color:var(--warn);border-color:#C8983066":m.type==="عباسية"?"background:#E74C3C25;color:#E74C3C":"" }">${m.type}</span></td>
       <td class="num">${N(m.weight)}</td>
       <td><span class="b bgld">${m.karat}</span></td>
       <td class="num">${N(m.w875)}</td>
@@ -2343,6 +2393,10 @@ async function saveMainMov(){
     'حركة رئيسية',wt,0,kt,w875,fullNote,date);
   clearCache('main','sub');
   const typeLabel=type==='عباسية'?'🏪 منصرف للعباسية':type;
+  // Undo — حفظ IDs للحذف
+  const undoOps=[{action:'delete',col:'main',id:'m'+nowTs}];
+  if(type==='منصرف') undoOps.push({action:'delete',col:'sub',id:'s'+nowTs});
+  pushUndo({label:`${typeLabel}: ${N(wt)} جرام`,ops:undoOps});
   toast('ok',`${typeLabel} — ${N(newBal)} جرام — ${timeStr}`);
   cm('MOD-MAIN'); loadMain();
 }
@@ -2896,6 +2950,66 @@ async function loadTagAbbasiya(){
     </tfoot>
   </table>`;
 }
+// ================================================================
+// UNDO STACK — نظام التراجع
+// ================================================================
+const undoStack=[];
+const MAX_UNDO=10;
+
+function pushUndo(entry){
+  undoStack.push(entry);
+  if(undoStack.length>MAX_UNDO) undoStack.shift();
+  updateUndoBtn();
+}
+
+function updateUndoBtn(){
+  const btn=id('UNDO-BTN'), cnt=id('UNDO-COUNT');
+  if(!btn||!cnt)return;
+  if(undoStack.length>0){
+    cnt.textContent=undoStack.length; cnt.style.display='inline';
+    btn.title=`تراجع: "${undoStack[undoStack.length-1]?.label}"`;
+  } else {
+    cnt.style.display='none'; btn.title='لا يوجد عمليات للتراجع';
+  }
+}
+
+async function doUndo(){
+  if(!undoStack.length){toast('in','لا يوجد عمليات للتراجع');return;}
+  const entry=undoStack.pop();
+  updateUndoBtn();
+  toast('in',`جاري التراجع: ${entry.label}...`);
+  try{
+    for(const op of entry.ops){
+      if(op.action==='delete') await DB.doc(`${op.col}/${op.id}`).delete();
+      else if(op.action==='set') await DB.doc(`${op.col}/${op.id}`).set(op.data);
+    }
+    clearCache();
+    const t=document.querySelector('.tab.act')?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
+    if(t&&TAB_LOADERS[t]) TAB_LOADERS[t]();
+    toast('ok',`↩️ تم التراجع: ${entry.label}`);
+  }catch(e){ toast('er','خطأ في التراجع'); undoStack.push(entry); updateUndoBtn(); }
+}
+
+// ================================================================
+// SYNC — مزامنة يدوية
+// ================================================================
+async function doSync(){
+  const btn=id('SYNC-BTN');
+  if(btn) btn.style.transform='rotate(0deg)';
+  toast('in','🔄 جاري المزامنة...');
+  clearCache();
+  // animate
+  let deg=0;
+  const anim=setInterval(()=>{ deg+=30; if(btn) btn.textContent='🔄'; },100);
+  try{
+    const t=document.querySelector('.tab.act')?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1]||'dash';
+    if(TAB_LOADERS[t]) await TAB_LOADERS[t]();
+    toast('ok','✅ تمت المزامنة');
+  }catch(e){ toast('er','خطأ في المزامنة'); }
+  clearInterval(anim);
+  if(btn) btn.textContent='🔄';
+}
+
 async function loadAbb(){
   const fromFilter=id('ABB-FROM')?.value||'';
   const d1=id('ABB-D1')?.value||'';
@@ -3069,7 +3183,7 @@ async function toggleUser(un){const u=users.find(u=>u.username===un);if(!u)retur
 // ================================================================
 function calcBal(movs){
   return movs.reduce((s,m)=>{
-    if(m.type==='وارد'||m.type==='سلفة'||m.type==='استرجاع') return s+(m.w875||0);
+    if(m.type==='وارد'||m.type==='سلفة'||m.type==='استرجاع'||m.type==='وارد استوك') return s+(m.w875||0);
     if(m.type==='منصرف'||m.type==='عباسية') return s-(m.w875||0);
     return s;
   },0);

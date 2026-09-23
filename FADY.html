@@ -110,7 +110,7 @@ body {
   transform: translateX(-50%) rotate(-40deg);
   width:120px; height:110px;
   transform-origin: 72% 18%;
-  animation: ladleTilt 1.8s ease-in-out forwards;
+  animation: ladleTilt 1.0s ease-in-out forwards;
 }
 @keyframes ladleTilt {
   0%  { transform:translateX(-50%) rotate(-40deg); }
@@ -124,7 +124,7 @@ body {
   width:7px; height:0; border-radius:4px;
   background:linear-gradient(to bottom,#FFE082,#FFB300,#E65100aa);
   opacity:0;
-  animation:streamFlow 1.8s forwards;
+  animation:streamFlow 1.0s forwards;
 }
 @keyframes streamFlow {
   0%,33%{ height:0;opacity:0; }
@@ -146,7 +146,7 @@ body {
   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
   clip-path:inset(100% 0 0% 0);
   position:relative;
-  animation:pourDown var(--pd,.55s) ease-out var(--delay,0s) forwards;
+  animation:pourDown var(--pd,.35s) ease-out var(--delay,0s) forwards;
 }
 @keyframes pourDown {
   0%  { clip-path:inset(100% 0 0% 0); }
@@ -159,7 +159,7 @@ body {
   display:block; height:1px; width:0;
   background:linear-gradient(90deg,transparent,#C8A84B 40%,#FFD54F 50%,#C8A84B 60%,transparent);
   margin:12px auto 0;
-  animation:divExpand .5s ease-out var(--div-delay,2.2s) forwards;
+  animation:divExpand .3s ease-out var(--div-delay,.9s) forwards;
 }
 @keyframes divExpand { to { width:min(320px,80vw); } }
 
@@ -169,7 +169,7 @@ body {
   font-weight:600; letter-spacing:10px;
   color:#7A8090; display:block; opacity:0;
   margin-top:8px; direction:ltr;
-  animation:factUp .4s ease-out var(--fact-delay,2.5s) forwards;
+  animation:factUp .3s ease-out var(--fact-delay,1.0s) forwards;
 }
 @keyframes factUp {
   0%  { opacity:0; transform:translateY(6px); }
@@ -187,7 +187,7 @@ body {
   box-shadow:0 16px 48px #00000060;
   position:relative; z-index:10;
   opacity:0; transform:translateY(16px);
-  animation:boxRise .45s ease-out var(--box-delay,2.8s) forwards;
+  animation:boxRise .4s ease-out var(--box-delay,1.2s) forwards;
 }
 @keyframes boxRise { to { opacity:1; transform:translateY(0); } }
 
@@ -619,21 +619,21 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
   <!-- GOLD ERA — letter by letter pour -->
   <div id="ge-logo" style="direction:ltr">
     <div id="ge-word-wrap" style="display:inline-flex;align-items:flex-end;gap:0;position:relative;direction:ltr">
-      <span class="ge-letter" style="--delay:.85s;--pd:1.1s"><span class="ge-drip" style="--delay:.85s;--pd:1.1s"></span>G</span>
-      <span class="ge-letter" style="--delay:1.35s;--pd:1.0s"><span class="ge-drip" style="--delay:1.35s;--pd:1.0s"></span>O</span>
-      <span class="ge-letter" style="--delay:1.8s;--pd:1.0s"><span class="ge-drip" style="--delay:1.8s;--pd:1.0s"></span>L</span>
-      <span class="ge-letter" style="--delay:2.25s;--pd:1.0s"><span class="ge-drip" style="--delay:2.25s;--pd:1.0s"></span>D</span>
+      <span class="ge-letter" style="--delay:.1s;--pd:.22s"><span class="ge-drip" style="--delay:.1s;--pd:.22s"></span>G</span>
+      <span class="ge-letter" style="--delay:.2s;--pd:.22s"><span class="ge-drip" style="--delay:.2s;--pd:.22s"></span>O</span>
+      <span class="ge-letter" style="--delay:.3s;--pd:.22s"><span class="ge-drip" style="--delay:.3s;--pd:.22s"></span>L</span>
+      <span class="ge-letter" style="--delay:.4s;--pd:.22s"><span class="ge-drip" style="--delay:.4s;--pd:.22s"></span>D</span>
       <span class="ge-space"></span>
-      <span class="ge-letter" style="--delay:2.75s;--pd:1.0s"><span class="ge-drip" style="--delay:2.75s;--pd:1.0s"></span>E</span>
-      <span class="ge-letter" style="--delay:3.2s;--pd:1.0s"><span class="ge-drip" style="--delay:3.2s;--pd:1.0s"></span>R</span>
-      <span class="ge-letter" style="--delay:3.65s;--pd:1.0s"><span class="ge-drip" style="--delay:3.65s;--pd:1.0s"></span>A</span>
+      <span class="ge-letter" style="--delay:.5s;--pd:.22s"><span class="ge-drip" style="--delay:.5s;--pd:.22s"></span>E</span>
+      <span class="ge-letter" style="--delay:.6s;--pd:.22s"><span class="ge-drip" style="--delay:.6s;--pd:.22s"></span>R</span>
+      <span class="ge-letter" style="--delay:.7s;--pd:.22s"><span class="ge-drip" style="--delay:.7s;--pd:.22s"></span>A</span>
     </div>
-    <span class="ge-divider" style="--div-delay:5s"></span>
-    <span class="ge-factory" style="--fact-delay:5.3s">FACTORY</span>
+    <span class="ge-divider" style="--div-delay:1.8s"></span>
+    <span class="ge-factory" style="--fact-delay:2.0s">FACTORY</span>
   </div>
 
   <!-- Login form -->
-  <div class="lbox" style="--box-delay:5.9s">
+  <div class="lbox" style="--box-delay:2.3s">
     <div id="LERR" class="lerr"></div>
     <div class="fg"><label>اسم المستخدم</label><input id="LU" type="text" placeholder="MINA" autocomplete="off"></div>
     <div class="fg"><label>كلمة المرور</label><input id="LP" type="password" placeholder="••••••••"></div>
@@ -776,13 +776,18 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="MAIN-STATS" class="sgrid"></div>
 
-      <!-- STOCK TABLE -->
+      <!-- STOCK SECTION WITH TABS -->
       <div class="tc" style="margin-bottom:16px">
         <div class="thead2" style="background:#C8983010;border-bottom-color:#C8983040">
           <b style="color:var(--warn)">📦 الاستوك — المخزون الداخلي</b>
-          <span style="font-size:11px;color:var(--muted)">أصناف محفوظة في الخزنة</span>
+          <div style="display:flex;gap:6px">
+            <button id="STK-TAB-NOW" class="btn bxs" onclick="showStockTab('now')"
+              style="background:var(--gold);color:#000;border:none">المخزون الحالي</button>
+            <button id="STK-TAB-LOG" class="btn bxs bs" onclick="showStockTab('log')">📋 سجل الاستوك</button>
+          </div>
         </div>
-        <div id="STOCK-TABLE"><div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك — اضغط "إضافة استوك"</span></div></div>
+        <div id="STOCK-TABLE-NOW"><div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك — اضغط "إضافة استوك"</span></div></div>
+        <div id="STOCK-TABLE-LOG" style="display:none"></div>
       </div>
 
       <div class="tc">
@@ -1057,8 +1062,14 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         </div>
         <div class="fg" style="margin:0"><label>Date *</label><input type="date" id="SS-DATE"></div>
       </div>
+      <!-- وزن القطعة — قابل للتعديل -->
+      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام)</label>
+        <input type="number" id="SS-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="onSSWtChange()"
+          style="font-family:monospace;font-weight:800;color:var(--gold);background:var(--s2);border:1.5px solid var(--gold);margin-top:6px">
+      </div>
       <div class="fr" style="margin-top:12px">
-        <div class="fg" style="margin:0"><label>Weight (g) *</label><input type="number" id="SS-WT" step="0.001" placeholder="0.000" oninput="onSSWtChange()"></div>
+        <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label><input type="number" id="SS-WT" step="0.001" placeholder="0.000" oninput="onSSWtChange()"></div>
         <div class="fg" style="margin:0"><label>Karat</label><input type="text" id="SS-KT" readonly style="opacity:.7;font-family:monospace"></div>
       </div>
       <div class="fr" style="margin-top:12px">
@@ -1096,8 +1107,14 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         </div>
         <div class="fg" style="margin:0"><label>Date *</label><input type="date" id="ADD-DATE"></div>
       </div>
+      <!-- وزن القطعة — قابل للتعديل -->
+      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام)</label>
+        <input type="number" id="ADD-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="onAddWtChange()"
+          style="font-family:monospace;font-weight:800;color:var(--gold);background:var(--s2);border:1.5px solid var(--gold);margin-top:6px">
+      </div>
       <div class="fr" style="margin-top:12px">
-        <div class="fg" style="margin:0"><label>Weight (g) *</label><input type="number" id="ADD-WT" step="0.001" placeholder="0.000" oninput="onAddWtChange()"></div>
+        <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label><input type="number" id="ADD-WT" step="0.001" placeholder="0.000" oninput="onAddWtChange()"></div>
         <div class="fg" style="margin:0"><label>Karat</label><input type="text" id="ADD-KT" readonly style="opacity:.7;font-family:monospace"></div>
       </div>
       <div class="fr" style="margin-top:12px">
@@ -1216,8 +1233,17 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         </div>
         <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="STK-DATE"></div>
       </div>
+      <!-- وزن القطعة الواحدة — قابل للتعديل -->
+      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام) — قابل للتعديل</label>
+        <input type="number" id="STK-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="calcStk()"
+          style="font-family:monospace;font-size:15px;font-weight:800;color:var(--gold);background:var(--s2);border:1.5px solid var(--gold);margin-top:6px">
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">الوزن الافتراضي من الكتالوج — عدّله لو وزن القطعة مختلف</div>
+      </div>
       <div class="fr" style="margin-top:12px">
-        <div class="fg" style="margin:0"><label>الوزن (جرام) *</label><input type="number" id="STK-WT" step="0.001" placeholder="0.000" oninput="calcStk()"></div>
+        <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label>
+          <input type="number" id="STK-WT" step="0.001" placeholder="0.000" oninput="calcStk()">
+        </div>
         <div class="fg" style="margin:0"><label>العيار</label><input type="text" id="STK-KT" readonly style="opacity:.7;font-family:monospace"></div>
       </div>
       <div class="fr" style="margin-top:12px">
@@ -1358,34 +1384,42 @@ function fillStockDropdown(){
 }
 
 function onStkItemChange(){
-  const cat = getCatByIdx('STK-NAME');
-  if(!cat){id('STK-KT').value='';id('STK-CNT').value='';id('STK-875').value='';id('STK-WT').value='';return;}
+  const cat=getCatByIdx('STK-NAME');
+  if(!cat){['STK-KT','STK-CNT','STK-875','STK-WT','STK-UNIT'].forEach(x=>id(x).value='');return;}
   id('STK-KT').value=cat.karat;
-  // ضع الوزن الافتراضي للقطعة الواحدة — قابل للتعديل
-  id('STK-WT').value=cat.w24;
-  calcStk();
+  id('STK-UNIT').value=cat.w24; // وزن القطعة الافتراضي — قابل للتعديل
+  id('STK-WT').value='';
+  id('STK-CNT').value='';
+  id('STK-875').value='';
 }
 
 function calcStk(){
   const cat=getCatByIdx('STK-NAME');
   const wt=parseFloat(v('STK-WT'))||0;
+  const unit=parseFloat(id('STK-UNIT').value)||cat?.w24||0;
   if(!wt){id('STK-CNT').value='';id('STK-875').value='';return;}
   const kt=cat?cat.karat:parseFloat(id('STK-KT').value)||875;
   const w875=wt*kt/875;
-  // العدد = الوزن المدخل ÷ وزن القطعة الافتراضية
-  const cnt=cat?wt/cat.w24:0;
-  id('STK-CNT').value=cat?+(cnt.toFixed(3)):'';
+  const cnt=unit?wt/unit:0;
+  id('STK-CNT').value=unit?+(cnt.toFixed(3)):'';
   id('STK-875').value=+(w875.toFixed(3));
 }
 
 function onStkCntChange(){
-  calcFromCount(()=>getCatByIdx('STK-NAME'),'STK-CNT','STK-WT','STK-875');
+  const cat=getCatByIdx('STK-NAME');
+  const cnt=parseFloat(v('STK-CNT'))||0;
+  const unit=parseFloat(id('STK-UNIT').value)||cat?.w24||0;
+  if(!cnt||!unit)return;
+  const wt=cnt*unit;
+  const kt=cat?cat.karat:875;
+  id('STK-WT').value=+(wt.toFixed(3));
+  id('STK-875').value=+(wt*kt/875).toFixed(3);
 }
 
 function openAddStock(){
   fillStockDropdown();
   id('STK-DATE').value=today();
-  ['STK-WT','STK-CNT','STK-875','STK-NOTE'].forEach(x=>id(x).value='');
+  ['STK-WT','STK-CNT','STK-875','STK-NOTE','STK-UNIT'].forEach(x=>id(x).value='');
   id('STK-KT').value='';
   id('STK-NAME').value='';
   om('MOD-STOCK');
@@ -1410,15 +1444,49 @@ async function saveStock(){
   loadStockTable();
 }
 
+function showStockTab(tab){
+  const isNow=tab==='now';
+  id('STOCK-TABLE-NOW').style.display=isNow?'block':'none';
+  id('STOCK-TABLE-LOG').style.display=isNow?'none':'block';
+  id('STK-TAB-NOW').style.background=isNow?'var(--gold)':'';
+  id('STK-TAB-NOW').style.color=isNow?'#000':'';
+  id('STK-TAB-LOG').style.background=isNow?'':'var(--inf)';
+  id('STK-TAB-LOG').style.color=isNow?'':'#fff';
+  if(!isNow) loadStockLog();
+}
+
+async function loadStockLog(){
+  const snap=await DB.collection('stock').get();
+  const all=snap.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at);
+  if(!all.length){
+    id('STOCK-TABLE-LOG').innerHTML='<div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد سجل استوك</span></div>';
+    return;
+  }
+  id('STOCK-TABLE-LOG').innerHTML=`<table><thead><tr>
+    <th>التاريخ</th><th>الصنف</th><th>الوزن</th><th>العيار</th><th>875</th><th>العدد</th><th>بواسطة</th><th>ملاحظة</th>
+  </tr></thead><tbody>${
+    all.map(s=>`<tr>
+      <td style="font-size:11px;color:var(--muted)">${arabicDate(s.date)}</td>
+      <td style="font-weight:700;color:var(--warn)">${s.name}</td>
+      <td class="num">${N(s.weight)}</td>
+      <td><span class="b bgld">${s.karat}</span></td>
+      <td class="num" style="color:var(--gold);font-weight:800">${N(s.w875)}</td>
+      <td class="num">${s.count?N3(s.count):'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${s.by||'—'}</td>
+      <td style="color:var(--muted)">${s.note||'—'}</td>
+    </tr>`).join('')
+  }</tbody></table>`;
+}
+
 async function loadStockTable(){
   const snap=await DB.collection('stock').get();
   stockItems=snap.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at);
   const totalW875=stockItems.reduce((s,i)=>s+(i.w875||0),0);
   if(!stockItems.length){
-    id('STOCK-TABLE').innerHTML='<div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك</span></div>';
+    id('STOCK-TABLE-NOW').innerHTML='<div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك</span></div>';
     return;
   }
-  id('STOCK-TABLE').innerHTML=`<table><thead><tr>
+  id('STOCK-TABLE-NOW').innerHTML=`<table><thead><tr>
     <th>التاريخ</th><th>الصنف</th><th>الوزن</th><th>العيار</th><th>875</th><th>العدد</th><th>ملاحظة</th><th></th>
   </tr></thead><tbody>${
     stockItems.map(s=>`<tr>
@@ -2045,20 +2113,33 @@ function openSubTransfer(){
 
 function onSSItemChange(){
   const cat=getCatByIdx('SS-ITEM');
-  if(!cat){['SS-KT','SS-CNT','SS-875'].forEach(x=>document.getElementById(x).value='');return;}
+  if(!cat){['SS-KT','SS-CNT','SS-875','SS-WT'].forEach(x=>document.getElementById(x).value='');id('SS-UNIT').value='';return;}
   document.getElementById('SS-KT').value=cat.karat;
-  calcFromWeight(()=>getCatByIdx('SS-ITEM'),'SS-WT','SS-CNT','SS-875');
+  id('SS-UNIT').value=cat.w24;
+  document.getElementById('SS-WT').value='';document.getElementById('SS-CNT').value='';document.getElementById('SS-875').value='';
   updateSSPreview();
 }
 function onSSWtChange(){
   const cat=getCatByIdx('SS-ITEM');
   if(cat) document.getElementById('SS-KT').value=cat.karat;
-  calcFromWeight(()=>getCatByIdx('SS-ITEM'),'SS-WT','SS-CNT','SS-875');
+  const wt=parseFloat(document.getElementById('SS-WT').value)||0;
+  const unit=parseFloat(id('SS-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('SS-KT').value)||875;
+  if(!wt){document.getElementById('SS-CNT').value='';document.getElementById('SS-875').value='';updateSSPreview();return;}
+  document.getElementById('SS-CNT').value=+(wt/unit).toFixed(3);
+  document.getElementById('SS-875').value=+(wt*kt/875).toFixed(3);
   updateSSPreview();
 }
 function calcSSFromWt(wt,cat){} // legacy stub
 function onSSCntChange(){
-  calcFromCount(()=>getCatByIdx('SS-ITEM'),'SS-CNT','SS-WT','SS-875');
+  const cat=getCatByIdx('SS-ITEM');
+  const cnt=parseFloat(document.getElementById('SS-CNT').value)||0;
+  const unit=parseFloat(id('SS-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('SS-KT').value)||875;
+  if(!cnt)return;
+  const wt=cnt*unit;
+  document.getElementById('SS-WT').value=+(wt.toFixed(3));
+  document.getElementById('SS-875').value=+(wt*kt/875).toFixed(3);
   updateSSPreview();
 }
 
@@ -2164,18 +2245,31 @@ function openAddDept(dept){
 
 function onAddItemChange(){
   const cat=getCatByIdx('ADD-ITEM');
-  if(!cat){['ADD-KT','ADD-CNT','ADD-875'].forEach(x=>document.getElementById(x).value='');return;}
+  if(!cat){['ADD-KT','ADD-CNT','ADD-875','ADD-WT'].forEach(x=>document.getElementById(x).value='');id('ADD-UNIT').value='';return;}
   document.getElementById('ADD-KT').value=cat.karat;
-  calcFromWeight(()=>getCatByIdx('ADD-ITEM'),'ADD-WT','ADD-CNT','ADD-875');
+  id('ADD-UNIT').value=cat.w24;
+  document.getElementById('ADD-WT').value='';document.getElementById('ADD-CNT').value='';document.getElementById('ADD-875').value='';
 }
 function onAddWtChange(){
   const cat=getCatByIdx('ADD-ITEM');
   if(cat) document.getElementById('ADD-KT').value=cat.karat;
-  calcFromWeight(()=>getCatByIdx('ADD-ITEM'),'ADD-WT','ADD-CNT','ADD-875');
+  const wt=parseFloat(document.getElementById('ADD-WT').value)||0;
+  const unit=parseFloat(id('ADD-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('ADD-KT').value)||875;
+  if(!wt){document.getElementById('ADD-CNT').value='';document.getElementById('ADD-875').value='';return;}
+  document.getElementById('ADD-CNT').value=+(wt/unit).toFixed(3);
+  document.getElementById('ADD-875').value=+(wt*kt/875).toFixed(3);
 }
 function calcAddFromWt(wt,cat){} // legacy stub
 function onAddCntChange(){
-  calcFromCount(()=>getCatByIdx('ADD-ITEM'),'ADD-CNT','ADD-WT','ADD-875');
+  const cat=getCatByIdx('ADD-ITEM');
+  const cnt=parseFloat(document.getElementById('ADD-CNT').value)||0;
+  const unit=parseFloat(id('ADD-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('ADD-KT').value)||875;
+  if(!cnt)return;
+  const wt=cnt*unit;
+  document.getElementById('ADD-WT').value=+(wt.toFixed(3));
+  document.getElementById('ADD-875').value=+(wt*kt/875).toFixed(3);
 }
 
 async function saveAddDept(){

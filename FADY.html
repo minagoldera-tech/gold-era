@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GOLD ERA FACTORY — Treasury System</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='mg' cx='38%25' cy='35%25'><stop offset='0%25' stop-color='%23FFECB3'/><stop offset='50%25' stop-color='%23FFB300'/><stop offset='100%25' stop-color='%23BF360C'/></radialGradient></defs><rect x='5' y='40' width='58' height='52' rx='8' fill='%23374151'/><ellipse cx='34' cy='44' rx='26' ry='9' fill='%231F2937'/><ellipse cx='34' cy='43' rx='21' ry='7' fill='url(%23mg)'/><rect x='60' y='14' width='36' height='10' rx='5' fill='%234B5563'/><rect x='59' y='14' width='12' height='28' rx='5' fill='%234B5563'/><ellipse cx='34' cy='43' rx='21' ry='7' fill='%23FFB300' opacity='0.3'><animate attributeName='opacity' values='0.2;0.5;0.2' dur='1s' repeatCount='indefinite'/></ellipse></svg>">
 <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 <style>
@@ -715,7 +716,11 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
     <div id="pg-main" class="pg">
       <div class="pgh">
         <div><div class="pgt">Main Vault — الخزنة الرئيسية</div><div class="pgs">وارد ومنصرف الخزنة الرئيسية</div></div>
-        <button class="btn bp bsm" onclick="openMainMov()">➕ حركة جديدة</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bp bsm" onclick="openMainMov()">➕ حركة جديدة</button>
+          <button class="btn bsm" style="background:#C8983020;color:var(--warn);border:1px solid var(--warn)" onclick="openAddStock()">📦 إضافة استوك</button>
+          <button class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="openRecovery()">↩️ استرجاع من الفرعية</button>
+        </div>
       </div>
       <!-- VAULT ILLUSTRATION -->
       <div style="display:flex;justify-content:center;margin-bottom:22px">
@@ -739,56 +744,52 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
               <stop offset="100%" stop-color="#7A5C10"/>
             </linearGradient>
           </defs>
-          <!-- Shadow -->
           <ellipse cx="170" cy="196" rx="120" ry="6" fill="#000" opacity=".4"/>
-          <!-- Vault body -->
           <rect x="30" y="20" width="280" height="170" rx="14" fill="url(#vbody)" stroke="#C8A84B" stroke-width="1.5"/>
-          <!-- Gold top bar -->
           <rect x="30" y="20" width="280" height="6" rx="3" fill="url(#vgold)"/>
-          <!-- Gold bottom bar -->
           <rect x="30" y="184" width="280" height="6" rx="3" fill="url(#vgold)"/>
-          <!-- Door panel -->
           <rect x="60" y="35" width="170" height="142" rx="8" fill="url(#vdoor)" stroke="#C8A84B44" stroke-width="1"/>
-          <!-- Door bolts -->
           <circle cx="75" cy="50" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
           <circle cx="75" cy="92" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
           <circle cx="75" cy="134" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
           <circle cx="215" cy="50" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
           <circle cx="215" cy="92" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
           <circle cx="215" cy="134" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
-          <!-- Center dial ring -->
           <circle cx="145" cy="106" r="38" fill="#21262D" stroke="#C8A84B" stroke-width="2"/>
           <circle cx="145" cy="106" r="30" fill="#161B22" stroke="#C8A84B44" stroke-width="1"/>
-          <!-- Dial marks -->
           <line x1="145" y1="78" x2="145" y2="84" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
           <line x1="145" y1="128" x2="145" y2="134" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
           <line x1="117" y1="106" x2="123" y2="106" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
           <line x1="167" y1="106" x2="173" y2="106" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
-          <!-- Knob -->
           <circle cx="145" cy="106" r="14" fill="url(#vknob)"/>
           <circle cx="145" cy="106" r="5" fill="#161B22"/>
-          <!-- Dial pointer -->
           <line x1="145" y1="106" x2="155" y2="88" stroke="#D4B86A" stroke-width="2" stroke-linecap="round"/>
-          <!-- Handle -->
           <rect x="233" y="96" width="22" height="20" rx="5" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
           <rect x="238" y="101" width="12" height="10" rx="3" fill="none" stroke="#C8A84B66" stroke-width="1"/>
-          <!-- MAIN label -->
           <text x="145" y="165" text-anchor="middle" font-family="Cairo,sans-serif" font-size="11" font-weight="700" fill="#C8A84B" letter-spacing="3">MAIN VAULT</text>
-          <!-- Gold bars hint inside -->
           <rect x="88" y="50" width="24" height="10" rx="2" fill="#C8A84B" opacity=".15"/>
           <rect x="116" y="50" width="24" height="10" rx="2" fill="#C8A84B" opacity=".15"/>
           <rect x="144" y="50" width="24" height="10" rx="2" fill="#C8A84B" opacity=".15"/>
-          <!-- Legs -->
           <rect x="70" y="186" width="20" height="10" rx="3" fill="#21262D" stroke="#30363D" stroke-width="1"/>
           <rect x="250" y="186" width="20" height="10" rx="3" fill="#21262D" stroke="#30363D" stroke-width="1"/>
         </svg>
       </div>
       <div id="MAIN-STATS" class="sgrid"></div>
+
+      <!-- STOCK TABLE -->
+      <div class="tc" style="margin-bottom:16px">
+        <div class="thead2" style="background:#C8983010;border-bottom-color:#C8983040">
+          <b style="color:var(--warn)">📦 الاستوك — المخزون الداخلي</b>
+          <span style="font-size:11px;color:var(--muted)">أصناف محفوظة في الخزنة</span>
+        </div>
+        <div id="STOCK-TABLE"><div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك — اضغط "إضافة استوك"</span></div></div>
+      </div>
+
       <div class="tc">
         <div class="thead2">
           <b>الحركات</b>
           <div style="display:flex;gap:8px">
-            <select class="si" onchange="filterMain(this.value)" style="width:120px"><option value="">الكل</option><option value="وارد">وارد</option><option value="منصرف">منصرف</option><option value="سلفة">سلفة</option></select>
+            <select class="si" onchange="filterMain(this.value)" style="width:120px"><option value="">الكل</option><option value="وارد">وارد</option><option value="منصرف">منصرف</option><option value="سلفة">سلفة</option><option value="استرجاع">استرجاع</option></select>
           </div>
         </div>
         <div id="MAIN-TABLE"></div>
@@ -1186,6 +1187,60 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
 </div>
 
 <!-- Confirm -->
+<!-- Stock Modal -->
+<div id="MOD-STOCK" class="mov">
+  <div class="mod" style="max-width:480px">
+    <div class="mh"><div class="mt">📦 إضافة استوك للخزنة الرئيسية</div><button class="mc" onclick="cm('MOD-STOCK')">✕</button></div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>اسم الصنف / الوصف *</label><input type="text" id="STK-NAME" placeholder="مثال: جنيه ذهب، سبيكة..."></div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="STK-DATE"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>الوزن (جرام) *</label><input type="number" id="STK-WT" step="0.001" placeholder="0.000" oninput="calcStk()"></div>
+        <div class="fg" style="margin:0"><label>العيار *</label>
+          <select id="STK-KT" onchange="calcStk()">
+            <option value="875">875 (21)</option>
+            <option value="916">916 (22)</option>
+            <option value="948">948 (23)</option>
+            <option value="999.9" selected>999.9 (24)</option>
+            <option value="1000">1000</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>العدد (اختياري)</label><input type="number" id="STK-CNT" step="1" placeholder="0"></div>
+        <div class="fg" style="margin:0"><label>الوزن بعيار 875</label><input type="text" id="STK-875" readonly style="opacity:.7;font-family:monospace;color:var(--gold)"></div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>ملاحظة</label><textarea id="STK-NOTE" placeholder="..."></textarea></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-STOCK')">إلغاء</button><button class="btn bp" onclick="saveStock()">💾 حفظ الاستوك</button></div>
+  </div>
+</div>
+
+<!-- Recovery Modal -->
+<div id="MOD-RECOVERY" class="mov">
+  <div class="mod" style="max-width:480px">
+    <div class="mh"><div class="mt">↩️ استرجاع من الخزنة الفرعية</div><button class="mc" onclick="cm('MOD-RECOVERY')">✕</button></div>
+    <div class="mb">
+      <div id="REC-INFO" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+        <div style="color:var(--muted);margin-bottom:4px">رصيد الخزنة الفرعية الحالي</div>
+        <div id="REC-SUB-BAL" style="font-size:20px;font-weight:800;color:var(--inf)">—</div>
+      </div>
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>الوزن المُسترجع (جرام بعيار 875) *</label><input type="number" id="REC-WT" step="0.001" placeholder="0.000" oninput="calcRec()"></div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="REC-DATE"></div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>سبب الاسترجاع</label><textarea id="REC-NOTE" placeholder="مثال: فائض، تسوية، إرجاع..."></textarea></div>
+      <div id="REC-PREV" class="calcbox" style="display:none">
+        <div class="row"><span style="color:var(--muted)">رصيد الفرعية بعد الاسترجاع</span><b class="num" style="color:var(--warn)" id="REC-AFTER-SUB">—</b></div>
+        <div class="row"><span style="color:var(--muted)">رصيد الرئيسية بعد الاسترجاع</span><b class="num" style="color:var(--gold)" id="REC-AFTER-MAIN">—</b></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-RECOVERY')">إلغاء</button><button class="btn bp" style="background:var(--inf)" onclick="saveRecovery()">↩️ تنفيذ الاسترجاع</button></div>
+  </div>
+</div>
+
 <div id="MOD-CONF" class="mov">
   <div class="mod" style="max-width:340px">
     <div class="mh"><div class="mt">⚠️ تأكيد</div><button class="mc" onclick="cm('MOD-CONF')">✕</button></div>
@@ -1249,8 +1304,134 @@ const DEST_LBL={hal:'🔥 الحل',tam:'⚙️ التصنيع',dam:'🔨 الد
 const ROLES={admin:'مدير النظام',supervisor:'مشرف',worker:'موظف'};
 
 // ================================================================
-// FIREBASE CONFIG
+// STOCK — استوك الخزنة الرئيسية
 // ================================================================
+let stockItems = [];
+
+function openAddStock(){
+  id('STK-DATE').value=today();
+  ['STK-NAME','STK-WT','STK-CNT','STK-875','STK-NOTE'].forEach(x=>id(x).value='');
+  id('STK-KT').value='999.9';
+  om('MOD-STOCK');
+}
+
+function calcStk(){
+  const wt=parseFloat(v('STK-WT'))||0, kt=parseFloat(v('STK-KT'))||875;
+  id('STK-875').value = wt ? N(wt*kt/875) : '';
+}
+
+async function saveStock(){
+  const name=v('STK-NAME').trim(), date=v('STK-DATE'), wt=parseFloat(v('STK-WT')), kt=parseFloat(v('STK-KT'));
+  const cnt=parseFloat(v('STK-CNT'))||0, note=v('STK-NOTE').trim();
+  if(!name||!wt||!date){toast('er','أكمل البيانات المطلوبة');return;}
+  const w875=wt*kt/875;
+  const sid='stk'+Date.now();
+  await DB.doc(`stock/${sid}`).set({id:sid,name,date,weight:wt,karat:kt,w875,count:cnt,note,by:CU.username,at:Date.now()});
+  clearCache('stock');
+  toast('ok',`✅ تم حفظ الاستوك: ${name} — ${N(wt)} جرام`);
+  cm('MOD-STOCK');
+  loadStockTable();
+}
+
+async function loadStockTable(){
+  const snap = await DB.collection('stock').get();
+  stockItems = snap.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at);
+  const totalW875 = stockItems.reduce((s,i)=>s+(i.w875||0),0);
+  if(!stockItems.length){
+    id('STOCK-TABLE').innerHTML='<div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك</span></div>';
+    return;
+  }
+  id('STOCK-TABLE').innerHTML=`
+    <table><thead><tr>
+      <th>التاريخ</th><th>الصنف</th><th>الوزن</th><th>العيار</th><th>875</th><th>العدد</th><th>ملاحظة</th><th></th>
+    </tr></thead><tbody>
+    ${stockItems.map(s=>`<tr>
+      <td style="font-size:11px;color:var(--muted)">${s.date}</td>
+      <td style="font-weight:700;color:var(--warn)">${s.name}</td>
+      <td class="num">${N(s.weight)}</td>
+      <td><span class="b bgld">${s.karat}</span></td>
+      <td class="num" style="color:var(--gold);font-weight:800">${N(s.w875)}</td>
+      <td class="num">${s.count||'—'}</td>
+      <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis">${s.note||'—'}</td>
+      <td><button class="btn bxs bd2" onclick="delStock('${s.id}')">🗑</button></td>
+    </tr>`).join('')}
+    </tbody>
+    <tfoot><tr style="background:var(--s2)">
+      <td colspan="4" style="font-weight:700;font-size:12px;padding:8px 14px;color:var(--muted)">الإجمالي</td>
+      <td class="num" style="font-weight:900;color:var(--gold);padding:8px 14px">${N(totalW875)}</td>
+      <td colspan="3"></td>
+    </tr></tfoot>
+    </table>`;
+}
+
+async function delStock(sid){
+  conf('حذف هذا الصنف من الاستوك؟', async()=>{
+    await DB.doc(`stock/${sid}`).delete();
+    clearCache('stock');
+    toast('ok','تم الحذف');
+    loadStockTable();
+  });
+}
+
+// ================================================================
+// RECOVERY — استرجاع من الفرعية للرئيسية
+// ================================================================
+async function openRecovery(){
+  id('REC-DATE').value=today();
+  id('REC-WT').value='';
+  id('REC-NOTE').value='';
+  id('REC-PREV').style.display='none';
+  // اعرض رصيد الفرعية
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const subBal=calcBal(sMov);
+  id('REC-SUB-BAL').textContent=N(subBal)+' جرام';
+  om('MOD-RECOVERY');
+}
+
+async function calcRec(){
+  const wt=parseFloat(v('REC-WT'))||0;
+  if(!wt){id('REC-PREV').style.display='none';return;}
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const subBal=calcBal(sMov);
+  const mainBal=calcBal(mainMovs);
+  id('REC-AFTER-SUB').textContent=N(subBal-wt)+' جرام';
+  id('REC-AFTER-MAIN').textContent=N(mainBal+wt)+' جرام';
+  id('REC-PREV').style.display='block';
+}
+
+async function saveRecovery(){
+  const wt=parseFloat(v('REC-WT'))||0, date=v('REC-DATE'), note=v('REC-NOTE').trim();
+  if(!wt||!date){toast('er','أدخل الوزن والتاريخ');return;}
+  const nowTs=Date.now(), timeStr=nowTime();
+  // تحقق من رصيد الفرعية
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const subBal=calcBal(sMov);
+  if(wt>subBal+0.001){toast('er','الوزن أكبر من رصيد الخزنة الفرعية');return;}
+  // خصم من الفرعية
+  const sid='s'+nowTs;
+  const newSubBal=subBal-wt;
+  await DB.doc(`sub/${sid}`).set({
+    id:sid, date, type:'منصرف', item:'استرجاع للخزنة الرئيسية',
+    weight:wt, karat:875, w875:wt, balance:newSubBal,
+    to:'main', note, time:timeStr, by:CU.username, at:nowTs
+  });
+  // إضافة للرئيسية
+  const mainBal=calcBal(mainMovs);
+  const newMainBal=mainBal+wt;
+  const mid='m'+nowTs;
+  await DB.doc(`main/${mid}`).set({
+    id:mid, date, type:'استرجاع', weight:wt, karat:875, w875:wt, w1000:wt/875*1000,
+    balance:newMainBal, note:`استرجاع من الفرعية${note?' — '+note:''}`,
+    time:timeStr, by:CU.username, at:nowTs+1
+  });
+  clearCache('main','sub');
+  toast('ok',`↩️ تم الاسترجاع — ${N(wt)} جرام → الخزنة الرئيسية`);
+  cm('MOD-RECOVERY');
+  loadMain();
+}
 const firebaseConfig = {
   apiKey: "AIzaSyDaJNw4GTCuRxuKoTBMZ9rILISyKb6BHUU",
   authDomain: "gold-era-2025.firebaseapp.com",
@@ -1551,6 +1732,7 @@ async function loadMain(){
     <div class="sc b"><div class="slb">عدد الحركات</div><div class="sv">${mainMovs.length}</div><div class="su">حركة</div></div>
   `;
   renderMainTable();
+  loadStockTable();
 }
 
 function renderMainTable(){
@@ -1562,7 +1744,7 @@ function renderMainTable(){
     data.map(m=>`<tr>
       <td style="white-space:nowrap;font-size:12px">${arabicDate(m.date)}</td>
       <td style="font-family:monospace;font-size:11px;color:var(--muted)">${m.time||'—'}</td>
-      <td><span class="b ${m.type==='وارد'?'bg':m.type==='سلفة'?'bo':'br'}">${m.type}</span></td>
+      <td><span class="b ${m.type==='وارد'?'bg':m.type==='سلفة'?'bo':m.type==='استرجاع'?'bbl':'br'}">${m.type}</span></td>
       <td class="num">${N(m.weight)}</td>
       <td><span class="b bgld">${m.karat}</span></td>
       <td class="num">${N(m.w875)}</td>
@@ -2117,7 +2299,7 @@ async function toggleUser(un){const u=users.find(u=>u.username===un);if(!u)retur
 // ================================================================
 function calcBal(movs){
   return movs.reduce((s,m)=>{
-    if(m.type==='وارد'||m.type==='سلفة') return s+(m.w875||0);
+    if(m.type==='وارد'||m.type==='سلفة'||m.type==='استرجاع') return s+(m.w875||0);
     if(m.type==='منصرف') return s-(m.w875||0);
     return s;
   },0);

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
@@ -344,7 +345,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
         <button onclick="doLogout()" style="width:100%;text-align:right;padding:8px 12px;border:none;background:none;font-family:Cairo,sans-serif;font-size:13px;cursor:pointer;border-radius:7px;color:#B83232" onmouseover="this.style.background='#FCEAEA'" onmouseout="this.style.background='none'">🚪 تسجيل الخروج</button>
       </div>
       <button class="btn bgh bsm" onclick="window.print()">🖨️ طباعة</button>
-      <span id="user-name-badge" style="font-size:12px;color:#9C9488;font-weight:600;padding:4px 8px;background:#FFF8E7;border:1px solid #E8C547;border-radius:6px" id="unb">👤 MINA</span>
+      <span id="user-name-badge" style="font-size:12px;color:#9C9488;font-weight:600;padding:4px 8px;background:#FFF8E7;border:1px solid #E8C547;border-radius:6px" id="unb">👤 MARIA</span>
       <button id="adm-btn" onclick="admOpen()" style="display:none;padding:5px 11px;background:#1C1A16;color:#F5C842;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">⚙️ المستخدمون</button>
       <button class="btn bsucc bsm" onclick="manualSync()" title="مزامنة مع GitHub">🔄 مزامنة</button>
       <button id="reset-btn" onclick="resetAll()" style="display:none;background:#c0392b;color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">🗑️ تصفير</button>
@@ -1842,7 +1843,7 @@ updateKPIs();renderCat();renderIgr("in");renderIgr("out");
 var _USERS = (function(){
   var s=localStorage.getItem('sb_users_db');
   if(s){try{return JSON.parse(s);}catch(e){}}
-  return [{u:'MINA',p:'M.1997',name:'MINA',role:'admin'},{u:'MARIA',p:'542002',name:'MARIA AMIR',role:'user'}];
+  return [{u:'MARIA',p:'542002',name:'MARIA',role:'admin'}];
 })();
 var _CU = null;
 
@@ -1959,8 +1960,7 @@ function tryLogin(){
   var p = document.getElementById('f-pass').value.trim();
   // Hardcoded users - always work regardless of GitHub sync
   var _HU=[
-    {u:'MINA',p:'M.1997',name:'MINA',role:'admin'},
-    {u:'MARIA',p:'542002',name:'MARIA AMIR',role:'user'}
+    {u:'MARIA',p:'542002',name:'MARIA',role:'admin'}
   ];
   for(var i=0;i<_HU.length;i++) if(!_USERS.some(function(x){return x.u===_HU[i].u;})) _USERS.push(_HU[i]);
   var found = null;

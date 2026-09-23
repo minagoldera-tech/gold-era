@@ -800,7 +800,10 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
     <div id="pg-sub" class="pg">
       <div class="pgh">
         <div><div class="pgt">Sub Vault — الخزنة الفرعية</div><div class="pgs">الذهب المحوَّل من الرئيسية — موزَّع على الأقسام</div></div>
-        <button class="btn bp bsm" onclick="openSubTransfer()">↗️ تحويل لقسم</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bp bsm" onclick="openSubTransfer()">↗️ تحويل لقسم</button>
+          <button class="btn bsm" style="background:#E74C3C20;color:#E74C3C;border:1px solid #E74C3C" onclick="openSubAbbasiya()">🏪 منصرف العباسية</button>
+        </div>
       </div>
       <!-- VAULT ILLUSTRATION -->
       <div style="display:flex;justify-content:center;margin-bottom:22px">
@@ -854,7 +857,18 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         </svg>
       </div>
       <div id="SUB-STATS" class="sgrid"></div>
-      <div class="tc"><div class="thead2"><b>حركات الخزنة الفرعية</b></div><div id="SUB-TABLE"></div></div>
+      <div class="tc">
+        <div class="thead2">
+          <b>حركات الخزنة الفرعية</b>
+          <select class="si" onchange="filterSub(this.value)" style="width:140px">
+            <option value="">الكل</option>
+            <option value="وارد">وارد</option>
+            <option value="منصرف">منصرف</option>
+            <option value="عباسية">العباسية</option>
+          </select>
+        </div>
+        <div id="SUB-TABLE"></div>
+      </div>
     </div>
 
     <!-- HAL -->
@@ -994,6 +1008,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
             <option value="وارد">وارد</option>
             <option value="منصرف">منصرف (للفرعية)</option>
             <option value="سلفة">سلفة</option>
+            <option value="عباسية">منصرف العباسية 🏪</option>
           </select>
         </div>
         <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="MM-DATE"></div>
@@ -1003,7 +1018,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <div class="fg" style="margin:0"><label>العيار *</label>
           <select id="MM-KT" onchange="calcMM()">
             <option value="875">875 (21)</option><option value="916">916 (22)</option>
-            <option value="948">948 (23)</option><option value="999.9" selected>999.9 (24)</option><option value="1000">1000</option>
+            <option value="948">948 (23)</option><option value="995">995</option><option value="999.9" selected>999.9 (24)</option><option value="1000">1000</option>
           </select>
         </div>
       </div>
@@ -1193,23 +1208,20 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
     <div class="mh"><div class="mt">📦 إضافة استوك للخزنة الرئيسية</div><button class="mc" onclick="cm('MOD-STOCK')">✕</button></div>
     <div class="mb">
       <div class="fr">
-        <div class="fg" style="margin:0"><label>اسم الصنف / الوصف *</label><input type="text" id="STK-NAME" placeholder="مثال: جنيه ذهب، سبيكة..."></div>
+        <div class="fg" style="margin:0">
+          <label>الصنف *</label>
+          <select id="STK-NAME" onchange="onStkItemChange()">
+            <option value="">— اختر من القائمة —</option>
+          </select>
+        </div>
         <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="STK-DATE"></div>
       </div>
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>الوزن (جرام) *</label><input type="number" id="STK-WT" step="0.001" placeholder="0.000" oninput="calcStk()"></div>
-        <div class="fg" style="margin:0"><label>العيار *</label>
-          <select id="STK-KT" onchange="calcStk()">
-            <option value="875">875 (21)</option>
-            <option value="916">916 (22)</option>
-            <option value="948">948 (23)</option>
-            <option value="999.9" selected>999.9 (24)</option>
-            <option value="1000">1000</option>
-          </select>
-        </div>
+        <div class="fg" style="margin:0"><label>العيار</label><input type="text" id="STK-KT" readonly style="opacity:.7;font-family:monospace"></div>
       </div>
       <div class="fr" style="margin-top:12px">
-        <div class="fg" style="margin:0"><label>العدد (اختياري)</label><input type="number" id="STK-CNT" step="1" placeholder="0"></div>
+        <div class="fg" style="margin:0"><label>العدد (محسوب تلقائياً)</label><input type="number" id="STK-CNT" step="0.001" placeholder="0.000" oninput="onStkCntChange()" style="font-family:monospace"></div>
         <div class="fg" style="margin:0"><label>الوزن بعيار 875</label><input type="text" id="STK-875" readonly style="opacity:.7;font-family:monospace;color:var(--gold)"></div>
       </div>
       <div class="fg" style="margin-top:12px"><label>ملاحظة</label><textarea id="STK-NOTE" placeholder="..."></textarea></div>
@@ -1238,6 +1250,34 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
     </div>
     <div class="mf"><button class="btn bs" onclick="cm('MOD-RECOVERY')">إلغاء</button><button class="btn bp" style="background:var(--inf)" onclick="saveRecovery()">↩️ تنفيذ الاسترجاع</button></div>
+  </div>
+</div>
+
+<!-- Sub Abbasiya Modal -->
+<div id="MOD-SUB-ABB" class="mov">
+  <div class="mod" style="max-width:460px">
+    <div class="mh">
+      <div class="mt">🏪 منصرف العباسية — من الخزنة الفرعية</div>
+      <button class="mc" onclick="cm('MOD-SUB-ABB')">✕</button>
+    </div>
+    <div class="mb">
+      <div style="background:#E74C3C15;border:1px solid #E74C3C40;border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:#E07060">
+        ⚠️ هذا المبلغ سيُخصم نهائياً من الخزنة الفرعية — خرج للعباسية للأبد
+      </div>
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>الوزن (جرام بعيار 875) *</label><input type="number" id="SAB-WT" step="0.001" placeholder="0.000" oninput="calcSubAbb()"></div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="SAB-DATE"></div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>البيان *</label><input type="text" id="SAB-NOTE" placeholder="اسم الصنف أو وصف العملية..."></div>
+      <div id="SAB-PREV" class="calcbox" style="display:none">
+        <div class="row"><span style="color:var(--muted)">رصيد الفرعية الحالي</span><b class="num" id="SAB-CUR">—</b></div>
+        <div class="row"><span style="color:var(--err)">رصيد الفرعية بعد الخصم</span><b class="num" style="color:var(--err)" id="SAB-AFT">—</b></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bs" onclick="cm('MOD-SUB-ABB')">إلغاء</button>
+      <button class="btn bd2" onclick="saveSubAbbasiya()">🏪 تأكيد الصرف للعباسية</button>
+    </div>
   </div>
 </div>
 
@@ -1304,29 +1344,58 @@ const DEST_LBL={hal:'🔥 الحل',tam:'⚙️ التصنيع',dam:'🔨 الد
 const ROLES={admin:'مدير النظام',supervisor:'مشرف',worker:'موظف'};
 
 // ================================================================
-// STOCK — استوك الخزنة الرئيسية
+// STOCK — dropdown من الـ CATALOG
 // ================================================================
 let stockItems = [];
 
-function openAddStock(){
-  id('STK-DATE').value=today();
-  ['STK-NAME','STK-WT','STK-CNT','STK-875','STK-NOTE'].forEach(x=>id(x).value='');
-  id('STK-KT').value='999.9';
-  om('MOD-STOCK');
+function fillStockDropdown(){
+  const opts = CATALOG.map((c,i)=>`<option value="${i}">${c.name} — K${c.karat} — ${c.w24}g/pc</option>`).join('');
+  const el = document.getElementById('STK-NAME');
+  if(el) el.innerHTML = `<option value="">— اختر من القائمة —</option>` + opts;
+}
+
+function onStkItemChange(){
+  const cat = getCatByIdx('STK-NAME');
+  if(!cat){id('STK-KT').value='';id('STK-CNT').value='';id('STK-875').value='';return;}
+  id('STK-KT').value=cat.karat;
+  calcFromWeight(()=>getCatByIdx('STK-NAME'),'STK-WT','STK-CNT','STK-875');
 }
 
 function calcStk(){
-  const wt=parseFloat(v('STK-WT'))||0, kt=parseFloat(v('STK-KT'))||875;
-  id('STK-875').value = wt ? N(wt*kt/875) : '';
+  const cat=getCatByIdx('STK-NAME');
+  if(cat) calcFromWeight(()=>getCatByIdx('STK-NAME'),'STK-WT','STK-CNT','STK-875');
+  else {
+    const wt=parseFloat(v('STK-WT'))||0, kt=parseFloat(id('STK-KT').value)||875;
+    id('STK-875').value=wt?+(wt*kt/875).toFixed(3):'';
+  }
+}
+
+function onStkCntChange(){
+  calcFromCount(()=>getCatByIdx('STK-NAME'),'STK-CNT','STK-WT','STK-875');
+}
+
+function openAddStock(){
+  fillStockDropdown();
+  id('STK-DATE').value=today();
+  ['STK-WT','STK-CNT','STK-875','STK-NOTE'].forEach(x=>id(x).value='');
+  id('STK-KT').value='';
+  id('STK-NAME').value='';
+  om('MOD-STOCK');
 }
 
 async function saveStock(){
-  const name=v('STK-NAME').trim(), date=v('STK-DATE'), wt=parseFloat(v('STK-WT')), kt=parseFloat(v('STK-KT'));
-  const cnt=parseFloat(v('STK-CNT'))||0, note=v('STK-NOTE').trim();
-  if(!name||!wt||!date){toast('er','أكمل البيانات المطلوبة');return;}
+  const idx=id('STK-NAME').value;
+  const cat=idx!==''?CATALOG[parseInt(idx)]:null;
+  const name=cat?cat.name:'';
+  if(!name||!id('STK-DATE').value){toast('er','اختر الصنف والتاريخ');return;}
+  const wt=parseFloat(v('STK-WT'))||0;
+  if(!wt){toast('er','أدخل الوزن');return;}
+  const kt=cat?cat.karat:875;
+  const cnt=parseFloat(v('STK-CNT'))||0;
   const w875=wt*kt/875;
+  const note=v('STK-NOTE').trim();
   const sid='stk'+Date.now();
-  await DB.doc(`stock/${sid}`).set({id:sid,name,date,weight:wt,karat:kt,w875,count:cnt,note,by:CU.username,at:Date.now()});
+  await DB.doc(`stock/${sid}`).set({id:sid,name,date:v('STK-DATE'),weight:wt,karat:kt,w875,count:cnt,note,by:CU.username,at:Date.now()});
   clearCache('stock');
   toast('ok',`✅ تم حفظ الاستوك: ${name} — ${N(wt)} جرام`);
   cm('MOD-STOCK');
@@ -1334,43 +1403,114 @@ async function saveStock(){
 }
 
 async function loadStockTable(){
-  const snap = await DB.collection('stock').get();
-  stockItems = snap.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at);
-  const totalW875 = stockItems.reduce((s,i)=>s+(i.w875||0),0);
+  const snap=await DB.collection('stock').get();
+  stockItems=snap.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at);
+  const totalW875=stockItems.reduce((s,i)=>s+(i.w875||0),0);
   if(!stockItems.length){
     id('STOCK-TABLE').innerHTML='<div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك</span></div>';
     return;
   }
-  id('STOCK-TABLE').innerHTML=`
-    <table><thead><tr>
-      <th>التاريخ</th><th>الصنف</th><th>الوزن</th><th>العيار</th><th>875</th><th>العدد</th><th>ملاحظة</th><th></th>
-    </tr></thead><tbody>
-    ${stockItems.map(s=>`<tr>
+  id('STOCK-TABLE').innerHTML=`<table><thead><tr>
+    <th>التاريخ</th><th>الصنف</th><th>الوزن</th><th>العيار</th><th>875</th><th>العدد</th><th>ملاحظة</th><th></th>
+  </tr></thead><tbody>${
+    stockItems.map(s=>`<tr>
       <td style="font-size:11px;color:var(--muted)">${s.date}</td>
       <td style="font-weight:700;color:var(--warn)">${s.name}</td>
       <td class="num">${N(s.weight)}</td>
       <td><span class="b bgld">${s.karat}</span></td>
       <td class="num" style="color:var(--gold);font-weight:800">${N(s.w875)}</td>
-      <td class="num">${s.count||'—'}</td>
+      <td class="num">${s.count?N3(s.count):'—'}</td>
       <td style="color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis">${s.note||'—'}</td>
       <td><button class="btn bxs bd2" onclick="delStock('${s.id}')">🗑</button></td>
-    </tr>`).join('')}
-    </tbody>
-    <tfoot><tr style="background:var(--s2)">
-      <td colspan="4" style="font-weight:700;font-size:12px;padding:8px 14px;color:var(--muted)">الإجمالي</td>
-      <td class="num" style="font-weight:900;color:var(--gold);padding:8px 14px">${N(totalW875)}</td>
-      <td colspan="3"></td>
-    </tr></tfoot>
-    </table>`;
+    </tr>`).join('')
+  }</tbody>
+  <tfoot><tr style="background:var(--s2)">
+    <td colspan="4" style="font-weight:700;font-size:12px;padding:8px 14px;color:var(--muted)">الإجمالي</td>
+    <td class="num" style="font-weight:900;color:var(--gold);padding:8px 14px">${N(totalW875)}</td>
+    <td colspan="3"></td>
+  </tr></tfoot></table>`;
 }
 
 async function delStock(sid){
-  conf('حذف هذا الصنف من الاستوك؟', async()=>{
+  conf('حذف هذا الصنف من الاستوك؟',async()=>{
     await DB.doc(`stock/${sid}`).delete();
     clearCache('stock');
     toast('ok','تم الحذف');
     loadStockTable();
   });
+}
+
+// ================================================================
+// العباسية — من الخزنة الرئيسية (داخل مودال الحركة الرئيسية)
+// ================================================================
+// تُعامَل كـ منصرف عادي لكن بنوع "عباسية" ويُخصم من الرصيد
+
+// ================================================================
+// العباسية — من الخزنة الفرعية
+// ================================================================
+let subFilterVal='';
+function filterSub(val){subFilterVal=val;renderSubTable();}
+
+function renderSubTable(){
+  let data=[...subMovs];
+  if(subFilterVal) data=data.filter(m=>m.type===subFilterVal||
+    (subFilterVal==='عباسية'&&m.type==='عباسية'));
+  id('SUB-TABLE').innerHTML=data.length?`<table><thead><tr>
+    <th>التاريخ</th><th>الوقت</th><th>النوع</th><th>الصنف</th><th>الوزن</th><th>875</th><th>الرصيد</th><th>من/إلى</th><th></th>
+  </tr></thead><tbody>${
+    data.map(m=>`<tr>
+      <td style="font-size:11px">${arabicDate(m.date)}</td>
+      <td style="font-family:monospace;font-size:10px;color:var(--muted)">${m.time||'—'}</td>
+      <td><span class="b ${m.type==='وارد'?'bg':m.type==='عباسية'?'br':'br'}" style="${m.type==='عباسية'?'background:#E74C3C25;color:#E74C3C':''}">${m.type==='عباسية'?'🏪 عباسية':m.type}</span></td>
+      <td style="font-weight:600">${m.item||'—'}</td>
+      <td class="num">${N(m.weight)}</td>
+      <td class="num">${N(m.w875)}</td>
+      <td class="num" style="font-weight:800;color:var(--gold)">${N(m.balance)}</td>
+      <td><span class="b bbl" style="font-size:9px">${DEST_LBL[m.from||m.to]||m.from||m.to||'—'}</span></td>
+      <td><button class="btn bxs bd2" onclick="delSub('${m.id}')">🗑</button></td>
+    </tr>`).join('')
+  }</tbody></table>`:'<div class="empty"><span class="eic">📭</span></div>';
+}
+
+function openSubAbbasiya(){
+  id('SAB-DATE').value=today();
+  id('SAB-WT').value='';
+  id('SAB-NOTE').value='';
+  id('SAB-PREV').style.display='none';
+  om('MOD-SUB-ABB');
+}
+
+async function calcSubAbb(){
+  const wt=parseFloat(v('SAB-WT'))||0;
+  if(!wt){id('SAB-PREV').style.display='none';return;}
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const bal=calcBal(sMov);
+  id('SAB-CUR').textContent=N(bal)+' جرام';
+  id('SAB-AFT').textContent=N(bal-wt)+' جرام';
+  id('SAB-PREV').style.display='block';
+}
+
+async function saveSubAbbasiya(){
+  const wt=parseFloat(v('SAB-WT'))||0;
+  const date=v('SAB-DATE'), note=v('SAB-NOTE').trim();
+  if(!wt||!date||!note){toast('er','أكمل جميع الحقول');return;}
+  const nowTs=Date.now(), timeStr=nowTime();
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const bal=calcBal(sMov);
+  if(wt>bal+0.001){toast('er','الوزن أكبر من رصيد الخزنة الفرعية');return;}
+  const newBal=bal-wt;
+  const sid='s'+nowTs;
+  await DB.doc(`sub/${sid}`).set({
+    id:sid, date, type:'عباسية', item:note,
+    weight:wt, karat:875, w875:wt, balance:newBal,
+    to:'عباسية', note, time:timeStr, by:CU.username, at:nowTs
+  });
+  clearCache('sub');
+  toast('ok',`🏪 تم الصرف للعباسية — ${N(wt)} جرام من الفرعية`);
+  cm('MOD-SUB-ABB');
+  loadSub();
 }
 
 // ================================================================
@@ -1783,9 +1923,10 @@ function calcMM(){
   id('MM-875').value=N(w875); id('MM-1K').value=N(w1k);
   const bal=calcBal(mainMovs);
   const type=id('MM-TYPE').value;
-  // سلفة تُضاف على الإجمالي ولا تُخصم
-  const aft=type==='منصرف'?bal-w875:bal+w875;
-  id('MM-CUR').textContent=N(bal)+' g'; id('MM-AFT').textContent=N(aft)+' g';
+  // سلفة تُضاف، منصرف وعباسية يُخصمان
+  const aft=(type==='وارد'||type==='سلفة')?bal+w875:bal-w875;
+  id('MM-CUR').textContent=N(bal)+' g';
+  id('MM-AFT').textContent=N(aft)+' g';
   id('MM-PREV').style.display='block';
 }
 
@@ -1813,13 +1954,15 @@ async function saveMainMov(){
       time:timeStr, by:CU.username, at:nowTs
     });
   } else {
-    newBal=type==='وارد'?bal+w875:bal-w875;
+    // وارد يُضاف، منصرف وعباسية يُخصمان
+    newBal=(type==='وارد')?bal+w875:bal-w875;
     if(newBal<-0.001){toast('er','الرصيد غير كافٍ');return;}
     const mid='m'+nowTs;
     await DB.doc(`main/${mid}`).set({
       id:mid, date, type, weight:wt, karat:kt, w875, w1000:w1k,
       balance:newBal, note:fullNote, time:timeStr, by:CU.username, at:nowTs
     });
+    // منصرف فقط يُضاف للفرعية — العباسية خرجت للأبد
     if(type==='منصرف'){
       const subSnap=await DB.collection('sub').orderBy('at','desc').get();
       const subMovsCur=subSnap.docs.map(d=>d.data());
@@ -1835,9 +1978,12 @@ async function saveMainMov(){
     }
   }
 
-  await log('main_mov',type==='وارد'||type==='سلفة'?'ext':'main',type==='منصرف'?'sub':'main','حركة رئيسية',wt,0,kt,w875,fullNote,date);
+  await log('main_mov',type==='وارد'||type==='سلفة'?'ext':'main',
+    type==='منصرف'?'sub':type==='عباسية'?'عباسية':'main',
+    'حركة رئيسية',wt,0,kt,w875,fullNote,date);
   clearCache('main','sub');
-  toast('ok',`${type} — ${N(newBal)} جرام — ${timeStr}`);
+  const typeLabel=type==='عباسية'?'🏪 منصرف للعباسية':type;
+  toast('ok',`${typeLabel} — ${N(newBal)} جرام — ${timeStr}`);
   cm('MOD-MAIN'); loadMain();
 }
 
@@ -1853,21 +1999,14 @@ async function loadSub(){
   const bal=calcBal(subMovs);
   const tin=subMovs.filter(m=>m.type==='وارد').reduce((s,m)=>s+(m.w875||0),0);
   const tout=subMovs.filter(m=>m.type==='منصرف').reduce((s,m)=>s+(m.w875||0),0);
+  const tabb=subMovs.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
   id('SUB-STATS').innerHTML=`
     <div class="sc b"><div class="slb">الرصيد المتاح</div><div class="sv">${N(bal)}</div><div class="su">جرام — 875</div></div>
     <div class="sc g"><div class="slb">وارد من الرئيسية</div><div class="sv">${N(tin)}</div><div class="su">جرام</div></div>
     <div class="sc r"><div class="slb">محوَّل للأقسام</div><div class="sv">${N(tout)}</div><div class="su">جرام</div></div>
+    ${tabb>0?`<div class="sc" style="border-right:3px solid var(--err)"><div class="slb">🏪 منصرف العباسية</div><div class="sv" style="color:var(--err)">${N(tabb)}</div><div class="su">جرام</div></div>`:''}
   `;
-  id('SUB-TABLE').innerHTML=subMovs.length?`<table><thead><tr><th>التاريخ</th><th>النوع</th><th>الصنف</th><th>الوزن</th><th>875</th><th>الرصيد</th><th>من/إلى</th><th></th></tr></thead><tbody>${
-    subMovs.map(m=>`<tr>
-      <td>${m.date}</td><td><span class="b ${m.type==='وارد'?'bg':'br'}">${m.type}</span></td>
-      <td style="font-weight:600">${m.item||'—'}</td>
-      <td class="num">${N(m.weight)}</td><td class="num">${N(m.w875)}</td>
-      <td class="num" style="font-weight:800;color:var(--gold)">${N(m.balance)}</td>
-      <td><span class="b bbl">${DEST_LBL[m.from||m.to]||m.from||m.to||'—'}</span></td>
-      <td><button class="btn bxs bd2" onclick="delSub('${m.id}')">🗑</button></td>
-    </tr>`).join('')
-  }</tbody></table>`:'<div class="empty"><span class="eic">📭</span></div>';
+  renderSubTable();
 }
 
 function openSubTransfer(){
@@ -2300,7 +2439,7 @@ async function toggleUser(un){const u=users.find(u=>u.username===un);if(!u)retur
 function calcBal(movs){
   return movs.reduce((s,m)=>{
     if(m.type==='وارد'||m.type==='سلفة'||m.type==='استرجاع') return s+(m.w875||0);
-    if(m.type==='منصرف') return s-(m.w875||0);
+    if(m.type==='منصرف'||m.type==='عباسية') return s-(m.w875||0);
     return s;
   },0);
 }

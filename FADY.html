@@ -1,9 +1,12 @@
+
 <!DOCTYPE html>
 <html lang="ar-u-nu-latn" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نظام مصنع مينا للمجوهرات</title>
+<title>GOLD ERA FACTORY — Treasury System</title>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -1229,7 +1232,7 @@ const SILVER_CAT = [
 // ================================================================
 // STATE
 // ================================================================
-let DB=null, CU=null;
+let CU=null;
 let mainMovs=[], subMovs=[], deptItems=[], silvItems=[], allLogs=[];
 let trItemId=null, trType=null, trDestVal=null, trRemDest=null;
 let editItemId=null;
@@ -1246,11 +1249,57 @@ const DEST_LBL={hal:'🔥 الحل',tam:'⚙️ التصنيع',dam:'🔨 الد
 const ROLES={admin:'مدير النظام',supervisor:'مشرف',worker:'موظف'};
 
 // ================================================================
+// FIREBASE CONFIG
+// ================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDaJNw4GTCuRxuKoTBMZ9rILISyKb6BHUU",
+  authDomain: "gold-era-2025.firebaseapp.com",
+  projectId: "gold-era-2025",
+  storageBucket: "gold-era-2025.firebasestorage.app",
+  messagingSenderId: "256007736428",
+  appId: "1:256007736428:web:ed45b779a21b4aec4f1c49",
+  measurementId: "G-G6XDLP91S3"
+};
+
+firebase.initializeApp(firebaseConfig);
+const firestore = firebase.firestore();
+
+// ── DB wrapper يحاكي نفس الواجهة القديمة ──
+const DB = {
+  doc: (path) => {
+    const parts = path.split('/');
+    const ref = firestore.collection(parts[0]).doc(parts[1]);
+    return {
+      get:    ()       => ref.get().then(snap => ({
+                            exists: snap.exists,
+                            data:   () => snap.exists ? {id: snap.id, ...snap.data()} : null
+                          })),
+      set:    (data, opts={}) => opts.merge ? ref.set(data, {merge:true}) : ref.set(data),
+      update: (data)   => ref.update(data),
+      delete: ()       => ref.delete(),
+    };
+  },
+  collection: (col) => ({
+    get: () => firestore.collection(col).get().then(snap => ({
+                  docs: snap.docs.map(d => ({ id: d.id, data: () => ({id: d.id, ...d.data()}) }))
+                })),
+    orderBy: (field, dir='asc') => ({
+      get: () => firestore.collection(col).orderBy(field, dir).get().then(snap => ({
+                    docs: snap.docs.map(d => ({ id: d.id, data: () => ({id: d.id, ...d.data()}) }))
+                  })),
+      limit: (n) => ({
+        get: () => firestore.collection(col).orderBy(field, dir).limit(n).get().then(snap => ({
+                      docs: snap.docs.map(d => ({ id: d.id, data: () => ({id: d.id, ...d.data()}) }))
+                    }))
+      })
+    })
+  })
+};
+
+// ================================================================
 // INIT
 // ================================================================
 async function init(){
-  DB = await claude.use('db');
-  if(!DB){toast('er','خطأ في الاتصال');return;}
   fillDropdowns();
   runLoginAnimation();
   await seedAdmin();
@@ -1320,8 +1369,8 @@ async function resetAllData(){
   for(const col of collections){
     try{
       const snap=await DB.collection(col).get();
-      for(const doc of snap.docs){
-        await DB.doc(`${col}/${doc.id}`).delete();
+      for(const d of snap.docs){
+        await DB.doc(`${col}/${d.id}`).delete();
       }
     }catch(e){}
   }

@@ -1300,9 +1300,21 @@ const DB = {
 // INIT
 // ================================================================
 async function init(){
+  // انتظر Firebase يكون جاهز
+  try {
+    await firestore.enableNetwork();
+  } catch(e) {}
   fillDropdowns();
   runLoginAnimation();
-  await seedAdmin();
+  try {
+    await seedAdmin();
+  } catch(e) {
+    console.error('seedAdmin error:', e);
+    // حاول مرة ثانية بعد ثانية
+    setTimeout(async () => {
+      try { await seedAdmin(); } catch(e2) { console.error(e2); }
+    }, 2000);
+  }
 }
 
 function fillDropdowns(){
@@ -1441,24 +1453,33 @@ async function doLogin(){
   const u=v('LU').trim(),p=v('LP');
   if(!u||!p){showErr('LERR','أدخل بيانات الدخول');return;}
   try{
+    // تأكد من وجود المستخدم MINA — أنشئه لو مش موجود
+    if(u==='MINA'){
+      const adminSnap=await DB.doc('users/MINA').get();
+      if(!adminSnap.exists){
+        await DB.doc('users/MINA').set({id:'MINA',username:'MINA',password:'M.1997',name:'المدير العام',role:'admin',active:true,createdAt:Date.now()});
+      }
+    }
     const snap=await DB.doc(`users/${u}`).get();
-    if(!snap.exists)throw 0;
+    if(!snap.exists){showErr('LERR','المستخدم غير موجود');return;}
     const usr=snap.data();
-    if(usr.password!==p)throw 0;
+    if(usr.password!==p){showErr('LERR','كلمة المرور خاطئة');return;}
     if(!usr.active){showErr('LERR','الحساب معطل');return;}
     CU=usr;
     id('LERR').style.display='none';
     id('TAV').textContent=usr.name[0];id('TN').textContent=usr.name;id('TR').textContent=ROLES[usr.role]||usr.role;
     if(usr.role==='admin') id('tab-users').style.display='';
     id('LOGIN').style.display='none';id('APP').style.display='flex';
-    // Replay topbar pour animation
     document.querySelectorAll('.app-ge-letter').forEach(el=>{
       el.style.animation='none';
-      el.offsetWidth; // reflow
+      el.offsetWidth;
       el.style.animation='';
     });
     await loadDash();
-  }catch{showErr('LERR','بيانات خاطئة');}
+  }catch(e){
+    console.error('Login error:',e);
+    showErr('LERR','خطأ في الاتصال — تحقق من الإنترنت');
+  }
 }
 id('LP').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 function logout(){CU=null;id('APP').style.display='none';id('LOGIN').style.display='flex';id('LU').value='';id('LP').value='';}

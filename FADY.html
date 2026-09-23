@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar-u-nu-latn" dir="rtl">
 <head>
@@ -1295,27 +1296,30 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
 // PRODUCT CATALOG — من جدول Station
 // ================================================================
 const CATALOG = [
-  {no:1,  name:'جنيه',             karat:875,  w21:7.980,   w24:7.998},
-  {no:2,  name:'نصف جنيه',         karat:875,  w21:3.998,   w24:3.998},
-  {no:3,  name:'ربع جنيه',         karat:875,  w21:1.998,   w24:1.998},
-  {no:5,  name:'جرام',             karat:999.9,w21:1.139,   w24:0.9965},
-  {no:6,  name:'ربع جرام',         karat:999.9,w21:0.283,   w24:0.248},
-  {no:7,  name:'نصف جرام',         karat:999.9,w21:0.569,   w24:0.498},
-  {no:8,  name:'2.5جرام',          karat:999.9,w21:2.853,   w24:2.497},
-  {no:9,  name:'5جرام',            karat:999.9,w21:5.711,   w24:4.998},
-  {no:10, name:'10جرام',           karat:999.9,w21:11.416,  w24:9.99},
-  {no:11, name:'15.55جرام',        karat:999.9,w21:17.770,  w24:15.55},
-  {no:12, name:'20جرام',           karat:999.9,w21:22.855,  w24:20},
-  {no:13, name:'25جرام',           karat:999.9,w21:28.569,  w24:25},
-  {no:14, name:'أونصة 31.10 جرام', karat:999.9,w21:35.539,  w24:31.1},
-  {no:15, name:'50جرام',           karat:999.9,w21:57.137,  w24:50},
-  {no:16, name:'5 Tola',           karat:999.9,w21:66.650,  w24:58.325},
-  {no:17, name:'100جرام',          karat:999.9,w21:114.274, w24:100},
-  {no:18, name:'10 Tola',          karat:999.9,w21:133.301, w24:116.65},
-  {no:19, name:'كيلو 999.9',       karat:999.9,w21:1142.743,w24:1000},
-  {no:21, name:'كيلو 995',         karat:995,  w21:1137.132,w24:995.09},
-  {no:23, name:'500 جرام',         karat:999.9,w21:571.371, w24:500},
-  {no:25, name:'250 جرام',         karat:999.9,w21:285.686, w24:250},
+  {no:1,  name:'جنيه',             karat:875,  w21:7.990,   w24:7.99},
+  {no:2,  name:'نصف جنيه',         karat:875,  w21:3.990,   w24:3.99},
+  {no:3,  name:'ربع جنيه',         karat:875,  w21:1.990,   w24:1.99},
+  {no:5,  name:'جرام',             karat:1000, w21:1.131,   w24:0.99},
+  {no:6,  name:'ربع جرام',         karat:1000, w21:0.274,   w24:0.24},
+  {no:7,  name:'نصف جرام',         karat:1000, w21:0.560,   w24:0.49},
+  {no:8,  name:'2.5جرام',          karat:1000, w21:2.845,   w24:2.49},
+  {no:9,  name:'5جرام',            karat:1000, w21:5.702,   w24:4.99},
+  {no:10, name:'10جرام',           karat:1000, w21:11.416,  w24:9.99},
+  {no:11, name:'15.55جرام',        karat:1000, w21:17.770,  w24:15.55},
+  {no:12, name:'20جرام',           karat:1000, w21:22.855,  w24:20},
+  {no:13, name:'25جرام',           karat:1000, w21:28.569,  w24:25},
+  {no:14, name:'أونصة 31.10 جرام', karat:1000, w21:35.539,  w24:31.1},
+  {no:15, name:'50جرام',           karat:1000, w21:57.137,  w24:50},
+  {no:16, name:'Tola 5',           karat:1000, w21:66.650,  w24:58.33},
+  {no:17, name:'100جرام',          karat:1000, w21:114.274, w24:100},
+  {no:18, name:'Tola 10',          karat:1000, w21:133.301, w24:116.7},
+  {no:19, name:'كيلو 999.9',       karat:1000, w21:1142.743,w24:1000},
+  {no:21, name:'كيلو 995',         karat:995,  w21:1137.132,w24:995.1},
+  {no:23, name:'500 جرام',         karat:1000, w21:571.371, w24:500},
+  {no:25, name:'250 جرام',         karat:1000, w21:285.686, w24:250},
+  {no:27, name:'ربع كيلو فضة',     karat:1000, w21:285.686, w24:250},
+  {no:29, name:'نصف كيلو فضة',     karat:1000, w21:571.371, w24:500},
+  {no:31, name:'كيلو فضة',         karat:1000, w21:1142.743,w24:1000},
 ];
 const SILVER_CAT = [
   {no:27, name:'ربع كيلو فضة', karat:1000, w21:250, w24:250},
@@ -1355,18 +1359,23 @@ function fillStockDropdown(){
 
 function onStkItemChange(){
   const cat = getCatByIdx('STK-NAME');
-  if(!cat){id('STK-KT').value='';id('STK-CNT').value='';id('STK-875').value='';return;}
+  if(!cat){id('STK-KT').value='';id('STK-CNT').value='';id('STK-875').value='';id('STK-WT').value='';return;}
   id('STK-KT').value=cat.karat;
-  calcFromWeight(()=>getCatByIdx('STK-NAME'),'STK-WT','STK-CNT','STK-875');
+  // ضع الوزن الافتراضي للقطعة الواحدة — قابل للتعديل
+  id('STK-WT').value=cat.w24;
+  calcStk();
 }
 
 function calcStk(){
   const cat=getCatByIdx('STK-NAME');
-  if(cat) calcFromWeight(()=>getCatByIdx('STK-NAME'),'STK-WT','STK-CNT','STK-875');
-  else {
-    const wt=parseFloat(v('STK-WT'))||0, kt=parseFloat(id('STK-KT').value)||875;
-    id('STK-875').value=wt?+(wt*kt/875).toFixed(3):'';
-  }
+  const wt=parseFloat(v('STK-WT'))||0;
+  if(!wt){id('STK-CNT').value='';id('STK-875').value='';return;}
+  const kt=cat?cat.karat:parseFloat(id('STK-KT').value)||875;
+  const w875=wt*kt/875;
+  // العدد = الوزن المدخل ÷ وزن القطعة الافتراضية
+  const cnt=cat?wt/cat.w24:0;
+  id('STK-CNT').value=cat?+(cnt.toFixed(3)):'';
+  id('STK-875').value=+(w875.toFixed(3));
 }
 
 function onStkCntChange(){
@@ -1620,20 +1629,29 @@ const DB = {
 // INIT
 // ================================================================
 async function init(){
-  // انتظر Firebase يكون جاهز
-  try {
-    await firestore.enableNetwork();
-  } catch(e) {}
   fillDropdowns();
   runLoginAnimation();
+  // تحقق من جلسة محفوظة
   try {
-    await seedAdmin();
-  } catch(e) {
-    console.error('seedAdmin error:', e);
-    // حاول مرة ثانية بعد ثانية
-    setTimeout(async () => {
-      try { await seedAdmin(); } catch(e2) { console.error(e2); }
-    }, 2000);
+    const saved = localStorage.getItem('ge_session');
+    if(saved){
+      const usr = JSON.parse(saved);
+      if(usr && usr.username && usr.active){
+        CU = usr;
+        id('TAV').textContent=usr.name[0];
+        id('TN').textContent=usr.name;
+        id('TR').textContent=ROLES[usr.role]||usr.role;
+        if(usr.role==='admin') id('tab-users').style.display='';
+        id('LOGIN').style.display='none';
+        id('APP').style.display='flex';
+        await loadDash();
+        return;
+      }
+    }
+  } catch(e){}
+  // أنشئ المستخدم الافتراضي في الخلفية
+  try { await seedAdmin(); } catch(e) {
+    setTimeout(async()=>{ try{await seedAdmin();}catch(e2){} }, 2000);
   }
 }
 
@@ -1786,6 +1804,8 @@ async function doLogin(){
     if(usr.password!==p){showErr('LERR','كلمة المرور خاطئة');return;}
     if(!usr.active){showErr('LERR','الحساب معطل');return;}
     CU=usr;
+    // احفظ الجلسة في localStorage
+    try { localStorage.setItem('ge_session', JSON.stringify(usr)); } catch(e){}
     id('LERR').style.display='none';
     id('TAV').textContent=usr.name[0];id('TN').textContent=usr.name;id('TR').textContent=ROLES[usr.role]||usr.role;
     if(usr.role==='admin') id('tab-users').style.display='';
@@ -1802,7 +1822,13 @@ async function doLogin(){
   }
 }
 id('LP').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-function logout(){CU=null;id('APP').style.display='none';id('LOGIN').style.display='flex';id('LU').value='';id('LP').value='';}
+function logout(){
+  CU=null;
+  try { localStorage.removeItem('ge_session'); } catch(e){}
+  id('APP').style.display='none';
+  id('LOGIN').style.display='flex';
+  id('LU').value='';id('LP').value='';
+}
 
 // ================================================================
 // TABS

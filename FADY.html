@@ -1768,73 +1768,114 @@ async function saveStockTransfer(){
   const {name,karat,totalW875,totalCnt,dest}=stkTrData;
   if(!wt||!date){toast('er','أدخل الوزن والتاريخ');return;}
   if(wt>totalW875+0.001){toast('er','الوزن أكبر من المتاح في الاستوك');return;}
+
   const nowTs=Date.now(), timeStr=nowTime();
-  const actualWt=wt*875/karat;
+  const actualWt=+(wt*875/karat).toFixed(3);
   const cnt=totalCnt?(wt/totalW875*totalCnt):0;
 
-  // ═══ خصم من الرئيسية ═══
-  const mainBal=calcBal(mainMovs);
-  const newMainBal=mainBal-wt;
-  if(dest!=='abb'){
-    await DB.doc(`main/m${nowTs}`).set({
-      id:'m'+nowTs,date,type:'منصرف',weight:actualWt,karat,w875:wt,w1000:wt*karat/875000,
-      balance:newMainBal,note:`[استوك→${DEST_NAMES[dest]||dest}] ${name}${note?' | '+note:''}`,
-      time:timeStr,by:CU.username,at:nowTs
-    });
-    clearCache('main');
-  }
+  // ══════════════════════════════════════════════
+  // ١. طرح الوزن من سجلات الاستوك الأصلية
+  //    نبدأ بأقدم سجل ونطرح منه حتى ينتهي الوزن
+  // ══════════════════════════════════════════════
+  const stkSnap=await DB.collection('stock').get();
+  // سجلات هذا الصنف فقط (بدون سجلات الخروج) مرتبة من الأقدم
+  let stkItems=stkSnap.docs.map(d=>d.data())
+    .filter(s=>s.name===name&&s.karat===karat&&(s.weight||0)>0)
+    .sort((a,b)=>a.at-b.at);
 
-  if(dest==='abb'){
-    // للعباسية — يُخصم من الرئيسية فقط
-    await DB.doc(`main/m${nowTs}`).set({
-      id:'m'+nowTs,date,type:'عباسية',weight:actualWt,karat,w875:wt,w1000:wt*karat/875000,
-      balance:newMainBal,note:`[استوك→عباسية] ${name}${note?' | '+note:''}`,
-      time:timeStr,by:CU.username,at:nowTs
-    });
-    clearCache('main');
-    toast('ok',`🏪 تم صرف "${name}" للعباسية وخصمه من الرئيسية`);
-  } else if(dest==='sub'){
-    // للفرعية — وارد في الفرعية
-    const subSnap=await DB.collection('sub').get();
-    const subBal=calcBal(subSnap.docs.map(d=>d.data()));
-    await DB.doc(`sub/s${nowTs}`).set({
-      id:'s'+nowTs,date,type:'وارد',item:name,weight:actualWt,karat,w875:wt,
-      balance:subBal+wt,from:'main',
-      note:`[استوك] ${name}${note?' | '+note:''}`,time:timeStr,by:CU.username,at:nowTs+1
-    });
-    clearCache('sub');
-    toast('ok',`✅ تم تحويل "${name}" من الاستوك → الرئيسية → الفرعية`);
-  } else {
-    // لقسم — وارد في الفرعية (عبور) ثم للقسم
-    const subSnap=await DB.collection('sub').get();
-    const subBal=calcBal(subSnap.docs.map(d=>d.data()));
-    await DB.doc(`sub/s${nowTs}`).set({
-      id:'s'+nowTs,date,type:'وارد',item:name,weight:actualWt,karat,w875:wt,
-      balance:subBal+wt,from:'main',
-      note:`[استوك عبور→${DEST_NAMES[dest]}] ${name}`,time:timeStr,by:CU.username,at:nowTs+1
-    });
-    await DB.doc(`sub/s${nowTs+1}`).set({
-      id:'s'+(nowTs+1),date,type:'منصرف',item:name,weight:actualWt,karat,w875:wt,
-      balance:subBal,to:dest,
-      note:`[استوك→${DEST_NAMES[dest]}] ${name}`,time:timeStr,by:CU.username,at:nowTs+2
-    });
-    await DB.doc(`dept/di${nowTs}`).set({
-      id:'di'+nowTs,dept:dest,item:name,weight:actualWt,count:+cnt.toFixed(3),
-      karat,w875:wt,done:false,by:CU.username,
-      note:`من الاستوك${note?' | '+note:''}`,date,at:nowTs+3
-    });
-    clearCache('main','sub','dept');
-    toast('ok',`✅ "${name}" — الاستوك → الرئيسية → الفرعية → ${DEST_NAMES[dest]}`);
-  }
+  let remaining=actualWt; // الوزن المراد طرحه
+  const undoStockOps=[];
 
-  // سجل خروج الاستوك
-  await DB.doc(`stock/out${nowTs}`).set({
-    id:`out${nowTs}`,name:`[خروج] ${name}`,date,weight:-actualWt,karat,w875:-wt,count:0,
-    note:`→ ${DEST_NAMES[dest]||dest} ${note?'| '+note:''}`,by:CU.username,at:nowTs+4
-  });
+  for(const s of stkItems){
+    if(remaining<=0) break;
+    const available=s.weight||0;
+    if(available<=remaining+0.001){
+      // احذف السجل كاملاً
+      await DB.doc(`stock/${s.id}`).delete();
+      undoStockOps.push({action:'set',col:'stock',id:s.id,data:s});
+      remaining-=available;
+    } else {
+      // قلّل الوزن في السجل
+      const newWt=+(available-remaining).toFixed(3);
+      const newW875=+(newWt*karat/875).toFixed(3);
+      const newCnt=s.count?(newWt/(s.weight)*s.count):0;
+      await DB.doc(`stock/${s.id}`).update({
+        weight:newWt, w875:newW875, count:+newCnt.toFixed(3)
+      });
+      undoStockOps.push({action:'set',col:'stock',id:s.id,data:s}); // restore original
+      remaining=0;
+    }
+  }
   clearCache('stock');
+
+  // ══════════════════════════════════════════════
+  // ٢. الفرعية — وارد دائماً
+  // ══════════════════════════════════════════════
+  const subSnap=await DB.collection('sub').get();
+  const subBal=calcBal(subSnap.docs.map(d=>d.data()));
+  const subInId='s'+nowTs;
+  await DB.doc(`sub/${subInId}`).set({
+    id:subInId, date, type:'وارد', item:name,
+    weight:actualWt, karat, w875:wt,
+    balance:subBal+wt, from:'stock',
+    note:`من الاستوك${note?' | '+note:''}`,
+    time:timeStr, by:CU.username, at:nowTs
+  });
+
+  // ══════════════════════════════════════════════
+  // ٣. حسب الوجهة
+  // ══════════════════════════════════════════════
+  const undoOps=[...undoStockOps, {action:'delete',col:'sub',id:subInId}];
+
+  if(dest==='sub'){
+    // الفرعية فقط — خلاص
+    clearCache('sub');
+    pushUndo({label:`تحويل استوك للفرعية: ${name} ${N(actualWt)}g`, ops:undoOps});
+    toast('ok',`✅ "${name}" — الاستوك → الفرعية`);
+
+  } else if(dest==='abb'){
+    // العباسية — منصرف من الفرعية مباشرة
+    const subOutId='s'+(nowTs+1);
+    await DB.doc(`sub/${subOutId}`).set({
+      id:subOutId, date, type:'عباسية', item:name,
+      weight:actualWt, karat, w875:wt,
+      balance:subBal, to:'عباسية',
+      note:`استوك→عباسية${note?' | '+note:''}`,
+      time:timeStr, by:CU.username, at:nowTs+1
+    });
+    undoOps.push({action:'delete',col:'sub',id:subOutId});
+    clearCache('sub');
+    pushUndo({label:`تحويل استوك للعباسية: ${name}`, ops:undoOps});
+    toast('ok',`🏪 "${name}" — الاستوك → الفرعية → العباسية`);
+
+  } else {
+    // قسم — منصرف من الفرعية للقسم
+    const subOutId='s'+(nowTs+1);
+    await DB.doc(`sub/${subOutId}`).set({
+      id:subOutId, date, type:'منصرف', item:name,
+      weight:actualWt, karat, w875:wt,
+      balance:subBal, to:dest,
+      note:`استوك→${DEST_NAMES[dest]}${note?' | '+note:''}`,
+      time:timeStr, by:CU.username, at:nowTs+1
+    });
+    const deptId='di'+nowTs;
+    await DB.doc(`dept/${deptId}`).set({
+      id:deptId, dept:dest, item:name,
+      weight:actualWt, count:+cnt.toFixed(3),
+      karat, w875:wt, done:false,
+      note:`من الاستوك${note?' | '+note:''}`,
+      by:CU.username, date, at:nowTs+2
+    });
+    undoOps.push({action:'delete',col:'sub',id:subOutId});
+    undoOps.push({action:'delete',col:'dept',id:deptId});
+    clearCache('sub','dept');
+    pushUndo({label:`تحويل استوك→${DEST_NAMES[dest]}: ${name}`, ops:undoOps});
+    toast('ok',`✅ "${name}" — الاستوك → الفرعية → ${DEST_NAMES[dest]}`);
+  }
+
   cm('MOD-STK-TR');
-  loadMain(); loadStockTable();
+  loadStockTable();
+  loadSub();
 }
 // تُعامَل كـ منصرف عادي لكن بنوع "عباسية" ويُخصم من الرصيد
 

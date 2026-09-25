@@ -1270,13 +1270,8 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <div class="fr" style="gap:8px;margin-top:6px">
           <input type="number" id="SIL-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="calcSil()"
             style="font-family:monospace;font-weight:800;color:var(--inf);background:var(--s2);border:1.5px solid var(--inf)">
-          <select id="SIL-KT" onchange="calcSil()" style="width:120px">
-            <option value="1000" selected>عيار 1000</option>
-            <option value="999.9">عيار 999.9</option>
-            <option value="995">عيار 995</option>
-            <option value="925">عيار 925</option>
-            <option value="875">عيار 875</option>
-          </select>
+          <input type="number" id="SIL-KT" step="0.1" placeholder="مثال: 1000" oninput="calcSil()"
+            style="font-family:monospace;font-weight:700;font-size:15px;color:var(--inf);width:120px">
         </div>
       </div>
       <div class="fr" style="margin-top:12px">

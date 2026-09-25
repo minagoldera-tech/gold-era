@@ -927,7 +927,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="TAM-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن (جرام)</span><span>العيار</span><span>العدد</span><span>875</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
         <div id="TAM-TABLE"></div>
       </div>
     </div>
@@ -943,7 +943,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="DAM-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن (جرام)</span><span>العيار</span><span>العدد</span><span>875</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
         <div id="DAM-TABLE"></div>
       </div>
     </div>
@@ -959,7 +959,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="TAG-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن (جرام)</span><span>العيار</span><span>العدد</span><span>875</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
         <div id="TAG-TABLE"></div>
       </div>
 
@@ -984,7 +984,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="SIL-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-3"><span>الصنف</span><span>الوزن (جرام)</span><span>العدد</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
         <div id="SIL-TABLE"></div>
       </div>
     </div>
@@ -2678,20 +2678,22 @@ async function loadDept(dept){
 
   tblEl.innerHTML=items.map(it=>{
     const isHal=dept==='hal';
-    return `<div class="drow ${isHal?'drow-3':'drow-4'}">
+    return `<div class="drow drow-4" style="${it.done?'opacity:.65':''}">
       <div>
         <div class="dn">${it.item}</div>
-        <div class="dm">${it.date} · by ${it.by}</div>
+        <div class="dm">📅 ${arabicDate(it.date)} · 👤 ${it.by||'—'}</div>
       </div>
-      <div class="num dnum" style="color:${dep.color}">${N(it.weight)}<span style="font-size:9px;color:var(--muted)"> جرام</span></div>
-      ${!isHal?`<div>
-        <span class="b bgld" style="font-size:10px">${it.karat}</span>
-      </div>`:''}
-      ${!isHal?`<div style="display:flex;align-items:center;gap:6px">
-        <span class="num dnum">${N3(it.count)}</span>
-        <button class="btn bxs bs" onclick="openEditCnt('${it.id}')" title="تعديل العدد">✏️</button>
-      </div>`:''}
-      <div class="num" style="font-size:11px;color:var(--muted)">${N(it.w875)}</div>
+      <div>
+        <div class="num dnum" style="color:${dep.color};font-size:16px">${N(it.weight)}</div>
+        <div style="font-size:10px;color:var(--muted)">جرام</div>
+      </div>
+      <div>
+        <span class="b bgld" style="font-size:12px;padding:4px 10px">${it.karat}</span>
+      </div>
+      <div>
+        <div class="num dnum" style="font-size:16px;font-weight:900;color:var(--gold)">${N(it.w875)}</div>
+        <div style="font-size:10px;color:var(--muted)">عيار 875</div>
+      </div>
       <div>${it.done?`<span class="done-badge">✅ DONE</span>`:`<button class="btn bxs bg2" onclick="markDone('${it.id}','${dept}')">DONE</button>`}</div>
       <div style="display:flex;gap:4px">
         <button class="btn bxs" style="background:#2980B920;color:var(--inf);border:1px solid var(--inf)" onclick="openDeptTr('${it.id}')">↗️</button>

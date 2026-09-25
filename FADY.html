@@ -1,0 +1,3499 @@
+<!DOCTYPE html>
+<html lang="ar-u-nu-latn" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GOLD ERA FACTORY — Treasury System</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><radialGradient id='mg' cx='38%25' cy='35%25'><stop offset='0%25' stop-color='%23FFECB3'/><stop offset='50%25' stop-color='%23FFB300'/><stop offset='100%25' stop-color='%23BF360C'/></radialGradient></defs><rect x='5' y='40' width='58' height='52' rx='8' fill='%23374151'/><ellipse cx='34' cy='44' rx='26' ry='9' fill='%231F2937'/><ellipse cx='34' cy='43' rx='21' ry='7' fill='url(%23mg)'/><rect x='60' y='14' width='36' height='10' rx='5' fill='%234B5563'/><rect x='59' y='14' width='12' height='28' rx='5' fill='%234B5563'/><ellipse cx='34' cy='43' rx='21' ry='7' fill='%23FFB300' opacity='0.3'><animate attributeName='opacity' values='0.2;0.5;0.2' dur='1s' repeatCount='indefinite'/></ellipse></svg>">
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  /* ── Gold ── */
+  --gold:   #C8A84B;
+  --gold2:  #D9BC72;
+  --gold3:  #A07828;
+  --goldtx: #E2C97E;
+  --goldmut:#6A5820;
+
+  /* ── Backgrounds — lighter gray ── */
+  --bg:  #2C2F36;
+  --s1:  #363A42;
+  --s2:  #40444E;
+  --s3:  #4A4F5A;
+  --s4:  #555A66;
+
+  /* ── Borders ── */
+  --bd:  #52576400;
+  --bd:  #525764;
+  --bd2: #636876;
+
+  /* ── Text ── */
+  --tx:    #F0F2F8;
+  --tx2:   #C4C8D6;
+  --muted: #8890A4;
+
+  /* ── Status ── */
+  --ok:  #4DB87A;
+  --err: #E05C50;
+  --inf: #5A9FE8;
+  --warn:#C89830;
+
+  /* ── Dept colours ── */
+  --hal: #5A9FE8;
+  --tam: #9E7ED4;
+  --dam: #C89830;
+  --tag: #4DB87A;
+  --sil: #8090A8;
+
+  /* ── Glow ── */
+  --glow: 0 0 0 1px #C8A84B22, 0 4px 16px #C8A84B0E;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Force English numerals everywhere */
+input[type="number"],
+input[type="text"],
+input[type="date"],
+.num, .sv, .dnum,
+td, th {
+  font-variant-numeric: lining-nums;
+}
+input, select, textarea, .num, .sv, .dnum, td {
+  -webkit-text-fill-color: currentColor;
+}
+/* The key fix: force ltr for number display */
+input[type="number"] { direction: ltr; text-align: right; }
+.num, .sv, .dnum { direction: ltr; display: inline-block; }
+
+body {
+  font-family: 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--tx);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: .15px;
+  font-variant-numeric: lining-nums;
+  -moz-font-feature-settings: "lnum";
+  -webkit-font-feature-settings: "lnum";
+  font-feature-settings: "lnum";
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--s1); }
+::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold3); }
+
+/* ─── LOGIN ─────────────────────────────── */
+#LOGIN {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #1E2128;
+  gap: 32px;
+  direction: ltr;
+}
+
+/* Crucible — small, no heavy filters */
+#crucible-wrap { position:relative; width:120px; height:110px; flex-shrink:0; }
+#crucible {
+  position:absolute; top:0; left:50%;
+  transform: translateX(-50%) rotate(-40deg);
+  width:120px; height:110px;
+  transform-origin: 72% 18%;
+  animation: ladleTilt 1.0s ease-in-out forwards;
+}
+@keyframes ladleTilt {
+  0%  { transform:translateX(-50%) rotate(-40deg); }
+  35% { transform:translateX(-50%) rotate(10deg); }
+  70% { transform:translateX(-50%) rotate(10deg); }
+  100%{ transform:translateX(-50%) rotate(-40deg); }
+}
+#pour-stream {
+  position:absolute; bottom:-6px; left:55%;
+  transform:translateX(-50%);
+  width:7px; height:0; border-radius:4px;
+  background:linear-gradient(to bottom,#FFE082,#FFB300,#E65100aa);
+  opacity:0;
+  animation:streamFlow 1.0s forwards;
+}
+@keyframes streamFlow {
+  0%,33%{ height:0;opacity:0; }
+  38%  { height:40px;opacity:1; }
+  68%  { height:48px;opacity:1; }
+  74%  { height:0;opacity:0; }
+  100% { height:0;opacity:0; }
+}
+#splash { display:none; }
+
+/* GOLD ERA letters — fast pour bottom to top */
+#ge-logo { text-align:center; line-height:1; direction:ltr; }
+.ge-letter {
+  display:inline-block;
+  font-family:'Cairo',sans-serif;
+  font-size:clamp(48px,8vw,80px);
+  font-weight:900;
+  background:linear-gradient(170deg,#FFFDE7 0%,#FFE082 20%,#C8A84B 55%,#8B6010 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  clip-path:inset(100% 0 0% 0);
+  position:relative;
+  animation:pourDown var(--pd,.35s) ease-out var(--delay,0s) forwards;
+}
+@keyframes pourDown {
+  0%  { clip-path:inset(100% 0 0% 0); }
+  100%{ clip-path:inset(0%   0 0% 0); }
+}
+.ge-space { display:inline-block; width:clamp(14px,2.5vw,28px); }
+.ge-drip  { display:none; }
+
+.ge-divider {
+  display:block; height:1px; width:0;
+  background:linear-gradient(90deg,transparent,#C8A84B 40%,#FFD54F 50%,#C8A84B 60%,transparent);
+  margin:12px auto 0;
+  animation:divExpand .3s ease-out var(--div-delay,.9s) forwards;
+}
+@keyframes divExpand { to { width:min(320px,80vw); } }
+
+.ge-factory {
+  font-family:'Cairo',sans-serif;
+  font-size:clamp(10px,1.4vw,12px);
+  font-weight:600; letter-spacing:10px;
+  color:#7A8090; display:block; opacity:0;
+  margin-top:8px; direction:ltr;
+  animation:factUp .3s ease-out var(--fact-delay,1.0s) forwards;
+}
+@keyframes factUp {
+  0%  { opacity:0; transform:translateY(6px); }
+  100%{ opacity:1; transform:translateY(0);   }
+}
+
+/* Login box — appears quickly */
+.lbox {
+  background: var(--s1);
+  border:1px solid var(--bd);
+  border-top:2px solid var(--gold);
+  border-radius:14px;
+  padding:32px 34px 28px;
+  width:min(370px,92vw);
+  box-shadow:0 16px 48px #00000060;
+  position:relative; z-index:10;
+  opacity:0; transform:translateY(16px);
+  animation:boxRise .4s ease-out var(--box-delay,1.2s) forwards;
+}
+@keyframes boxRise { to { opacity:1; transform:translateY(0); } }
+
+.llogo { display:none; }
+.lerr {
+  background:#E05C5012; border:1px solid #E05C5030; color:#E07060;
+  padding:9px 13px; border-radius:8px; font-size:12px;
+  text-align:center; margin-bottom:14px; display:none;
+}
+
+/* Topbar letters — simple fade-in, no clip animation */
+#app-logo-canvas { display:flex; align-items:center; gap:8px; }
+.app-ge-letter {
+  display:inline-block;
+  font-family:'Cairo',sans-serif;
+  font-weight:900; font-size:15px; letter-spacing:2px;
+  background:linear-gradient(170deg,#FFF9C4 0%,#FFD54F 35%,#C8A84B 65%,#7A5C10 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  clip-path:inset(100% 0 0% 0);
+  animation:pourDownSm var(--pd,.3s) ease-out var(--delay,0s) forwards;
+}
+@keyframes pourDownSm {
+  0%  { clip-path:inset(100% 0 0% 0); }
+  100%{ clip-path:inset(0%   0 0% 0); }
+}
+
+/* ─── APP SHELL ──────────────────────────── */
+#APP { display: none; height: 100vh; flex-direction: column; }
+
+/* Topbar */
+.topbar {
+  background: var(--s1);
+  border-bottom: 1px solid var(--bd);
+  height: 56px;
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+  box-shadow: 0 1px 0 var(--bd);
+}
+.tbrand {
+  display: flex; align-items: center; gap: 10px;
+  font-weight: 900; font-size: 16px;
+  background: linear-gradient(135deg, var(--gold2) 0%, var(--gold) 50%, var(--gold3) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: .4px;
+}
+.tuser { display: flex; align-items: center; gap: 14px; }
+.ubadge {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--s2); border: 1px solid var(--bd);
+  border-radius: 24px; padding: 4px 14px 4px 4px;
+}
+.uav {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold2), var(--gold3));
+  color: #0D1117; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 13px;
+  box-shadow: 0 2px 8px #C8A84B44;
+}
+.uname { font-size: 13px; font-weight: 700; color: var(--tx); }
+.urole { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* ─── TABS ───────────────────────────────── */
+.tabs {
+  background: var(--s1);
+  border-bottom: 1px solid var(--bd);
+  display: flex; overflow-x: auto; flex-shrink: 0;
+}
+.tabs::-webkit-scrollbar { height: 0; }
+.tab {
+  padding: 15px 20px;
+  cursor: pointer;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .18s, background .18s, border-color .18s;
+  display: flex; align-items: center; gap: 6px;
+  letter-spacing: .2px;
+}
+.tab:hover { color: var(--tx2); background: var(--s2); }
+.tab.act  { color: var(--goldtx); border-bottom-color: var(--gold); background: linear-gradient(to bottom, #C8A84B08, transparent); }
+
+/* ─── CONTENT ────────────────────────────── */
+.cnt { flex: 1; overflow-y: auto; background: var(--bg); }
+.pg  { display: none; padding: 24px; } .pg.act { display: block; }
+.pgh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.pgt { font-size: 20px; font-weight: 800; color: var(--goldtx); letter-spacing: .3px; }
+.pgs { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ─── FORMS ──────────────────────────────── */
+.fg { margin-bottom: 15px; }
+.fg label {
+  display: block; font-size: 11px; color: var(--muted);
+  margin-bottom: 6px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase;
+}
+.fg input, .fg select, .fg textarea {
+  width: 100%;
+  background: var(--s2);
+  border: 1px solid var(--bd);
+  border-radius: 9px;
+  padding: 10px 13px;
+  color: var(--tx);
+  font-family: 'Cairo', sans-serif;
+  font-size: 13px;
+  transition: border-color .2s, box-shadow .2s;
+  text-align: right;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus {
+  outline: none; border-color: var(--gold);
+  box-shadow: 0 0 0 3px #C8A84B18;
+}
+.fg textarea { resize: vertical; min-height: 72px; }
+.fr  { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.fr3 { grid-template-columns: 1fr 1fr 1fr; }
+
+/* ─── BUTTONS ────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px;
+  border: none; border-radius: 9px;
+  font-family: 'Cairo', sans-serif; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: all .2s; letter-spacing: .2px;
+}
+.bp {
+  background: linear-gradient(135deg, var(--gold2) 0%, var(--gold) 60%, var(--gold3) 100%);
+  color: #0D1117;
+  box-shadow: 0 2px 12px #C8A84B30;
+}
+.bp:hover { filter: brightness(1.1); box-shadow: 0 4px 18px #C8A84B50; }
+.bs { background: var(--s2); color: var(--tx2); border: 1px solid var(--bd); }
+.bs:hover { background: var(--s3); color: var(--tx); border-color: var(--bd2); }
+.bd2 { background: var(--err); color: #fff; }
+.bd2:hover { filter: brightness(1.1); }
+.bg2 { background: var(--ok); color: #fff; }
+.bg2:hover { filter: brightness(1.1); }
+.bfull { width: 100%; justify-content: center; font-size: 14px; padding: 12px; }
+.bsm  { padding: 6px 12px; font-size: 11.5px; }
+.bxs  { padding: 4px 9px; font-size: 10.5px; border-radius: 6px; }
+
+/* ─── STAT CARDS ─────────────────────────── */
+.sgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px; margin-bottom: 22px;
+}
+.sc {
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 20px 20px 16px;
+  position: relative; overflow: hidden;
+  transition: border-color .2s, transform .15s;
+}
+.sc:hover { border-color: var(--bd2); transform: translateY(-1px); }
+.sc::after {
+  content: '';
+  position: absolute; bottom: 0; right: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 40%, var(--gold2) 60%, transparent);
+  opacity: .35;
+}
+.slb { font-size: 10.5px; color: var(--muted); font-weight: 700; margin-bottom: 10px; letter-spacing: .4px; }
+.sv  { font-size: 26px; font-weight: 900; color: var(--goldtx); font-family: 'Cairo', monospace; direction: ltr; display: block; text-align: right; line-height: 1.1; }
+.su  { font-size: 10px; color: var(--muted); margin-top: 6px; }
+.sc.g .sv { color: var(--ok); }
+.sc.r .sv { color: var(--err); }
+.sc.b .sv { color: var(--inf); }
+.sc.p .sv { color: var(--tam); }
+
+/* ─── TABLES ─────────────────────────────── */
+.tc {
+  background: var(--s1);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  overflow: hidden; margin-bottom: 18px;
+}
+.thead2 {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+  background: var(--s2);
+}
+.thead2 b { font-size: 13.5px; font-weight: 700; color: var(--tx); }
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--s2);
+  padding: 11px 16px;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-align: right; border-bottom: 1px solid var(--bd);
+  white-space: nowrap; letter-spacing: .4px;
+}
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--s3);
+  font-size: 13.5px;
+  white-space: nowrap; color: var(--tx2);
+  transition: background .12s;
+}
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: #C8A84B04; }
+tr:hover td { background: #C8A84B0C; color: var(--tx); }
+.si {
+  background: var(--s2); border: 1px solid var(--bd);
+  border-radius: 8px; padding: 8px 14px;
+  color: var(--tx); font-family: 'Cairo', sans-serif;
+  font-size: 13px; text-align: right;
+  transition: border-color .2s, box-shadow .2s;
+}
+.si:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px #C8A84B18; }
+
+/* ─── BADGES ─────────────────────────────── */
+.b { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 10.5px; font-weight: 800; letter-spacing: .2px; }
+.bg  { background: #4CAF7D18; color: var(--ok); }
+.br  { background: #D9604A18; color: var(--err); }
+.bo  { background: #D4943A18; color: var(--warn); }
+.bbl { background: #5B9BD518; color: var(--inf); }
+.bgld{ background: #C8A84B18; color: var(--goldtx); }
+.bpur{ background: #9B7FD418; color: var(--tam); }
+
+/* ─── MODAL ──────────────────────────────── */
+.mov {
+  position: fixed; inset: 0;
+  background: #0D111799;
+  backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center;
+  z-index: 1000; padding: 16px;
+}
+.mov.open { display: flex; }
+.mod {
+  background: var(--s1);
+  border: 1px solid var(--bd2);
+  border-top: 2px solid var(--gold);
+  border-radius: 14px;
+  width: 100%; max-width: 520px; max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px #00000080, var(--glow);
+}
+.mh {
+  padding: 20px 22px 15px;
+  border-bottom: 1px solid var(--bd);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--s2);
+}
+.mt { font-size: 15px; font-weight: 800; color: var(--goldtx); }
+.mc {
+  background: none; border: none; color: var(--muted);
+  cursor: pointer; font-size: 18px; padding: 3px 7px; border-radius: 6px; line-height: 1;
+}
+.mc:hover { background: var(--s3); color: var(--tx); }
+.mb { padding: 20px 22px; }
+.mf {
+  padding: 15px 22px;
+  border-top: 1px solid var(--bd);
+  background: var(--s2);
+  display: flex; gap: 9px; justify-content: flex-end;
+}
+
+/* ─── TOAST ──────────────────────────────── */
+#TC { position: fixed; bottom: 22px; left: 22px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; }
+.toast {
+  background: var(--s1);
+  border: 1px solid var(--bd2);
+  border-radius: 10px;
+  padding: 11px 16px;
+  min-width: 230px;
+  display: flex; align-items: center; gap: 10px;
+  animation: tIn .28s cubic-bezier(.34,1.56,.64,1);
+  font-size: 12.5px; color: var(--tx);
+  box-shadow: 0 8px 24px #00000060;
+}
+.toast.ok { border-right: 3px solid var(--ok); }
+.toast.er { border-right: 3px solid var(--err); }
+.toast.in { border-right: 3px solid var(--inf); }
+@keyframes tIn { from { transform: translateX(-20px) scale(.95); opacity: 0; } }
+
+/* ─── DEPT ROWS ──────────────────────────── */
+.drow { display: grid; align-items: center; padding: 13px 18px; border-bottom: 1px solid var(--s3); gap: 10px; }
+.drow:last-child { border-bottom: none; }
+.drow:nth-child(even) { background: #C8A84B05; }
+.drow:hover { background: #C8A84B0E; }
+.drow-4 { grid-template-columns: 2fr 1fr 1fr 1fr auto auto auto; }
+.drow-3 { grid-template-columns: 2fr 1fr 1fr auto auto; }
+.drow-head {
+  background: var(--s2); font-size: 10.5px; font-weight: 700;
+  color: var(--muted); padding: 10px 18px;
+  letter-spacing: .4px;
+  border-bottom: 1px solid var(--bd);
+}
+.dn { font-size: 13.5px; font-weight: 700; color: var(--tx); }
+.dm { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+.dnum { font-family: 'Cairo', monospace; font-weight: 800; font-size: 14px; direction: ltr; }
+
+/* ─── DONE / PENDING ─────────────────────── */
+.done-badge {
+  background: #4CAF7D18; color: var(--ok);
+  border: 1px solid #4CAF7D40;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 800;
+}
+.pending-badge {
+  background: #D4943A15; color: var(--warn);
+  border: 1px solid #D4943A35;
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 700;
+}
+
+/* ─── CALC BOX ───────────────────────────── */
+.calcbox {
+  background: var(--s3); border: 1px solid var(--bd);
+  border-radius: 9px; padding: 13px 15px;
+  margin-top: 10px; font-size: 12.5px; display: none;
+}
+.calcbox .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.calcbox .row:last-child { margin-bottom: 0; }
+
+/* ─── DEST / TRANSFER ────────────────────── */
+.dest-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-top: 7px; }
+.dest-btn {
+  padding: 11px 7px; border-radius: 9px;
+  border: 1px solid var(--bd);
+  background: var(--s2); color: var(--tx2);
+  cursor: pointer; font-family: 'Cairo', sans-serif;
+  font-weight: 700; font-size: 11.5px;
+  transition: all .2s; text-align: center; line-height: 1.4;
+}
+.dest-btn:hover { border-color: var(--gold3); background: var(--s3); color: var(--tx); }
+.dest-btn.sel {
+  background: linear-gradient(135deg, var(--gold2), var(--gold));
+  color: #0D1117; border-color: var(--gold);
+  box-shadow: 0 2px 12px #C8A84B30;
+  font-weight: 900;
+}
+
+/* ─── FLOW BAR ───────────────────────────── */
+.flowbar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 22px; flex-wrap: wrap;
+  padding: 16px 20px;
+  background: var(--s1); border: 1px solid var(--bd);
+  border-radius: 12px;
+}
+.fstep {
+  padding: 6px 16px; border-radius: 22px;
+  font-size: 11.5px; font-weight: 800;
+  cursor: pointer; transition: all .2s;
+  letter-spacing: .2px;
+}
+.fstep:hover { filter: brightness(1.2); transform: translateY(-1px); }
+.farr { color: var(--muted); font-size: 14px; opacity: .7; }
+
+.divider { border: none; border-top: 1px solid var(--bd); margin: 16px 0; }
+.empty { text-align: center; padding: 54px 20px; color: var(--muted); }
+.empty .eic { font-size: 38px; display: block; margin-bottom: 10px; opacity: .6; }
+.empty p { font-size: 13px; }
+.spin { width: 18px; height: 18px; border: 2px solid var(--bd2); border-top-color: var(--gold); border-radius: 50%; animation: sp .8s linear infinite; display: inline-block; }
+@keyframes sp { to { transform: rotate(360deg); } }
+.loading { display: flex; align-items: center; justify-content: center; padding: 54px; gap: 10px; color: var(--muted); }
+
+/* Numbers — always English LTR */
+.num { direction: ltr; display: inline-block; font-family: 'Cairo', monospace; }
+
+/* Topbar brand pulse on login */
+@keyframes topbarPulse {
+  0%   { filter: brightness(3) blur(4px); }
+  100% { filter: brightness(1) blur(0); }
+}
+
+/* Inner app GE mini logo in topbar */
+.tbrand-ge {
+  display: flex; align-items: center; gap: 2px;
+  font-weight: 900; font-size: 17px; letter-spacing: 2px;
+  background: linear-gradient(135deg, #FFF9C4 0%, #D4A820 50%, #8B6000 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.tbrand-ge span.sub {
+  font-size: 11px; font-weight: 500; letter-spacing: 3px;
+  -webkit-text-fill-color: #8B949E; opacity: .8; margin-right: 4px;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="LOGIN">
+
+  <!-- Crucible + stream -->
+  <div id="crucible-wrap">
+    <div id="pour-stream"></div>
+    <svg id="crucible" viewBox="0 0 180 160" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="mg" cx="38%" cy="35%">
+          <stop offset="0%"   stop-color="#FFECB3"/>
+          <stop offset="35%"  stop-color="#FFB300"/>
+          <stop offset="100%" stop-color="#BF360C"/>
+        </radialGradient>
+        <linearGradient id="body1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#4A5568"/>
+          <stop offset="100%" stop-color="#1A202C"/>
+        </linearGradient>
+        <linearGradient id="hdl" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#5A6478"/>
+          <stop offset="100%" stop-color="#2D3748"/>
+        </linearGradient>
+        <filter id="glow1">
+          <feGaussianBlur stdDeviation="3" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <rect x="100" y="10" width="72" height="18" rx="9" fill="url(#hdl)"/>
+      <rect x="98"  y="10" width="18" height="38" rx="8" fill="url(#hdl)"/>
+      <ellipse cx="60" cy="76" rx="56" ry="20" fill="url(#body1)"/>
+      <path d="M6 72 Q10 120 60 128 Q110 120 114 72 Z" fill="url(#body1)"/>
+      <ellipse cx="60" cy="74" rx="50" ry="16" fill="#252D3A"/>
+      <ellipse cx="60" cy="73" rx="42" ry="12" fill="url(#mg)" filter="url(#glow1)"/>
+      <ellipse cx="60" cy="73" rx="42" ry="12" fill="#FFB300" opacity="0.2">
+        <animate attributeName="opacity" values="0.1;0.4;0.1" dur="1s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="48" cy="70" rx="14" ry="5" fill="#FFFDE7" opacity="0.3"/>
+      <path d="M110 68 Q122 72 114 84" stroke="#4A5568" stroke-width="6" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Splash -->
+  <div id="splash"></div>
+  <!-- Sparks -->
+  <div id="sparks" style="position:fixed;inset:0;pointer-events:none;z-index:1"></div>
+
+  <!-- GOLD ERA — letter by letter pour -->
+  <div id="ge-logo" style="direction:ltr">
+    <div id="ge-word-wrap" style="display:inline-flex;align-items:flex-end;gap:0;position:relative;direction:ltr">
+      <span class="ge-letter" style="--delay:.1s;--pd:.22s"><span class="ge-drip" style="--delay:.1s;--pd:.22s"></span>G</span>
+      <span class="ge-letter" style="--delay:.2s;--pd:.22s"><span class="ge-drip" style="--delay:.2s;--pd:.22s"></span>O</span>
+      <span class="ge-letter" style="--delay:.3s;--pd:.22s"><span class="ge-drip" style="--delay:.3s;--pd:.22s"></span>L</span>
+      <span class="ge-letter" style="--delay:.4s;--pd:.22s"><span class="ge-drip" style="--delay:.4s;--pd:.22s"></span>D</span>
+      <span class="ge-space"></span>
+      <span class="ge-letter" style="--delay:.5s;--pd:.22s"><span class="ge-drip" style="--delay:.5s;--pd:.22s"></span>E</span>
+      <span class="ge-letter" style="--delay:.6s;--pd:.22s"><span class="ge-drip" style="--delay:.6s;--pd:.22s"></span>R</span>
+      <span class="ge-letter" style="--delay:.7s;--pd:.22s"><span class="ge-drip" style="--delay:.7s;--pd:.22s"></span>A</span>
+    </div>
+    <span class="ge-divider" style="--div-delay:1.8s"></span>
+    <span class="ge-factory" style="--fact-delay:2.0s">FACTORY</span>
+  </div>
+
+  <!-- Login form -->
+  <div class="lbox" style="--box-delay:2.3s">
+    <div id="LERR" class="lerr"></div>
+    <div class="fg"><label>اسم المستخدم</label><input id="LU" type="text" placeholder="MINA" autocomplete="off"></div>
+    <div class="fg"><label>كلمة المرور</label><input id="LP" type="password" placeholder="••••••••"></div>
+    <button class="btn bp bfull" onclick="doLogin()">🔑 تسجيل الدخول</button>
+    <p style="text-align:center;color:#444C56;font-size:10px;margin-top:14px;letter-spacing:.4px">MINA / M.1997</p>
+  </div>
+
+</div>
+
+<!-- APP -->
+<div id="APP">
+  <div class="topbar">
+    <div class="tbrand" id="app-brand">
+      <div id="app-logo-canvas" style="display:flex;align-items:center;gap:8px;direction:ltr">
+        <div style="display:flex;align-items:flex-end;gap:0;direction:ltr">
+          <span class="app-ge-letter" style="--delay:.05s;--pd:.4s">G</span>
+          <span class="app-ge-letter" style="--delay:.22s;--pd:.4s">O</span>
+          <span class="app-ge-letter" style="--delay:.38s;--pd:.4s">L</span>
+          <span class="app-ge-letter" style="--delay:.54s;--pd:.4s">D</span>
+          <span style="display:inline-block;width:8px"></span>
+          <span class="app-ge-letter" style="--delay:.72s;--pd:.4s">E</span>
+          <span class="app-ge-letter" style="--delay:.88s;--pd:.4s">R</span>
+          <span class="app-ge-letter" style="--delay:1.04s;--pd:.4s">A</span>
+        </div>
+        <span style="font-size:9px;font-weight:500;letter-spacing:3px;color:#586069;opacity:.8;align-self:flex-end;padding-bottom:1px;direction:ltr">FACTORY</span>
+      </div>
+    </div>
+    <div class="tuser">
+      <!-- Undo + Sync buttons -->
+      <div style="display:flex;gap:6px;align-items:center;margin-left:8px">
+        <button id="UNDO-BTN" onclick="doUndo()" title="تراجع عن آخر عملية"
+          style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--muted);cursor:pointer;font-size:13px;transition:.2s;display:flex;align-items:center;gap:4px"
+          onmouseover="this.style.borderColor='var(--warn)';this.style.color='var(--warn)'"
+          onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--muted)'">
+          ↩️ <span id="UNDO-COUNT" style="font-size:10px;background:#C8983030;color:var(--warn);border-radius:4px;padding:1px 5px;display:none">0</span>
+        </button>
+        <button onclick="doSync()" title="مزامنة البيانات"
+          style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--muted);cursor:pointer;font-size:13px;transition:.2s"
+          onmouseover="this.style.borderColor='var(--ok)';this.style.color='var(--ok)'"
+          onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--muted)'"
+          id="SYNC-BTN">
+          🔄
+        </button>
+      </div>
+      <div class="ubadge">
+        <div class="uav" id="TAV">م</div>
+        <div><div class="uname" id="TN">—</div><div class="urole" id="TR">—</div></div>
+      </div>
+      <button class="btn bs bsm" onclick="logout()">خروج</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab act" onclick="showTab('dash')">📊 لوحة التحكم</div>
+    <div class="tab" onclick="showTab('main')">🏦 الخزنة الرئيسية</div>
+    <div class="tab" onclick="showTab('sub')">💼 الخزنة الفرعية</div>
+    <div class="tab" onclick="showTab('hal')" style="border-bottom-color:transparent" id="tab-hal">🔥 الحل</div>
+    <div class="tab" onclick="showTab('tam')" id="tab-tam">⚙️ التصنيع</div>
+    <div class="tab" onclick="showTab('dam')" id="tab-dam">🔨 الدمغة</div>
+    <div class="tab" onclick="showTab('tag')" id="tab-tag">📦 التغليف</div>
+    <div class="tab" onclick="showTab('sil')" id="tab-sil">🥈 الفضة</div>
+    <div class="tab" onclick="showTab('log')">📋 السجل</div>
+    <div class="tab" onclick="showTab('abb')">🏪 العباسية</div>
+    <div class="tab" onclick="showTab('ref')">🔍 المرجع</div>
+    <div class="tab" id="tab-users" style="display:none" onclick="showTab('users')">👥 مستخدمون</div>
+  </div>
+
+  <div class="cnt">
+
+    <!-- DASHBOARD -->
+    <div id="pg-dash" class="pg act">
+      <div class="pgh"><div><div class="pgt">لوحة التحكم</div><div class="pgs" id="DDATE"></div></div></div>
+      <div class="flowbar">
+        <div class="fstep" style="background:#C9A22720;color:var(--gold);border:1px solid var(--gold)" onclick="showTab('main')">🏦 الخزنة الرئيسية</div>
+        <div class="farr">→</div>
+        <div class="fstep" style="background:#2980B920;color:var(--inf);border:1px solid var(--inf)" onclick="showTab('sub')">💼 الخزنة الفرعية</div>
+        <div class="farr">→</div>
+        <div class="fstep" style="background:#3498DB20;color:var(--hal);border:1px solid var(--hal)" onclick="showTab('hal')">🔥 الحل</div>
+        <div class="farr">→</div>
+        <div class="fstep" style="background:#9B59B620;color:var(--tam);border:1px solid var(--tam)" onclick="showTab('tam')">⚙️ التصنيع</div>
+        <div class="farr">→</div>
+        <div class="fstep" style="background:#E67E2220;color:var(--dam);border:1px solid var(--dam)" onclick="showTab('dam')">🔨 الدمغة</div>
+        <div class="farr">→</div>
+        <div class="fstep" style="background:#27AE6020;color:var(--tag);border:1px solid var(--tag)" onclick="showTab('tag')">📦 التغليف</div>
+        <div class="farr">→</div>
+        <div class="fstep" style="background:#27AE6030;color:#2ecc71;border:1px solid #2ecc71">✅ DONE</div>
+      </div>
+      <div id="D-STATS" class="sgrid"></div>
+
+      <!-- نظرة عامة — الصافي الكلي -->
+      <div id="OVERVIEW" style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:18px;display:none">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:14px;letter-spacing:.5px">📊 نظرة عامة — الصافي الكلي (عيار 875)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px" id="OV-CARDS"></div>
+        <!-- شريط التوزيع -->
+        <div style="margin-top:4px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px">توزيع الذهب</div>
+          <div id="OV-BAR" style="display:flex;height:10px;border-radius:5px;overflow:hidden;gap:1px"></div>
+          <div id="OV-BAR-LBL" style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap"></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="tc"><div class="thead2"><b>آخر حركات الخزنة الرئيسية</b></div><div id="D-MAIN"></div></div>
+        <div class="tc"><div class="thead2"><b>أرصدة الأقسام (جرام — عيار 875)</b></div><div id="D-DEPTS"></div></div>
+      </div>
+    </div>
+
+    <!-- MAIN TREASURY -->
+    <div id="pg-main" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">Main Vault — الخزنة الرئيسية</div><div class="pgs">وارد ومنصرف الخزنة الرئيسية</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bp bsm" onclick="openMainMov()">➕ حركة جديدة</button>
+          <button class="btn bsm" style="background:#C8983020;color:var(--warn);border:1px solid var(--warn)" onclick="openAddStock()">📦 إضافة استوك</button>
+          <button class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="openRecovery()">↩️ استرجاع من الفرعية</button>
+        </div>
+      </div>
+      <!-- VAULT ILLUSTRATION -->
+      <div style="display:flex;justify-content:center;margin-bottom:22px">
+        <svg width="340" height="200" viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="vbody" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2D333B"/>
+              <stop offset="100%" stop-color="#161B22"/>
+            </linearGradient>
+            <linearGradient id="vdoor" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#373E47"/>
+              <stop offset="100%" stop-color="#21262D"/>
+            </linearGradient>
+            <linearGradient id="vgold" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#A8872C"/>
+              <stop offset="50%" stop-color="#D4B86A"/>
+              <stop offset="100%" stop-color="#A8872C"/>
+            </linearGradient>
+            <linearGradient id="vknob" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#D4B86A"/>
+              <stop offset="100%" stop-color="#7A5C10"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="170" cy="196" rx="120" ry="6" fill="#000" opacity=".4"/>
+          <rect x="30" y="20" width="280" height="170" rx="14" fill="url(#vbody)" stroke="#C8A84B" stroke-width="1.5"/>
+          <rect x="30" y="20" width="280" height="6" rx="3" fill="url(#vgold)"/>
+          <rect x="30" y="184" width="280" height="6" rx="3" fill="url(#vgold)"/>
+          <rect x="60" y="35" width="170" height="142" rx="8" fill="url(#vdoor)" stroke="#C8A84B44" stroke-width="1"/>
+          <circle cx="75" cy="50" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
+          <circle cx="75" cy="92" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
+          <circle cx="75" cy="134" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
+          <circle cx="215" cy="50" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
+          <circle cx="215" cy="92" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
+          <circle cx="215" cy="134" r="6" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
+          <circle cx="145" cy="106" r="38" fill="#21262D" stroke="#C8A84B" stroke-width="2"/>
+          <circle cx="145" cy="106" r="30" fill="#161B22" stroke="#C8A84B44" stroke-width="1"/>
+          <line x1="145" y1="78" x2="145" y2="84" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
+          <line x1="145" y1="128" x2="145" y2="134" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
+          <line x1="117" y1="106" x2="123" y2="106" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
+          <line x1="167" y1="106" x2="173" y2="106" stroke="#C8A84B" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="145" cy="106" r="14" fill="url(#vknob)"/>
+          <circle cx="145" cy="106" r="5" fill="#161B22"/>
+          <line x1="145" y1="106" x2="155" y2="88" stroke="#D4B86A" stroke-width="2" stroke-linecap="round"/>
+          <rect x="233" y="96" width="22" height="20" rx="5" fill="#21262D" stroke="#C8A84B" stroke-width="1.5"/>
+          <rect x="238" y="101" width="12" height="10" rx="3" fill="none" stroke="#C8A84B66" stroke-width="1"/>
+          <text x="145" y="165" text-anchor="middle" font-family="Cairo,sans-serif" font-size="11" font-weight="700" fill="#C8A84B" letter-spacing="3">MAIN VAULT</text>
+          <rect x="88" y="50" width="24" height="10" rx="2" fill="#C8A84B" opacity=".15"/>
+          <rect x="116" y="50" width="24" height="10" rx="2" fill="#C8A84B" opacity=".15"/>
+          <rect x="144" y="50" width="24" height="10" rx="2" fill="#C8A84B" opacity=".15"/>
+          <rect x="70" y="186" width="20" height="10" rx="3" fill="#21262D" stroke="#30363D" stroke-width="1"/>
+          <rect x="250" y="186" width="20" height="10" rx="3" fill="#21262D" stroke="#30363D" stroke-width="1"/>
+        </svg>
+      </div>
+      <div id="MAIN-STATS" class="sgrid"></div>
+
+      <!-- STOCK SECTION WITH TABS -->
+      <div class="tc" style="margin-bottom:16px">
+        <div class="thead2" style="background:#C8983010;border-bottom-color:#C8983040">
+          <b style="color:var(--warn)">📦 الاستوك — المخزون الداخلي</b>
+          <div style="display:flex;gap:6px">
+            <button id="STK-TAB-NOW" class="btn bxs" onclick="showStockTab('now')"
+              style="background:var(--gold);color:#000;border:none">المخزون الحالي</button>
+            <button id="STK-TAB-LOG" class="btn bxs bs" onclick="showStockTab('log')">📋 سجل الاستوك</button>
+          </div>
+        </div>
+        <div id="STOCK-TABLE-NOW"><div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك — اضغط "إضافة استوك"</span></div></div>
+        <div id="STOCK-TABLE-LOG" style="display:none"></div>
+      </div>
+
+      <div class="tc">
+        <div class="thead2">
+          <b>الحركات</b>
+          <div style="display:flex;gap:8px">
+            <select class="si" onchange="filterMain(this.value)" style="width:130px">
+              <option value="">الكل</option>
+              <option value="وارد">وارد</option>
+              <option value="وارد استوك">وارد استوك</option>
+              <option value="منصرف">منصرف</option>
+              <option value="سلفة">سلفة</option>
+              <option value="استرجاع">استرجاع</option>
+              <option value="عباسية">عباسية</option>
+            </select>
+          </div>
+        </div>
+        <div id="MAIN-TABLE"></div>
+      </div>
+    </div>
+
+    <!-- SUB TREASURY -->
+    <div id="pg-sub" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">Sub Vault — الخزنة الفرعية</div><div class="pgs">الذهب المحوَّل من الرئيسية — موزَّع على الأقسام</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bp bsm" onclick="openSubTransfer()">↗️ تحويل لقسم</button>
+          <button class="btn bsm" style="background:#E74C3C20;color:#E74C3C;border:1px solid #E74C3C" onclick="openSubAbbasiya()">🏪 منصرف العباسية</button>
+        </div>
+      </div>
+      <!-- VAULT ILLUSTRATION -->
+      <div style="display:flex;justify-content:center;margin-bottom:22px">
+        <svg width="260" height="170" viewBox="0 0 260 170" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="svbody" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#2D333B"/>
+              <stop offset="100%" stop-color="#161B22"/>
+            </linearGradient>
+            <linearGradient id="svdoor" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#373E47"/>
+              <stop offset="100%" stop-color="#21262D"/>
+            </linearGradient>
+            <linearGradient id="svgold" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#A8872C"/>
+              <stop offset="50%" stop-color="#D4B86A"/>
+              <stop offset="100%" stop-color="#A8872C"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="130" cy="166" rx="90" ry="5" fill="#000" opacity=".35"/>
+          <!-- Body -->
+          <rect x="20" y="15" width="220" height="142" rx="12" fill="url(#svbody)" stroke="#58A6FF" stroke-width="1.5"/>
+          <rect x="20" y="15" width="220" height="5" rx="2.5" fill="url(#svgold)"/>
+          <rect x="20" y="152" width="220" height="5" rx="2.5" fill="url(#svgold)"/>
+          <!-- Door -->
+          <rect x="44" y="28" width="134" height="112" rx="7" fill="url(#svdoor)" stroke="#58A6FF33" stroke-width="1"/>
+          <!-- Bolts -->
+          <circle cx="57" cy="42" r="5" fill="#21262D" stroke="#58A6FF" stroke-width="1.2"/>
+          <circle cx="57" cy="84" r="5" fill="#21262D" stroke="#58A6FF" stroke-width="1.2"/>
+          <circle cx="57" cy="126" r="5" fill="#21262D" stroke="#58A6FF" stroke-width="1.2"/>
+          <circle cx="165" cy="42" r="5" fill="#21262D" stroke="#58A6FF" stroke-width="1.2"/>
+          <circle cx="165" cy="84" r="5" fill="#21262D" stroke="#58A6FF" stroke-width="1.2"/>
+          <circle cx="165" cy="126" r="5" fill="#21262D" stroke="#58A6FF" stroke-width="1.2"/>
+          <!-- Dial -->
+          <circle cx="111" cy="84" r="30" fill="#21262D" stroke="#58A6FF" stroke-width="1.5"/>
+          <circle cx="111" cy="84" r="23" fill="#161B22" stroke="#58A6FF33" stroke-width="1"/>
+          <line x1="111" y1="62" x2="111" y2="67" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="111" y1="101" x2="111" y2="106" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="89" y1="84" x2="94" y2="84" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="128" y1="84" x2="133" y2="84" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="111" cy="84" r="10" fill="#58A6FF22" stroke="#58A6FF" stroke-width="1"/>
+          <circle cx="111" cy="84" r="4" fill="#161B22"/>
+          <line x1="111" y1="84" x2="119" y2="70" stroke="#58A6FF" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Handle -->
+          <rect x="183" y="76" width="17" height="16" rx="4" fill="#21262D" stroke="#58A6FF" stroke-width="1.2"/>
+          <!-- SUB label -->
+          <text x="111" y="148" text-anchor="middle" font-family="Cairo,sans-serif" font-size="9" font-weight="700" fill="#58A6FF" letter-spacing="3">SUB VAULT</text>
+          <!-- Legs -->
+          <rect x="50" y="157" width="16" height="8" rx="2" fill="#21262D" stroke="#30363D" stroke-width="1"/>
+          <rect x="194" y="157" width="16" height="8" rx="2" fill="#21262D" stroke="#30363D" stroke-width="1"/>
+        </svg>
+      </div>
+      <div id="SUB-STATS" class="sgrid"></div>
+      <div class="tc">
+        <div class="thead2">
+          <b>حركات الخزنة الفرعية</b>
+          <select class="si" onchange="filterSub(this.value)" style="width:140px">
+            <option value="">الكل</option>
+            <option value="وارد">وارد</option>
+            <option value="منصرف">منصرف</option>
+            <option value="عباسية">العباسية</option>
+          </select>
+        </div>
+        <div id="SUB-TABLE"></div>
+      </div>
+    </div>
+
+    <!-- HAL -->
+    <div id="pg-hal" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">🔥 قسم الحل</div><div class="pgs">الذهب الخام قيد الحل — عيار 875</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bs bsm" onclick="openAddDept('hal')">➕ إضافة يدوية</button>
+          <button class="btn bsm" style="background:#C8A84B18;color:var(--gold);border:1px solid var(--gold)44" onclick="openCustomWeight('hal')">⚖️ وزن مخصص</button>
+        </div>
+      </div>
+      <div id="HAL-STATS" class="sgrid"></div>
+      <div class="tc"><div class="thead2"><b>محتويات قسم الحل</b></div><div id="HAL-TABLE"></div></div>
+    </div>
+
+    <!-- TAM -->
+    <div id="pg-tam" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">⚙️ قسم التصنيع</div><div class="pgs">الأصناف قيد التصنيع — العدد يُحسب تلقائياً</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bs bsm" onclick="openAddDept('tam')">➕ إضافة صنف</button>
+          <button class="btn bsm" style="background:#C8A84B18;color:var(--gold);border:1px solid var(--gold)44" onclick="openCustomWeight('tam')">⚖️ وزن مخصص</button>
+        </div>
+      </div>
+      <div id="TAM-STATS" class="sgrid"></div>
+      <div class="tc">
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن (جرام)</span><span>العيار</span><span>العدد</span><span>875</span><span>الحالة</span><span></span></div>
+        <div id="TAM-TABLE"></div>
+      </div>
+    </div>
+
+    <!-- DAM -->
+    <div id="pg-dam" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">🔨 قسم الدمغة</div><div class="pgs">الأصناف قيد الدمغة — العدد يُحسب تلقائياً</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bs bsm" onclick="openAddDept('dam')">➕ إضافة صنف</button>
+          <button class="btn bsm" style="background:#C8A84B18;color:var(--gold);border:1px solid var(--gold)44" onclick="openCustomWeight('dam')">⚖️ وزن مخصص</button>
+        </div>
+      </div>
+      <div id="DAM-STATS" class="sgrid"></div>
+      <div class="tc">
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن (جرام)</span><span>العيار</span><span>العدد</span><span>875</span><span>الحالة</span><span></span></div>
+        <div id="DAM-TABLE"></div>
+      </div>
+    </div>
+
+    <!-- TAG -->
+    <div id="pg-tag" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">📦 قسم التغليف</div><div class="pgs">الأصناف قيد التغليف — DONE عند المطابقة</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bs bsm" onclick="openAddDept('tag')">➕ إضافة صنف</button>
+          <button class="btn bsm" style="background:#C8A84B18;color:var(--gold);border:1px solid var(--gold)44" onclick="openCustomWeight('tag')">⚖️ وزن مخصص</button>
+        </div>
+      </div>
+      <div id="TAG-STATS" class="sgrid"></div>
+      <div class="tc">
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن (جرام)</span><span>العيار</span><span>العدد</span><span>875</span><span>الحالة</span><span></span></div>
+        <div id="TAG-TABLE"></div>
+      </div>
+
+      <!-- جدول العباسية من التغليف -->
+      <div class="tc" style="margin-top:20px">
+        <div class="thead2" style="background:#E74C3C10;border-bottom-color:#E74C3C30">
+          <b style="color:#E74C3C">🏪 ما تم صرفه على العباسية من التغليف</b>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="TAG-ABB-DATE" class="si" style="width:140px" onchange="loadTagAbbasiya()">
+            <button class="btn bxs bs" onclick="id('TAG-ABB-DATE').value='';loadTagAbbasiya()">كل السجل</button>
+          </div>
+        </div>
+        <div id="TAG-ABB-TABLE"><div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">جاري التحميل...</div></div>
+      </div>
+    </div>
+
+    <!-- SILVER -->
+    <div id="pg-sil" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">🥈 قسم الفضة</div><div class="pgs">مستقل — عيار 1000</div></div>
+        <button class="btn bs bsm" onclick="openAddSilver()">➕ إضافة فضة</button>
+      </div>
+      <div id="SIL-STATS" class="sgrid"></div>
+      <div class="tc">
+        <div class="drow drow-head drow-3"><span>الصنف</span><span>الوزن (جرام)</span><span>العدد</span><span>الحالة</span><span></span></div>
+        <div id="SIL-TABLE"></div>
+      </div>
+    </div>
+
+    <!-- ABBASIYA -->
+    <div id="pg-abb" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">🏪 سجل العباسية</div><div class="pgs">كل ما خرج للعباسية — خروج نهائي من الخزينة</div></div>
+      </div>
+      <!-- Stats -->
+      <div id="ABB-STATS" class="sgrid"></div>
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="si" id="ABB-FROM" onchange="loadAbb()" style="width:150px">
+          <option value="">كل المصادر</option>
+          <option value="main">الخزنة الرئيسية</option>
+          <option value="sub">الخزنة الفرعية</option>
+          <option value="stock">الاستوك</option>
+        </select>
+        <input type="date" id="ABB-D1" class="si" onchange="loadAbb()" style="width:140px">
+        <input type="date" id="ABB-D2" class="si" onchange="loadAbb()" style="width:140px">
+        <button class="btn bs bsm" onclick="id('ABB-D1').value='';id('ABB-D2').value='';id('ABB-FROM').value='';loadAbb()">↺ كل السجل</button>
+      </div>
+      <div class="tc"><div id="ABB-TABLE"></div></div>
+    </div>
+
+    <!-- LOG -->
+    <div id="pg-log" class="pg">
+      <div class="pgh"><div><div class="pgt">📋 سجل الحركات</div><div class="pgs">جميع العمليات في المصنع</div></div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <select class="si" id="LF-DEPT" onchange="loadLog()" style="width:130px">
+          <option value="">كل الأقسام</option>
+          <option value="main">الخزنة الرئيسية</option><option value="sub">الخزنة الفرعية</option>
+          <option value="hal">الحل</option><option value="tam">التصنيع</option>
+          <option value="dam">الدمغة</option><option value="tag">التغليف</option><option value="sil">الفضة</option>
+        </select>
+        <input class="si" type="date" id="LF-FROM" onchange="loadLog()">
+        <input class="si" type="date" id="LF-TO" onchange="loadLog()">
+        <input class="si" id="LF-Q" placeholder="🔍 بحث صنف..." oninput="loadLog()" style="width:160px">
+      </div>
+      <div class="tc"><div id="LOG-TABLE"></div></div>
+    </div>
+
+    <!-- REF -->
+    <div id="pg-ref" class="pg">
+      <div class="pgh"><div><div class="pgt">🔍 المرجع اليومي</div><div class="pgs">ماذا صُنع في أي يوم وأي قسم</div></div></div>
+      <div style="background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:16px;max-width:540px">
+        <div class="fr">
+          <div class="fg" style="margin:0"><label>من تاريخ</label><input type="date" id="RF-FROM"></div>
+          <div class="fg" style="margin:0"><label>إلى تاريخ</label><input type="date" id="RF-TO"></div>
+        </div>
+        <div class="fr" style="margin-top:12px">
+          <div class="fg" style="margin:0"><label>القسم</label>
+            <select id="RF-DEPT"><option value="">كل الأقسام</option>
+              <option value="hal">الحل</option><option value="tam">التصنيع</option>
+              <option value="dam">الدمغة</option><option value="tag">التغليف</option><option value="sil">الفضة</option>
+            </select>
+          </div>
+          <div class="fg" style="margin:0"><label>الصنف (اختياري)</label><input type="text" id="RF-ITEM" placeholder="جنيه، نصف جنيه..."></div>
+        </div>
+        <button class="btn bp" style="margin-top:12px" onclick="loadRef()">🔍 بحث</button>
+      </div>
+      <div id="REF-OUT"></div>
+    </div>
+
+    <!-- USERS -->
+    <div id="pg-users" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">👥 المستخدمون</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bd2 bsm" onclick="confirmResetData()">🗑 تصفير البيانات</button>
+          <button class="btn bp bsm" onclick="openAddUser()">➕ مستخدم جديد</button>
+        </div>
+      </div>
+      <div id="USERS-LIST" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ MODALS ============ -->
+
+<!-- Main Treasury Movement -->
+<div id="MOD-MAIN" class="mov">
+  <div class="mod">
+    <div class="mh"><div class="mt">حركة خزنة رئيسية</div><button class="mc" onclick="cm('MOD-MAIN')">✕</button></div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>النوع *</label>
+          <select id="MM-TYPE" onchange="onMMTypeChange()">
+            <option value="وارد">وارد</option>
+            <option value="منصرف">منصرف (للفرعية)</option>
+            <option value="سلفة">سلفة</option>
+            <option value="عباسية">منصرف العباسية 🏪</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="MM-DATE"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>الوزن (جرام) *</label><input type="number" id="MM-WT" step="0.001" oninput="calcMM()"></div>
+        <div class="fg" style="margin:0"><label>العيار *</label>
+          <select id="MM-KT" onchange="calcMM()">
+            <option value="875">875 (21)</option><option value="916">916 (22)</option>
+            <option value="948">948 (23)</option><option value="995">995</option><option value="999.9" selected>999.9 (24)</option><option value="1000">1000</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>بعيار 875</label><input type="text" id="MM-875" readonly style="opacity:.6;font-family:monospace"></div>
+        <div class="fg" style="margin:0"><label>بعيار 1000</label><input type="text" id="MM-1K" readonly style="opacity:.6;font-family:monospace"></div>
+      </div>
+      <!-- بيان السلفة — يظهر فقط عند اختيار سلفة -->
+      <div id="MM-LOAN-BOX" style="display:none;background:var(--s3);border-radius:8px;padding:12px;margin-top:12px;border:1px solid var(--warn)">
+        <div style="font-size:11px;color:var(--warn);font-weight:700;margin-bottom:8px">📋 بيان السلفة</div>
+        <div class="fr">
+          <div class="fg" style="margin:0"><label>اسم المستلم</label><input type="text" id="MM-LOAN-NAME" placeholder="اسم الشخص..."></div>
+          <div class="fg" style="margin:0"><label>الغرض</label><input type="text" id="MM-LOAN-PURPOSE" placeholder="سبب السلفة..."></div>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>بيان / ملاحظة</label><textarea id="MM-NOTE" placeholder="..."></textarea></div>
+      <div id="MM-PREV" class="calcbox">
+        <div class="row"><span style="color:var(--muted)">الرصيد الحالي</span><b class="num" id="MM-CUR">—</b></div>
+        <div class="row"><span style="color:var(--muted)">بعد الحركة</span><b class="num" style="color:var(--gold)" id="MM-AFT">—</b></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-MAIN')">إلغاء</button><button class="btn bp" onclick="saveMainMov()">💾 حفظ</button></div>
+  </div>
+</div>
+
+<!-- Sub Transfer to dept -->
+<div id="MOD-SUB" class="mov">
+  <div class="mod">
+    <div class="mh"><div class="mt">تحويل من الخزنة الفرعية</div><button class="mc" onclick="cm('MOD-SUB')">✕</button></div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>الصنف *</label>
+          <select id="SS-ITEM" onchange="onSSItemChange()">
+            <option value="">— Select Item —</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0"><label>Date *</label><input type="date" id="SS-DATE"></div>
+      </div>
+      <!-- وزن القطعة — قابل للتعديل -->
+      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام)</label>
+        <input type="number" id="SS-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="onSSWtChange()"
+          style="font-family:monospace;font-weight:800;color:var(--gold);background:var(--s2);border:1.5px solid var(--gold);margin-top:6px">
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label><input type="number" id="SS-WT" step="0.001" placeholder="0.000" oninput="onSSWtChange()"></div>
+        <div class="fg" style="margin:0"><label>Karat</label><input type="text" id="SS-KT" readonly style="opacity:.7;font-family:monospace"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>Count (auto)</label><input type="number" id="SS-CNT" step="0.001" placeholder="0.000" oninput="onSSCntChange()" style="font-family:monospace"></div>
+        <div class="fg" style="margin:0"><label>Weight @ K875</label><input type="text" id="SS-875" readonly style="opacity:.7;font-family:monospace;color:var(--gold)"></div>
+      </div>
+      <div class="fg" style="margin-top:4px"><label>Transfer To *</label>
+        <div class="dest-grid" style="grid-template-columns:1fr 1fr 1fr 1fr">
+          <button class="dest-btn" onclick="selSD('hal',this)">🔥 الحل</button>
+          <button class="dest-btn" onclick="selSD('tam',this)">⚙️ التصنيع</button>
+          <button class="dest-btn" onclick="selSD('dam',this)">🔨 الدمغة</button>
+          <button class="dest-btn" onclick="selSD('tag',this)">📦 التغليف</button>
+        </div>
+      </div>
+      <div class="fg"><label>Note</label><textarea id="SS-NOTE" placeholder="..."></textarea></div>
+      <div id="SS-PREV" class="calcbox">
+        <div class="row"><span style="color:var(--muted)">Sub-Vault Balance</span><b class="num" id="SS-BAL">—</b></div>
+        <div class="row"><span style="color:var(--muted)">After Transfer</span><b class="num" style="color:var(--gold)" id="SS-NEWBAL">—</b></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-SUB')">Cancel</button><button class="btn bp" onclick="saveSubTransfer()">↗️ Transfer</button></div>
+  </div>
+</div>
+
+<!-- Add to Dept Modal -->
+<div id="MOD-ADD" class="mov">
+  <div class="mod">
+    <div class="mh"><div class="mt" id="ADD-TITLE">إضافة صنف</div><button class="mc" onclick="cm('MOD-ADD')">✕</button></div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>الصنف *</label>
+          <select id="ADD-ITEM" onchange="onAddItemChange()">
+            <option value="">— Select Item —</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0"><label>Date *</label><input type="date" id="ADD-DATE"></div>
+      </div>
+      <!-- وزن القطعة — قابل للتعديل -->
+      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام)</label>
+        <input type="number" id="ADD-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="onAddWtChange()"
+          style="font-family:monospace;font-weight:800;color:var(--gold);background:var(--s2);border:1.5px solid var(--gold);margin-top:6px">
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label><input type="number" id="ADD-WT" step="0.001" placeholder="0.000" oninput="onAddWtChange()"></div>
+        <div class="fg" style="margin:0"><label>Karat</label><input type="text" id="ADD-KT" readonly style="opacity:.7;font-family:monospace"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>Count (auto)</label><input type="number" id="ADD-CNT" step="0.001" placeholder="0.000" oninput="onAddCntChange()" style="font-family:monospace"></div>
+        <div class="fg" style="margin:0"><label>Weight @ K875</label><input type="text" id="ADD-875" readonly style="opacity:.7;font-family:monospace;color:var(--gold)"></div>
+      </div>
+      <div class="fg" style="margin-top:4px"><label>Note</label><textarea id="ADD-NOTE" placeholder="..."></textarea></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-ADD')">Cancel</button><button class="btn bp" onclick="saveAddDept()">💾 Save</button></div>
+  </div>
+</div>
+
+<!-- Silver Add Modal -->
+<div id="MOD-SIL" class="mov">
+  <div class="mod" style="max-width:480px">
+    <div class="mh"><div class="mt">🥈 إضافة استوك فضة</div><button class="mc" onclick="cm('MOD-SIL')">✕</button></div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>الصنف *</label>
+          <select id="SIL-ITEM" onchange="onSilItemChange()">
+            <option value="">— اختر —</option>
+            <option value="ربع كيلو فضة" data-w="250" data-k="1000">ربع كيلو فضة</option>
+            <option value="نصف كيلو فضة" data-w="500" data-k="1000">نصف كيلو فضة</option>
+            <option value="كيلو فضة"     data-w="1000" data-k="1000">كيلو فضة</option>
+            <option value="5 كيلو فضة"   data-w="5000" data-k="1000">5 كيلو فضة</option>
+            <option value="أخرى"          data-w="" data-k="1000">أخرى — أدخل يدوياً</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="SIL-DATE"></div>
+      </div>
+      <!-- وزن القطعة + عيار -->
+      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid #8090A844">
+        <label style="color:var(--sil,#8090A8)">⚖️ وزن القطعة الواحدة (جرام) — قابل للتعديل</label>
+        <div class="fr" style="gap:8px;margin-top:6px">
+          <input type="number" id="SIL-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="calcSil()"
+            style="font-family:monospace;font-weight:800;color:var(--inf);background:var(--s2);border:1.5px solid var(--inf)">
+          <select id="SIL-KT" onchange="calcSil()" style="width:120px">
+            <option value="1000" selected>عيار 1000</option>
+            <option value="999.9">عيار 999.9</option>
+            <option value="995">عيار 995</option>
+            <option value="925">عيار 925</option>
+            <option value="875">عيار 875</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label><input type="number" id="SIL-WT" step="0.001" placeholder="0.000" oninput="calcSil()"></div>
+        <div class="fg" style="margin:0"><label>العدد (محسوب)</label><input type="number" id="SIL-CNT" step="0.001" placeholder="0" oninput="calcSilFromCnt()" style="font-family:monospace"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>الوزن بعيار 1000</label><input type="text" id="SIL-1K" readonly style="opacity:.7;font-family:monospace;color:var(--inf)"></div>
+        <div class="fg" style="margin:0"><label>ملاحظة</label><input type="text" id="SIL-NOTE" placeholder="..."></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-SIL')">إلغاء</button><button class="btn bp" onclick="saveAddSilver()">💾 حفظ الاستوك</button></div>
+  </div>
+</div>
+
+<!-- Transfer Modal -->
+<div id="MOD-TR" class="mov">
+  <div class="mod" style="max-width:480px">
+    <div class="mh"><div class="mt" id="TR-TITLE">تحويل صنف</div><button class="mc" onclick="cm('MOD-TR')">✕</button></div>
+    <div class="mb">
+      <div id="TR-INFO" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
+      <div class="fg"><label>الكمية المحوَّلة</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+          <button class="dest-btn" onclick="setTrType('all',this)">كل الوزن</button>
+          <button class="dest-btn" onclick="setTrType('cnt',this)">كل العدد</button>
+          <button class="dest-btn" onclick="setTrType('partial',this)">جزئي</button>
+        </div>
+      </div>
+      <div id="TR-PARTIAL" style="display:none">
+        <div class="fr">
+          <div class="fg" style="margin:0"><label>وزن للتحويل (جرام)</label><input type="number" id="TR-PWT" step="0.001" oninput="calcTrRemain()"></div>
+          <div class="fg" style="margin:0"><label>عدد للتحويل</label><input type="number" id="TR-PCNT" step="0.001" oninput="calcTrRemain()"></div>
+        </div>
+        <div id="TR-REM" style="display:none;background:var(--s3);border-radius:8px;padding:10px;margin-top:8px;font-size:12px">
+          <div style="color:var(--muted);margin-bottom:8px;font-weight:700">المتبقي</div>
+          <div style="display:flex;gap:16px;margin-bottom:10px">
+            <div>وزن: <b class="num" id="REM-WT">—</b> جرام</div>
+            <div>عدد: <b class="num" id="REM-CNT">—</b></div>
+          </div>
+          <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">المتبقي يذهب إلى</label>
+          <div class="dest-grid" id="REM-DEST"></div>
+        </div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>التحويل إلى *</label>
+        <div class="dest-grid" id="TR-DEST"></div>
+      </div>
+      <div class="fg"><label>ملاحظة</label><textarea id="TR-NOTE" placeholder="..."></textarea></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-TR')">إلغاء</button><button class="btn bp" onclick="saveDeptTransfer()">↗️ تنفيذ</button></div>
+  </div>
+</div>
+
+<!-- Edit Count Modal -->
+<div id="MOD-EDIT" class="mov">
+  <div class="mod" style="max-width:380px">
+    <div class="mh"><div class="mt">تعديل العدد</div><button class="mc" onclick="cm('MOD-EDIT')">✕</button></div>
+    <div class="mb">
+      <div id="EDIT-INFO" style="background:var(--s2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:12px"></div>
+      <div class="fg"><label>العدد الجديد</label><input type="number" id="EDIT-CNT" step="0.001" oninput="calcEditWt()" style="font-family:monospace"></div>
+      <div class="fg"><label>الوزن المحسوب (جرام)</label><input type="text" id="EDIT-WT" readonly style="opacity:.7;font-family:monospace;color:var(--gold)"></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-EDIT')">إلغاء</button><button class="btn bp" onclick="saveEditCnt()">💾 حفظ</button></div>
+  </div>
+</div>
+
+<!-- User Modal -->
+<div id="MOD-USER" class="mov">
+  <div class="mod" style="max-width:420px">
+    <div class="mh"><div class="mt" id="UM-T">مستخدم جديد</div><button class="mc" onclick="cm('MOD-USER')">✕</button></div>
+    <div class="mb">
+      <input type="hidden" id="UM-ID">
+      <div class="fr"><div class="fg" style="margin:0"><label>الاسم *</label><input type="text" id="UM-NAME"></div>
+      <div class="fg" style="margin:0"><label>اسم المستخدم *</label><input type="text" id="UM-UN"></div></div>
+      <div class="fr" style="margin-top:12px"><div class="fg" style="margin:0"><label>كلمة المرور</label><input type="password" id="UM-PW"></div>
+      <div class="fg" style="margin:0"><label>الدور</label><select id="UM-ROLE"><option value="admin">مدير</option><option value="supervisor">مشرف</option><option value="worker">موظف</option></select></div></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-USER')">إلغاء</button><button class="btn bp" onclick="saveUser()">💾 حفظ</button></div>
+  </div>
+</div>
+
+<!-- Confirm -->
+<!-- Stock Modal -->
+<div id="MOD-STOCK" class="mov">
+  <div class="mod" style="max-width:480px">
+    <div class="mh"><div class="mt">📦 إضافة استوك للخزنة الرئيسية</div><button class="mc" onclick="cm('MOD-STOCK')">✕</button></div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg" style="margin:0">
+          <label>الصنف *</label>
+          <select id="STK-NAME" onchange="onStkItemChange()">
+            <option value="">— اختر من القائمة —</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="STK-DATE"></div>
+      </div>
+      <!-- وزن القطعة الواحدة — قابل للتعديل -->
+      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام) — قابل للتعديل</label>
+        <input type="number" id="STK-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="calcStk()"
+          style="font-family:monospace;font-size:15px;font-weight:800;color:var(--gold);background:var(--s2);border:1.5px solid var(--gold);margin-top:6px">
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">الوزن الافتراضي من الكتالوج — عدّله لو وزن القطعة مختلف</div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label>
+          <input type="number" id="STK-WT" step="0.001" placeholder="0.000" oninput="calcStk()">
+        </div>
+        <div class="fg" style="margin:0"><label>العيار</label><input type="text" id="STK-KT" readonly style="opacity:.7;font-family:monospace"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>العدد (محسوب تلقائياً)</label><input type="number" id="STK-CNT" step="0.001" placeholder="0.000" oninput="onStkCntChange()" style="font-family:monospace"></div>
+        <div class="fg" style="margin:0"><label>الوزن بعيار 875</label><input type="text" id="STK-875" readonly style="opacity:.7;font-family:monospace;color:var(--gold)"></div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>ملاحظة</label><textarea id="STK-NOTE" placeholder="..."></textarea></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-STOCK')">إلغاء</button><button class="btn bp" onclick="saveStock()">💾 حفظ الاستوك</button></div>
+  </div>
+</div>
+
+<!-- Recovery Modal -->
+<div id="MOD-RECOVERY" class="mov">
+  <div class="mod" style="max-width:480px">
+    <div class="mh"><div class="mt">↩️ استرجاع من الخزنة الفرعية</div><button class="mc" onclick="cm('MOD-RECOVERY')">✕</button></div>
+    <div class="mb">
+      <div id="REC-INFO" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px">
+        <div style="color:var(--muted);margin-bottom:4px">رصيد الخزنة الفرعية الحالي</div>
+        <div id="REC-SUB-BAL" style="font-size:20px;font-weight:800;color:var(--inf)">—</div>
+      </div>
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>الوزن المُسترجع (جرام بعيار 875) *</label><input type="number" id="REC-WT" step="0.001" placeholder="0.000" oninput="calcRec()"></div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="REC-DATE"></div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>سبب الاسترجاع</label><textarea id="REC-NOTE" placeholder="مثال: فائض، تسوية، إرجاع..."></textarea></div>
+      <div id="REC-PREV" class="calcbox" style="display:none">
+        <div class="row"><span style="color:var(--muted)">رصيد الفرعية بعد الاسترجاع</span><b class="num" style="color:var(--warn)" id="REC-AFTER-SUB">—</b></div>
+        <div class="row"><span style="color:var(--muted)">رصيد الرئيسية بعد الاسترجاع</span><b class="num" style="color:var(--gold)" id="REC-AFTER-MAIN">—</b></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-RECOVERY')">إلغاء</button><button class="btn bp" style="background:var(--inf)" onclick="saveRecovery()">↩️ تنفيذ الاسترجاع</button></div>
+  </div>
+</div>
+
+<!-- Sub Abbasiya Modal -->
+<div id="MOD-SUB-ABB" class="mov">
+  <div class="mod" style="max-width:460px">
+    <div class="mh">
+      <div class="mt">🏪 منصرف العباسية — من الخزنة الفرعية</div>
+      <button class="mc" onclick="cm('MOD-SUB-ABB')">✕</button>
+    </div>
+    <div class="mb">
+      <div style="background:#E74C3C15;border:1px solid #E74C3C40;border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:12px;color:#E07060">
+        ⚠️ هذا المبلغ سيُخصم نهائياً من الخزنة الفرعية — خرج للعباسية للأبد
+      </div>
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>الوزن (جرام بعيار 875) *</label><input type="number" id="SAB-WT" step="0.001" placeholder="0.000" oninput="calcSubAbb()"></div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="SAB-DATE"></div>
+      </div>
+      <div class="fg" style="margin-top:12px"><label>البيان *</label><input type="text" id="SAB-NOTE" placeholder="اسم الصنف أو وصف العملية..."></div>
+      <div id="SAB-PREV" class="calcbox" style="display:none">
+        <div class="row"><span style="color:var(--muted)">رصيد الفرعية الحالي</span><b class="num" id="SAB-CUR">—</b></div>
+        <div class="row"><span style="color:var(--err)">رصيد الفرعية بعد الخصم</span><b class="num" style="color:var(--err)" id="SAB-AFT">—</b></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bs" onclick="cm('MOD-SUB-ABB')">إلغاء</button>
+      <button class="btn bd2" onclick="saveSubAbbasiya()">🏪 تأكيد الصرف للعباسية</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stock Transfer Modal -->
+<div id="MOD-STK-TR" class="mov">
+  <div class="mod" style="max-width:480px">
+    <div class="mh"><div class="mt" id="STK-TR-TITLE">📦 تحويل من الاستوك</div><button class="mc" onclick="cm('MOD-STK-TR')">✕</button></div>
+    <div class="mb">
+      <div id="STK-TR-INFO" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--tx2)"></div>
+      <div class="fr">
+        <div class="fg" style="margin:0">
+          <label>الوزن المُحوَّل (جرام بعيار 875) *</label>
+          <input type="number" id="STK-TR-WT" step="0.001" placeholder="0.000" oninput="calcStkTr()">
+        </div>
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="STK-TR-DATE"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0">
+          <label>الكمية (كل / جزء)</label>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="btn bsm bs" onclick="setStkTrAll()">كل الوزن</button>
+            <button class="btn bsm bs" onclick="setStkTrHalf()">النصف</button>
+          </div>
+        </div>
+        <div class="fg" style="margin:0"><label>ملاحظة</label><input type="text" id="STK-TR-NOTE" placeholder="..."></div>
+      </div>
+      <div id="STK-TR-PREV" class="calcbox" style="display:none;margin-top:12px">
+        <div class="row"><span style="color:var(--muted)">المتبقي في الاستوك بعد التحويل</span><b class="num" style="color:var(--warn)" id="STK-TR-REM">—</b></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bs" onclick="cm('MOD-STK-TR')">إلغاء</button>
+      <button class="btn bp" id="STK-TR-BTN" onclick="saveStockTransfer()">✅ تأكيد التحويل</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Weight Modal — إضافة وزن مخصص لقسم -->
+<div id="MOD-CW" class="mov">
+  <div class="mod" style="max-width:500px">
+    <div class="mh">
+      <div>
+        <div class="mt" id="CW-TITLE">⚖️ إضافة وزن مخصص</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">وارد رئيسية → فرعية → القسم تلقائياً</div>
+      </div>
+      <button class="mc" onclick="cm('MOD-CW')">✕</button>
+    </div>
+    <div class="mb">
+      <!-- مسار التحويل -->
+      <div style="display:flex;align-items:center;gap:6px;background:var(--s3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px">
+        <span style="color:var(--gold)">🏦 رئيسية</span>
+        <span style="color:var(--muted)">→</span>
+        <span style="color:var(--inf)">💼 فرعية</span>
+        <span style="color:var(--muted)">→</span>
+        <span id="CW-DEST-LBL" style="color:var(--ok)">📦 القسم</span>
+      </div>
+      <div class="fr">
+        <div class="fg" style="margin:0">
+          <label>الوزن (جرام) *</label>
+          <input type="number" id="CW-WT" step="0.001" placeholder="0.000" oninput="calcCW()">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>العيار *</label>
+          <select id="CW-KT" onchange="calcCW()">
+            <option value="875">875 (21)</option>
+            <option value="916">916 (22)</option>
+            <option value="948">948 (23)</option>
+            <option value="995">995</option>
+            <option value="999.9" selected>999.9 (24)</option>
+            <option value="1000">1000</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0">
+          <label>التاريخ *</label>
+          <input type="date" id="CW-DATE">
+        </div>
+        <div class="fg" style="margin:0">
+          <label>الوزن بعيار 875</label>
+          <input type="text" id="CW-875" readonly style="opacity:.7;font-family:monospace;color:var(--gold)">
+        </div>
+      </div>
+      <div class="fg" style="margin-top:12px">
+        <label>البيان / الملاحظة</label>
+        <input type="text" id="CW-NOTE" placeholder="وصف الوزن...">
+      </div>
+      <!-- معاينة الأرصدة -->
+      <div id="CW-PREV" class="calcbox" style="display:none;margin-top:12px">
+        <div class="row"><span style="color:var(--muted)">الرصيد الرئيسي بعد الإضافة</span><b class="num" style="color:var(--gold)" id="CW-MAIN-AFT">—</b></div>
+        <div class="row"><span style="color:var(--muted)">رصيد الفرعية بعد العبور</span><b class="num" style="color:var(--inf)" id="CW-SUB-AFT">—</b></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn bs" onclick="cm('MOD-CW')">إلغاء</button>
+      <button class="btn bp" onclick="saveCustomWeight()">✅ تنفيذ العملية</button>
+    </div>
+  </div>
+</div>
+
+<div id="MOD-CONF" class="mov">
+  <div class="mod" style="max-width:340px">
+    <div class="mh"><div class="mt">⚠️ تأكيد</div><button class="mc" onclick="cm('MOD-CONF')">✕</button></div>
+    <div class="mb"><p id="CONF-MSG" style="font-size:13px;color:var(--muted)"></p></div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-CONF')">إلغاء</button><button class="btn bd2" id="CONF-BTN">تأكيد</button></div>
+  </div>
+</div>
+
+<div id="TC"></div>
+
+<script>
+// ================================================================
+// PRODUCT CATALOG — من جدول Station
+// ================================================================
+const CATALOG = [
+  {no:1,  name:'جنيه',             karat:875,  w21:7.990,   w24:7.99},
+  {no:2,  name:'نصف جنيه',         karat:875,  w21:3.990,   w24:3.99},
+  {no:3,  name:'ربع جنيه',         karat:875,  w21:1.990,   w24:1.99},
+  {no:5,  name:'جرام',             karat:1000, w21:1.131,   w24:0.99},
+  {no:6,  name:'ربع جرام',         karat:1000, w21:0.274,   w24:0.24},
+  {no:7,  name:'نصف جرام',         karat:1000, w21:0.560,   w24:0.49},
+  {no:8,  name:'2.5جرام',          karat:1000, w21:2.845,   w24:2.49},
+  {no:9,  name:'5جرام',            karat:1000, w21:5.702,   w24:4.99},
+  {no:10, name:'10جرام',           karat:1000, w21:11.416,  w24:9.99},
+  {no:11, name:'15.55جرام',        karat:1000, w21:17.770,  w24:15.55},
+  {no:12, name:'20جرام',           karat:1000, w21:22.855,  w24:20},
+  {no:13, name:'25جرام',           karat:1000, w21:28.569,  w24:25},
+  {no:14, name:'أونصة 31.10 جرام', karat:1000, w21:35.539,  w24:31.1},
+  {no:15, name:'50جرام',           karat:1000, w21:57.137,  w24:50},
+  {no:16, name:'Tola 5',           karat:1000, w21:66.650,  w24:58.33},
+  {no:17, name:'100جرام',          karat:1000, w21:114.274, w24:100},
+  {no:18, name:'Tola 10',          karat:1000, w21:133.301, w24:116.7},
+  {no:19, name:'كيلو 999.9',       karat:1000, w21:1142.743,w24:1000},
+  {no:21, name:'كيلو 995',         karat:995,  w21:1137.132,w24:995.1},
+  {no:23, name:'500 جرام',         karat:1000, w21:571.371, w24:500},
+  {no:25, name:'250 جرام',         karat:1000, w21:285.686, w24:250},
+  {no:27, name:'ربع كيلو فضة',     karat:1000, w21:285.686, w24:250},
+  {no:29, name:'نصف كيلو فضة',     karat:1000, w21:571.371, w24:500},
+  {no:31, name:'كيلو فضة',         karat:1000, w21:1142.743,w24:1000},
+];
+const SILVER_CAT = [
+  {no:27, name:'ربع كيلو فضة', karat:1000, w21:250, w24:250},
+  {no:29, name:'نصف كيلو فضة', karat:1000, w21:500, w24:500},
+  {no:31, name:'كيلو فضة',     karat:1000, w21:1000,w24:1000},
+];
+
+// ================================================================
+// STATE
+// ================================================================
+let CU=null;
+let mainMovs=[], subMovs=[], deptItems=[], silvItems=[], allLogs=[];
+let trItemId=null, trType=null, trDestVal=null, trRemDest=null;
+let editItemId=null;
+let sdDest=null;
+let addDeptKey=null;
+
+const DEPTS={
+  hal:{name:'الحل',     icon:'🔥', color:'var(--hal)'},
+  tam:{name:'التصنيع', icon:'⚙️', color:'var(--tam)'},
+  dam:{name:'الدمغة',  icon:'🔨', color:'var(--dam)'},
+  tag:{name:'التغليف', icon:'📦', color:'var(--tag)'},
+};
+const DEST_LBL={hal:'🔥 الحل',tam:'⚙️ التصنيع',dam:'🔨 الدمغة',tag:'📦 التغليف',sub:'💼 الخزنة الفرعية',main:'🏦 الخزنة الرئيسية'};
+const ROLES={admin:'مدير النظام',supervisor:'مشرف',worker:'موظف'};
+
+// ================================================================
+// STOCK — dropdown من الـ CATALOG
+// ================================================================
+let stockItems = [];
+
+function fillStockDropdown(){
+  const opts = CATALOG.map((c,i)=>`<option value="${i}">${c.name} — K${c.karat} — ${c.w24}g/pc</option>`).join('');
+  const el = document.getElementById('STK-NAME');
+  if(el) el.innerHTML = `<option value="">— اختر من القائمة —</option>` + opts;
+}
+
+function onStkItemChange(){
+  const cat=getCatByIdx('STK-NAME');
+  if(!cat){['STK-KT','STK-CNT','STK-875','STK-WT','STK-UNIT'].forEach(x=>id(x).value='');return;}
+  id('STK-KT').value=cat.karat;
+  id('STK-UNIT').value=cat.w24; // وزن القطعة الافتراضي — قابل للتعديل
+  id('STK-WT').value='';
+  id('STK-CNT').value='';
+  id('STK-875').value='';
+}
+
+function calcStk(){
+  const cat=getCatByIdx('STK-NAME');
+  const wt=parseFloat(v('STK-WT'))||0;
+  const unit=parseFloat(id('STK-UNIT').value)||cat?.w24||0;
+  if(!wt){id('STK-CNT').value='';id('STK-875').value='';return;}
+  const kt=cat?cat.karat:parseFloat(id('STK-KT').value)||875;
+  const w875=wt*kt/875;
+  const cnt=unit?wt/unit:0;
+  id('STK-CNT').value=unit?+(cnt.toFixed(3)):'';
+  id('STK-875').value=+(w875.toFixed(3));
+}
+
+function onStkCntChange(){
+  const cat=getCatByIdx('STK-NAME');
+  const cnt=parseFloat(v('STK-CNT'))||0;
+  const unit=parseFloat(id('STK-UNIT').value)||cat?.w24||0;
+  if(!cnt||!unit)return;
+  const wt=cnt*unit;
+  const kt=cat?cat.karat:875;
+  id('STK-WT').value=+(wt.toFixed(3));
+  id('STK-875').value=+(wt*kt/875).toFixed(3);
+}
+
+function openAddStock(){
+  fillStockDropdown();
+  id('STK-DATE').value=today();
+  ['STK-WT','STK-CNT','STK-875','STK-NOTE','STK-UNIT'].forEach(x=>id(x).value='');
+  id('STK-KT').value='';
+  id('STK-NAME').value='';
+  om('MOD-STOCK');
+}
+
+async function saveStock(){
+  const idx=id('STK-NAME').value;
+  const cat=idx!==''?CATALOG[parseInt(idx)]:null;
+  const name=cat?cat.name:'';
+  if(!name||!id('STK-DATE').value){toast('er','اختر الصنف والتاريخ');return;}
+  const wt=parseFloat(v('STK-WT'))||0;
+  if(!wt){toast('er','أدخل الوزن');return;}
+  const kt=cat?cat.karat:875;
+  const cnt=parseFloat(v('STK-CNT'))||0;
+  const w875=wt*kt/875;
+  const note=v('STK-NOTE').trim();
+  const date=v('STK-DATE');
+  const nowTs=Date.now(), timeStr=nowTime();
+
+  // ١. حفظ في الاستوك
+  const sid='stk'+nowTs;
+  await DB.doc(`stock/${sid}`).set({id:sid,name,date,weight:wt,karat:kt,w875,count:cnt,note,by:CU.username,at:nowTs});
+
+  // ٢. إضافة للرصيد الرئيسي كـ وارد استوك
+  const bal=calcBal(mainMovs);
+  const newBal=bal+w875;
+  const mid='m'+nowTs;
+  await DB.doc(`main/${mid}`).set({
+    id:mid,date,type:'وارد استوك',weight:wt,karat:kt,w875,w1000:wt*kt/1000,
+    balance:newBal,note:`[استوك] ${name}${note?' — '+note:''}`,
+    time:timeStr,by:CU.username,at:nowTs+1
+  });
+
+  // ٣. Undo stack
+  pushUndo({
+    label:`إضافة استوك: ${name}`,
+    ops:[
+      {action:'delete',col:'stock',id:sid},
+      {action:'delete',col:'main',id:mid}
+    ]
+  });
+
+  clearCache('stock','main');
+  toast('ok',`✅ ${name} — ${N(wt)} جرام — أُضيف للاستوك والرصيد الرئيسي`);
+  cm('MOD-STOCK');
+  loadMain();
+  loadStockTable();
+}
+
+function showStockTab(tab){
+  const isNow=tab==='now';
+  id('STOCK-TABLE-NOW').style.display=isNow?'block':'none';
+  id('STOCK-TABLE-LOG').style.display=isNow?'none':'block';
+  id('STK-TAB-NOW').style.background=isNow?'var(--gold)':'';
+  id('STK-TAB-NOW').style.color=isNow?'#000':'';
+  id('STK-TAB-LOG').style.background=isNow?'':'var(--inf)';
+  id('STK-TAB-LOG').style.color=isNow?'':'#fff';
+  if(!isNow) loadStockLog();
+}
+
+async function loadStockLog(){
+  const snap=await DB.collection('stock').get();
+  const all=snap.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at);
+  if(!all.length){
+    id('STOCK-TABLE-LOG').innerHTML='<div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد سجل استوك</span></div>';
+    return;
+  }
+  id('STOCK-TABLE-LOG').innerHTML=`<table><thead><tr>
+    <th>التاريخ</th><th>الصنف</th><th>الوزن</th><th>العيار</th><th>875</th><th>العدد</th><th>بواسطة</th><th>ملاحظة</th>
+  </tr></thead><tbody>${
+    all.map(s=>`<tr>
+      <td style="font-size:11px;color:var(--muted)">${arabicDate(s.date)}</td>
+      <td style="font-weight:700;color:var(--warn)">${s.name}</td>
+      <td class="num">${N(s.weight)}</td>
+      <td><span class="b bgld">${s.karat}</span></td>
+      <td class="num" style="color:var(--gold);font-weight:800">${N(s.w875)}</td>
+      <td class="num">${s.count?N3(s.count):'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${s.by||'—'}</td>
+      <td style="color:var(--muted)">${s.note||'—'}</td>
+    </tr>`).join('')
+  }</tbody></table>`;
+}
+
+async function loadStockTable(){
+  const snap=await DB.collection('stock').get();
+  stockItems=snap.docs.map(d=>d.data()).sort((a,b)=>b.at-a.at);
+
+  if(!stockItems.length){
+    id('STOCK-TABLE-NOW').innerHTML=`<div style="text-align:center;padding:48px 20px"><div style="font-size:48px;margin-bottom:12px">📦</div><div style="color:var(--muted);font-size:14px">لا يوجد استوك حالياً</div><div style="color:var(--muted);font-size:11px;margin-top:4px">اضغط "إضافة استوك" لإضافة أول صنف</div></div>`;
+    return;
+  }
+
+  const grouped={};
+  for(const s of stockItems){
+    const key=s.name+'||'+s.karat;
+    if(!grouped[key]) grouped[key]={name:s.name,karat:s.karat,totalWt:0,totalW875:0,totalCnt:0,items:[]};
+    grouped[key].totalWt  +=s.weight||0;
+    grouped[key].totalW875+=s.w875||0;
+    grouped[key].totalCnt +=s.count||0;
+    grouped[key].items.push(s);
+  }
+  const rows=Object.values(grouped);
+  const grandW875=rows.reduce((s,r)=>s+r.totalW875,0);
+  const grandWt  =rows.reduce((s,r)=>s+r.totalWt,0);
+  const grandCnt =rows.reduce((s,r)=>s+r.totalCnt,0);
+
+  let html=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px">
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--gold);border-radius:10px;padding:12px 14px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px">إجمالي الوزن</div>
+      <div class="num" style="font-size:20px;font-weight:900;color:var(--goldtx)">${N(grandWt)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">جرام</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--warn);border-radius:10px;padding:12px 14px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px">إجمالي عيار 875</div>
+      <div class="num" style="font-size:20px;font-weight:900;color:var(--warn)">${N(grandW875)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">جرام</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--inf);border-radius:10px;padding:12px 14px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px">إجمالي العدد</div>
+      <div class="num" style="font-size:20px;font-weight:900;color:var(--inf)">${N3(grandCnt)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">قطعة</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--ok);border-radius:10px;padding:12px 14px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px">الأصناف</div>
+      <div class="num" style="font-size:20px;font-weight:900;color:var(--ok)">${rows.length}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">صنف</div>
+    </div>
+  </div><div style="display:flex;flex-direction:column;gap:10px">`;
+
+  rows.forEach((r,i)=>{
+    const icon=r.karat===875?'💛':'🥇';
+    html+=`<div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer" onclick="toggleStockDetail('sd${i}','arr${i}')">
+        <div style="width:42px;height:42px;border-radius:10px;background:#C8A84B22;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:800;font-size:15px;color:var(--tx)">${r.name}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">عيار <span style="color:var(--gold);font-weight:700">${r.karat}</span> &bull; ${r.items.length} حركة</div>
+        </div>
+        <div style="display:flex;gap:16px;text-align:right">
+          <div><div class="num" style="font-size:15px;font-weight:900;color:var(--goldtx)">${N(r.totalWt)}</div><div style="font-size:9px;color:var(--muted)">وزن</div></div>
+          <div><div class="num" style="font-size:15px;font-weight:900;color:var(--warn)">${N(r.totalW875)}</div><div style="font-size:9px;color:var(--muted)">875</div></div>
+          <div><div class="num" style="font-size:15px;font-weight:900;color:var(--inf)">${r.totalCnt?N3(r.totalCnt):'—'}</div><div style="font-size:9px;color:var(--muted)">عدد</div></div>
+        </div>
+        <div id="arr${i}" style="color:var(--muted);font-size:13px;transition:transform .2s;flex-shrink:0">▼</div>
+      </div>
+      <div style="padding:8px 14px 14px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--s3)">
+        <button class="btn bsm" style="font-size:11px;background:var(--s3);color:var(--tx2);border:1px solid var(--bd)" onclick="openStockTransfer('${r.name}',${r.karat},${r.totalWt},${r.totalW875},${r.totalCnt},'sub')">💼 للفرعية</button>
+        <button class="btn bsm" style="font-size:11px;background:#5A9FE818;color:var(--hal);border:1px solid var(--hal)44" onclick="openStockTransfer('${r.name}',${r.karat},${r.totalWt},${r.totalW875},${r.totalCnt},'hal')">🔥 الحل</button>
+        <button class="btn bsm" style="font-size:11px;background:#9E7ED418;color:var(--tam);border:1px solid var(--tam)44" onclick="openStockTransfer('${r.name}',${r.karat},${r.totalWt},${r.totalW875},${r.totalCnt},'tam')">⚙️ التصنيع</button>
+        <button class="btn bsm" style="font-size:11px;background:#C8983018;color:var(--dam);border:1px solid var(--dam)44" onclick="openStockTransfer('${r.name}',${r.karat},${r.totalWt},${r.totalW875},${r.totalCnt},'dam')">🔨 الدمغة</button>
+        <button class="btn bsm" style="font-size:11px;background:#4DB87A18;color:var(--tag);border:1px solid var(--tag)44" onclick="openStockTransfer('${r.name}',${r.karat},${r.totalWt},${r.totalW875},${r.totalCnt},'tag')">📦 التغليف</button>
+        <button class="btn bsm" style="font-size:11px;background:#E74C3C18;color:#E74C3C;border:1px solid #E74C3C44" onclick="openStockTransfer('${r.name}',${r.karat},${r.totalWt},${r.totalW875},${r.totalCnt},'abb')">🏪 العباسية</button>
+      </div>
+      <div id="sd${i}" style="display:none;border-top:1px solid var(--s3)">
+        <table style="width:100%"><thead><tr style="background:var(--s2)">
+          <th style="padding:7px 14px;font-size:10px;color:var(--muted)">التاريخ</th>
+          <th style="font-size:10px;color:var(--muted)">الوزن</th><th style="font-size:10px;color:var(--muted)">875</th>
+          <th style="font-size:10px;color:var(--muted)">العدد</th><th style="font-size:10px;color:var(--muted)">ملاحظة</th><th></th>
+        </tr></thead><tbody>`;
+    r.items.forEach(s=>{
+      html+=`<tr style="border-top:1px solid var(--s3)">
+        <td style="padding:7px 14px;font-size:11px;color:var(--muted)">${arabicDate(s.date)}</td>
+        <td class="num" style="font-size:12px">${N(s.weight)}</td>
+        <td class="num" style="font-size:12px;color:var(--gold)">${N(s.w875)}</td>
+        <td class="num" style="font-size:12px">${s.count?N3(s.count):'—'}</td>
+        <td style="font-size:11px;color:var(--muted)">${s.note||'—'}</td>
+        <td style="padding:7px 14px"><button class="btn bxs bd2" onclick="delStock('${s.id}')">🗑</button></td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  html+=`</div>`;
+  id('STOCK-TABLE-NOW').innerHTML=html;
+}
+
+function toggleStockDetail(rowId,arrId){
+  const el=id(rowId); if(!el)return;
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  const arr=id(arrId);
+  if(arr) arr.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+async function delStock(sid){
+  conf('حذف هذا الصنف من الاستوك؟',async()=>{
+    await DB.doc(`stock/${sid}`).delete();
+    clearCache('stock');
+    toast('ok','تم الحذف');
+    loadStockTable();
+  });
+}
+
+// ================================================================
+// STOCK TRANSFER — تحويل من الاستوك
+// ================================================================
+let stkTrData={name:'',karat:0,totalWt:0,totalW875:0,totalCnt:0,dest:''};
+
+const DEST_NAMES={sub:'💼 الخزنة الفرعية',hal:'🔥 الحل',tam:'⚙️ التصنيع',dam:'🔨 الدمغة',tag:'📦 التغليف',abb:'🏪 العباسية'};
+
+function openStockTransfer(name,karat,totalWt,totalW875,totalCnt,dest){
+  stkTrData={name,karat,totalWt,totalW875,totalCnt,dest};
+  id('STK-TR-TITLE').textContent=`📦 تحويل "${name}" ← ${DEST_NAMES[dest]||dest}`;
+  id('STK-TR-INFO').innerHTML=`
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <span>الصنف: <b style="color:var(--goldtx)">${name}</b></span>
+      <span>العيار: <b style="color:var(--gold)">${karat}</b></span>
+      <span>الوزن الكلي: <b class="num" style="color:var(--warn)">${N(totalW875)} جرام (875)</b></span>
+      ${totalCnt?`<span>العدد: <b style="color:var(--inf)">${N3(totalCnt)}</b></span>`:''}
+    </div>`;
+  id('STK-TR-DATE').value=today();
+  id('STK-TR-WT').value='';
+  id('STK-TR-NOTE').value='';
+  id('STK-TR-PREV').style.display='none';
+  const btn=id('STK-TR-BTN');
+  btn.style.background=dest==='abb'?'var(--err)':dest==='sub'?'var(--inf)':'var(--ok)';
+  om('MOD-STK-TR');
+}
+
+function setStkTrAll(){ id('STK-TR-WT').value=+(stkTrData.totalW875.toFixed(3)); calcStkTr(); }
+function setStkTrHalf(){ id('STK-TR-WT').value=+(stkTrData.totalW875/2).toFixed(3); calcStkTr(); }
+
+function calcStkTr(){
+  const wt=parseFloat(id('STK-TR-WT').value)||0;
+  if(!wt){id('STK-TR-PREV').style.display='none';return;}
+  const rem=stkTrData.totalW875-wt;
+  id('STK-TR-REM').textContent=N(rem)+' جرام';
+  id('STK-TR-PREV').style.display='block';
+}
+
+async function saveStockTransfer(){
+  const wt=parseFloat(id('STK-TR-WT').value)||0;
+  const date=id('STK-TR-DATE').value;
+  const note=id('STK-TR-NOTE').value.trim();
+  const {name,karat,totalW875,totalCnt,dest}=stkTrData;
+  if(!wt||!date){toast('er','أدخل الوزن والتاريخ');return;}
+  if(wt>totalW875+0.001){toast('er','الوزن أكبر من المتاح في الاستوك');return;}
+
+  const nowTs=Date.now(), timeStr=nowTime();
+  const actualWt=+(wt*875/karat).toFixed(3);
+  const cnt=totalCnt?(wt/totalW875*totalCnt):0;
+
+  // ══════════════════════════════════════════════
+  // ١. طرح الوزن من سجلات الاستوك الأصلية
+  //    نبدأ بأقدم سجل ونطرح منه حتى ينتهي الوزن
+  // ══════════════════════════════════════════════
+  const stkSnap=await DB.collection('stock').get();
+  // سجلات هذا الصنف فقط (بدون سجلات الخروج) مرتبة من الأقدم
+  let stkItems=stkSnap.docs.map(d=>d.data())
+    .filter(s=>s.name===name&&s.karat===karat&&(s.weight||0)>0)
+    .sort((a,b)=>a.at-b.at);
+
+  let remaining=actualWt; // الوزن المراد طرحه
+  const undoStockOps=[];
+
+  for(const s of stkItems){
+    if(remaining<=0) break;
+    const available=s.weight||0;
+    if(available<=remaining+0.001){
+      // احذف السجل كاملاً
+      await DB.doc(`stock/${s.id}`).delete();
+      undoStockOps.push({action:'set',col:'stock',id:s.id,data:s});
+      remaining-=available;
+    } else {
+      // قلّل الوزن في السجل
+      const newWt=+(available-remaining).toFixed(3);
+      const newW875=+(newWt*karat/875).toFixed(3);
+      const newCnt=s.count?(newWt/(s.weight)*s.count):0;
+      await DB.doc(`stock/${s.id}`).update({
+        weight:newWt, w875:newW875, count:+newCnt.toFixed(3)
+      });
+      undoStockOps.push({action:'set',col:'stock',id:s.id,data:s}); // restore original
+      remaining=0;
+    }
+  }
+  clearCache('stock');
+
+  // ══════════════════════════════════════════════
+  // ٢. الفرعية — وارد دائماً
+  // ══════════════════════════════════════════════
+  const subSnap=await DB.collection('sub').get();
+  const subBal=calcBal(subSnap.docs.map(d=>d.data()));
+  const subInId='s'+nowTs;
+  await DB.doc(`sub/${subInId}`).set({
+    id:subInId, date, type:'وارد', item:name,
+    weight:actualWt, karat, w875:wt,
+    balance:subBal+wt, from:'stock',
+    note:`من الاستوك${note?' | '+note:''}`,
+    time:timeStr, by:CU.username, at:nowTs
+  });
+
+  // ══════════════════════════════════════════════
+  // ٣. حسب الوجهة
+  // ══════════════════════════════════════════════
+  const undoOps=[...undoStockOps, {action:'delete',col:'sub',id:subInId}];
+
+  if(dest==='sub'){
+    // الفرعية فقط — خلاص
+    clearCache('sub');
+    pushUndo({label:`تحويل استوك للفرعية: ${name} ${N(actualWt)}g`, ops:undoOps});
+    toast('ok',`✅ "${name}" — الاستوك → الفرعية`);
+
+  } else if(dest==='abb'){
+    // العباسية — منصرف من الفرعية مباشرة
+    const subOutId='s'+(nowTs+1);
+    await DB.doc(`sub/${subOutId}`).set({
+      id:subOutId, date, type:'عباسية', item:name,
+      weight:actualWt, karat, w875:wt,
+      balance:subBal, to:'عباسية',
+      note:`استوك→عباسية${note?' | '+note:''}`,
+      time:timeStr, by:CU.username, at:nowTs+1
+    });
+    undoOps.push({action:'delete',col:'sub',id:subOutId});
+    clearCache('sub');
+    pushUndo({label:`تحويل استوك للعباسية: ${name}`, ops:undoOps});
+    toast('ok',`🏪 "${name}" — الاستوك → الفرعية → العباسية`);
+
+  } else {
+    // قسم — منصرف من الفرعية للقسم
+    const subOutId='s'+(nowTs+1);
+    await DB.doc(`sub/${subOutId}`).set({
+      id:subOutId, date, type:'منصرف', item:name,
+      weight:actualWt, karat, w875:wt,
+      balance:subBal, to:dest,
+      note:`استوك→${DEST_NAMES[dest]}${note?' | '+note:''}`,
+      time:timeStr, by:CU.username, at:nowTs+1
+    });
+    const deptId='di'+nowTs;
+    await DB.doc(`dept/${deptId}`).set({
+      id:deptId, dept:dest, item:name,
+      weight:actualWt, count:+cnt.toFixed(3),
+      karat, w875:wt, done:false,
+      note:`من الاستوك${note?' | '+note:''}`,
+      by:CU.username, date, at:nowTs+2
+    });
+    undoOps.push({action:'delete',col:'sub',id:subOutId});
+    undoOps.push({action:'delete',col:'dept',id:deptId});
+    clearCache('sub','dept');
+    pushUndo({label:`تحويل استوك→${DEST_NAMES[dest]}: ${name}`, ops:undoOps});
+    toast('ok',`✅ "${name}" — الاستوك → الفرعية → ${DEST_NAMES[dest]}`);
+  }
+
+  cm('MOD-STK-TR');
+  loadStockTable();
+  loadSub();
+}
+// تُعامَل كـ منصرف عادي لكن بنوع "عباسية" ويُخصم من الرصيد
+
+// ================================================================
+// العباسية — من الخزنة الفرعية
+// ================================================================
+let subFilterVal='';
+function filterSub(val){subFilterVal=val;renderSubTable();}
+
+function renderSubTable(){
+  let data=[...subMovs];
+  if(subFilterVal) data=data.filter(m=>m.type===subFilterVal||
+    (subFilterVal==='عباسية'&&m.type==='عباسية'));
+  id('SUB-TABLE').innerHTML=data.length?`<table><thead><tr>
+    <th>التاريخ</th><th>الوقت</th><th>النوع</th><th>الصنف</th><th>الوزن</th><th>875</th><th>الرصيد</th><th>من/إلى</th><th></th>
+  </tr></thead><tbody>${
+    data.map(m=>`<tr>
+      <td style="font-size:11px">${arabicDate(m.date)}</td>
+      <td style="font-family:monospace;font-size:10px;color:var(--muted)">${m.time||'—'}</td>
+      <td><span class="b ${m.type==='وارد'?'bg':m.type==='عباسية'?'br':'br'}" style="${m.type==='عباسية'?'background:#E74C3C25;color:#E74C3C':''}">${m.type==='عباسية'?'🏪 عباسية':m.type}</span></td>
+      <td style="font-weight:600">${m.item||'—'}</td>
+      <td class="num">${N(m.weight)}</td>
+      <td class="num">${N(m.w875)}</td>
+      <td class="num" style="font-weight:800;color:var(--gold)">${N(m.balance)}</td>
+      <td><span class="b bbl" style="font-size:9px">${DEST_LBL[m.from||m.to]||m.from||m.to||'—'}</span></td>
+      <td><button class="btn bxs bd2" onclick="delSub('${m.id}')">🗑</button></td>
+    </tr>`).join('')
+  }</tbody></table>`:'<div class="empty"><span class="eic">📭</span></div>';
+}
+
+function openSubAbbasiya(){
+  id('SAB-DATE').value=today();
+  id('SAB-WT').value='';
+  id('SAB-NOTE').value='';
+  id('SAB-PREV').style.display='none';
+  om('MOD-SUB-ABB');
+}
+
+async function calcSubAbb(){
+  const wt=parseFloat(v('SAB-WT'))||0;
+  if(!wt){id('SAB-PREV').style.display='none';return;}
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const bal=calcBal(sMov);
+  id('SAB-CUR').textContent=N(bal)+' جرام';
+  id('SAB-AFT').textContent=N(bal-wt)+' جرام';
+  id('SAB-PREV').style.display='block';
+}
+
+async function saveSubAbbasiya(){
+  const wt=parseFloat(v('SAB-WT'))||0;
+  const date=v('SAB-DATE'), note=v('SAB-NOTE').trim();
+  if(!wt||!date||!note){toast('er','أكمل جميع الحقول');return;}
+  const nowTs=Date.now(), timeStr=nowTime();
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const bal=calcBal(sMov);
+  if(wt>bal+0.001){toast('er','الوزن أكبر من رصيد الخزنة الفرعية');return;}
+  const newBal=bal-wt;
+  const sid='s'+nowTs;
+  await DB.doc(`sub/${sid}`).set({
+    id:sid, date, type:'عباسية', item:note,
+    weight:wt, karat:875, w875:wt, balance:newBal,
+    to:'عباسية', note, time:timeStr, by:CU.username, at:nowTs
+  });
+  clearCache('sub');
+  toast('ok',`🏪 تم الصرف للعباسية — ${N(wt)} جرام من الفرعية`);
+  cm('MOD-SUB-ABB');
+  loadSub();
+}
+
+// ================================================================
+// RECOVERY — استرجاع من الفرعية للرئيسية
+// ================================================================
+async function openRecovery(){
+  id('REC-DATE').value=today();
+  id('REC-WT').value='';
+  id('REC-NOTE').value='';
+  id('REC-PREV').style.display='none';
+  // اعرض رصيد الفرعية
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const subBal=calcBal(sMov);
+  id('REC-SUB-BAL').textContent=N(subBal)+' جرام';
+  om('MOD-RECOVERY');
+}
+
+async function calcRec(){
+  const wt=parseFloat(v('REC-WT'))||0;
+  if(!wt){id('REC-PREV').style.display='none';return;}
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const subBal=calcBal(sMov);
+  const mainBal=calcBal(mainMovs);
+  id('REC-AFTER-SUB').textContent=N(subBal-wt)+' جرام';
+  id('REC-AFTER-MAIN').textContent=N(mainBal+wt)+' جرام';
+  id('REC-PREV').style.display='block';
+}
+
+async function saveRecovery(){
+  const wt=parseFloat(v('REC-WT'))||0, date=v('REC-DATE'), note=v('REC-NOTE').trim();
+  if(!wt||!date){toast('er','أدخل الوزن والتاريخ');return;}
+  const nowTs=Date.now(), timeStr=nowTime();
+  // تحقق من رصيد الفرعية
+  const subSnap=await DB.collection('sub').get();
+  const sMov=subSnap.docs.map(d=>d.data());
+  const subBal=calcBal(sMov);
+  if(wt>subBal+0.001){toast('er','الوزن أكبر من رصيد الخزنة الفرعية');return;}
+  // خصم من الفرعية
+  const sid='s'+nowTs;
+  const newSubBal=subBal-wt;
+  await DB.doc(`sub/${sid}`).set({
+    id:sid, date, type:'منصرف', item:'استرجاع للخزنة الرئيسية',
+    weight:wt, karat:875, w875:wt, balance:newSubBal,
+    to:'main', note, time:timeStr, by:CU.username, at:nowTs
+  });
+  // إضافة للرئيسية
+  const mainBal=calcBal(mainMovs);
+  const newMainBal=mainBal+wt;
+  const mid='m'+nowTs;
+  await DB.doc(`main/${mid}`).set({
+    id:mid, date, type:'استرجاع', weight:wt, karat:875, w875:wt, w1000:wt/875*1000,
+    balance:newMainBal, note:`استرجاع من الفرعية${note?' — '+note:''}`,
+    time:timeStr, by:CU.username, at:nowTs+1
+  });
+  clearCache('main','sub');
+  toast('ok',`↩️ تم الاسترجاع — ${N(wt)} جرام → الخزنة الرئيسية`);
+  cm('MOD-RECOVERY');
+  loadMain();
+}
+const firebaseConfig = {
+  apiKey: "AIzaSyDaJNw4GTCuRxuKoTBMZ9rILISyKb6BHUU",
+  authDomain: "gold-era-2025.firebaseapp.com",
+  projectId: "gold-era-2025",
+  storageBucket: "gold-era-2025.firebasestorage.app",
+  messagingSenderId: "256007736428",
+  appId: "1:256007736428:web:ed45b779a21b4aec4f1c49",
+  measurementId: "G-G6XDLP91S3"
+};
+
+firebase.initializeApp(firebaseConfig);
+const firestore = firebase.firestore();
+
+// ── DB wrapper يحاكي نفس الواجهة القديمة ──
+const DB = {
+  doc: (path) => {
+    const parts = path.split('/');
+    const ref = firestore.collection(parts[0]).doc(parts[1]);
+    return {
+      get:    ()       => ref.get().then(snap => ({
+                            exists: snap.exists,
+                            data:   () => snap.exists ? {id: snap.id, ...snap.data()} : null
+                          })),
+      set:    (data, opts={}) => opts.merge ? ref.set(data, {merge:true}) : ref.set(data),
+      update: (data)   => ref.update(data),
+      delete: ()       => ref.delete(),
+    };
+  },
+  collection: (col) => ({
+    get: () => firestore.collection(col).get().then(snap => ({
+                  docs: snap.docs.map(d => ({ id: d.id, data: () => ({id: d.id, ...d.data()}) }))
+                })),
+    orderBy: (field, dir='asc') => ({
+      get: () => firestore.collection(col).orderBy(field, dir).get().then(snap => ({
+                    docs: snap.docs.map(d => ({ id: d.id, data: () => ({id: d.id, ...d.data()}) }))
+                  })),
+      limit: (n) => ({
+        get: () => firestore.collection(col).orderBy(field, dir).limit(n).get().then(snap => ({
+                      docs: snap.docs.map(d => ({ id: d.id, data: () => ({id: d.id, ...d.data()}) }))
+                    }))
+      })
+    })
+  })
+};
+
+// ================================================================
+// INIT
+// ================================================================
+async function init(){
+  fillDropdowns();
+  runLoginAnimation();
+  // تحقق من جلسة محفوظة
+  try {
+    const saved = localStorage.getItem('ge_session');
+    if(saved){
+      const usr = JSON.parse(saved);
+      if(usr && usr.username && usr.active){
+        CU = usr;
+        id('TAV').textContent=usr.name[0];
+        id('TN').textContent=usr.name;
+        id('TR').textContent=ROLES[usr.role]||usr.role;
+        if(usr.role==='admin') id('tab-users').style.display='';
+        id('LOGIN').style.display='none';
+        id('APP').style.display='flex';
+        await loadDash();
+        return;
+      }
+    }
+  } catch(e){}
+  // أنشئ المستخدم الافتراضي في الخلفية
+  try { await seedAdmin(); } catch(e) {
+    setTimeout(async()=>{ try{await seedAdmin();}catch(e2){} }, 2000);
+  }
+}
+
+function fillDropdowns(){
+  const opts = CATALOG.map((c,i)=>`<option value="${i}">${c.name} — K${c.karat} — ${c.w24}g/pc</option>`).join('');
+  ['SS-ITEM','ADD-ITEM'].forEach(elId=>{
+    const el = document.getElementById(elId);
+    if(el) el.innerHTML = `<option value="">— Select Item —</option>` + opts;
+  });
+}
+
+function getCatByIdx(selectId){
+  const idx = parseInt(document.getElementById(selectId).value);
+  if(isNaN(idx)||idx<0) return null;
+  return CATALOG[idx]||null;
+}
+
+// ── Recalc: weight entered → count auto ──
+function calcFromWeight(catFn, wtId, cntId, w875Id){
+  const cat = catFn();
+  const wt  = parseFloat(document.getElementById(wtId).value) || 0;
+  if(!cat || !wt){ document.getElementById(cntId).value=''; document.getElementById(w875Id).value=''; return; }
+  // count = entered weight ÷ weight-per-piece (actual gram, w24)
+  const cnt   = wt / cat.w24;
+  const w875  = wt * cat.karat / 875;
+  document.getElementById(cntId).value   = +cnt.toFixed(3);
+  document.getElementById(w875Id).value  = +w875.toFixed(3);
+}
+
+// ── Recalc: count entered → weight auto ──
+function calcFromCount(catFn, cntId, wtId, w875Id){
+  const cat = catFn();
+  const cnt = parseFloat(document.getElementById(cntId).value) || 0;
+  if(!cat || !cnt){ document.getElementById(wtId).value=''; document.getElementById(w875Id).value=''; return; }
+  const wt   = cnt * cat.w24;
+  const w875 = wt  * cat.karat / 875;
+  document.getElementById(wtId).value   = +wt.toFixed(3);
+  document.getElementById(w875Id).value = +w875.toFixed(3);
+}
+
+async function seedAdmin(){
+  try{
+    const s = await DB.doc('users/MINA').get();
+    if(!s.exists) throw 0;
+  } catch {
+    await DB.doc('users/MINA').set({id:'MINA',username:'MINA',password:'M.1997',name:'المدير العام',role:'admin',active:true,createdAt:Date.now()});
+    await seedData();
+  }
+}
+
+async function seedData(){
+  // System starts clean — no demo data
+}
+
+// ================================================================
+// RESET DATA
+// ================================================================
+function confirmResetData(){
+  conf('⚠️ سيتم حذف جميع الحركات والأقسام والسجلات. المستخدمون سيُحفظون. هل أنت متأكد تماماً؟', resetAllData);
+}
+
+async function resetAllData(){
+  toast('in','جاري التصفير...');
+  const collections=['main','sub','dept','silver','logs'];
+  for(const col of collections){
+    try{
+      const snap=await DB.collection(col).get();
+      for(const d of snap.docs){
+        await DB.doc(`${col}/${d.id}`).delete();
+      }
+    }catch(e){}
+  }
+  mainMovs=[];subMovs=[];deptItems=[];silvItems=[];allLogs=[];
+  toast('ok','✅ تم التصفير — النظام جاهز للبدء من جديد');
+  await loadDash();
+}
+
+// ================================================================
+// ================================================================
+// LOGIN ANIMATION
+// ================================================================
+function runLoginAnimation(){
+  const sc = document.getElementById("sparks");
+  if(!sc) return;
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight * 0.46;
+  const colors = ["#FFD54F","#FFB300","#FFF176","#FF8F00","#FFFFFF"];
+  for(let i=0;i<38;i++){
+    setTimeout(()=>{
+      const s = document.createElement("div");
+      s.className = "spark";
+      const angle = (Math.random() * 360) * Math.PI / 180;
+      const dist = 50 + Math.random() * 180;
+      const size = 2 + Math.random() * 5;
+      s.style.cssText = "position:fixed;border-radius:50%;pointer-events:none;animation:sparkFly "+( 0.5+Math.random()*1.1)+"s ease-out forwards;left:"+cx+"px;top:"+cy+"px;width:"+size+"px;height:"+size+"px;background:"+colors[Math.floor(Math.random()*colors.length)]+";box-shadow:0 0 4px #FFB300;--tx:"+(Math.cos(angle)*dist)+"px;--ty:"+(Math.sin(angle)*dist-80)+"px;";
+      sc.appendChild(s);
+      setTimeout(()=>s.remove(), 1600);
+    }, 680 + i * 22);
+  }
+  for(let i=0;i<18;i++){
+    setTimeout(()=>{
+      const s = document.createElement("div");
+      s.className = "spark";
+      const angle = (Math.random() * 360) * Math.PI / 180;
+      const dist = 20 + Math.random() * 90;
+      s.style.cssText = "position:fixed;border-radius:50%;pointer-events:none;animation:sparkFly "+(0.3+Math.random()*0.7)+"s ease-out forwards;left:"+(cx+(Math.random()-0.5)*50)+"px;top:"+(cy+(Math.random()-0.5)*30)+"px;width:"+(1+Math.random()*3)+"px;height:"+(1+Math.random()*3)+"px;background:#FFFDE7;--tx:"+(Math.cos(angle)*dist)+"px;--ty:"+(Math.sin(angle)*dist-50)+"px;";
+      sc.appendChild(s);
+      setTimeout(()=>s.remove(), 1100);
+    }, 800 + i * 28);
+  }
+}
+
+// ================================================================
+// DATA CACHE — يمنع إعادة التحميل غير الضرورية
+// ================================================================
+let cache={main:null,sub:null,dept:null,silver:null,users:null,logs:null};
+let cacheTime={};
+const CACHE_TTL=8000; // 8 ثواني
+
+async function getCol(col){
+  const now=Date.now();
+  if(cache[col]&&(now-cacheTime[col])<CACHE_TTL) return cache[col];
+  const snap=await DB.collection(col).get();
+  cache[col]=snap.docs.map(d=>d.data());
+  cacheTime[col]=now;
+  return cache[col];
+}
+function clearCache(...cols){
+  if(!cols.length) cols=Object.keys(cache);
+  cols.forEach(c=>{cache[c]=null;cacheTime[c]=0;});
+}
+
+// ================================================================
+// DASHBOARD
+// ================================================================
+async function doLogin(){
+  const u=v('LU').trim(),p=v('LP');
+  if(!u||!p){showErr('LERR','أدخل بيانات الدخول');return;}
+  try{
+    // تأكد من وجود المستخدم MINA — أنشئه لو مش موجود
+    if(u==='MINA'){
+      const adminSnap=await DB.doc('users/MINA').get();
+      if(!adminSnap.exists){
+        await DB.doc('users/MINA').set({id:'MINA',username:'MINA',password:'M.1997',name:'المدير العام',role:'admin',active:true,createdAt:Date.now()});
+      }
+    }
+    const snap=await DB.doc(`users/${u}`).get();
+    if(!snap.exists){showErr('LERR','المستخدم غير موجود');return;}
+    const usr=snap.data();
+    if(usr.password!==p){showErr('LERR','كلمة المرور خاطئة');return;}
+    if(!usr.active){showErr('LERR','الحساب معطل');return;}
+    CU=usr;
+    // احفظ الجلسة في localStorage
+    try { localStorage.setItem('ge_session', JSON.stringify(usr)); } catch(e){}
+    id('LERR').style.display='none';
+    id('TAV').textContent=usr.name[0];id('TN').textContent=usr.name;id('TR').textContent=ROLES[usr.role]||usr.role;
+    if(usr.role==='admin') id('tab-users').style.display='';
+    id('LOGIN').style.display='none';id('APP').style.display='flex';
+    document.querySelectorAll('.app-ge-letter').forEach(el=>{
+      el.style.animation='none';
+      el.offsetWidth;
+      el.style.animation='';
+    });
+    await loadDash();
+  }catch(e){
+    console.error('Login error:',e);
+    showErr('LERR','خطأ في الاتصال — تحقق من الإنترنت');
+  }
+}
+id('LP').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+function logout(){
+  CU=null;
+  try { localStorage.removeItem('ge_session'); } catch(e){}
+  id('APP').style.display='none';
+  id('LOGIN').style.display='flex';
+  id('LU').value='';id('LP').value='';
+}
+
+// ================================================================
+// TABS
+// ================================================================
+const TAB_LOADERS={dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ref:()=>{},users:loadUsers};
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('act'));
+  document.querySelectorAll('.pg').forEach(el=>el.classList.remove('act'));
+  document.querySelector(`.tab[onclick*="'${t}'"]`)?.classList.add('act');
+  id(`pg-${t}`)?.classList.add('act');
+  TAB_LOADERS[t]?.();
+}
+
+// ================================================================
+// DASHBOARD
+// ================================================================
+async function loadDash(){
+  id('DDATE').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const [mm,sm,dm,sim]=await Promise.all([
+    getCol('main'),getCol('sub'),getCol('dept'),getCol('silver')
+  ]);
+  mainMovs=mm; subMovs=sm; deptItems=dm; silvItems=sim;
+
+  const mainBal=calcBal(mainMovs), subBal=calcBal(subMovs);
+  const deptBal=deptItems.filter(d=>d.dept!=='sil').reduce((s,d)=>s+(d.w875||0),0);
+  const silvBal=silvItems.reduce((s,si)=>s+(si.w1000||si.weight||0),0);
+  const doneCount=deptItems.filter(d=>d.done).length;
+
+  // نظرة عامة
+  renderOverview(mainBal, subBal, deptBal);
+
+  id('D-STATS').innerHTML=`
+    <div class="sc" style="border-right:3px solid var(--gold)"><div class="slb">🏦 الخزنة الرئيسية</div><div class="sv">${N(mainBal)}</div><div class="su">جرام — عيار 875</div></div>
+    <div class="sc" style="border-right:3px solid var(--inf)"><div class="slb">💼 الخزنة الفرعية</div><div class="sv" style="color:var(--inf)">${N(subBal)}</div><div class="su">جرام — عيار 875</div></div>
+    <div class="sc" style="border-right:3px solid var(--tam)"><div class="slb">🏭 إجمالي الأقسام</div><div class="sv" style="color:var(--tam)">${N(deptBal)}</div><div class="su">جرام — عيار 875</div></div>
+    <div class="sc" style="border-right:3px solid var(--ok)"><div class="slb">✅ أصناف DONE</div><div class="sv" style="color:var(--ok)">${doneCount}</div><div class="su">صنف جاهز</div></div>
+    <div class="sc" style="border-right:3px solid var(--sil)"><div class="slb">🥈 الفضة</div><div class="sv" style="color:var(--sil)">${N(silvBal)}</div><div class="su">جرام — عيار 1000</div></div>
+  `;
+  const sorted=[...mainMovs].sort((a,b)=>b.at-a.at);
+  id('D-MAIN').innerHTML=sorted.slice(0,6).length?`<table><thead><tr><th>التاريخ</th><th>النوع</th><th>الوزن</th><th>الرصيد</th></tr></thead><tbody>${
+    sorted.slice(0,6).map(m=>`<tr><td>${m.date}</td><td><span class="b ${m.type==='وارد'?'bg':'br'}">${m.type}</span></td><td class="num">${N(m.weight)}</td><td class="num" style="color:var(--gold);font-weight:800">${N(m.balance)}</td></tr>`).join('')
+  }</tbody></table>`:'<div class="empty"><span class="eic">📭</span></div>';
+  const dbal={};Object.keys(DEPTS).forEach(k=>{dbal[k]=deptItems.filter(d=>d.dept===k).reduce((s,d)=>s+(d.w875||0),0);});
+  id('D-DEPTS').innerHTML=`<table><tbody>${Object.entries(DEPTS).map(([k,dep])=>`
+    <tr><td>${dep.icon} <b>${dep.name}</b></td>
+    <td class="num" style="font-weight:800;color:${dep.color};text-align:left">${N(dbal[k])}</td>
+    <td style="color:var(--muted);font-size:10px">جرام</td>
+    <td style="text-align:left"><span class="b bg" style="font-size:9px">${deptItems.filter(d=>d.dept===k&&d.done).length} DONE</span></td></tr>
+  `).join('')}</tbody></table>`;
+}
+
+// ================================================================
+// MAIN TREASURY
+// ================================================================
+let mainFilterVal='';
+async function loadMain(){
+  mainMovs=await getCol('main');
+  mainMovs=[...mainMovs].sort((a,b)=>b.at-a.at);
+  const bal=calcBal(mainMovs);
+  const tin=mainMovs.filter(m=>m.type==='وارد').reduce((s,m)=>s+(m.w875||0),0);
+  const tout=mainMovs.filter(m=>m.type==='منصرف').reduce((s,m)=>s+(m.w875||0),0);
+  const tloan=mainMovs.filter(m=>m.type==='سلفة').reduce((s,m)=>s+(m.w875||0),0);
+  id('MAIN-STATS').innerHTML=`
+    <div class="sc"><div class="slb">الرصيد الحالي</div><div class="sv">${N(bal)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc g"><div class="slb">إجمالي الوارد</div><div class="sv">${N(tin)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc r"><div class="slb">إجمالي المنصرف</div><div class="sv">${N(tout)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc" style="border-right:3px solid var(--warn)"><div class="slb">📋 إجمالي السلف</div><div class="sv" style="color:var(--warn)">${N(tloan)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc b"><div class="slb">عدد الحركات</div><div class="sv">${mainMovs.length}</div><div class="su">حركة</div></div>
+  `;
+  renderMainTable();
+  loadStockTable();
+}
+
+function renderMainTable(){
+  let data=[...mainMovs];
+  if(mainFilterVal) data=data.filter(m=>m.type===mainFilterVal);
+  id('MAIN-TABLE').innerHTML=data.length?`<table><thead><tr>
+    <th>التاريخ</th><th>الوقت</th><th>النوع</th><th>الوزن</th><th>العيار</th><th>875</th><th>الرصيد</th><th>البيان</th><th></th>
+  </tr></thead><tbody>${
+    data.map(m=>`<tr>
+      <td style="white-space:nowrap;font-size:12px">${arabicDate(m.date)}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${m.time||'—'}</td>
+      <td><span class="b ${ m.type==="وارد"||m.type==="وارد استوك"?"bg":m.type==="سلفة"||m.type==="استرجاع"?"bo":m.type==="عباسية"?"br":"br" }" style="${ m.type==="وارد استوك"?"background:#C8983025;color:var(--warn);border-color:#C8983066":m.type==="عباسية"?"background:#E74C3C25;color:#E74C3C":"" }">${m.type}</span></td>
+      <td class="num">${N(m.weight)}</td>
+      <td><span class="b bgld">${m.karat}</span></td>
+      <td class="num">${N(m.w875)}</td>
+      <td class="num" style="font-weight:800;color:var(--gold)">${N(m.balance)}</td>
+      <td style="color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis">${
+        m.type==='سلفة'
+          ? `<span style="color:var(--warn)">📋 ${m.loanName||''}</span>${m.loanPurpose?' — '+m.loanPurpose:''}`
+          : (m.note||'—')
+      }</td>
+      <td><button class="btn bxs bd2" onclick="delMain('${m.id}')">🗑</button></td>
+    </tr>`).join('')
+  }</tbody></table>`:'<div class="empty"><span class="eic">📭</span><p>لا يوجد حركات</p></div>';
+}
+
+function filterMain(v2){mainFilterVal=v2;renderMainTable();}
+
+function openMainMov(){
+  id('MM-DATE').value=today();
+  id('MM-TYPE').value='وارد';
+  ['MM-WT','MM-NOTE','MM-875','MM-1K','MM-LOAN-NAME','MM-LOAN-PURPOSE'].forEach(x=>id(x).value='');
+  id('MM-PREV').style.display='none';
+  id('MM-LOAN-BOX').style.display='none';
+  om('MOD-MAIN');
+}
+
+function onMMTypeChange(){
+  const type=id('MM-TYPE').value;
+  id('MM-LOAN-BOX').style.display = type==='سلفة' ? 'block' : 'none';
+  calcMM();
+}
+
+function calcMM(){
+  const wt=parseFloat(id('MM-WT').value)||0, kt=parseFloat(id('MM-KT').value)||875;
+  if(!wt)return;
+  const w875=wt*kt/875, w1k=wt*kt/1000;
+  id('MM-875').value=N(w875); id('MM-1K').value=N(w1k);
+  const bal=calcBal(mainMovs);
+  const type=id('MM-TYPE').value;
+  // سلفة تُضاف، منصرف وعباسية يُخصمان
+  const aft=(type==='وارد'||type==='سلفة')?bal+w875:bal-w875;
+  id('MM-CUR').textContent=N(bal)+' g';
+  id('MM-AFT').textContent=N(aft)+' g';
+  id('MM-PREV').style.display='block';
+}
+
+async function saveMainMov(){
+  const type=v('MM-TYPE'),date=v('MM-DATE'),wt=parseFloat(v('MM-WT')),kt=parseFloat(v('MM-KT')),note=v('MM-NOTE').trim();
+  if(!date||!wt){toast('er','أدخل التاريخ والوزن');return;}
+  const w875=wt*kt/875, w1k=wt*kt/1000;
+  const bal=calcBal(mainMovs);
+  const nowTs=Date.now();
+  const timeStr=nowTime(); // وقت التسجيل الفعلي
+
+  let newBal=bal;
+  let fullNote=note;
+
+  if(type==='سلفة'){
+    // السلفة تُضاف على الإجمالي كوارد مع بيان خاص
+    const loanName=v('MM-LOAN-NAME').trim();
+    const loanPurpose=v('MM-LOAN-PURPOSE').trim();
+    fullNote=`[سلفة]${loanName?' — '+loanName:''}${loanPurpose?' — '+loanPurpose:''}${note?' | '+note:''}`;
+    newBal=bal+w875;
+    const mid='m'+nowTs;
+    await DB.doc(`main/${mid}`).set({
+      id:mid, date, type:'سلفة', weight:wt, karat:kt, w875, w1000:w1k,
+      balance:newBal, note:fullNote, loanName, loanPurpose,
+      time:timeStr, by:CU.username, at:nowTs
+    });
+  } else {
+    // وارد يُضاف، منصرف وعباسية يُخصمان
+    newBal=(type==='وارد')?bal+w875:bal-w875;
+    if(newBal<-0.001){toast('er','الرصيد غير كافٍ');return;}
+    const mid='m'+nowTs;
+    await DB.doc(`main/${mid}`).set({
+      id:mid, date, type, weight:wt, karat:kt, w875, w1000:w1k,
+      balance:newBal, note:fullNote, time:timeStr, by:CU.username, at:nowTs
+    });
+    // منصرف فقط يُضاف للفرعية — العباسية خرجت للأبد
+    if(type==='منصرف'){
+      const subSnap=await DB.collection('sub').orderBy('at','desc').get();
+      const subMovsCur=subSnap.docs.map(d=>d.data());
+      const subBal=calcBal(subMovsCur);
+      const sid='s'+nowTs;
+      await DB.doc(`sub/${sid}`).set({
+        id:sid, date, type:'وارد',
+        item:fullNote||'تحويل من الخزنة الرئيسية',
+        weight:wt, karat:kt, w875, balance:subBal+w875,
+        from:'main', note:fullNote||'تحويل من الخزنة الرئيسية',
+        time:timeStr, by:CU.username, at:nowTs+1
+      });
+    }
+  }
+
+  await log('main_mov',type==='وارد'||type==='سلفة'?'ext':'main',
+    type==='منصرف'?'sub':type==='عباسية'?'عباسية':'main',
+    'حركة رئيسية',wt,0,kt,w875,fullNote,date);
+  clearCache('main','sub');
+  const typeLabel=type==='عباسية'?'🏪 منصرف للعباسية':type;
+  // Undo — حفظ IDs للحذف
+  const undoOps=[{action:'delete',col:'main',id:'m'+nowTs}];
+  if(type==='منصرف') undoOps.push({action:'delete',col:'sub',id:'s'+nowTs});
+  pushUndo({label:`${typeLabel}: ${N(wt)} جرام`,ops:undoOps});
+  toast('ok',`${typeLabel} — ${N(newBal)} جرام — ${timeStr}`);
+  cm('MOD-MAIN'); loadMain();
+}
+
+async function delMain(mid){conf('حذف هذه الحركة؟',async()=>{await DB.doc(`main/${mid}`).delete();clearCache('main');toast('ok','تم');loadMain();});}
+async function delSub(mid){conf('حذف هذه الحركة من الخزنة الفرعية؟',async()=>{await DB.doc(`sub/${mid}`).delete();clearCache('sub');toast('ok','تم الحذف');loadSub();});}
+
+// ================================================================
+// SUB TREASURY
+// ================================================================
+async function loadSub(){
+  subMovs=await getCol('sub');
+  subMovs=[...subMovs].sort((a,b)=>b.at-a.at);
+  const bal=calcBal(subMovs);
+  const tin=subMovs.filter(m=>m.type==='وارد').reduce((s,m)=>s+(m.w875||0),0);
+  const tout=subMovs.filter(m=>m.type==='منصرف').reduce((s,m)=>s+(m.w875||0),0);
+  const tabb=subMovs.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
+  id('SUB-STATS').innerHTML=`
+    <div class="sc b"><div class="slb">الرصيد المتاح</div><div class="sv">${N(bal)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc g"><div class="slb">وارد من الرئيسية</div><div class="sv">${N(tin)}</div><div class="su">جرام</div></div>
+    <div class="sc r"><div class="slb">محوَّل للأقسام</div><div class="sv">${N(tout)}</div><div class="su">جرام</div></div>
+    ${tabb>0?`<div class="sc" style="border-right:3px solid var(--err)"><div class="slb">🏪 منصرف العباسية</div><div class="sv" style="color:var(--err)">${N(tabb)}</div><div class="su">جرام</div></div>`:''}
+  `;
+  renderSubTable();
+}
+
+function openSubTransfer(){
+  sdDest=null;id('SS-DATE').value=today();
+  ['SS-ITEM','SS-WT','SS-KT','SS-CNT','SS-875','SS-NOTE'].forEach(x=>id(x).value='');
+  id('SS-ITEM').value='';
+  document.querySelectorAll('#MOD-SUB .dest-btn').forEach(b=>b.classList.remove('sel'));
+  id('SS-PREV').style.display='none';
+  om('MOD-SUB');
+}
+
+function onSSItemChange(){
+  const cat=getCatByIdx('SS-ITEM');
+  if(!cat){['SS-KT','SS-CNT','SS-875','SS-WT'].forEach(x=>document.getElementById(x).value='');id('SS-UNIT').value='';return;}
+  document.getElementById('SS-KT').value=cat.karat;
+  id('SS-UNIT').value=cat.w24;
+  document.getElementById('SS-WT').value='';document.getElementById('SS-CNT').value='';document.getElementById('SS-875').value='';
+  updateSSPreview();
+}
+function onSSWtChange(){
+  const cat=getCatByIdx('SS-ITEM');
+  if(cat) document.getElementById('SS-KT').value=cat.karat;
+  const wt=parseFloat(document.getElementById('SS-WT').value)||0;
+  const unit=parseFloat(id('SS-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('SS-KT').value)||875;
+  if(!wt){document.getElementById('SS-CNT').value='';document.getElementById('SS-875').value='';updateSSPreview();return;}
+  document.getElementById('SS-CNT').value=+(wt/unit).toFixed(3);
+  document.getElementById('SS-875').value=+(wt*kt/875).toFixed(3);
+  updateSSPreview();
+}
+function calcSSFromWt(wt,cat){} // legacy stub
+function onSSCntChange(){
+  const cat=getCatByIdx('SS-ITEM');
+  const cnt=parseFloat(document.getElementById('SS-CNT').value)||0;
+  const unit=parseFloat(id('SS-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('SS-KT').value)||875;
+  if(!cnt)return;
+  const wt=cnt*unit;
+  document.getElementById('SS-WT').value=+(wt.toFixed(3));
+  document.getElementById('SS-875').value=+(wt*kt/875).toFixed(3);
+  updateSSPreview();
+}
+
+async function updateSSPreview(){
+  const snap=await DB.collection('sub').orderBy('at','desc').get();
+  const movs=snap.docs.map(d=>d.data());
+  const bal=calcBal(movs);
+  const w875=parseFloat(document.getElementById('SS-875').value)||0;
+  id('SS-BAL').textContent=N(bal)+' g';
+  id('SS-NEWBAL').textContent=N(bal-w875)+' g';
+  id('SS-PREV').style.display='block';
+}
+
+function selSD(d,el){sdDest=d;document.querySelectorAll('#MOD-SUB .dest-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');}
+
+async function saveSubTransfer(){
+  const cat=getCatByIdx('SS-ITEM');
+  const date=v('SS-DATE'),wt=parseFloat(v('SS-WT')),note=v('SS-NOTE').trim();
+  const cnt=parseFloat(document.getElementById('SS-CNT').value)||0;
+  if(!cat||!date||!wt||!sdDest){toast('er','Complete all fields and select destination');return;}
+  const kt=cat.karat, item=cat.name;
+  const w875=wt*kt/875;
+  const snap=await DB.collection('sub').orderBy('at','desc').get();
+  const movs=snap.docs.map(d=>d.data());
+  const bal=calcBal(movs);
+  if(w875>bal+0.001){toast('er','Insufficient sub-vault balance');return;}
+  const newBal=bal-w875;
+  const sid='s'+Date.now();
+  await DB.doc(`sub/${sid}`).set({id:sid,date,type:'منصرف',item,weight:wt,karat:kt,w875,balance:newBal,to:sdDest,note,by:CU.username,at:Date.now()});
+  const did='di'+Date.now();
+  await DB.doc(`dept/${did}`).set({id:did,dept:sdDest,item,weight:wt,count:cnt,karat:kt,w875,done:false,by:CU.username,date,at:Date.now()});
+  await log('sub_transfer','sub',sdDest,item,wt,cnt,kt,w875,note,date);
+  clearCache('sub','dept');
+  toast('ok',`تم تحويل ${N(wt)} جرام إلى ${DEPTS[sdDest]?.name||sdDest}`);
+  cm('MOD-SUB');loadSub();
+}
+
+// ================================================================
+// DEPT PAGES (HAL / TAM / DAM / TAG)
+// ================================================================
+async function loadDept(dept){
+  const snap=await DB.collection('dept').get();
+  deptItems=snap.docs.map(d=>d.data());
+  const items=deptItems.filter(d=>d.dept===dept);
+  const dep=DEPTS[dept];
+  const totalW=items.reduce((s,d)=>s+(d.w875||0),0);
+  const doneC=items.filter(d=>d.done).length;
+
+  const statsEl=id(`${dept.toUpperCase()}-STATS`);
+  statsEl.innerHTML=`
+    <div class="sc" style="border-color:${dep.color}"><div class="slb">إجمالي الوزن</div><div class="sv" style="color:${dep.color}">${N(totalW)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc g"><div class="slb">DONE ✅</div><div class="sv">${doneC}</div><div class="su">صنف</div></div>
+    <div class="sc b"><div class="slb">قيد العمل</div><div class="sv">${items.length-doneC}</div><div class="su">صنف</div></div>
+  `;
+
+  const tblEl=id(`${dept.toUpperCase()}-TABLE`);
+  if(!items.length){tblEl.innerHTML='<div class="empty"><span class="eic">📭</span><p>لا يوجد أصناف</p></div>';return;}
+
+  // Hal has no count calc from catalog (raw material)
+  const showCount=(dept!=='hal');
+
+  tblEl.innerHTML=items.map(it=>{
+    const isHal=dept==='hal';
+    return `<div class="drow ${isHal?'drow-3':'drow-4'}">
+      <div>
+        <div class="dn">${it.item}</div>
+        <div class="dm">${it.date} · by ${it.by}</div>
+      </div>
+      <div class="num dnum" style="color:${dep.color}">${N(it.weight)}<span style="font-size:9px;color:var(--muted)"> جرام</span></div>
+      ${!isHal?`<div>
+        <span class="b bgld" style="font-size:10px">${it.karat}</span>
+      </div>`:''}
+      ${!isHal?`<div style="display:flex;align-items:center;gap:6px">
+        <span class="num dnum">${N3(it.count)}</span>
+        <button class="btn bxs bs" onclick="openEditCnt('${it.id}')" title="تعديل العدد">✏️</button>
+      </div>`:''}
+      <div class="num" style="font-size:11px;color:var(--muted)">${N(it.w875)}</div>
+      <div>${it.done?`<span class="done-badge">✅ DONE</span>`:`<button class="btn bxs bg2" onclick="markDone('${it.id}','${dept}')">DONE</button>`}</div>
+      <div style="display:flex;gap:4px">
+        <button class="btn bxs" style="background:#2980B920;color:var(--inf);border:1px solid var(--inf)" onclick="openDeptTr('${it.id}')">↗️</button>
+        <button class="btn bxs bd2" onclick="delDept('${it.id}','${dept}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function markDone(iid, dept){
+  await DB.doc(`dept/${iid}`).update({done:true});
+  const it=deptItems.find(d=>d.id===iid);
+  await log('done',dept,'done',it?.item||'',it?.weight||0,it?.count||0,it?.karat||0,it?.w875||0,'مطابقة DONE',today());
+  clearCache('dept');toast('ok','✅ تم تسجيل DONE');
+  loadDept(dept);
+}
+
+function openAddDept(dept){
+  addDeptKey=dept;
+  id('ADD-TITLE').textContent=`إضافة لقسم ${DEPTS[dept].name}`;
+  id('ADD-DATE').value=today();
+  ['ADD-ITEM','ADD-WT','ADD-KT','ADD-CNT','ADD-875','ADD-NOTE'].forEach(x=>id(x).value='');
+  id('ADD-ITEM').value='';
+  om('MOD-ADD');
+}
+
+function onAddItemChange(){
+  const cat=getCatByIdx('ADD-ITEM');
+  if(!cat){['ADD-KT','ADD-CNT','ADD-875','ADD-WT'].forEach(x=>document.getElementById(x).value='');id('ADD-UNIT').value='';return;}
+  document.getElementById('ADD-KT').value=cat.karat;
+  id('ADD-UNIT').value=cat.w24;
+  document.getElementById('ADD-WT').value='';document.getElementById('ADD-CNT').value='';document.getElementById('ADD-875').value='';
+}
+function onAddWtChange(){
+  const cat=getCatByIdx('ADD-ITEM');
+  if(cat) document.getElementById('ADD-KT').value=cat.karat;
+  const wt=parseFloat(document.getElementById('ADD-WT').value)||0;
+  const unit=parseFloat(id('ADD-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('ADD-KT').value)||875;
+  if(!wt){document.getElementById('ADD-CNT').value='';document.getElementById('ADD-875').value='';return;}
+  document.getElementById('ADD-CNT').value=+(wt/unit).toFixed(3);
+  document.getElementById('ADD-875').value=+(wt*kt/875).toFixed(3);
+}
+function calcAddFromWt(wt,cat){} // legacy stub
+function onAddCntChange(){
+  const cat=getCatByIdx('ADD-ITEM');
+  const cnt=parseFloat(document.getElementById('ADD-CNT').value)||0;
+  const unit=parseFloat(id('ADD-UNIT').value)||cat?.w24||1;
+  const kt=parseFloat(document.getElementById('ADD-KT').value)||875;
+  if(!cnt)return;
+  const wt=cnt*unit;
+  document.getElementById('ADD-WT').value=+(wt.toFixed(3));
+  document.getElementById('ADD-875').value=+(wt*kt/875).toFixed(3);
+}
+
+async function saveAddDept(){
+  const cat=getCatByIdx('ADD-ITEM');
+  const date=v('ADD-DATE'), wt=parseFloat(v('ADD-WT')), note=v('ADD-NOTE').trim();
+  const cnt=parseFloat(document.getElementById('ADD-CNT').value)||0;
+  if(!cat||!wt){toast('er','Select item and enter weight');return;}
+  const item=cat.name, kt=cat.karat;
+  const w875=wt*kt/875;
+  const did='di'+Date.now();
+  await DB.doc(`dept/${did}`).set({id:did,dept:addDeptKey,item,weight:wt,count:cnt,karat:kt,w875,done:false,by:CU.username,date,at:Date.now()});
+  await log('add','manual',addDeptKey,item,wt,cnt,kt,w875,note,date);
+  clearCache('dept');toast('ok','Item added successfully');cm('MOD-ADD');loadDept(addDeptKey);
+}
+
+async function delDept(iid,dept){
+  conf('حذف هذا الصنف؟',async()=>{await DB.doc(`dept/${iid}`).delete();toast('ok','تم');loadDept(dept);});
+}
+
+// ================================================================
+// EDIT COUNT
+// ================================================================
+function openEditCnt(iid){
+  editItemId=iid;
+  const it=deptItems.find(d=>d.id===iid);if(!it)return;
+  id('EDIT-INFO').innerHTML=`<b>${it.item}</b> | وزن: <b class="num">${N(it.weight)}</b> جرام | عدد حالي: <b class="num">${N3(it.count)}</b>`;
+  id('EDIT-CNT').value=Math.round((it.count||0)*1000)/1000;
+  id('EDIT-WT').value=Math.round((it.weight||0)*1000)/1000;
+  om('MOD-EDIT');
+}
+
+function calcEditWt(){
+  const it=deptItems.find(d=>d.id===editItemId);if(!it)return;
+  const cat=CATALOG.find(c=>c.name===it.item);
+  const cnt=parseFloat(v('EDIT-CNT'))||0;
+  if(cat) id('EDIT-WT').value=Math.round(cnt*cat.w21*1000)/1000;
+}
+
+async function saveEditCnt(){
+  const it=deptItems.find(d=>d.id===editItemId);if(!it)return;
+  const cat=CATALOG.find(c=>c.name===it.item);
+  const cnt=parseFloat(v('EDIT-CNT'))||0;
+  const wt=cat?Math.round(cnt*cat.w21*1000)/1000:it.weight;
+  const w875=cat?Math.round(wt*cat.karat/875*1000)/1000:wt;
+  await DB.doc(`dept/${editItemId}`).update({count:cnt,weight:wt,w875});
+  await log('edit_count',it.dept,it.dept,it.item,wt,cnt,it.karat,w875,`تعديل عدد من ${N3(it.count)} إلى ${N3(cnt)}`,today());
+  clearCache('dept');toast('ok',`تم تحديث العدد: ${N3(cnt)}`);cm('MOD-EDIT');loadDept(it.dept);
+}
+
+// ================================================================
+// DEPT TRANSFER
+// ================================================================
+function openDeptTr(iid){
+  trItemId=iid; trType=null; trDestVal=null; trRemDest=null;
+  const it=deptItems.find(d=>d.id===iid);if(!it)return;
+  id('TR-TITLE').textContent=`تحويل: ${it.item}`;
+  id('TR-INFO').innerHTML=`
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div><span style="color:var(--muted)">الصنف: </span><b>${it.item}</b></div>
+      <div><span style="color:var(--muted)">الوزن: </span><b class="num" style="color:var(--gold)">${N(it.weight)} جرام</b></div>
+      <div><span style="color:var(--muted)">العدد: </span><b class="num">${N3(it.count)}</b></div>
+      <div><span style="color:var(--muted)">875: </span><b class="num">${N(it.w875)}</b></div>
+      ${it.done?'<span class="done-badge">✅ DONE</span>':''}
+    </div>
+  `;
+  document.querySelectorAll('#MOD-TR .dest-btn').forEach(b=>b.classList.remove('sel'));
+  id('TR-PARTIAL').style.display='none';id('TR-REM').style.display='none';
+  id('TR-PWT').value='';id('TR-PCNT').value='';id('TR-NOTE').value='';
+  // Dest (exclude current)
+  const dests=Object.keys(DEPTS).filter(k=>k!==it.dept).concat(['sub','main']);
+  id('TR-DEST').innerHTML=dests.map(d=>`<button class="dest-btn" onclick="selTrDest('${d}',this,'main')">${DEST_LBL[d]}</button>`).join('');
+  id('REM-DEST').innerHTML=dests.map(d=>`<button class="dest-btn" onclick="selTrDest('${d}',this,'rem')">${DEST_LBL[d]}</button>`).join('');
+  om('MOD-TR');
+}
+
+function selTrDest(d,el,which){
+  if(which==='main'){trDestVal=d;document.querySelectorAll('#TR-DEST .dest-btn').forEach(b=>b.classList.remove('sel'));}
+  else{trRemDest=d;document.querySelectorAll('#REM-DEST .dest-btn').forEach(b=>b.classList.remove('sel'));}
+  el.classList.add('sel');
+}
+
+function setTrType(t,el){
+  trType=t;
+  document.querySelectorAll('#MOD-TR .dest-btn[onclick*="setTrType"]').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  id('TR-PARTIAL').style.display=t==='partial'?'block':'none';
+}
+
+function calcTrRemain(){
+  const it=deptItems.find(d=>d.id===trItemId);if(!it)return;
+  const pw=parseFloat(v('TR-PWT'))||0, pc=parseFloat(v('TR-PCNT'))||0;
+  const remW=Math.max(0,(it.weight||0)-pw), remC=Math.max(0,(it.count||0)-pc);
+  id('REM-WT').textContent=N(remW); id('REM-CNT').textContent=N3(remC);
+  id('TR-REM').style.display=(remW>0.001)?'block':'none';
+}
+
+async function saveDeptTransfer(){
+  const it=deptItems.find(d=>d.id===trItemId);
+  if(!it||!trType||!trDestVal){toast('er','اختر نوع التحويل والوجهة');return;}
+  const note=v('TR-NOTE').trim();
+  let tW=it.weight, tC=it.count;
+  if(trType==='partial'){
+    tW=parseFloat(v('TR-PWT'))||0; tC=parseFloat(v('TR-PCNT'))||0;
+    if(!tW&&!tC){toast('er','أدخل وزن أو عدد للتحويل');return;}
+    if(tW>it.weight+0.001){toast('er','الوزن أكبر من المتاح');return;}
+  }
+  const tW875=tW*it.karat/875;
+  const remW=Math.max(0,(it.weight||0)-tW), remC=Math.max(0,(it.count||0)-tC), remW875=remW*it.karat/875;
+
+  // Delete original
+  await DB.doc(`dept/${trItemId}`).delete();
+
+  // Create at destination
+  await createAtDest(trDestVal, it, tW, tC, tW875, note);
+
+  // Remainder
+  if(trType==='partial' && remW>0.001){
+    const remDest=trRemDest||it.dept;
+    await createAtDest(remDest, it, remW, remC, remW875, 'متبقي تحويل');
+  }
+
+  await log('transfer',it.dept,trDestVal,it.item,tW,tC,it.karat,tW875,note,today());
+  clearCache('dept','sub','main');toast('ok',`✅ تم التحويل إلى ${DEST_LBL[trDestVal]||trDestVal}`);
+  cm('MOD-TR');loadDept(it.dept);
+}
+
+async function createAtDest(dest, it, wt, cnt, w875, note){
+  if(dest==='sub'||dest==='main'){
+    const col=dest==='sub'?'sub':'main';
+    const snap=await DB.collection(col).orderBy('at','desc').get();
+    const movs=snap.docs.map(d=>d.data());
+    const bal=calcBal(movs);
+    const rid=(dest==='sub'?'s':'m')+Date.now()+Math.floor(Math.random()*1000);
+    await DB.doc(`${col}/${rid}`).set({id:rid,date:today(),type:'وارد',item:it.item,weight:wt,karat:it.karat,w875,balance:bal+w875,from:it.dept,note,by:CU.username,at:Date.now()});
+  } else {
+    const nid='di'+Date.now()+Math.floor(Math.random()*1000);
+    await DB.doc(`dept/${nid}`).set({id:nid,dept:dest,item:it.item,weight:wt,count:cnt,karat:it.karat,w875,done:false,by:CU.username,date:today(),at:Date.now()});
+  }
+}
+
+// ================================================================
+// SILVER
+// ================================================================
+async function loadSilver(){
+  const snap=await DB.collection('silver').get();
+  silvItems=snap.docs.map(d=>d.data());
+  const total=silvItems.reduce((s,si)=>s+(si.w1000||si.weight||0),0);
+  id('SIL-STATS').innerHTML=`
+    <div class="sc" style="border-color:var(--sil)"><div class="slb">إجمالي الفضة</div><div class="sv" style="color:var(--sil)">${N(total)}</div><div class="su">جرام — 1000</div></div>
+    <div class="sc g"><div class="slb">DONE ✅</div><div class="sv">${silvItems.filter(s=>s.done).length}</div><div class="su"></div></div>
+    <div class="sc b"><div class="slb">قيد العمل</div><div class="sv">${silvItems.filter(s=>!s.done).length}</div><div class="su"></div></div>
+  `;
+  id('SIL-TABLE').innerHTML=silvItems.length?silvItems.map(si=>`
+    <div class="drow drow-3">
+      <div><div class="dn">${si.item}</div><div class="dm">${si.date}</div></div>
+      <div class="num dnum" style="color:var(--sil)">${N(si.w1000||si.weight)} <span style="font-size:9px;color:var(--muted)">جرام</span></div>
+      <div class="num">${N3(si.count||0)}</div>
+      <div>${si.done?'<span class="done-badge">✅ DONE</span>':`<button class="btn bxs bg2" onclick="markSilDone('${si.id}')">DONE</button>`}</div>
+      <div><button class="btn bxs bd2" onclick="delSil('${si.id}')">🗑</button></div>
+    </div>
+  `).join(''):'<div class="empty"><span class="eic">🥈</span><p>لا يوجد فضة</p></div>';
+}
+
+function openAddSilver(){id('SIL-DATE').value=today();id('SIL-WT').value='';id('SIL-CNT').value='';id('SIL-NOTE').value='';id('SIL-ITEM').value='';om('MOD-SIL');}
+
+async function saveAddSilver(){
+  const item=v('SIL-ITEM'),date=v('SIL-DATE'),wt=parseFloat(v('SIL-WT')),cnt=parseFloat(v('SIL-CNT'))||0,note=v('SIL-NOTE').trim();
+  if(!item||!wt){toast('er','أكمل البيانات');return;}
+  const sid='si'+Date.now();
+  await DB.doc(`silver/${sid}`).set({id:sid,item,weight:wt,count:cnt,karat:1000,w1000:wt,done:false,by:CU.username,date,at:Date.now()});
+  toast('ok','تمت الإضافة');cm('MOD-SIL');loadSilver();
+}
+
+async function markSilDone(sid){await DB.doc(`silver/${sid}`).update({done:true});toast('ok','✅ DONE');loadSilver();}
+async function delSil(sid){conf('حذف هذا الصنف؟',async()=>{await DB.doc(`silver/${sid}`).delete();toast('ok','تم');loadSilver();});}
+
+// ================================================================
+// LOG
+// ================================================================
+const DEPT_NAMES={main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',hal:'الحل',tam:'التصنيع',dam:'الدمغة',tag:'التغليف',sil:'الفضة',done:'DONE',manual:'يدوي',ext:'خارجي'};
+
+async function log(type,from,to,item,weight,count,karat,w875,note,date){
+  const lid='log'+Date.now()+Math.random().toString(36).slice(2,5);
+  await DB.doc(`logs/${lid}`).set({id:lid,type,from,to,item,weight,count,karat,w875,note,by:CU.username,date,at:Date.now()});
+}
+
+// ================================================================
+// SILVER STOCK — استوك الفضة
+// ================================================================
+function onSilItemChange(){
+  const sel=id('SIL-ITEM');
+  const opt=sel.options[sel.selectedIndex];
+  const w=opt.dataset.w, k=opt.dataset.k||'1000';
+  id('SIL-KT').value=k;
+  if(w){ id('SIL-UNIT').value=w; }
+  else { id('SIL-UNIT').value=''; }
+  id('SIL-WT').value=''; id('SIL-CNT').value=''; id('SIL-1K').value='';
+}
+
+function calcSil(){
+  const wt=parseFloat(id('SIL-WT').value)||0;
+  const unit=parseFloat(id('SIL-UNIT').value)||0;
+  const kt=parseFloat(id('SIL-KT').value)||1000;
+  const w1k=wt*kt/1000;
+  id('SIL-1K').value=wt?+(w1k.toFixed(3)):'';
+  if(unit&&wt) id('SIL-CNT').value=+(wt/unit).toFixed(3);
+}
+
+function calcSilFromCnt(){
+  const cnt=parseFloat(id('SIL-CNT').value)||0;
+  const unit=parseFloat(id('SIL-UNIT').value)||0;
+  if(!cnt||!unit)return;
+  id('SIL-WT').value=+(cnt*unit).toFixed(3);
+  calcSil();
+}
+
+function openAddSilver(){
+  id('SIL-DATE').value=today();
+  ['SIL-WT','SIL-CNT','SIL-NOTE','SIL-UNIT','SIL-1K'].forEach(x=>id(x).value='');
+  id('SIL-ITEM').value=''; id('SIL-KT').value='1000';
+  om('MOD-SIL');
+}
+
+async function saveAddSilver(){
+  const item=v('SIL-ITEM'), date=v('SIL-DATE'), wt=parseFloat(v('SIL-WT'));
+  const cnt=parseFloat(v('SIL-CNT'))||0;
+  const kt=parseFloat(v('SIL-KT'))||1000;
+  const note=v('SIL-NOTE').trim();
+  const name=item==='أخرى'?(note||'فضة مخصصة'):item;
+  if(!name||!wt||!date){toast('er','أكمل البيانات المطلوبة');return;}
+  const w1000=wt*kt/1000;
+  const sid='si'+Date.now();
+  await DB.doc(`silver/${sid}`).set({
+    id:sid, item:name, date, weight:wt, karat:kt, w1000, count:cnt,
+    note, done:false, by:CU.username, at:Date.now()
+  });
+  clearCache('silver');
+  toast('ok',`✅ تم حفظ: ${name} — ${N(wt)} جرام`);
+  cm('MOD-SIL'); loadSilver();
+}
+
+// ================================================================
+// TAG — جدول العباسية من التغليف
+// ================================================================
+async function loadTagAbbasiya(){
+  const dateFilter = id('TAG-ABB-DATE')?.value || '';
+  const el = id('TAG-ABB-TABLE');
+  if(!el) return;
+
+  // جلب كل حركات العباسية من الفرعية (نوع عباسية)
+  const subSnap = await DB.collection('sub').get();
+  let allRows = subSnap.docs.map(d=>d.data())
+    .filter(m => m.type === 'عباسية');
+
+  // جلب من الاستوك اللي مرت بالتغليف
+  const stkSnap = await DB.collection('stock').get();
+  const stkRows = stkSnap.docs.map(d=>d.data())
+    .filter(s => s.name?.startsWith('[خروج]') && s.note?.includes('التغليف'));
+  stkRows.forEach(s => allRows.push({
+    date: s.date, at: s.at,
+    item: s.name.replace('[خروج] ',''),
+    weight: Math.abs(s.weight||0),
+    w875: Math.abs(s.w875||0),
+    count: Math.abs(s.count||0)
+  }));
+
+  // فلتر التاريخ
+  if(dateFilter) allRows = allRows.filter(r => r.date === dateFilter);
+
+  if(!allRows.length){
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px">
+      ${dateFilter ? `لا يوجد حركات للعباسية في ${arabicDate(dateFilter)}` : 'لا يوجد حركات للعباسية من التغليف'}
+    </div>`;
+    return;
+  }
+
+  // تجميع بالصنف
+  const grouped = {};
+  for(const r of allRows){
+    const name = (r.item || '—').replace('[خروج] ','');
+    if(!grouped[name]) grouped[name] = {name, totalWt:0, totalW875:0, totalCnt:0, ops:0, dates:[]};
+    grouped[name].totalWt   += r.weight || 0;
+    grouped[name].totalW875 += r.w875   || 0;
+    grouped[name].totalCnt  += r.count  || 0;
+    grouped[name].ops++;
+    if(r.date && !grouped[name].dates.includes(r.date)) grouped[name].dates.push(r.date);
+  }
+  const rows = Object.values(grouped).sort((a,b) => b.totalW875 - a.totalW875);
+  const grandWt  = rows.reduce((s,r) => s + r.totalWt,  0);
+  const grandW875= rows.reduce((s,r) => s + r.totalW875, 0);
+  const grandCnt = rows.reduce((s,r) => s + r.totalCnt,  0);
+
+  // Header مميز للتاريخ المحدد
+  const dateHeader = dateFilter
+    ? `<div style="background:#E74C3C15;border:1px solid #E74C3C30;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">📅</span>
+        <div>
+          <div style="font-size:11px;color:var(--muted)">منصرف يوم</div>
+          <div style="font-weight:800;color:#E74C3C;font-size:14px">${arabicDate(dateFilter)}</div>
+        </div>
+        <div style="margin-right:auto;text-align:left">
+          <div style="font-size:10px;color:var(--muted)">إجمالي اليوم</div>
+          <div class="num" style="font-weight:900;color:#E74C3C;font-size:18px">${N(grandW875)} <span style="font-size:11px;font-weight:400">جرام (875)</span></div>
+        </div>
+      </div>`
+    : '';
+
+  el.innerHTML = dateHeader + `
+  <table>
+    <thead><tr>
+      <th style="padding:10px 14px">الصنف</th>
+      <th>العدد</th>
+      <th>الوزن الفعلي</th>
+      <th>عيار 875</th>
+      <th style="color:var(--muted);font-size:10px">عمليات</th>
+    </tr></thead>
+    <tbody>
+    ${rows.map(r=>`
+      <tr>
+        <td style="padding:11px 14px">
+          <div style="font-weight:800;font-size:14px;color:var(--tx)">${r.name}</div>
+          ${!dateFilter&&r.dates.length?`<div style="font-size:10px;color:var(--muted);margin-top:2px">${r.dates.length} يوم</div>`:''}
+        </td>
+        <td>
+          <div style="background:#5A9FE820;color:var(--inf);border-radius:8px;padding:6px 12px;text-align:center;font-weight:900;font-size:15px" class="num">
+            ${r.totalCnt ? N3(r.totalCnt) : '—'}
+          </div>
+        </td>
+        <td class="num" style="font-weight:700;color:var(--goldtx)">${N(r.totalWt)}</td>
+        <td>
+          <div style="background:#E74C3C18;color:#E74C3C;border-radius:8px;padding:6px 12px;text-align:center;font-weight:900;font-size:15px" class="num">
+            ${N(r.totalW875)}
+          </div>
+        </td>
+        <td style="color:var(--muted);font-size:11px;text-align:center">${r.ops}</td>
+      </tr>
+    `).join('')}
+    </tbody>
+    <tfoot>
+      <tr style="background:var(--s2);border-top:2px solid var(--bd)">
+        <td style="padding:12px 14px;font-weight:700;color:var(--muted)">
+          الإجمالي <span style="font-size:10px">(${rows.length} صنف)</span>
+        </td>
+        <td>
+          <div style="background:var(--s3);border-radius:8px;padding:7px 12px;text-align:center;font-weight:900;color:var(--inf)" class="num">
+            ${grandCnt ? N3(grandCnt) : '—'}
+          </div>
+        </td>
+        <td class="num" style="font-weight:900;color:var(--goldtx);font-size:15px">${N(grandWt)}</td>
+        <td>
+          <div style="background:#E74C3C25;color:#E74C3C;border-radius:8px;padding:7px 12px;text-align:center;font-weight:900;font-size:16px;border:1px solid #E74C3C44" class="num">
+            ${N(grandW875)}
+          </div>
+        </td>
+        <td style="color:var(--muted);font-size:11px;text-align:center">${allRows.length}</td>
+      </tr>
+    </tfoot>
+  </table>`;
+}
+// ================================================================
+// CUSTOM WEIGHT — وزن مخصص لقسم
+// ================================================================
+let cwDept='';
+const DEPT_ICONS={hal:'🔥',tam:'⚙️',dam:'🔨',tag:'📦'};
+
+function openCustomWeight(dept){
+  cwDept=dept;
+  const dname=DEPTS[dept]?.name||dept;
+  id('CW-TITLE').textContent=`⚖️ إضافة وزن مخصص → ${dname}`;
+  id('CW-DEST-LBL').textContent=`${DEPT_ICONS[dept]||''} ${dname}`;
+  id('CW-DATE').value=today();
+  ['CW-WT','CW-875','CW-NOTE'].forEach(x=>id(x).value='');
+  id('CW-KT').value='999.9';
+  id('CW-PREV').style.display='none';
+  om('MOD-CW');
+}
+
+function calcCW(){
+  const wt=parseFloat(v('CW-WT'))||0, kt=parseFloat(v('CW-KT'))||875;
+  if(!wt){id('CW-875').value='';id('CW-PREV').style.display='none';return;}
+  const w875=+(wt*kt/875).toFixed(3);
+  id('CW-875').value=w875;
+  const mainBal=calcBal(mainMovs);
+  id('CW-MAIN-AFT').textContent=N(mainBal+w875)+' جرام';
+  id('CW-SUB-AFT').textContent=N(calcBal(subMovs))+' جرام';
+  id('CW-PREV').style.display='block';
+}
+
+async function saveCustomWeight(){
+  const wt=parseFloat(v('CW-WT'))||0;
+  const kt=parseFloat(v('CW-KT'))||875;
+  const date=v('CW-DATE'), note=v('CW-NOTE').trim();
+  if(!wt||!date){toast('er','أدخل الوزن والتاريخ');return;}
+  const w875=+(wt*kt/875).toFixed(3);
+  const nowTs=Date.now(), timeStr=nowTime();
+  const dname=DEPTS[cwDept]?.name||cwDept;
+  const itemNote=note||`وزن مخصص → ${dname}`;
+
+  // ١. وارد في الرئيسية
+  const mainBal=calcBal(mainMovs);
+  const mid='m'+nowTs;
+  await DB.doc(`main/${mid}`).set({
+    id:mid,date,type:'وارد',weight:wt,karat:kt,w875,
+    w1000:+(wt*kt/1000).toFixed(3),
+    balance:mainBal+w875,
+    note:`[مخصص→${dname}] ${itemNote}`,
+    time:timeStr,by:CU.username,at:nowTs
+  });
+  // ٢. منصرف من الرئيسية
+  const midOut='m'+(nowTs+1);
+  await DB.doc(`main/${midOut}`).set({
+    id:midOut,date,type:'منصرف',weight:wt,karat:kt,w875,
+    w1000:+(wt*kt/1000).toFixed(3),
+    balance:mainBal,
+    note:`[تحويل→${dname}] ${itemNote}`,
+    time:timeStr,by:CU.username,at:nowTs+1
+  });
+  // ٣. وارد في الفرعية
+  const subBal=calcBal(subMovs);
+  const subInId='s'+nowTs;
+  await DB.doc(`sub/${subInId}`).set({
+    id:subInId,date,type:'وارد',item:itemNote,
+    weight:wt,karat:kt,w875,
+    balance:subBal+w875,from:'main',
+    note:itemNote,time:timeStr,by:CU.username,at:nowTs+2
+  });
+  // ٤. منصرف من الفرعية
+  const subOutId='s'+(nowTs+1);
+  await DB.doc(`sub/${subOutId}`).set({
+    id:subOutId,date,type:'منصرف',item:itemNote,
+    weight:wt,karat:kt,w875,
+    balance:subBal,to:cwDept,
+    note:itemNote,time:timeStr,by:CU.username,at:nowTs+3
+  });
+  // ٥. إضافة للقسم
+  const deptId='di'+nowTs;
+  await DB.doc(`dept/${deptId}`).set({
+    id:deptId,dept:cwDept,item:itemNote,
+    weight:wt,count:0,karat:kt,w875,
+    done:false,note:itemNote,
+    by:CU.username,date,at:nowTs+4
+  });
+  pushUndo({label:`وزن مخصص ${N(wt)}g→${dname}`,ops:[
+    {action:'delete',col:'main',id:mid},
+    {action:'delete',col:'main',id:midOut},
+    {action:'delete',col:'sub',id:subInId},
+    {action:'delete',col:'sub',id:subOutId},
+    {action:'delete',col:'dept',id:deptId},
+  ]});
+  clearCache('main','sub','dept');
+  toast('ok',`✅ ${N(wt)} جرام (${kt}) — رئيسية → فرعية → ${dname}`);
+  cm('MOD-CW');
+  loadMain();
+  loadDept(cwDept);
+}
+
+// ================================================================
+// OVERVIEW — النظرة العامة
+// ================================================================
+function renderOverview(mainBal,subBal,deptBal){
+  const total=mainBal+subBal+deptBal;
+  if(total<=0){id('OVERVIEW').style.display='none';return;}
+  id('OVERVIEW').style.display='block';
+  const pM=total>0?(mainBal/total*100).toFixed(1):0;
+  const pS=total>0?(subBal/total*100).toFixed(1):0;
+  const pD=total>0?(deptBal/total*100).toFixed(1):0;
+  id('OV-CARDS').innerHTML=`
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--gold);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:8px">🏦 الخزنة الرئيسية</div>
+      <div class="num" style="font-size:22px;font-weight:900;color:var(--gold)">${N(mainBal)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${pM}% من الإجمالي</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--inf);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:8px">💼 الخزنة الفرعية</div>
+      <div class="num" style="font-size:22px;font-weight:900;color:var(--inf)">${N(subBal)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${pS}% من الإجمالي</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--tam);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:8px">🏭 إجمالي الأقسام</div>
+      <div class="num" style="font-size:22px;font-weight:900;color:var(--tam)">${N(deptBal)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${pD}% من الإجمالي</div>
+    </div>
+    <div style="background:linear-gradient(135deg,var(--s2),var(--s3));border:1.5px solid var(--gold);border-radius:10px;padding:14px 16px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:8px">⚖️ الصافي الكلي</div>
+      <div class="num" style="font-size:24px;font-weight:900;color:var(--goldtx)">${N(total)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">جرام — 875</div>
+    </div>`;
+  id('OV-BAR').innerHTML=`
+    <div style="width:${pM}%;background:var(--gold);min-width:${mainBal>0?'4px':'0'};border-radius:4px 0 0 4px"></div>
+    <div style="width:${pS}%;background:var(--inf);min-width:${subBal>0?'4px':'0'}"></div>
+    <div style="width:${pD}%;background:var(--tam);min-width:${deptBal>0?'4px':'0'};border-radius:0 4px 4px 0"></div>`;
+  id('OV-BAR-LBL').innerHTML=`
+    <span style="font-size:10px;color:var(--muted)"><span style="color:var(--gold)">■</span> رئيسية ${pM}%</span>
+    <span style="font-size:10px;color:var(--muted)"><span style="color:var(--inf)">■</span> فرعية ${pS}%</span>
+    <span style="font-size:10px;color:var(--muted)"><span style="color:var(--tam)">■</span> أقسام ${pD}%</span>`;
+}
+
+// ================================================================
+// UNDO STACK — نظام التراجع
+// ================================================================
+const undoStack=[];
+const MAX_UNDO=10;
+
+function pushUndo(entry){
+  undoStack.push(entry);
+  if(undoStack.length>MAX_UNDO) undoStack.shift();
+  updateUndoBtn();
+}
+
+function updateUndoBtn(){
+  const btn=id('UNDO-BTN'), cnt=id('UNDO-COUNT');
+  if(!btn||!cnt)return;
+  if(undoStack.length>0){
+    cnt.textContent=undoStack.length; cnt.style.display='inline';
+    btn.title=`تراجع: "${undoStack[undoStack.length-1]?.label}"`;
+  } else {
+    cnt.style.display='none'; btn.title='لا يوجد عمليات للتراجع';
+  }
+}
+
+async function doUndo(){
+  if(!undoStack.length){toast('in','لا يوجد عمليات للتراجع');return;}
+  const entry=undoStack.pop();
+  updateUndoBtn();
+  toast('in',`جاري التراجع: ${entry.label}...`);
+  try{
+    for(const op of entry.ops){
+      if(op.action==='delete') await DB.doc(`${op.col}/${op.id}`).delete();
+      else if(op.action==='set') await DB.doc(`${op.col}/${op.id}`).set(op.data);
+    }
+    clearCache();
+    const t=document.querySelector('.tab.act')?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
+    if(t&&TAB_LOADERS[t]) TAB_LOADERS[t]();
+    toast('ok',`↩️ تم التراجع: ${entry.label}`);
+  }catch(e){ toast('er','خطأ في التراجع'); undoStack.push(entry); updateUndoBtn(); }
+}
+
+// ================================================================
+// SYNC — مزامنة يدوية
+// ================================================================
+async function doSync(){
+  const btn=id('SYNC-BTN');
+  if(btn) btn.style.transform='rotate(0deg)';
+  toast('in','🔄 جاري المزامنة...');
+  clearCache();
+  // animate
+  let deg=0;
+  const anim=setInterval(()=>{ deg+=30; if(btn) btn.textContent='🔄'; },100);
+  try{
+    const t=document.querySelector('.tab.act')?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1]||'dash';
+    if(TAB_LOADERS[t]) await TAB_LOADERS[t]();
+    toast('ok','✅ تمت المزامنة');
+  }catch(e){ toast('er','خطأ في المزامنة'); }
+  clearInterval(anim);
+  if(btn) btn.textContent='🔄';
+}
+
+async function loadAbb(){
+  const fromFilter=id('ABB-FROM')?.value||'';
+  const d1=id('ABB-D1')?.value||'';
+  const d2=id('ABB-D2')?.value||'';
+  let rows=[];
+
+  if(!fromFilter||fromFilter==='main'){
+    const snap=await DB.collection('main').get();
+    snap.docs.map(d=>d.data()).filter(m=>m.type==='عباسية').forEach(m=>{
+      rows.push({date:m.date,time:m.time||'—',source:'🏦 الرئيسية',item:m.note||'—',weight:m.weight,karat:m.karat,w875:m.w875,by:m.by,at:m.at});
+    });
+  }
+  if(!fromFilter||fromFilter==='sub'){
+    const snap=await DB.collection('sub').get();
+    snap.docs.map(d=>d.data()).filter(m=>m.type==='عباسية').forEach(m=>{
+      rows.push({date:m.date,time:m.time||'—',source:'💼 الفرعية',item:m.item||m.note||'—',weight:m.weight,karat:m.karat||875,w875:m.w875,by:m.by,at:m.at});
+    });
+  }
+  if(!fromFilter||fromFilter==='stock'){
+    const snap=await DB.collection('stock').get();
+    snap.docs.map(d=>d.data()).filter(s=>s.name?.startsWith('[خروج]')&&s.note?.includes('العباسية')).forEach(s=>{
+      rows.push({date:s.date,time:'—',source:'📦 الاستوك',item:s.name.replace('[خروج] ',''),weight:Math.abs(s.weight),karat:s.karat,w875:Math.abs(s.w875),by:s.by,at:s.at});
+    });
+  }
+
+  if(d1) rows=rows.filter(r=>r.date>=d1);
+  if(d2) rows=rows.filter(r=>r.date<=d2);
+  const seen=new Set();
+  rows=rows.filter(r=>{const k=r.at+'|'+r.source;if(seen.has(k))return false;seen.add(k);return true;});
+  rows.sort((a,b)=>b.at-a.at);
+
+  const totalW875=rows.reduce((s,r)=>s+(r.w875||0),0);
+  const totalWt  =rows.reduce((s,r)=>s+(r.weight||0),0);
+  const fromMain =rows.filter(r=>r.source.includes('الرئيسية')).reduce((s,r)=>s+(r.w875||0),0);
+  const fromSub  =rows.filter(r=>r.source.includes('الفرعية')).reduce((s,r)=>s+(r.w875||0),0);
+  const fromStk  =rows.filter(r=>r.source.includes('الاستوك')).reduce((s,r)=>s+(r.w875||0),0);
+
+  id('ABB-STATS').innerHTML=`
+    <div class="sc" style="border-right:3px solid #E74C3C"><div class="slb">🏪 إجمالي العباسية</div><div class="sv" style="color:#E74C3C">${N(totalW875)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc" style="border-right:3px solid var(--gold)"><div class="slb">من الرئيسية</div><div class="sv">${N(fromMain)}</div><div class="su">جرام</div></div>
+    <div class="sc" style="border-right:3px solid var(--inf)"><div class="slb">من الفرعية</div><div class="sv" style="color:var(--inf)">${N(fromSub)}</div><div class="su">جرام</div></div>
+    <div class="sc" style="border-right:3px solid var(--warn)"><div class="slb">من الاستوك</div><div class="sv" style="color:var(--warn)">${N(fromStk)}</div><div class="su">جرام</div></div>
+    <div class="sc"><div class="slb">عدد العمليات</div><div class="sv">${rows.length}</div><div class="su">عملية</div></div>`;
+
+  if(!rows.length){
+    id('ABB-TABLE').innerHTML='<div class="empty"><span class="eic">🏪</span><p style="color:var(--muted)">لا يوجد حركات للعباسية</p></div>';
+    return;
+  }
+
+  id('ABB-TABLE').innerHTML=`<table><thead><tr>
+    <th>التاريخ</th><th>الوقت</th><th>المصدر</th><th>الصنف / البيان</th><th>الوزن</th><th>العيار</th><th>875</th><th>بواسطة</th>
+  </tr></thead><tbody>${
+    rows.map(r=>`<tr>
+      <td style="font-size:11px;white-space:nowrap">${arabicDate(r.date)}</td>
+      <td style="font-family:monospace;font-size:10px;color:var(--muted)">${r.time}</td>
+      <td><span style="background:#E74C3C18;color:#E74C3C;border:1px solid #E74C3C33;border-radius:6px;padding:2px 8px;font-size:11px;white-space:nowrap">${r.source}</span></td>
+      <td style="font-weight:600">${r.item}</td>
+      <td class="num">${N(r.weight)}</td>
+      <td><span class="b bgld">${r.karat||875}</span></td>
+      <td class="num" style="font-weight:800;color:#E74C3C">${N(r.w875)}</td>
+      <td style="font-size:11px;color:var(--muted)">${r.by||'—'}</td>
+    </tr>`).join('')
+  }</tbody>
+  <tfoot><tr style="background:var(--s2)">
+    <td colspan="4" style="padding:10px 14px;font-weight:700;font-size:12px;color:var(--muted)">الإجمالي</td>
+    <td class="num" style="padding:10px 14px;font-weight:900;color:var(--goldtx)">${N(totalWt)}</td>
+    <td></td>
+    <td class="num" style="padding:10px 14px;font-weight:900;color:#E74C3C;font-size:15px">${N(totalW875)}</td>
+    <td></td>
+  </tr></tfoot></table>`;
+}
+
+async function loadLog(){
+  const dept=v('LF-DEPT'),from=v('LF-FROM'),to=v('LF-TO'),q=id('LF-Q').value.trim();
+  const snap=await DB.collection('logs').orderBy('at','desc').limit(300).get();
+  let data=snap.docs.map(d=>d.data());
+  if(dept)data=data.filter(l=>l.from===dept||l.to===dept);
+  if(from)data=data.filter(l=>l.date>=from);
+  if(to)data=data.filter(l=>l.date<=to);
+  if(q)data=data.filter(l=>l.item?.includes(q)||l.note?.includes(q));
+  const ICONS={main_mov:'💰',sub_transfer:'↗️',transfer:'🔄',add:'➕',done:'✅',edit_count:'✏️',delete:'🗑️'};
+  id('LOG-TABLE').innerHTML=data.length?`<table><thead><tr><th>التاريخ</th><th>العملية</th><th>الصنف</th><th>الوزن</th><th>العدد</th><th>من</th><th>إلى</th><th>البيان</th><th>بواسطة</th></tr></thead><tbody>${
+    data.map(l=>`<tr>
+      <td style="font-family:monospace;font-size:11px">${l.date||'—'}</td>
+      <td>${ICONS[l.type]||'📌'} <span style="font-size:10px;color:var(--muted)">${l.type}</span></td>
+      <td style="font-weight:700">${l.item||'—'}</td>
+      <td class="num">${l.weight>0?N(l.weight):'—'}</td>
+      <td class="num">${l.count>0?N3(l.count):'—'}</td>
+      <td><span class="b bbl" style="font-size:9px">${DEPT_NAMES[l.from]||l.from||'—'}</span></td>
+      <td><span class="b bg" style="font-size:9px">${DEPT_NAMES[l.to]||l.to||'—'}</span></td>
+      <td style="color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis">${l.note||'—'}</td>
+      <td style="color:var(--muted);font-size:10px">${l.by||'—'}</td>
+    </tr>`).join('')
+  }</tbody></table>`:'<div class="empty"><span class="eic">📋</span><p>لا توجد نتائج</p></div>';
+}
+
+// ================================================================
+// REFERENCE
+// ================================================================
+async function loadRef(){
+  const from=v('RF-FROM'),to=v('RF-TO'),dept=v('RF-DEPT'),item=id('RF-ITEM').value.trim();
+  if(!from&&!to){toast('er','اختر تاريخاً');return;}
+  const snap=await DB.collection('logs').orderBy('at','desc').get();
+  let data=snap.docs.map(d=>d.data()).filter(l=>!['login','main_mov'].includes(l.type));
+  if(from)data=data.filter(l=>l.date>=from);
+  if(to)data=data.filter(l=>l.date<=to);
+  if(dept)data=data.filter(l=>l.from===dept||l.to===dept);
+  if(item)data=data.filter(l=>l.item?.includes(item));
+  if(!data.length){id('REF-OUT').innerHTML='<div class="empty"><span class="eic">🔍</span><p>لا توجد نتائج</p></div>';return;}
+  const tw=data.reduce((s,l)=>s+(l.weight||0),0);
+  const tw875=data.reduce((s,l)=>s+(l.w875||0),0);
+  id('REF-OUT').innerHTML=`
+    <div class="sgrid" style="margin-bottom:16px">
+      <div class="sc g"><div class="slb">إجمالي الوزن</div><div class="sv">${N(tw)}</div><div class="su">جرام</div></div>
+      <div class="sc"><div class="slb">إجمالي بعيار 875</div><div class="sv">${N(tw875)}</div><div class="su">جرام</div></div>
+      <div class="sc b"><div class="slb">عدد العمليات</div><div class="sv">${data.length}</div><div class="su"></div></div>
+    </div>
+    <div class="tc"><div class="thead2"><b>تفاصيل ${from||''}${from&&to?' — ':''} ${to||''}</b></div>
+    <table><thead><tr><th>التاريخ</th><th>الصنف</th><th>القسم</th><th>الوزن</th><th>العدد</th><th>العيار</th><th>875</th><th>البيان</th></tr></thead><tbody>
+      ${data.map(l=>`<tr>
+        <td style="font-weight:700;font-family:monospace">${l.date||'—'}</td>
+        <td style="font-weight:800">${l.item||'—'}</td>
+        <td>${DEPTS[l.to]?.icon||''} ${DEPTS[l.to]?.name||DEPT_NAMES[l.to]||l.to||'—'}</td>
+        <td class="num" style="color:var(--gold);font-weight:800">${N(l.weight)}</td>
+        <td class="num">${l.count>0?N3(l.count):'—'}</td>
+        <td><span class="b bgld">${l.karat||'—'}</span></td>
+        <td class="num">${N(l.w875)}</td>
+        <td style="color:var(--muted)">${l.note||'—'}</td>
+      </tr>`).join('')}
+    </tbody></table></div>
+  `;
+}
+
+// ================================================================
+// USERS
+// ================================================================
+let users=[];
+async function loadUsers(){
+  const snap=await DB.collection('users').get();
+  users=snap.docs.map(d=>d.data());
+  id('USERS-LIST').innerHTML=users.map(u=>`
+    <div class="tc" style="overflow:visible">
+      <div style="padding:16px;display:flex;align-items:center;gap:12px">
+        <div style="width:42px;height:42px;border-radius:50%;background:${u.role==='admin'?'var(--gold)':'var(--s3)'};color:${u.role==='admin'?'#000':'var(--tx)'};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0">${u.name[0]}</div>
+        <div style="flex:1"><div style="font-weight:800">${u.name}</div><div style="font-size:10px;color:var(--muted)">@${u.username} · ${ROLES[u.role]||u.role}</div></div>
+        <div style="display:flex;gap:6px">
+          ${u.username!=='admin'?`<button class="btn bxs ${u.active?'bd2':'bg2'}" onclick="toggleUser('${u.username}')">${u.active?'تعطيل':'تفعيل'}</button>`:''}
+          <button class="btn bxs bs" onclick="editUser('${u.username}')">✏️</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddUser(){id('UM-ID').value='';['UM-NAME','UM-UN','UM-PW'].forEach(x=>id(x).value='');id('UM-ROLE').value='worker';id('UM-T').textContent='مستخدم جديد';om('MOD-USER');}
+function editUser(un){const u=users.find(u=>u.username===un);if(!u)return;id('UM-ID').value=un;id('UM-NAME').value=u.name;id('UM-UN').value=u.username;id('UM-PW').value='';id('UM-ROLE').value=u.role;id('UM-T').textContent='تعديل: '+u.name;om('MOD-USER');}
+
+async function saveUser(){
+  const eid=v('UM-ID'),name=v('UM-NAME').trim(),un=v('UM-UN').trim(),pw=v('UM-PW'),role=v('UM-ROLE');
+  if(!name||!un){toast('er','أكمل البيانات');return;}
+  if(!eid&&!pw){toast('er','كلمة المرور مطلوبة');return;}
+  const data={username:un,name,role,active:true};if(pw)data.password=pw;if(!eid)data.createdAt=Date.now();
+  await DB.doc(`users/${un}`).set(data,{merge:true});
+  toast('ok',eid?'تم التحديث':'تمت الإضافة');cm('MOD-USER');loadUsers();
+}
+
+async function toggleUser(un){const u=users.find(u=>u.username===un);if(!u)return;await DB.doc(`users/${un}`).update({active:!u.active});toast('ok',u.active?'تم التعطيل':'تم التفعيل');loadUsers();}
+
+// ================================================================
+// UTILS
+// ================================================================
+function calcBal(movs){
+  return movs.reduce((s,m)=>{
+    if(m.type==='وارد'||m.type==='سلفة'||m.type==='استرجاع'||m.type==='وارد استوك') return s+(m.w875||0);
+    if(m.type==='منصرف'||m.type==='عباسية') return s-(m.w875||0);
+    return s;
+  },0);
+}
+
+// English numbers with comma separators
+// Force English (Latin) numerals always
+const EN = new Intl.NumberFormat('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const EN3= new Intl.NumberFormat('en-US', {minimumFractionDigits:0, maximumFractionDigits:3});
+
+function N(n){
+  if(n==null||isNaN(n)||n==='')return'—';
+  return EN.format(parseFloat(n));
+}
+function N3(n){
+  if(n==null||isNaN(n)||n==='')return'—';
+  return EN3.format(parseFloat(n));
+}
+
+function today(){return new Date().toISOString().split('T')[0];}
+
+function nowTime(){
+  return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+}
+
+function arabicDate(dateStr){
+  if(!dateStr) return '—';
+  const d=new Date(dateStr+'T12:00:00');
+  return d.toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+}
+function id(x){return document.getElementById(x);}
+function v(x){return id(x).value;}
+function showErr(eid,msg){const el=id(eid);el.textContent=msg;el.style.display='block';}
+function om(mid){id(mid).classList.add('open');}
+function cm(mid){id(mid).classList.remove('open');}
+document.querySelectorAll('.mov').forEach(ov=>ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');}));
+
+let confCb=null;
+function conf(msg,cb){id('CONF-MSG').textContent=msg;confCb=cb;om('MOD-CONF');}
+id('CONF-BTN').onclick=()=>{cm('MOD-CONF');if(confCb)confCb();};
+
+function toast(type,msg){
+  const icons={ok:'✅',er:'❌',in:'ℹ️'};
+  const el=document.createElement('div');el.className=`toast ${type}`;
+  el.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`;
+  id('TC').appendChild(el);setTimeout(()=>el.remove(),4500);
+}
+
+init();
+</script>
+</body>
+</html>

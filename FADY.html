@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar-u-nu-latn" dir="rtl">
 <head>
@@ -697,6 +698,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
     <div class="tab" onclick="showTab('sil')" id="tab-sil">🥈 الفضة</div>
     <div class="tab" onclick="showTab('log')">📋 السجل</div>
     <div class="tab" onclick="showTab('abb')">🏪 العباسية</div>
+    <div class="tab" onclick="showTab('ovr')">📊 نظرة عامة</div>
     <div class="tab" onclick="showTab('ref')">🔍 المرجع</div>
     <div class="tab" id="tab-users" style="display:none" onclick="showTab('users')">👥 مستخدمون</div>
   </div>
@@ -722,18 +724,6 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <div class="fstep" style="background:#27AE6030;color:#2ecc71;border:1px solid #2ecc71">✅ DONE</div>
       </div>
       <div id="D-STATS" class="sgrid"></div>
-
-      <!-- نظرة عامة — الصافي الكلي -->
-      <div id="OVERVIEW" style="background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:20px;margin-bottom:18px;display:none">
-        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:14px;letter-spacing:.5px">📊 نظرة عامة — الصافي الكلي (عيار 875)</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px" id="OV-CARDS"></div>
-        <!-- شريط التوزيع -->
-        <div style="margin-top:4px">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:6px">توزيع الذهب</div>
-          <div id="OV-BAR" style="display:flex;height:10px;border-radius:5px;overflow:hidden;gap:1px"></div>
-          <div id="OV-BAR-LBL" style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap"></div>
-        </div>
-      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div class="tc"><div class="thead2"><b>آخر حركات الخزنة الرئيسية</b></div><div id="D-MAIN"></div></div>
@@ -1019,6 +1009,60 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <button class="btn bs bsm" onclick="id('ABB-D1').value='';id('ABB-D2').value='';id('ABB-FROM').value='';loadAbb()">↺ كل السجل</button>
       </div>
       <div class="tc"><div id="ABB-TABLE"></div></div>
+    </div>
+
+    <!-- OVERVIEW PAGE -->
+    <div id="pg-ovr" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">📊 نظرة عامة</div><div class="pgs">تحليل شامل لجميع بيانات المصنع</div></div>
+        <button class="btn bs bsm" onclick="loadOvr()">🔄 تحديث</button>
+      </div>
+
+      <!-- الصافي الكلي -->
+      <div id="OVR-TOTAL" class="sgrid" style="margin-bottom:20px"></div>
+
+      <!-- شريط التوزيع -->
+      <div style="background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:12px">📈 توزيع الذهب في المصنع</div>
+        <div id="OVR-BAR" style="display:flex;height:14px;border-radius:7px;overflow:hidden;gap:2px;margin-bottom:10px"></div>
+        <div id="OVR-BAR-LBL" style="display:flex;gap:16px;flex-wrap:wrap"></div>
+      </div>
+
+      <!-- تفاصيل الخزائن -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+        <div class="tc">
+          <div class="thead2" style="border-right:3px solid var(--gold)"><b style="color:var(--gold)">🏦 الخزنة الرئيسية</b></div>
+          <div id="OVR-MAIN"></div>
+        </div>
+        <div class="tc">
+          <div class="thead2" style="border-right:3px solid var(--inf)"><b style="color:var(--inf)">💼 الخزنة الفرعية</b></div>
+          <div id="OVR-SUB"></div>
+        </div>
+      </div>
+
+      <!-- تفاصيل الأقسام -->
+      <div class="tc" style="margin-bottom:18px">
+        <div class="thead2" style="border-right:3px solid var(--tam)"><b style="color:var(--tam)">🏭 تفاصيل الأقسام</b></div>
+        <div id="OVR-DEPTS"></div>
+      </div>
+
+      <!-- الاستوك -->
+      <div class="tc" style="margin-bottom:18px">
+        <div class="thead2" style="border-right:3px solid var(--warn)"><b style="color:var(--warn)">📦 الاستوك الداخلي</b></div>
+        <div id="OVR-STOCK"></div>
+      </div>
+
+      <!-- الفضة -->
+      <div class="tc" style="margin-bottom:18px">
+        <div class="thead2" style="border-right:3px solid var(--sil,#8090A8)"><b style="color:var(--sil,#8090A8)">🥈 الفضة</b></div>
+        <div id="OVR-SIL"></div>
+      </div>
+
+      <!-- العباسية -->
+      <div class="tc">
+        <div class="thead2" style="border-right:3px solid #E74C3C"><b style="color:#E74C3C">🏪 إجمالي العباسية</b></div>
+        <div id="OVR-ABB"></div>
+      </div>
     </div>
 
     <!-- LOG -->
@@ -1461,15 +1505,9 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
           <input type="number" id="CW-WT" step="0.001" placeholder="0.000" oninput="calcCW()">
         </div>
         <div class="fg" style="margin:0">
-          <label>العيار *</label>
-          <select id="CW-KT" onchange="calcCW()">
-            <option value="875">875 (21)</option>
-            <option value="916">916 (22)</option>
-            <option value="948">948 (23)</option>
-            <option value="995">995</option>
-            <option value="999.9" selected>999.9 (24)</option>
-            <option value="1000">1000</option>
-          </select>
+          <label>العيار * (أدخل يدوياً)</label>
+          <input type="number" id="CW-KT" step="0.1" placeholder="مثال: 875 أو 999.9" oninput="calcCW()"
+            style="font-family:monospace;font-weight:700;font-size:15px;color:var(--gold)">
         </div>
       </div>
       <div class="fr" style="margin-top:12px">
@@ -2338,7 +2376,7 @@ function logout(){
 // ================================================================
 // TABS
 // ================================================================
-const TAB_LOADERS={dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ref:()=>{},users:loadUsers};
+const TAB_LOADERS={dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
 
 function showTab(t){
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('act'));
@@ -2363,8 +2401,6 @@ async function loadDash(){
   const silvBal=silvItems.reduce((s,si)=>s+(si.w1000||si.weight||0),0);
   const doneCount=deptItems.filter(d=>d.done).length;
 
-  // نظرة عامة
-  renderOverview(mainBal, subBal, deptBal);
 
   id('D-STATS').innerHTML=`
     <div class="sc" style="border-right:3px solid var(--gold)"><div class="slb">🏦 الخزنة الرئيسية</div><div class="sv">${N(mainBal)}</div><div class="su">جرام — عيار 875</div></div>
@@ -3085,8 +3121,7 @@ function openCustomWeight(dept){
   id('CW-TITLE').textContent=`⚖️ إضافة وزن مخصص → ${dname}`;
   id('CW-DEST-LBL').textContent=`${DEPT_ICONS[dept]||''} ${dname}`;
   id('CW-DATE').value=today();
-  ['CW-WT','CW-875','CW-NOTE'].forEach(x=>id(x).value='');
-  id('CW-KT').value='999.9';
+  ['CW-WT','CW-875','CW-NOTE','CW-KT'].forEach(x=>id(x).value='');
   id('CW-PREV').style.display='none';
   om('MOD-CW');
 }
@@ -3212,8 +3247,178 @@ function renderOverview(mainBal,subBal,deptBal){
 }
 
 // ================================================================
-// UNDO STACK — نظام التراجع
+// OVERVIEW PAGE — نظرة عامة شاملة
 // ================================================================
+async function loadOvr(){
+  // جلب كل البيانات بالتوازي
+  const [mSnap,sSnap,dSnap,siSnap,stSnap,subSnap] = await Promise.all([
+    DB.collection('main').get(),
+    DB.collection('silver').get(),
+    DB.collection('dept').get(),
+    DB.collection('stock').get(),
+    DB.collection('sub').get(),
+    DB.collection('logs').get(),
+  ]);
+
+  const mainMovsAll = mSnap.docs.map(d=>d.data());
+  const subMovsAll  = stSnap.docs.map(d=>d.data());
+  const deptAll     = dSnap.docs.map(d=>d.data());
+  const silvAll     = siSnap.docs.map(d=>d.data());
+  const stockAll    = siSnap.docs.map(d=>d.data()); // reuse
+  const stockItems2 = (await DB.collection('stock').get()).docs.map(d=>d.data()).filter(s=>!s.name?.startsWith('[خروج]')&&(s.weight||0)>0);
+
+  const mainBal = calcBal(mainMovsAll);
+  const subBal  = calcBal(subMovsAll);
+  const deptBal = deptAll.filter(d=>d.dept!=='sil'&&!d.done).reduce((s,d)=>s+(d.w875||0),0);
+  const deptDone= deptAll.filter(d=>d.dept!=='sil'&&d.done).reduce((s,d)=>s+(d.w875||0),0);
+  const silvBal = silvAll.reduce((s,si)=>s+(si.w1000||si.weight||0),0);
+  const stockBal= stockItems2.reduce((s,i)=>s+(i.w875||0),0);
+
+  // العباسية
+  const abbMain = mainMovsAll.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
+  const abbSub  = subMovsAll.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
+  const totalAbb= abbMain+abbSub;
+
+  const total = mainBal+subBal+deptBal;
+  const pM=total>0?(mainBal/total*100).toFixed(1):0;
+  const pS=total>0?(subBal/total*100).toFixed(1):0;
+  const pD=total>0?(deptBal/total*100).toFixed(1):0;
+
+  // ── بطاقات الإجمالي ──
+  id('OVR-TOTAL').innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--s2),var(--s3));border:1.5px solid var(--gold);border-radius:12px;padding:18px 20px">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:8px">⚖️ الصافي الكلي في المصنع</div>
+      <div class="num" style="font-size:32px;font-weight:900;color:var(--goldtx)">${N(total)}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">جرام — عيار 875</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--gold);border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px">🏦 الرئيسية</div>
+      <div class="num" style="font-size:24px;font-weight:900;color:var(--gold)">${N(mainBal)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${pM}%</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--inf);border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px">💼 الفرعية</div>
+      <div class="num" style="font-size:24px;font-weight:900;color:var(--inf)">${N(subBal)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${pS}%</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--tam);border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px">🏭 الأقسام (جاري)</div>
+      <div class="num" style="font-size:24px;font-weight:900;color:var(--tam)">${N(deptBal)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${pD}%</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--ok);border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px">✅ أقسام DONE</div>
+      <div class="num" style="font-size:24px;font-weight:900;color:var(--ok)">${N(deptDone)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">جرام</div>
+    </div>
+    <div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid var(--sil,#8090A8);border-radius:12px;padding:16px 18px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:6px">🥈 الفضة</div>
+      <div class="num" style="font-size:24px;font-weight:900;color:var(--sil,#8090A8)">${N(silvBal)}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">جرام — 1000</div>
+    </div>`;
+
+  // ── شريط التوزيع ──
+  id('OVR-BAR').innerHTML=`
+    <div style="width:${pM}%;background:var(--gold);min-width:${mainBal>0?'4px':'0'};border-radius:6px 0 0 6px"></div>
+    <div style="width:${pS}%;background:var(--inf);min-width:${subBal>0?'4px':'0'}"></div>
+    <div style="width:${pD}%;background:var(--tam);min-width:${deptBal>0?'4px':'0'};border-radius:0 6px 6px 0"></div>`;
+  id('OVR-BAR-LBL').innerHTML=`
+    <span style="font-size:11px;color:var(--muted)"><span style="color:var(--gold)">■</span> رئيسية ${N(mainBal)}g (${pM}%)</span>
+    <span style="font-size:11px;color:var(--muted)"><span style="color:var(--inf)">■</span> فرعية ${N(subBal)}g (${pS}%)</span>
+    <span style="font-size:11px;color:var(--muted)"><span style="color:var(--tam)">■</span> أقسام ${N(deptBal)}g (${pD}%)</span>`;
+
+  // ── تفاصيل الرئيسية ──
+  const mainIn  = mainMovsAll.filter(m=>m.type==='وارد'||m.type==='سلفة'||m.type==='استرجاع'||m.type==='وارد استوك').reduce((s,m)=>s+(m.w875||0),0);
+  const mainOut = mainMovsAll.filter(m=>m.type==='منصرف'||m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
+  const mainLoan= mainMovsAll.filter(m=>m.type==='سلفة').reduce((s,m)=>s+(m.w875||0),0);
+  id('OVR-MAIN').innerHTML=`<table><tbody>
+    <tr><td>إجمالي الوارد</td><td class="num" style="color:var(--ok);font-weight:800">${N(mainIn)}</td></tr>
+    <tr><td>إجمالي المنصرف</td><td class="num" style="color:var(--err)">${N(mainOut)}</td></tr>
+    <tr><td>إجمالي السلف</td><td class="num" style="color:var(--warn)">${N(mainLoan)}</td></tr>
+    <tr><td>إجمالي العباسية</td><td class="num" style="color:#E74C3C">${N(abbMain)}</td></tr>
+    <tr style="border-top:2px solid var(--bd)"><td style="font-weight:800">الرصيد الحالي</td><td class="num" style="color:var(--gold);font-weight:900;font-size:16px">${N(mainBal)}</td></tr>
+    <tr><td>عدد الحركات</td><td class="num" style="color:var(--muted)">${mainMovsAll.length}</td></tr>
+  </tbody></table>`;
+
+  // ── تفاصيل الفرعية ──
+  const subIn = subMovsAll.filter(m=>m.type==='وارد').reduce((s,m)=>s+(m.w875||0),0);
+  const subOut= subMovsAll.filter(m=>m.type==='منصرف').reduce((s,m)=>s+(m.w875||0),0);
+  id('OVR-SUB').innerHTML=`<table><tbody>
+    <tr><td>وارد من الرئيسية</td><td class="num" style="color:var(--ok);font-weight:800">${N(subIn)}</td></tr>
+    <tr><td>محوَّل للأقسام</td><td class="num" style="color:var(--err)">${N(subOut)}</td></tr>
+    <tr><td>عباسية من الفرعية</td><td class="num" style="color:#E74C3C">${N(abbSub)}</td></tr>
+    <tr style="border-top:2px solid var(--bd)"><td style="font-weight:800">الرصيد الحالي</td><td class="num" style="color:var(--inf);font-weight:900;font-size:16px">${N(subBal)}</td></tr>
+    <tr><td>عدد الحركات</td><td class="num" style="color:var(--muted)">${subMovsAll.length}</td></tr>
+  </tbody></table>`;
+
+  // ── تفاصيل الأقسام ──
+  const deptGroups={};
+  deptAll.filter(d=>d.dept!=='sil').forEach(d=>{
+    const k=d.dept;
+    if(!deptGroups[k]) deptGroups[k]={name:DEPTS[k]?.name||k,icon:DEPTS[k]?.icon||'',active:0,done:0,cnt:0};
+    if(d.done) deptGroups[k].done+=d.w875||0;
+    else { deptGroups[k].active+=d.w875||0; deptGroups[k].cnt++; }
+  });
+  id('OVR-DEPTS').innerHTML=`<table><thead><tr>
+    <th>القسم</th><th>جاري (جرام)</th><th>DONE (جرام)</th><th>الإجمالي</th><th>أصناف</th>
+  </tr></thead><tbody>${
+    Object.values(deptGroups).map(g=>`<tr>
+      <td style="font-weight:700">${g.icon} ${g.name}</td>
+      <td class="num" style="color:var(--warn);font-weight:700">${N(g.active)}</td>
+      <td class="num" style="color:var(--ok)">${N(g.done)}</td>
+      <td class="num" style="color:var(--goldtx);font-weight:800">${N(g.active+g.done)}</td>
+      <td class="num" style="color:var(--muted)">${g.cnt}</td>
+    </tr>`).join('')
+  }<tr style="background:var(--s2);border-top:2px solid var(--bd)">
+    <td style="font-weight:800;padding:10px 14px">الإجمالي</td>
+    <td class="num" style="color:var(--tam);font-weight:900;font-size:15px">${N(deptBal)}</td>
+    <td class="num" style="color:var(--ok);font-weight:900;font-size:15px">${N(deptDone)}</td>
+    <td class="num" style="color:var(--goldtx);font-weight:900;font-size:15px">${N(deptBal+deptDone)}</td>
+    <td></td>
+  </tr></tbody></table>`;
+
+  // ── الاستوك ──
+  const stkGrp={};
+  stockItems2.forEach(s=>{
+    if(!stkGrp[s.name]) stkGrp[s.name]={name:s.name,karat:s.karat,wt:0,w875:0,cnt:0};
+    stkGrp[s.name].wt +=s.weight||0;
+    stkGrp[s.name].w875+=s.w875||0;
+    stkGrp[s.name].cnt +=s.count||0;
+  });
+  const stkRows=Object.values(stkGrp);
+  id('OVR-STOCK').innerHTML=stkRows.length?`<table><thead><tr>
+    <th>الصنف</th><th>العيار</th><th>الوزن</th><th>875</th><th>العدد</th>
+  </tr></thead><tbody>${
+    stkRows.map(r=>`<tr>
+      <td style="font-weight:700;color:var(--warn)">${r.name}</td>
+      <td><span class="b bgld">${r.karat}</span></td>
+      <td class="num">${N(r.wt)}</td>
+      <td class="num" style="color:var(--gold);font-weight:800">${N(r.w875)}</td>
+      <td class="num">${r.cnt?N3(r.cnt):'—'}</td>
+    </tr>`).join('')
+  }<tr style="background:var(--s2);border-top:2px solid var(--bd)">
+    <td colspan="2" style="padding:10px 14px;font-weight:800">الإجمالي</td>
+    <td class="num" style="font-weight:900;color:var(--goldtx)">${N(stkRows.reduce((s,r)=>s+r.wt,0))}</td>
+    <td class="num" style="font-weight:900;color:var(--gold);font-size:15px">${N(stockBal)}</td>
+    <td></td>
+  </tr></tbody></table>`:'<div class="empty" style="padding:16px"><span style="color:var(--muted)">لا يوجد استوك</span></div>';
+
+  // ── الفضة ──
+  const silvGrp={};
+  silvAll.forEach(s=>{if(!silvGrp[s.item])silvGrp[s.item]={name:s.item,wt:0,cnt:0};silvGrp[s.item].wt+=s.weight||0;silvGrp[s.item].cnt+=s.count||0;});
+  const silvRows=Object.values(silvGrp);
+  id('OVR-SIL').innerHTML=silvRows.length?`<table><thead><tr><th>الصنف</th><th>الوزن</th><th>العدد</th></tr></thead><tbody>${
+    silvRows.map(r=>`<tr><td style="font-weight:700;color:var(--sil,#8090A8)">${r.name}</td><td class="num">${N(r.wt)}</td><td class="num">${r.cnt?N3(r.cnt):'—'}</td></tr>`).join('')
+  }<tr style="background:var(--s2)"><td style="padding:10px 14px;font-weight:800">الإجمالي</td><td class="num" style="font-weight:900;color:var(--sil,#8090A8)">${N(silvBal)}</td><td></td></tr></tbody></table>`
+  :'<div class="empty" style="padding:16px"><span style="color:var(--muted)">لا يوجد فضة</span></div>';
+
+  // ── العباسية ──
+  id('OVR-ABB').innerHTML=`<table><tbody>
+    <tr><td>من الخزنة الرئيسية</td><td class="num" style="color:#E74C3C;font-weight:800">${N(abbMain)}</td></tr>
+    <tr><td>من الخزنة الفرعية</td><td class="num" style="color:#E74C3C">${N(abbSub)}</td></tr>
+    <tr style="border-top:2px solid var(--bd)"><td style="font-weight:800">الإجمالي الكلي</td><td class="num" style="color:#E74C3C;font-weight:900;font-size:16px">${N(totalAbb)}</td></tr>
+  </tbody></table>`;
+}
 const undoStack=[];
 const MAX_UNDO=10;
 

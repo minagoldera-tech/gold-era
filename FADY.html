@@ -1279,25 +1279,35 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <div class="fg" style="margin:0"><label>الصنف *</label>
           <select id="SIL-ITEM" onchange="onSilItemChange()">
             <option value="">— اختر —</option>
-            <option value="ربع كيلو فضة" data-w="250" data-k="1000">ربع كيلو فضة</option>
-            <option value="نصف كيلو فضة" data-w="500" data-k="1000">نصف كيلو فضة</option>
-            <option value="كيلو فضة"     data-w="1000" data-k="1000">كيلو فضة</option>
-            <option value="5 كيلو فضة"   data-w="5000" data-k="1000">5 كيلو فضة</option>
-            <option value="أخرى"          data-w="" data-k="1000">أخرى — أدخل يدوياً</option>
+            <option value="ربع كيلو فضة" data-w="250" data-k="1000">ربع كيلو فضة — 250g</option>
+            <option value="نصف كيلو فضة" data-w="500" data-k="1000">نصف كيلو فضة — 500g</option>
+            <option value="كيلو فضة"     data-w="1000" data-k="1000">كيلو فضة — 1000g</option>
+            <option value="5 كيلو فضة"   data-w="5000" data-k="1000">5 كيلو فضة — 5000g</option>
+            <option value="مخصص"          data-w="" data-k="">⚖️ وزن مخصص بعيار مخصص</option>
           </select>
         </div>
         <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="SIL-DATE"></div>
       </div>
-      <!-- وزن القطعة + عيار -->
-      <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid #8090A844">
-        <label style="color:var(--sil,#8090A8)">⚖️ وزن القطعة الواحدة (جرام) — قابل للتعديل</label>
-        <div class="fr" style="gap:8px;margin-top:6px">
-          <input type="number" id="SIL-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="calcSil()"
-            style="font-family:monospace;font-weight:800;color:var(--inf);background:var(--s2);border:1.5px solid var(--inf)">
-          <input type="number" id="SIL-KT" step="0.1" placeholder="مثال: 1000" oninput="calcSil()"
-            style="font-family:monospace;font-weight:700;font-size:15px;color:var(--inf);width:120px">
+
+      <!-- اسم مخصص — يظهر عند اختيار مخصص -->
+      <div id="SIL-CUSTOM-BOX" style="display:none;margin-top:12px;background:var(--s3);border-radius:10px;padding:14px;border:1px solid var(--inf)44">
+        <div style="font-size:11px;color:var(--inf);font-weight:700;margin-bottom:10px">⚖️ وزن مخصص بعيار مخصص</div>
+        <div class="fr" style="gap:10px">
+          <div class="fg" style="margin:0;flex:2">
+            <label>اسم الصنف</label>
+            <input type="text" id="SIL-CUSTOM-NAME" placeholder="مثال: سبيكة فضة خاصة...">
+          </div>
+          <div class="fg" style="margin:0;flex:1">
+            <label>العيار</label>
+            <input type="number" id="SIL-KT-CUSTOM" step="0.1" placeholder="1000" oninput="calcSil()"
+              style="font-family:monospace;font-weight:800;color:var(--inf);font-size:16px;text-align:center">
+          </div>
         </div>
-      </div>
+      </div><!-- end SIL-CUSTOM-BOX -->
+
+      <input type="hidden" id="SIL-KT" value="1000">
+      <input type="hidden" id="SIL-UNIT" value="">
+
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label><input type="number" id="SIL-WT" step="0.001" placeholder="0.000" oninput="calcSil()"></div>
         <div class="fg" style="margin:0"><label>العدد (محسوب)</label><input type="number" id="SIL-CNT" step="0.001" placeholder="0" oninput="calcSilFromCnt()" style="font-family:monospace"></div>
@@ -2980,7 +2990,7 @@ async function loadSilver(){
   `).join(''):'<div class="empty"><span class="eic">🥈</span><p>لا يوجد فضة</p></div>';
 }
 
-function openAddSilver(){id('SIL-DATE').value=today();id('SIL-WT').value='';id('SIL-CNT').value='';id('SIL-NOTE').value='';id('SIL-ITEM').value='';om('MOD-SIL');}
+function openAddSilver(){ id('SIL-DATE').value=today(); ['SIL-WT','SIL-CNT','SIL-NOTE','SIL-UNIT','SIL-1K','SIL-CUSTOM-NAME','SIL-KT-CUSTOM'].forEach(x=>{const el=id(x);if(el)el.value='';}); id('SIL-ITEM').value=''; id('SIL-KT').value='1000'; id('SIL-CUSTOM-BOX').style.display='none'; om('MOD-SIL'); }
 
 async function saveAddSilver(){
   const item=v('SIL-ITEM'),date=v('SIL-DATE'),wt=parseFloat(v('SIL-WT')),cnt=parseFloat(v('SIL-CNT'))||0,note=v('SIL-NOTE').trim();
@@ -3009,19 +3019,28 @@ async function log(type,from,to,item,weight,count,karat,w875,note,date){
 function onSilItemChange(){
   const sel=id('SIL-ITEM');
   const opt=sel.options[sel.selectedIndex];
-  const w=opt.dataset.w, k=opt.dataset.k||'1000';
-  id('SIL-KT').value=k;
-  if(w){ id('SIL-UNIT').value=w; }
-  else { id('SIL-UNIT').value=''; }
+  const w=opt.dataset.w, k=opt.dataset.k;
+  const isCustom=sel.value==='مخصص';
+  id('SIL-CUSTOM-BOX').style.display=isCustom?'block':'none';
+  // للأصناف العادية اعرض العيار في حقل مخفي
+  id('SIL-KT').value=k||'1000';
+  if(w) id('SIL-UNIT').value=w;
+  else  id('SIL-UNIT').value='';
   id('SIL-WT').value=''; id('SIL-CNT').value=''; id('SIL-1K').value='';
+}
+
+function getActiveSilKt(){
+  const isCustom=id('SIL-ITEM').value==='مخصص';
+  const kt=parseFloat(isCustom?id('SIL-KT-CUSTOM').value:id('SIL-KT').value)||1000;
+  return kt;
 }
 
 function calcSil(){
   const wt=parseFloat(id('SIL-WT').value)||0;
   const unit=parseFloat(id('SIL-UNIT').value)||0;
-  const kt=parseFloat(id('SIL-KT').value)||1000;
-  const w1k=wt*kt/1000;
-  id('SIL-1K').value=wt?+(w1k.toFixed(3)):'';
+  const kt=getActiveSilKt();
+  const w1k=+(wt*kt/1000).toFixed(3);
+  id('SIL-1K').value=wt?w1k:'';
   if(unit&&wt) id('SIL-CNT').value=+(wt/unit).toFixed(3);
 }
 
@@ -3033,21 +3052,18 @@ function calcSilFromCnt(){
   calcSil();
 }
 
-function openAddSilver(){
-  id('SIL-DATE').value=today();
-  ['SIL-WT','SIL-CNT','SIL-NOTE','SIL-UNIT','SIL-1K'].forEach(x=>id(x).value='');
-  id('SIL-ITEM').value=''; id('SIL-KT').value='1000';
-  om('MOD-SIL');
-}
 
 async function saveAddSilver(){
-  const item=v('SIL-ITEM'), date=v('SIL-DATE'), wt=parseFloat(v('SIL-WT'));
+  const selVal=v('SIL-ITEM');
+  const isCustom=selVal==='مخصص';
+  const customName=id('SIL-CUSTOM-NAME')?.value.trim();
+  const name=isCustom?(customName||'فضة مخصصة'):selVal;
+  const date=v('SIL-DATE'), wt=parseFloat(v('SIL-WT'));
   const cnt=parseFloat(v('SIL-CNT'))||0;
-  const kt=parseFloat(v('SIL-KT'))||1000;
+  const kt=getActiveSilKt();
   const note=v('SIL-NOTE').trim();
-  const name=item==='أخرى'?(note||'فضة مخصصة'):item;
   if(!name||!wt||!date){toast('er','أكمل البيانات المطلوبة');return;}
-  const w1000=wt*kt/1000;
+  const w1000=+(wt*kt/1000).toFixed(3);
   const sid='si'+Date.now();
   await DB.doc(`silver/${sid}`).set({
     id:sid, item:name, date, weight:wt, karat:kt, w1000, count:cnt,

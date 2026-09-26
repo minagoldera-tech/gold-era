@@ -331,14 +331,14 @@ body {
 /* ─── STAT CARDS ─────────────────────────── */
 .sgrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 14px; margin-bottom: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px; margin-bottom: 16px;
 }
 .sc {
   background: var(--s1);
   border: 1px solid var(--bd);
-  border-radius: 12px;
-  padding: 20px 20px 16px;
+  border-radius: 10px;
+  padding: 14px 16px 12px;
   position: relative; overflow: hidden;
   transition: border-color .2s, transform .15s;
 }
@@ -349,9 +349,9 @@ body {
   background: linear-gradient(90deg, transparent, var(--gold) 40%, var(--gold2) 60%, transparent);
   opacity: .35;
 }
-.slb { font-size: 10.5px; color: var(--muted); font-weight: 700; margin-bottom: 10px; letter-spacing: .4px; }
-.sv  { font-size: 26px; font-weight: 900; color: var(--goldtx); font-family: 'Cairo', monospace; direction: ltr; display: block; text-align: right; line-height: 1.1; }
-.su  { font-size: 10px; color: var(--muted); margin-top: 6px; }
+.slb { font-size: 10px; color: var(--muted); font-weight: 700; margin-bottom: 6px; letter-spacing: .3px; }
+.sv  { font-size: 20px; font-weight: 900; color: var(--goldtx); font-family: 'Cairo', monospace; direction: ltr; display: block; text-align: right; line-height: 1.1; }
+.su  { font-size: 9px; color: var(--muted); margin-top: 4px; }
 .sc.g .sv { color: var(--ok); }
 .sc.r .sv { color: var(--err); }
 .sc.b .sv { color: var(--inf); }
@@ -469,7 +469,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
 .drow:last-child { border-bottom: none; }
 .drow:nth-child(even) { background: #C8A84B05; }
 .drow:hover { background: #C8A84B0E; }
-.drow-4 { grid-template-columns: 2fr 1fr 1fr 1fr auto auto auto; }
+.drow-4 { grid-template-columns: 2fr 1.5fr 1fr 1.8fr auto auto auto; }
 .drow-3 { grid-template-columns: 2fr 1fr 1fr auto auto; }
 .drow-head {
   background: var(--s2); font-size: 10.5px; font-weight: 700;
@@ -927,7 +927,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="TAM-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>875 / 995 / 999.9</span><span>الحالة</span><span></span></div>
         <div id="TAM-TABLE"></div>
       </div>
     </div>
@@ -943,7 +943,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="DAM-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>875 / 995 / 999.9</span><span>الحالة</span><span></span></div>
         <div id="DAM-TABLE"></div>
       </div>
     </div>
@@ -959,7 +959,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="TAG-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>875 / 995 / 999.9</span><span>الحالة</span><span></span></div>
         <div id="TAG-TABLE"></div>
       </div>
 
@@ -984,7 +984,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div id="SIL-STATS" class="sgrid"></div>
       <div class="tc">
-        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>عيار 875</span><span>الحالة</span><span></span></div>
+        <div class="drow drow-head drow-4"><span>الصنف</span><span>الوزن</span><span>العيار</span><span>875 / 995 / 999.9</span><span>الحالة</span><span></span></div>
         <div id="SIL-TABLE"></div>
       </div>
     </div>
@@ -1226,16 +1226,40 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         </div>
         <div class="fg" style="margin:0"><label>Date *</label><input type="date" id="ADD-DATE"></div>
       </div>
+
       <!-- وزن القطعة — قابل للتعديل -->
       <div class="fg" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px;border:1px solid var(--gold)44">
         <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام)</label>
         <input type="number" id="ADD-UNIT" step="0.001" placeholder="وزن القطعة..." oninput="onAddWtChange()"
           style="font-family:monospace;font-weight:800;color:var(--gold);background:var(--s2);border:1.5px solid var(--gold);margin-top:6px">
       </div>
+
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>إجمالي الوزن (جرام) *</label><input type="number" id="ADD-WT" step="0.001" placeholder="0.000" oninput="onAddWtChange()"></div>
-        <div class="fg" style="margin:0"><label>Karat</label><input type="text" id="ADD-KT" readonly style="opacity:.7;font-family:monospace"></div>
+        <div class="fg" style="margin:0">
+          <label>العيار</label>
+          <input type="number" id="ADD-KT" step="0.1" placeholder="أدخل العيار..."
+            oninput="onAddWtChange()"
+            style="font-family:monospace;font-weight:700;color:var(--gold)">
+        </div>
       </div>
+
+      <!-- التحييف لـ 995 و999.9 -->
+      <div id="ADD-TAKHYEEF-BOX" style="display:none;background:#C8A84B12;border:1px solid var(--gold)33;border-radius:8px;padding:10px;margin-top:10px">
+        <div style="font-size:10px;color:var(--gold);font-weight:700;margin-bottom:6px">📊 التحييف — خصم نسبة من الوزن</div>
+        <div class="fr" style="gap:8px">
+          <div class="fg" style="margin:0">
+            <label>نسبة التحييف %</label>
+            <input type="number" id="ADD-TAKH-PCT" step="0.01" placeholder="مثال: 2.5" oninput="calcAddTakhyeef()"
+              style="font-family:monospace;color:var(--warn)">
+          </div>
+          <div class="fg" style="margin:0">
+            <label>الوزن بعد التحييف</label>
+            <input type="text" id="ADD-TAKH-WT" readonly style="opacity:.7;font-family:monospace;color:var(--warn)">
+          </div>
+        </div>
+      </div>
+
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>Count (auto)</label><input type="number" id="ADD-CNT" step="0.001" placeholder="0.000" oninput="onAddCntChange()" style="font-family:monospace"></div>
         <div class="fg" style="margin:0"><label>Weight @ K875</label><input type="text" id="ADD-875" readonly style="opacity:.7;font-family:monospace;color:var(--gold)"></div>
@@ -2429,7 +2453,10 @@ async function loadMain(){
   const tout=mainMovs.filter(m=>m.type==='منصرف').reduce((s,m)=>s+(m.w875||0),0);
   const tloan=mainMovs.filter(m=>m.type==='سلفة').reduce((s,m)=>s+(m.w875||0),0);
   id('MAIN-STATS').innerHTML=`
-    <div class="sc"><div class="slb">الرصيد الحالي</div><div class="sv">${N(bal)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc" style="border-right:3px solid var(--gold)">
+      <div class="slb">الرصيد الحالي</div>
+      ${wRow(bal)}
+    </div>
     <div class="sc g"><div class="slb">إجمالي الوارد</div><div class="sv">${N(tin)}</div><div class="su">جرام — 875</div></div>
     <div class="sc r"><div class="slb">إجمالي المنصرف</div><div class="sv">${N(tout)}</div><div class="su">جرام — 875</div></div>
     <div class="sc" style="border-right:3px solid var(--warn)"><div class="slb">📋 إجمالي السلف</div><div class="sv" style="color:var(--warn)">${N(tloan)}</div><div class="su">جرام — 875</div></div>
@@ -2569,9 +2596,12 @@ async function loadSub(){
   const tout=subMovs.filter(m=>m.type==='منصرف').reduce((s,m)=>s+(m.w875||0),0);
   const tabb=subMovs.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
   id('SUB-STATS').innerHTML=`
-    <div class="sc b"><div class="slb">الرصيد المتاح</div><div class="sv">${N(bal)}</div><div class="su">جرام — 875</div></div>
-    <div class="sc g"><div class="slb">وارد من الرئيسية</div><div class="sv">${N(tin)}</div><div class="su">جرام</div></div>
-    <div class="sc r"><div class="slb">محوَّل للأقسام</div><div class="sv">${N(tout)}</div><div class="su">جرام</div></div>
+    <div class="sc b" style="border-right:3px solid var(--inf)">
+      <div class="slb">الرصيد المتاح</div>
+      ${wRow(bal)}
+    </div>
+    <div class="sc g"><div class="slb">وارد من الرئيسية</div><div class="sv">${N(tin)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc r"><div class="slb">محوَّل للأقسام</div><div class="sv">${N(tout)}</div><div class="su">جرام — 875</div></div>
     ${tabb>0?`<div class="sc" style="border-right:3px solid var(--err)"><div class="slb">🏪 منصرف العباسية</div><div class="sv" style="color:var(--err)">${N(tabb)}</div><div class="su">جرام</div></div>`:''}
   `;
   renderSubTable();
@@ -2665,7 +2695,11 @@ async function loadDept(dept){
 
   const statsEl=id(`${dept.toUpperCase()}-STATS`);
   statsEl.innerHTML=`
-    <div class="sc" style="border-color:${dep.color}"><div class="slb">إجمالي الوزن</div><div class="sv" style="color:${dep.color}">${N(totalW)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc" style="border-right:3px solid ${dep.color}">
+      <div class="slb">إجمالي الوزن</div>
+      ${wRow(totalW)}
+      <div class="su" style="margin-top:6px">جرام</div>
+    </div>
     <div class="sc g"><div class="slb">DONE ✅</div><div class="sv">${doneC}</div><div class="su">صنف</div></div>
     <div class="sc b"><div class="slb">قيد العمل</div><div class="sv">${items.length-doneC}</div><div class="su">صنف</div></div>
   `;
@@ -2690,9 +2724,19 @@ async function loadDept(dept){
       <div>
         <span class="b bgld" style="font-size:12px;padding:4px 10px">${it.karat}</span>
       </div>
-      <div>
-        <div class="num dnum" style="font-size:16px;font-weight:900;color:var(--gold)">${N(it.w875)}</div>
-        <div style="font-size:10px;color:var(--muted)">عيار 875</div>
+      <div style="display:flex;gap:6px;direction:ltr;align-items:center">
+        <div style="background:var(--s3);border-radius:6px;padding:4px 10px;border:1px solid var(--gold)44;text-align:center">
+          <div class="num" style="font-size:13px;font-weight:900;color:var(--gold)">${N(it.w875)}</div>
+          <div style="font-size:8px;color:var(--gold);font-weight:700">875</div>
+        </div>
+        <div style="background:var(--s3);border-radius:6px;padding:4px 10px;border:1px solid var(--inf)44;text-align:center">
+          <div class="num" style="font-size:13px;font-weight:900;color:var(--inf)">${N(to995(it.w875))}</div>
+          <div style="font-size:8px;color:var(--inf);font-weight:700">995</div>
+        </div>
+        <div style="background:var(--s3);border-radius:6px;padding:4px 10px;border:1px solid var(--ok)44;text-align:center">
+          <div class="num" style="font-size:13px;font-weight:900;color:var(--ok)">${N(to999(it.w875))}</div>
+          <div style="font-size:8px;color:var(--ok);font-weight:700">999.9</div>
+        </div>
       </div>
       <div>${it.done?`<span class="done-badge">✅ DONE</span>`:`<button class="btn bxs bg2" onclick="markDone('${it.id}','${dept}')">DONE</button>`}</div>
       <div style="display:flex;gap:4px">
@@ -2715,50 +2759,76 @@ function openAddDept(dept){
   addDeptKey=dept;
   id('ADD-TITLE').textContent=`إضافة لقسم ${DEPTS[dept].name}`;
   id('ADD-DATE').value=today();
-  ['ADD-ITEM','ADD-WT','ADD-KT','ADD-CNT','ADD-875','ADD-NOTE'].forEach(x=>id(x).value='');
-  id('ADD-ITEM').value='';
+  ['ADD-ITEM','ADD-WT','ADD-CNT','ADD-875','ADD-NOTE','ADD-UNIT','ADD-KT','ADD-TAKH-PCT','ADD-TAKH-WT'].forEach(x=>{const el=id(x);if(el)el.value='';});
+  id('ADD-TAKHYEEF-BOX').style.display='none';
   om('MOD-ADD');
 }
 
 function onAddItemChange(){
   const cat=getCatByIdx('ADD-ITEM');
-  if(!cat){['ADD-KT','ADD-CNT','ADD-875','ADD-WT'].forEach(x=>document.getElementById(x).value='');id('ADD-UNIT').value='';return;}
+  if(!cat){['ADD-CNT','ADD-875','ADD-WT'].forEach(x=>document.getElementById(x).value='');id('ADD-KT').value='';id('ADD-UNIT').value='';hideTakhyeef();return;}
   document.getElementById('ADD-KT').value=cat.karat;
   id('ADD-UNIT').value=cat.w24;
   document.getElementById('ADD-WT').value='';document.getElementById('ADD-CNT').value='';document.getElementById('ADD-875').value='';
+  checkTakhyeef(cat.karat);
 }
 function onAddWtChange(){
   const cat=getCatByIdx('ADD-ITEM');
-  if(cat) document.getElementById('ADD-KT').value=cat.karat;
+  const kt=parseFloat(id('ADD-KT').value)||875;
   const wt=parseFloat(document.getElementById('ADD-WT').value)||0;
   const unit=parseFloat(id('ADD-UNIT').value)||cat?.w24||1;
-  const kt=parseFloat(document.getElementById('ADD-KT').value)||875;
   if(!wt){document.getElementById('ADD-CNT').value='';document.getElementById('ADD-875').value='';return;}
   document.getElementById('ADD-CNT').value=+(wt/unit).toFixed(3);
   document.getElementById('ADD-875').value=+(wt*kt/875).toFixed(3);
+  calcAddTakhyeef();
+  checkTakhyeef(kt);
 }
 function calcAddFromWt(wt,cat){} // legacy stub
 function onAddCntChange(){
   const cat=getCatByIdx('ADD-ITEM');
   const cnt=parseFloat(document.getElementById('ADD-CNT').value)||0;
   const unit=parseFloat(id('ADD-UNIT').value)||cat?.w24||1;
-  const kt=parseFloat(document.getElementById('ADD-KT').value)||875;
+  const kt=parseFloat(id('ADD-KT').value)||875;
   if(!cnt)return;
   const wt=cnt*unit;
   document.getElementById('ADD-WT').value=+(wt.toFixed(3));
   document.getElementById('ADD-875').value=+(wt*kt/875).toFixed(3);
+  calcAddTakhyeef();
+}
+
+function checkTakhyeef(kt){
+  const k=parseFloat(kt)||0;
+  const show=(k===995||k===999.9||k===999||k===1000);
+  id('ADD-TAKHYEEF-BOX').style.display=show?'block':'none';
+  if(!show) id('ADD-TAKH-PCT').value='';
+}
+function hideTakhyeef(){ id('ADD-TAKHYEEF-BOX').style.display='none'; }
+
+function calcAddTakhyeef(){
+  const pct=parseFloat(id('ADD-TAKH-PCT').value)||0;
+  const wt=parseFloat(document.getElementById('ADD-WT').value)||0;
+  const kt=parseFloat(id('ADD-KT').value)||875;
+  if(!pct||!wt){id('ADD-TAKH-WT').value='';return;}
+  const wtAfter=+(wt*(1-pct/100)).toFixed(3);
+  const w875After=+(wtAfter*kt/875).toFixed(3);
+  id('ADD-TAKH-WT').value=`${wtAfter} g (875: ${w875After})`;
+  // تحديث الـ 875 بعد التحييف
+  document.getElementById('ADD-875').value=w875After;
 }
 
 async function saveAddDept(){
   const cat=getCatByIdx('ADD-ITEM');
   const date=v('ADD-DATE'), wt=parseFloat(v('ADD-WT')), note=v('ADD-NOTE').trim();
   const cnt=parseFloat(document.getElementById('ADD-CNT').value)||0;
-  if(!cat||!wt){toast('er','Select item and enter weight');return;}
-  const item=cat.name, kt=cat.karat;
-  const w875=wt*kt/875;
+  const kt=parseFloat(id('ADD-KT').value)||875;
+  if(!wt){toast('er','Select item and enter weight');return;}
+  const item=cat?cat.name:(note||'وزن مخصص');
+  // استخدم الـ 875 بعد التحييف لو موجود
+  const w875Raw=wt*kt/875;
+  const w875Final=parseFloat(document.getElementById('ADD-875').value)||w875Raw;
   const did='di'+Date.now();
-  await DB.doc(`dept/${did}`).set({id:did,dept:addDeptKey,item,weight:wt,count:cnt,karat:kt,w875,done:false,by:CU.username,date,at:Date.now()});
-  await log('add','manual',addDeptKey,item,wt,cnt,kt,w875,note,date);
+  await DB.doc(`dept/${did}`).set({id:did,dept:addDeptKey,item,weight:wt,count:cnt,karat:kt,w875:+(w875Final.toFixed(3)),done:false,by:CU.username,date,at:Date.now()});
+  await log('add','manual',addDeptKey,item,wt,cnt,kt,w875Final,note,date);
   clearCache('dept');toast('ok','Item added successfully');cm('MOD-ADD');loadDept(addDeptKey);
 }
 
@@ -3654,6 +3724,29 @@ function calcBal(movs){
 
 // English numbers with comma separators
 // Force English (Latin) numerals always
+// دوال التحييف — تحويل من 875 لأي عيار
+function to995(w875){ return w875?+(w875*995/875).toFixed(3):0; }
+function to999(w875){ return w875?+(w875*999.9/875).toFixed(3):0; }
+function toKarat(w875,k){ return w875?+(w875*k/875).toFixed(3):0; }
+
+// عرض الأوزان الثلاثة — واضحة وكبيرة
+function wRow(w875){
+  return `<div style="display:flex;gap:12px;align-items:flex-end;direction:ltr;flex-wrap:wrap;margin-top:4px">
+    <div style="text-align:center;background:var(--s3);border-radius:8px;padding:8px 14px;border:1px solid var(--gold)44">
+      <div class="num" style="font-weight:900;color:var(--gold);font-size:18px">${N(w875)}</div>
+      <div style="font-size:10px;color:var(--gold);font-weight:700;margin-top:3px;letter-spacing:.5px">K 875</div>
+    </div>
+    <div style="text-align:center;background:var(--s3);border-radius:8px;padding:8px 14px;border:1px solid var(--inf)44">
+      <div class="num" style="font-weight:900;color:var(--inf);font-size:18px">${N(to995(w875))}</div>
+      <div style="font-size:10px;color:var(--inf);font-weight:700;margin-top:3px;letter-spacing:.5px">K 995</div>
+    </div>
+    <div style="text-align:center;background:var(--s3);border-radius:8px;padding:8px 14px;border:1px solid var(--ok)44">
+      <div class="num" style="font-weight:900;color:var(--ok);font-size:18px">${N(to999(w875))}</div>
+      <div style="font-size:10px;color:var(--ok);font-weight:700;margin-top:3px;letter-spacing:.5px">K 999.9</div>
+    </div>
+  </div>`;
+}
+
 const EN = new Intl.NumberFormat('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
 const EN3= new Intl.NumberFormat('en-US', {minimumFractionDigits:0, maximumFractionDigits:3});
 

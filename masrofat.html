@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en" dir="rtl">
 <head>
@@ -877,6 +876,27 @@ tr:hover .ed-btn{opacity:1}
   </div>
 </div>
 
+<!-- ═══ EDIT ENTRY MODAL ═══ -->
+<div id="modal-edit" onclick="if(event.target===this)closeEdit()" style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px">
+  <div class="modal">
+    <div class="modal-head"><h2>✎ تعديل القيد</h2><button class="modal-x" onclick="closeEdit()">✕</button></div>
+    <div class="modal-body">
+      <div class="m-sec" id="edit-dest">—</div>
+      <div class="m-form" style="flex-direction:column;gap:10px;align-items:stretch">
+        <div class="fg"><label>التاريخ</label><input type="date" id="edit-date"></div>
+        <div class="fg" id="edit-party-wrap" hidden><label>الجهة / المورد</label><input type="text" id="edit-party" placeholder="الجهة"></div>
+        <div class="fg"><label>البيان</label><input type="text" id="edit-desc" placeholder="البيان"></div>
+        <div class="fg"><label>المبلغ (ج.م)</label><input type="text" inputmode="decimal" id="edit-amt" placeholder="0" oninput="grp(this)"></div>
+      </div>
+      <div id="edit-err" style="color:var(--red);font-size:.75rem;min-height:16px;margin-top:8px"></div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn btn-gold" style="flex:1;padding:11px" onclick="saveEdit()">💾 حفظ التعديل</button>
+        <button class="btn btn-ghost" style="padding:11px 16px" onclick="closeEdit()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ REPORT OVERLAY ═══ -->
 <div id="report-overlay">
   <div class="rp-bar">
@@ -1317,7 +1337,7 @@ function renderCat(cat){
           <td>${esc(x.desc)}</td>
           <td class="num">${fmtN(x.amount)}</td>
           <td class="muted">${esc(x.by||'—')}</td>
-          <td style="text-align:left"><button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
+          <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
         </tr>`}).join('')}
       </tbody></table></div>
     <div class="tf"><span class="tf-lbl">الإجمالي:</span><span class="tf-val">${fmt(tot)}</span></div>`;
@@ -1335,12 +1355,53 @@ function renderKassa(){
       <td><span class="badge ${isIn?'in':'out'}">${isIn?'وارد':'منصرف'}</span></td>
       <td class="num" style="color:var(--${isIn?'green':'red'})">${isIn?'+':'−'}${fmtN(x.amount)}</td>
       <td class="muted">${esc(x.by||'—')}</td>
-      <td style="text-align:left"><button class="btn-del" onclick="delTwo(this,()=>delDoc('kassa','${d.id}'))">✕</button></td>
+      <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('kassa','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('kassa','${d.id}'))">✕</button></td>
     </tr>`}).join('');
 }
 async function delDoc(col,id){
   try{ await db.collection(col).doc(id).delete(); toast('تم الحذف'); }
   catch(e){ toast('خطأ في الحذف'); }
+}
+// ═══ تعديل قيد (مصروف / خزنة / عربون / معلم) ═══
+let editRef=null;
+function findDocData(coll,id){
+  let arr=[];
+  if(coll==='entries') arr=Object.values(catDocs).flat();
+  else if(coll==='kassa') arr=kassaDocs;
+  else if(coll==='advances') arr=advDocs;
+  const d=arr.find(x=>x.id===id); return d?d.data():null;
+}
+function openEdit(coll,id){
+  const x=findDocData(coll,id); if(!x){ toast('تعذّر فتح القيد'); return; }
+  editRef={coll,id,hasParty:x.party!=null};
+  $('edit-date').value=x.date||td();
+  $('edit-desc').value=x.desc||'';
+  $('edit-amt').value=gnum(x.amount||0);
+  const pw=$('edit-party-wrap');
+  if(x.party!=null){ pw.hidden=false; $('edit-party').value=x.party||''; } else { pw.hidden=true; }
+  let label='تعديل القيد';
+  if(coll==='kassa') label='حركة الخزنة — '+(x.type==='in'?'وارد':'منصرف');
+  else if(x.category&&CATS[x.category]) label=CATS[x.category].label+(x.deduct?' (استرداد/خصم)':'');
+  else if(coll==='advances') label='سلفة — '+empNameOf(x.empId,x.empName);
+  $('edit-dest').textContent=label;
+  $('edit-err').textContent='';
+  $('modal-edit').style.display='flex';
+  setTimeout(()=>{ const el=$('edit-desc'); if(el){el.focus();el.select&&el.select();} },60);
+}
+function closeEdit(){ $('modal-edit').style.display='none'; editRef=null; }
+async function saveEdit(){
+  if(!editRef||!db){ return; }
+  const date=$('edit-date').value||td();
+  const desc=$('edit-desc').value.trim();
+  const amount=numv($('edit-amt').value);
+  if(!amount||amount<=0){ $('edit-err').textContent='أدخل مبلغاً صحيحاً'; $('edit-amt').focus(); return; }
+  const patch={date,desc,amount};
+  if(editRef.hasParty){ patch.party=$('edit-party').value.trim()||desc; }
+  try{
+    await db.collection(editRef.coll).doc(editRef.id).update(patch);
+    toast('تم تعديل القيد ✓');
+    closeEdit();
+  }catch(e){ $('edit-err').textContent='خطأ: '+(e.message||e.code||''); }
 }
 // حذف صرف مرتب مع إلغاء قيد خصم السلفة المرتبط به (يرجّع رصيد السلفة)
 async function delPayroll(id){
@@ -1432,7 +1493,7 @@ function renderDeposit(){
           <td>${x.deduct?'<span class="badge in" style="margin-left:5px">خصم</span>':''}${esc(x.desc)||'—'}</td>
           <td class="num" style="color:var(--${x.deduct?'green':'text'})">${x.deduct?'−':''}${fmtN(x.amount)}</td>
           <td class="muted">${esc(x.by||'—')}</td>
-          <td style="text-align:left"><button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
+          <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
         </tr>`}).join('')}
       </tbody></table></div>`;
   renderDepStmt(); fillStmtLists();
@@ -1516,7 +1577,7 @@ function renderDepStmt(){
       <td><span class="badge ${r.deduct?'in':'out'}">${r.deduct?'خصم':'عربون'}</span></td><td>${esc(r.desc||'—')}</td>
       <td class="num" style="color:var(--${r.deduct?'green':'red'})">${r.deduct?'−':'+'}${fmtN(r.amount)}</td>
       <td class="num" style="font-weight:800;color:var(--gold-l)">${fmtN(run)}</td>
-      <td style="text-align:left"><button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${r.id}'))">✕</button></td></tr>`;}).join('');
+      <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${r.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${r.id}'))">✕</button></td></tr>`;}).join('');
   box.innerHTML=`<div class="stmt">
     ${stmtHead(['إجمالي العربون',added],['إجمالي المخصوم',deducted],['المتبقي',added-deducted])}
     <div class="stmt-form">
@@ -1559,7 +1620,7 @@ function renderMaster(){
       <td><span class="badge ${r.deduct?'in':'out'}">${r.deduct?'استرداد':'مصروف'}</span></td><td>${esc(r.desc||'—')}</td>
       <td class="num" style="color:var(--${r.deduct?'green':'red'})">${r.deduct?'−':'+'}${fmtN(r.amount)}</td>
       <td class="num" style="font-weight:800;color:var(--gold-l)">${fmtN(run)}</td>
-      <td style="text-align:left"><button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${r.id}'))">✕</button></td></tr>`;}).join('');
+      <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${r.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${r.id}'))">✕</button></td></tr>`;}).join('');
   box.innerHTML=`<div class="entry-block">
     <div class="entry-title">👤 مصاريف المعلم — صرف واسترداد</div>
     <div class="stmt">

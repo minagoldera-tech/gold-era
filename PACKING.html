@@ -590,14 +590,17 @@ function startPolling() {
   pollInterval = setInterval(async () => {
     if(!CU) return;
     try {
-      const [inv, stock, users] = await Promise.all([
+      const [inv, stock, stockSub, users] = await Promise.all([
         fbGet('/invoices'),
         fbGet('/stock/main'),
+        fbGet('/stock/sub'),
         fbGet('/users')
       ]);
       if(inv) DATA.invoices = Object.values(inv).sort((a,b)=>b.ts-a.ts);
       else DATA.invoices = [];
       if(stock) DATA.stock.main = Object.values(stock);
+      if(stockSub) DATA.stock.sub = Object.values(stockSub);
+      else DATA.stock.sub = [];
       if(users) DATA.users = Object.values(users);
       renderDash(); renderStock(); renderInv(); renderReport(); renderUsers();
       document.getElementById('last-upd').textContent = '🔄 آخر مزامنة: ' + new Date().toLocaleTimeString('ar-EG');

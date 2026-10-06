@@ -1046,11 +1046,15 @@ async function doReset() {
   setSync('sync');
   try {
     await fbDelete('/invoices');
-    const zero = DATA.stock.main.map(d=>{return {...d,w:0,o:0,d:0,mfg:0,re:0,r:0}});
-    for(let i=0;i<zero.length;i++) await fbSet('/stock/main/'+i, zero[i]);
+    // تصفير الخزنة الرئيسية
+    const zeroMain = DATA.stock.main.map(d=>{return {...d,w:0,o:0,d:0,mfg:0,re:0,r:0}});
+    for(let i=0;i<zeroMain.length;i++) await fbSet('/stock/main/'+i, zeroMain[i]);
+    // تصفير الخزنة الفرعية
+    const zeroSub = DATA.stock.sub.map(d=>{return {...d,imp:0,adl:0,kr:0}});
+    for(let i=0;i<zeroSub.length;i++) await fbSet('/stock/sub/'+i, zeroSub[i]);
     closeM('reset-modal');
     setSync('ok');
-    showToast('✓ تم تصفير جميع البيانات');
+    showToast('✓ تم تصفير جميع البيانات (الرئيسية والفرعية)');
     await syncNow();
   } catch(e) { setSync('err'); showToast('خطأ: '+e.message); }
 }

@@ -466,7 +466,7 @@ tbody tr:hover{background:var(--bg)}
             </select>
           </div>
           <div class="fg" style="margin:0"><label>الخزنة</label>
-            <select class="inp inp-sm" id="f-vault"><option value="sub">الفرعية</option><option value="main">الرئيسية</option></select>
+            <select class="inp inp-sm" id="f-vault" onchange="refreshRows()"><option value="sub">الفرعية</option><option value="main">الرئيسية</option></select>
           </div>
           <div class="fg" style="margin:0"><label>المورد</label>
             <select class="inp inp-sm" id="f-sup"><option>مستورد</option><option>محلي عادل</option><option>محلي كريم</option></select>
@@ -600,7 +600,7 @@ function startPolling() {
       else DATA.invoices = [];
       if(stock) DATA.stock.main = Object.values(stock);
       if(stockSub) DATA.stock.sub = Object.values(stockSub);
-      else DATA.stock.sub = [];
+      else DATA.stock.sub = DATA.stock.main.map(d=>({s:d.s,imp:0,adl:0,kr:0}));
       if(users) DATA.users = Object.values(users);
       renderDash(); renderStock(); renderInv(); renderReport(); renderUsers();
       document.getElementById('last-upd').textContent = '🔄 آخر مزامنة: ' + new Date().toLocaleTimeString('ar-EG');
@@ -624,7 +624,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     const sm = await fbGet('/stock/main');
     if(sm) DATA.stock.main = Object.values(sm);
     const ss = await fbGet('/stock/sub');
-    if(ss) DATA.stock.sub = Object.values(ss);
+    if(ss) {
+      DATA.stock.sub = Object.values(ss);
+      // تصحيح اسم الأونصة لو كان قديم
+      const oi = DATA.stock.sub.findIndex(d=>d.s==='أونصة');
+      if(oi>=0){ DATA.stock.sub[oi].s='أونصة 31.10 جرام'; await fbSet('/stock/sub/'+oi, DATA.stock.sub[oi]); }
+    }
+    else DATA.stock.sub = DATA.stock.main.map(d=>({s:d.s,imp:0,adl:0,kr:0}));
     const inv = await fbGet('/invoices');
     DATA.invoices = inv ? Object.values(inv).sort((a,b)=>b.ts-a.ts) : [];
     
@@ -677,7 +683,7 @@ async function seedDefaults() {
     {s:'2.5 جرام',imp:10525,adl:2530,kr:0},{s:'5 جرام',imp:6116,adl:2195,kr:0},
     {s:'10 جرام',imp:2509,adl:1488,kr:0},{s:'15.55 جرام',imp:1309,adl:210,kr:0},
     {s:'20 جرام',imp:1612,adl:320,kr:0},{s:'25 جرام',imp:515,adl:0,kr:0},
-    {s:'أونصة',imp:867,adl:610,kr:0},{s:'50 جرام',imp:487,adl:0,kr:0},
+    {s:'أونصة 31.10 جرام',imp:867,adl:610,kr:0},{s:'50 جرام',imp:487,adl:0,kr:0},
     {s:'100 جرام',imp:338,adl:0,kr:0},{s:'1 ك',imp:1419,adl:0,kr:0},
     {s:'0.5 ك',imp:1186,adl:0,kr:0},{s:'0.25 ك',imp:901,adl:327,kr:0},
   ];
@@ -702,6 +708,7 @@ async function syncNow() {
     DATA.invoices = inv ? Object.values(inv).sort((a,b)=>b.ts-a.ts) : [];
     if(stock) DATA.stock.main = Object.values(stock);
     if(stockSub) DATA.stock.sub = Object.values(stockSub);
+    else DATA.stock.sub = DATA.stock.main.map(d=>({s:d.s,imp:0,adl:0,kr:0}));
     if(users) DATA.users = Object.values(users);
     if(CU) { renderDash(); renderStock(); renderInv(); renderReport(); renderUsers(); }
     setSync('ok');
@@ -959,13 +966,26 @@ function openInv() {
   RID=0; addRow(); addRow(); updSum();
   document.getElementById('inv-modal').classList.add('on');
 }
+function getItemsList() {
+  const vault = document.getElementById('f-vault').value;
+  if(vault==='sub') return DATA.stock.sub.map(d=>d.s);
+  return ITEMS;
+}
 function addRow() {
   RID++;const id=RID;
-  const opts=ITEMS.map(i=>`<option>${i}</option>`).join('');
+  const opts=getItemsList().map(i=>`<option>${i}</option>`).join('');
   const div=document.createElement('div');
   div.className='item-row';div.id='r-'+id;
   div.innerHTML=`<select class="inp inp-sm" onchange="updSum()">${opts}</select><input class="inp inp-sm" type="number" min="1" placeholder="0" oninput="updSum()"><input class="inp inp-sm" type="text" placeholder="ملاحظة..."><button class="idel" onclick="document.getElementById('r-${id}').remove();updSum()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
   document.getElementById('inv-rows').appendChild(div);
+}
+function refreshRows() {
+  const opts=getItemsList().map(i=>`<option>${i}</option>`).join('');
+  document.querySelectorAll('#inv-rows .item-row select').forEach(sel=>{
+    const cur=sel.value;
+    sel.innerHTML=opts;
+    sel.value=cur;
+  });
 }
 function updSum() {
   const rows=document.querySelectorAll('#inv-rows .item-row');
@@ -1019,19 +1039,33 @@ async function saveInv() {
     const timeStr = formatTime();
     await fbSet('/invoices/'+key, {id:serial,date:arabicDate,time:timeStr,vault,type,supplier:sup,items,notes,by:CU.user,byName:CU.name,ts:Date.now()});
     const updates={};
-    items.forEach(({item,qty})=>{
-      const idx=DATA.stock.main.findIndex(d=>d.s===item||item.startsWith(d.s));
-      if(idx>=0){
-        const d={...DATA.stock.main[idx]};
-        if(type==='وارد'){d.w+=qty;d.r+=qty;}
-        else if(type==='منصرف'){d.o+=qty;d.r=Math.max(0,d.r-qty);}
-        else if(type==='إعادة التغليف'){d.re=(d.re||0)+qty;d.r=Math.max(0,d.r-qty);}
-        else if(type==='تالف يدوي'){d.d+=qty;d.r=Math.max(0,d.r-qty);}
-        else{d.mfg+=qty;d.r=Math.max(0,d.r-qty);}
-        updates[idx]=d;
-      }
-    });
-    for(const [idx,d] of Object.entries(updates)) await fbSet('/stock/main/'+idx, d);
+    if(vault==='sub'){
+      const supCol = sup==='مستورد'?'imp': sup==='محلي عادل'?'adl':'kr';
+      items.forEach(({item,qty})=>{
+        const idx=DATA.stock.sub.findIndex(d=>d.s===item);
+        if(idx>=0){
+          const d={...DATA.stock.sub[idx]};
+          if(type==='وارد'){d[supCol]=(d[supCol]||0)+qty;}
+          else{d[supCol]=Math.max(0,(d[supCol]||0)-qty);}
+          updates[idx]=d;
+        }
+      });
+      for(const [idx,d] of Object.entries(updates)) await fbSet('/stock/sub/'+idx, d);
+    } else {
+      items.forEach(({item,qty})=>{
+        const idx=DATA.stock.main.findIndex(d=>d.s===item||item.startsWith(d.s));
+        if(idx>=0){
+          const d={...DATA.stock.main[idx]};
+          if(type==='وارد'){d.w+=qty;d.r+=qty;}
+          else if(type==='منصرف'){d.o+=qty;d.r=Math.max(0,d.r-qty);}
+          else if(type==='إعادة التغليف'){d.re=(d.re||0)+qty;d.r=Math.max(0,d.r-qty);}
+          else if(type==='تالف يدوي'){d.d+=qty;d.r=Math.max(0,d.r-qty);}
+          else{d.mfg+=qty;d.r=Math.max(0,d.r-qty);}
+          updates[idx]=d;
+        }
+      });
+      for(const [idx,d] of Object.entries(updates)) await fbSet('/stock/main/'+idx, d);
+    }
     closeM('inv-modal');
     setSync('ok');
     showToast(`✓ تم حفظ الفاتورة ${serial}`);

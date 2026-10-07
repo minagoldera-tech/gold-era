@@ -257,7 +257,7 @@ tbody tr:hover{background:var(--bg)}
     <nav class="tb-nav">
       <button class="tni on" onclick="goto('dash',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-        لوحة التحكم
+        نظرة عامة
       </button>
       <button class="tni" onclick="goto('stock',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
@@ -304,7 +304,7 @@ tbody tr:hover{background:var(--bg)}
     <!-- DASHBOARD -->
     <div id="page-dash" class="page on">
       <div class="sec-hd" style="margin-bottom:20px">
-        <div><div class="sec-title">لوحة التحكم</div><div class="sec-sub" id="last-upd">—</div></div>
+        <div><div class="sec-title">نظرة عامة</div><div class="sec-sub" id="last-upd">—</div></div>
         <button class="btn btn-outline btn-sm" onclick="window.print()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           طباعة
@@ -323,6 +323,10 @@ tbody tr:hover{background:var(--bg)}
       <div class="tbl-wrap">
         <div class="tbl-hd"><span class="tbl-title">توزيع أرصدة جميع الأصناف</span><span class="badge b-grey" id="zero-badge">—</span></div>
         <div style="padding:16px 20px" id="all-prog"></div>
+      </div>
+      <div class="tbl-wrap" style="margin-top:20px">
+        <div class="tbl-hd"><span class="tbl-title">إجمالي كل صنف — رئيسية + فرعية</span></div>
+        <table><thead><tr><th>الصنف</th><th>الرئيسية</th><th>الفرعية</th><th>الإجمالي الكلي</th><th>الحالة</th></tr></thead><tbody id="dash-total-tbody"></tbody></table>
       </div>
     </div>
 
@@ -399,7 +403,7 @@ tbody tr:hover{background:var(--bg)}
           <span class="filter-count" id="icnt">—</span>
         </div>
         <table>
-          <thead><tr><th>رقم الفاتورة</th><th>التاريخ والوقت</th><th>الخزنة</th><th>النوع</th><th>المورد</th><th>الأصناف</th><th>الإجمالي</th><th>مدخل البيانات</th><th>ملاحظات</th></tr></thead>
+          <thead><tr><th>رقم الفاتورة</th><th>التاريخ والوقت</th><th>الخزنة</th><th>النوع</th><th>المورد</th><th>الأصناف</th><th>الإجمالي</th><th>مدخل البيانات</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
           <tbody id="i-tbody"></tbody>
         </table>
       </div>
@@ -427,7 +431,7 @@ tbody tr:hover{background:var(--bg)}
       <div class="card" style="margin-bottom:20px"><div class="card-title">أصناف تحتاج تجديد</div><div id="rpt-low"></div></div>
       <div class="tbl-wrap">
         <div class="tbl-hd"><span class="tbl-title">تفصيل كل صنف</span></div>
-        <table><thead><tr><th>الصنف</th><th>وارد</th><th>منصرف</th><th>إعادة تغليف</th><th>تالف يدوي</th><th>تالف مصنع</th><th>المتبقي</th><th>% الصرف</th><th>الحالة</th></tr></thead><tbody id="rpt-tbody"></tbody></table>
+        <table><thead><tr><th>الصنف</th><th>وارد</th><th>منصرف</th><th>إعادة تغليف</th><th>تالف</th><th>متبقي رئيسية</th><th>متبقي فرعية</th><th>الإجمالي الكلي</th><th>الحالة</th></tr></thead><tbody id="rpt-tbody"></tbody></table>
       </div>
     </div>
 
@@ -534,6 +538,24 @@ tbody tr:hover{background:var(--bg)}
 </div>
 
 <!-- RESET CONFIRM MODAL -->
+<div class="overlay" id="alert-modal">
+  <div class="modal confirm-modal">
+    <div class="modal-hd"><div><h2 id="alert-title">تنبيه</h2><p id="alert-sub"></p></div><button class="modal-x" onclick="alertResolve(false)">✕</button></div>
+    <div class="confirm-body">
+      <div class="confirm-icon" id="alert-icon">⚠️</div>
+      <div class="confirm-title" id="alert-msg"></div>
+      <div class="confirm-desc" id="alert-desc"></div>
+    </div>
+    <div class="modal-ft">
+      <div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" id="alert-cancel-btn" onclick="alertResolve(false)">إلغاء</button>
+        <button class="btn btn-red" id="alert-ok-btn" onclick="alertResolve(true)">متابعة</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="reset-modal">
   <div class="modal confirm-modal">
     <div class="modal-hd"><div><h2>تصفير البيانات</h2><p>هذا الإجراء لا يمكن التراجع عنه</p></div><button class="modal-x" onclick="closeM('reset-modal')">✕</button></div>
@@ -626,9 +648,30 @@ window.addEventListener('DOMContentLoaded', async () => {
     const ss = await fbGet('/stock/sub');
     if(ss) {
       DATA.stock.sub = Object.values(ss);
-      // تصحيح اسم الأونصة لو كان قديم
-      const oi = DATA.stock.sub.findIndex(d=>d.s==='أونصة');
-      if(oi>=0){ DATA.stock.sub[oi].s='أونصة 31.10 جرام'; await fbSet('/stock/sub/'+oi, DATA.stock.sub[oi]); }
+      // تنظيف nulls وتكرار في الرئيسية ثم إعادة الكتابة كاملة
+      {
+        const raw = DATA.stock.main.filter(d=>d&&d.s);
+        const merged={};
+        raw.forEach(d=>{ if(merged[d.s]){['w','o','d','mfg','re','r'].forEach(k=>merged[d.s][k]=(merged[d.s][k]||0)+(d[k]||0));} else merged[d.s]={...d}; });
+        const clean=Object.values(merged);
+        if(clean.length !== raw.length || raw.length !== DATA.stock.main.length){
+          await fbDelete('/stock/main');
+          for(let i=0;i<clean.length;i++) await fbSet('/stock/main/'+i, clean[i]);
+          DATA.stock.main=clean;
+        }
+      }
+      // تنظيف nulls وتكرار في الفرعية ثم إعادة الكتابة كاملة
+      {
+        const raw = DATA.stock.sub.filter(d=>d&&d.s);
+        const merged={};
+        raw.forEach(d=>{ if(merged[d.s]){['imp','adl','kr'].forEach(k=>merged[d.s][k]=(merged[d.s][k]||0)+(d[k]||0));} else merged[d.s]={...d}; });
+        const clean=Object.values(merged);
+        if(clean.length !== raw.length || raw.length !== DATA.stock.sub.length){
+          await fbDelete('/stock/sub');
+          for(let i=0;i<clean.length;i++) await fbSet('/stock/sub/'+i, clean[i]);
+          DATA.stock.sub=clean;
+        }
+      }
     }
     else DATA.stock.sub = DATA.stock.main.map(d=>({s:d.s,imp:0,adl:0,kr:0}));
     const inv = await fbGet('/invoices');
@@ -667,7 +710,7 @@ async function seedDefaults() {
     {s:'15.55 جرام',w:19168,o:816,d:3,mfg:0,re:0,r:18349},
     {s:'20 جرام',w:19050,o:1020,d:0,mfg:0,re:0,r:18030},
     {s:'25 جرام',w:21449,o:632,d:2,mfg:0,re:0,r:20815},
-    {s:'أونصة',w:19964,o:903,d:4,mfg:0,re:0,r:19057},
+    {s:'أونصة 31.10 جرام',w:19964,o:903,d:4,mfg:0,re:0,r:19057},
     {s:'50 جرام',w:18773,o:774,d:2,mfg:0,re:0,r:17997},
     {s:'100 جرام',w:5572,o:252,d:2,mfg:0,re:0,r:5318},
     {s:'1 ك',w:2787,o:19,d:0,mfg:0,re:0,r:2768},
@@ -775,15 +818,19 @@ function empty(c){return`<tr><td colspan="${c}" style="text-align:center;padding
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3000);}
 function totals(){
   const m=DATA.stock.main;
+  const subTotAll=DATA.stock.sub.reduce((a,d)=>a+(d.imp||0)+(d.adl||0)+(d.kr||0),0);
   return{
     totIn:m.reduce((a,d)=>a+d.w,0),totOut:m.reduce((a,d)=>a+d.o,0),
-    totDmg:m.reduce((a,d)=>a+(d.d||0)+(d.mfg||0),0),totBal:m.reduce((a,d)=>a+d.r,0),
+    totDmg:m.reduce((a,d)=>a+(d.d||0)+(d.mfg||0),0),
+    totBal:m.reduce((a,d)=>a+d.r,0)+subTotAll,
     totRe:m.reduce((a,d)=>a+(d.re||0),0),
+    subTotAll,
   };
 }
 
 /* ═══ DASHBOARD ═══ */
 function renderDash() {
+  const itemOrder=ITEMS.reduce((a,s,i)=>{a[s]=i;return a;},{});
   const{totIn,totOut,totDmg,totBal}=totals();
   document.getElementById('k-in').textContent=N(totIn);
   document.getElementById('k-out').textContent=N(totOut);
@@ -800,6 +847,20 @@ function renderDash() {
     srow('أصناف رصيد جيد',DATA.stock.main.filter(d=>status(d.r,d.w)==='good').length)+
     srow('أصناف نفدت',DATA.stock.main.filter(d=>status(d.r,d.w)==='zero').length);
   document.getElementById('zero-badge').textContent=DATA.stock.main.filter(d=>d.r===0).length+' صنف نفد';
+  const sortedMain=[...DATA.stock.main].sort((a,b)=>(itemOrder[a.s]??99)-(itemOrder[b.s]??99));
+  document.getElementById('dash-total-tbody').innerHTML=sortedMain.map(d=>{
+    const sub=DATA.stock.sub.find(s=>s.s===d.s)||{imp:0,adl:0,kr:0};
+    const subTot=(sub.imp||0)+(sub.adl||0)+(sub.kr||0);
+    const grand=d.r+subTot;
+    const st=grand===0?'zero':grand>2000?'good':grand>500?'warn':'low';
+    return`<tr>
+      <td class="td-p" style="font-weight:600">${d.s}</td>
+      <td class="td-m">${N(d.r)}</td>
+      <td class="td-m">${N(subTot)}</td>
+      <td class="td-m" style="font-weight:700;color:var(--gold)">${N(grand)}</td>
+      <td>${ST[st].b}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--t3)">لا توجد بيانات</td></tr>';
   const all=[...DATA.stock.main].filter(d=>d.w>0).sort((a,b)=>b.r-a.r);
   const mxa=all[0]?.r||1;
   document.getElementById('all-prog').innerHTML=all.map(d=>`<div class="prog-row"><div class="prog-lbl">${d.s}</div><div class="prog-track"><div class="prog-fill" style="width:${Math.max(d.r/mxa*100,.3)}%;background:${ST[status(d.r,d.w)].c}"></div></div><div class="prog-val">${N(d.r)}</div></div>`).join('');
@@ -823,6 +884,9 @@ function switchVault(v,el) {
 function renderStock() {
   const q=document.getElementById('sq').value.toLowerCase();
   const sf=document.getElementById('sst').value;
+  const itemOrder=ITEMS.reduce((a,s,i)=>{a[s]=i;return a;},{});
+  DATA.stock.main.sort((a,b)=>(itemOrder[a.s]??99)-(itemOrder[b.s]??99));
+  DATA.stock.sub.sort((a,b)=>(itemOrder[a.s]??99)-(itemOrder[b.s]??99));
   if(CV==='main') {
     const rows=DATA.stock.main.filter(d=>(!q||d.s.includes(q))&&(!sf||status(d.r,d.w)===sf));
     document.getElementById('scnt').textContent=rows.length+' صنف';
@@ -857,26 +921,26 @@ function renderStock() {
     const rows=DATA.stock.sub.filter(d=>!q||d.s.includes(q));
     document.getElementById('scnt').textContent=rows.length+' صنف';
     document.getElementById('stock-cards').innerHTML=rows.map(d=>{
-      const tot=d.imp+d.adl+d.kr;
-      const st=tot===0?'zero':tot>2000?'good':tot>500?'warn':'low';
+      const subTot=(d.imp||0)+(d.adl||0)+(d.kr||0);
+      const st=subTot===0?'zero':subTot>2000?'good':subTot>500?'warn':'low';
       return`<div class="stock-card ${st}">
         <div class="sc-name">${d.s}</div>
-        <div class="sc-val">${N(tot)}</div>
+        <div class="sc-val">${N(subTot)}</div>
         <div class="sc-lbl">إجمالي الفرعية · ${ST[st].label}</div>
-        <div class="sc-track"><div class="sc-fill" style="width:${tot>0?Math.min(100,tot/500):.3}%;background:${ST[st].c}"></div></div>
+        <div class="sc-track"><div class="sc-fill" style="width:${subTot>0?Math.min(100,subTot/500):.3}%;background:${ST[st].c}"></div></div>
         <div class="sc-meta">
-          <span><b>${N(d.imp)}</b>مستورد</span>
-          <span><b>${N(d.adl)}</b>عادل</span>
-          <span><b>${N(d.kr)}</b>كريم</span>
+          <span><b>${N(d.imp||0)}</b>مستورد</span>
+          <span><b>${d.adl||'—'}</b>عادل</span>
+          <span><b>${d.kr||'—'}</b>كريم</span>
         </div>
       </div>`;
     }).join('')||'<div style="color:var(--t3);text-align:center;padding:24px">لا توجد نتائج</div>';
     document.getElementById('s-thead').innerHTML='<th>الصنف</th><th>مستورد</th><th>عادل</th><th>كريم</th><th>الإجمالي</th><th>الحالة</th>';
     document.getElementById('s-tbody').innerHTML=rows.map(d=>{
-      const tot=d.imp+d.adl+d.kr;
-      const st=tot===0?'zero':tot>2000?'good':tot>500?'warn':'low';
-      return`<tr><td class="td-p">${d.s}</td><td class="td-m">${N(d.imp)}</td><td class="td-m">${d.adl||'—'}</td><td class="td-m">${d.kr||'—'}</td><td class="td-m td-p">${N(tot)}</td><td>${ST[st].b}</td></tr>`;
-    }).join('')||empty(6);
+      const subTot=(d.imp||0)+(d.adl||0)+(d.kr||0);
+      const st=subTot===0?'zero':subTot>2000?'good':subTot>500?'warn':'low';
+      return`<tr><td class="td-p">${d.s}</td><td class="td-m">${N(d.imp||0)}</td><td class="td-m">${d.adl||'—'}</td><td class="td-m">${d.kr||'—'}</td><td class="td-m td-p" style="font-weight:700">${N(subTot)}</td><td>${ST[st].b}</td></tr>`;
+    }).join('')||empty(5);
   }
 }
 
@@ -935,6 +999,7 @@ function renderInv() {
       <td class="td-m td-p">${N(tq)}</td>
       <td class="td-s"><div style="font-weight:600">${r.byName||r.by||'—'}</div><div style="font-size:11px;color:var(--t3)">${r.by||''}</div></td>
       <td class="td-s">${r.notes||'—'}</td>
+      <td>${CU&&CU.role==='admin'?`<div style="display:flex;gap:6px"><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openEditInv('${r.id}')">تعديل</button><button class="btn btn-sm" style="background:var(--red);color:#fff;border:none" onclick="event.stopPropagation();deleteInv('${r.id}')">حذف</button></div>`:'—'}</td>
     </tr>
     <tr id="inv-detail-${rid}" style="display:none">
       <td colspan="9" style="padding:0;background:var(--bg)">
@@ -1014,6 +1079,8 @@ function formatTime() {
 }
 async function saveInv() {
   if(!can('add'))return;
+  const modal=document.getElementById('inv-modal');
+  const isEdit=!!modal.dataset.editId;
   const serial=document.getElementById('f-ser').value.trim();
   const date=document.getElementById('f-dt').value;
   const type=document.getElementById('f-type').value;
@@ -1022,7 +1089,7 @@ async function saveInv() {
   const notes=document.getElementById('f-notes').value.trim();
   const errEl=document.getElementById('inv-err');
   if(!serial){errEl.textContent='يرجى إدخال رقم الفاتورة';return;}
-  if(DATA.invoices.find(i=>i.id===serial)){errEl.textContent='رقم الفاتورة موجود مسبقاً';return;}
+  if(!isEdit && DATA.invoices.find(i=>i.id===serial)){errEl.textContent='رقم الفاتورة موجود مسبقاً';return;}
   const items=[];
   document.querySelectorAll('#inv-rows .item-row').forEach(r=>{
     const item=r.querySelector('select').value;
@@ -1041,16 +1108,70 @@ async function saveInv() {
     const updates={};
     if(vault==='sub'){
       const supCol = sup==='مستورد'?'imp': sup==='محلي عادل'?'adl':'kr';
-      items.forEach(({item,qty})=>{
-        const idx=DATA.stock.sub.findIndex(d=>d.s===item);
-        if(idx>=0){
-          const d={...DATA.stock.sub[idx]};
-          if(type==='وارد'){d[supCol]=(d[supCol]||0)+qty;}
-          else{d[supCol]=Math.max(0,(d[supCol]||0)-qty);}
-          updates[idx]=d;
+      const mainUpdates={};
+      // لو وارد: نتحقق إن كل الأصناف موجودة في الرئيسية
+      if(type==='وارد'){
+        const missing=[];
+        items.forEach(({item})=>{
+          const midx=DATA.stock.main.findIndex(d=>d.s===item);
+          if(midx<0) missing.push(item);
+        });
+        if(missing.length>0){
+          const cont=await showAlert({
+            title:'صنف غير موجود في الرئيسية',
+            sub:'تنبيه مخزون',
+            icon:'📦',
+            msg:'الأصناف التالية غير موجودة في الخزنة الرئيسية:',
+            desc:missing.join(' · '),
+            okText:'متابعة بدون خصم',
+            cancelText:'إلغاء',
+            okRed:false
+          });
+          if(!cont){errEl.textContent='تم الإلغاء — أضف الأصناف للرئيسية أولاً';return;}
         }
+        // تحقق من كفاية الكمية في الرئيسية
+        const insufficient=[];
+        items.forEach(({item,qty})=>{
+          const midx=DATA.stock.main.findIndex(d=>d.s===item);
+          if(midx>=0 && DATA.stock.main[midx].r < qty)
+            insufficient.push(`${item} (متاح: ${N(DATA.stock.main[midx].r)} — مطلوب: ${N(qty)})`);
+        });
+        if(insufficient.length>0){
+          const cont=await showAlert({
+            title:'الكمية غير كافية',
+            sub:'تنبيه مخزون',
+            icon:'⚠️',
+            msg:'الكمية غير كافية في الخزنة الرئيسية:',
+            desc:insufficient.join('\n'),
+            okText:'متابعة على أي حال',
+            cancelText:'إلغاء',
+            okRed:true
+          });
+          if(!cont){errEl.textContent='تم الإلغاء — الكمية غير كافية في الرئيسية';return;}
+        }
+      }
+      items.forEach(({item,qty})=>{
+        // تحديث الخزنة الفرعية
+        const sidx=DATA.stock.sub.findIndex(d=>d.s===item);
+        if(sidx>=0){
+          const ds={...DATA.stock.sub[sidx]};
+          ds[supCol]=(ds[supCol]||0)+(type==='وارد'?qty:-qty);
+          if(ds[supCol]<0) ds[supCol]=0;
+          updates[sidx]=ds;
+        }
+        // وارد فرعية = تحويل من الرئيسية (ينقص متبقي الرئيسية)
+        if(type==='وارد'){
+          const midx=DATA.stock.main.findIndex(d=>d.s===item);
+          if(midx>=0){
+            const dm={...DATA.stock.main[midx]};
+            dm.r=Math.max(0,dm.r-qty);
+            mainUpdates[midx]=dm;
+          }
+        }
+        // منصرف من الفرعية = ينقص من الفرعية فقط (لا يؤثر على الرئيسية)
       });
       for(const [idx,d] of Object.entries(updates)) await fbSet('/stock/sub/'+idx, d);
+      for(const [idx,d] of Object.entries(mainUpdates)) await fbSet('/stock/main/'+idx, d);
     } else {
       items.forEach(({item,qty})=>{
         const idx=DATA.stock.main.findIndex(d=>d.s===item||item.startsWith(d.s));
@@ -1076,6 +1197,113 @@ async function saveInv() {
   }
 }
 
+/* ═══ EDIT / DELETE INVOICE (admin only) ═══ */
+function openEditInv(id) {
+  if(!CU||CU.role!=='admin'){showToast('يحتاج صلاحية مدير');return;}
+  const inv=DATA.invoices.find(i=>i.id===id);
+  if(!inv) return;
+  // افتح موديل الفاتورة وحمّل بياناتها
+  document.getElementById('f-ser').value=inv.id;
+  document.getElementById('f-ser').disabled=true; // لا تغير رقم الفاتورة
+  document.getElementById('f-dt').value='';
+  document.getElementById('f-type').value=inv.type;
+  document.getElementById('f-vault').value=inv.vault;
+  document.getElementById('f-sup').value=inv.supplier||'مستورد';
+  document.getElementById('f-notes').value=inv.notes||'';
+  document.getElementById('inv-err').textContent='';
+  document.getElementById('inv-rows').innerHTML='';
+  RID=0;
+  refreshRows();
+  inv.items.forEach(({item,qty,note})=>{
+    RID++;const id2=RID;
+    const opts=getItemsList().map(i=>`<option${i===item?' selected':''}>${i}</option>`).join('');
+    const div=document.createElement('div');
+    div.className='item-row';div.id='r-'+id2;
+    div.innerHTML=`<select class="inp inp-sm" onchange="updSum()">${opts}</select><input class="inp inp-sm" type="number" min="1" value="${qty}" oninput="updSum()"><input class="inp inp-sm" type="text" placeholder="ملاحظة..." value="${note||''}"><button class="idel" onclick="document.getElementById('r-${id2}').remove();updSum()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+    document.getElementById('inv-rows').appendChild(div);
+  });
+  updSum();
+  // ضع علامة إن ده تعديل مش إضافة
+  document.getElementById('inv-modal').dataset.editId=id;
+  document.getElementById('inv-modal').classList.add('on');
+}
+
+async function deleteInv(id) {
+  if(!CU||CU.role!=='admin'){showToast('يحتاج صلاحية مدير');return;}
+  if(!confirm(`هل تريد حذف الفاتورة ${id}؟\nسيتم عكس تأثيرها على المخزون تلقائياً.`)) return;
+  const inv=DATA.invoices.find(i=>i.id===id);
+  if(!inv){showToast('الفاتورة غير موجودة');return;}
+  setSync('sync');
+  try {
+    const {vault,type,supplier,items}=inv;
+    const subUpdates={};
+    const mainUpdates={};
+
+    if(vault==='sub'){
+      const supCol=supplier==='مستورد'?'imp':supplier==='محلي عادل'?'adl':'kr';
+      items.forEach(({item,qty})=>{
+        // عكس الفرعية
+        const sidx=DATA.stock.sub.findIndex(d=>d.s===item);
+        if(sidx>=0){
+          const ds={...DATA.stock.sub[sidx]};
+          if(type==='وارد') ds[supCol]=Math.max(0,(ds[supCol]||0)-qty);
+          else ds[supCol]=(ds[supCol]||0)+qty;
+          subUpdates[sidx]=ds;
+        }
+        // عكس الرئيسية (وارد فرعية كان خصم من الرئيسية)
+        if(type==='وارد'){
+          const midx=DATA.stock.main.findIndex(d=>d.s===item);
+          if(midx>=0){
+            const dm={...DATA.stock.main[midx]};
+            dm.r=(dm.r||0)+qty;
+            mainUpdates[midx]=dm;
+          }
+        }
+      });
+    } else {
+      items.forEach(({item,qty})=>{
+        const midx=DATA.stock.main.findIndex(d=>d.s===item||item.startsWith(d.s));
+        if(midx>=0){
+          const dm={...DATA.stock.main[midx]};
+          if(type==='وارد'){dm.w=Math.max(0,dm.w-qty);dm.r=Math.max(0,dm.r-qty);}
+          else if(type==='منصرف'){dm.o=Math.max(0,dm.o-qty);dm.r=(dm.r||0)+qty;}
+          else if(type==='إعادة التغليف'){dm.re=Math.max(0,(dm.re||0)-qty);dm.r=(dm.r||0)+qty;}
+          else if(type==='تالف يدوي'){dm.d=Math.max(0,(dm.d||0)-qty);dm.r=(dm.r||0)+qty;}
+          else{dm.mfg=Math.max(0,(dm.mfg||0)-qty);dm.r=(dm.r||0)+qty;}
+          mainUpdates[midx]=dm;
+        }
+      });
+    }
+
+    for(const [idx,d] of Object.entries(subUpdates)) await fbSet('/stock/sub/'+idx,d);
+    for(const [idx,d] of Object.entries(mainUpdates)) await fbSet('/stock/main/'+idx,d);
+    const key=id.replace(/[^a-zA-Z0-9]/g,'_');
+    await fbDelete('/invoices/'+key);
+    showToast('✓ تم حذف الفاتورة '+id+' وعكس تأثيرها على المخزون');
+    setSync('ok');
+    await syncNow();
+  } catch(e){ setSync('err'); showToast('خطأ: '+e.message); }
+}
+
+/* ═══ CUSTOM ALERT ═══ */
+let _alertResolve=null;
+function showAlert({title='تنبيه',sub='',icon='⚠️',msg='',desc='',okText='متابعة',cancelText='إلغاء',okRed=true}={}){
+  document.getElementById('alert-title').textContent=title;
+  document.getElementById('alert-sub').textContent=sub;
+  document.getElementById('alert-icon').textContent=icon;
+  document.getElementById('alert-msg').textContent=msg;
+  document.getElementById('alert-desc').textContent=desc;
+  document.getElementById('alert-ok-btn').textContent=okText;
+  document.getElementById('alert-ok-btn').className='btn '+(okRed?'btn-red':'btn-primary');
+  document.getElementById('alert-cancel-btn').textContent=cancelText;
+  document.getElementById('alert-modal').classList.add('on');
+  return new Promise(res=>{ _alertResolve=res; });
+}
+function alertResolve(val){
+  document.getElementById('alert-modal').classList.remove('on');
+  if(_alertResolve){ _alertResolve(val); _alertResolve=null; }
+}
+
 /* ═══ RESET ═══ */
 function openReset() { document.getElementById('reset-modal').classList.add('on'); }
 async function doReset() {
@@ -1098,29 +1326,50 @@ async function doReset() {
 
 /* ═══ REPORT ═══ */
 function renderReport() {
-  const{totIn,totOut,totDmg,totBal,totRe}=totals();
+  const{totIn,totOut,totDmg,totBal,totRe,subTotAll}=totals();
+  const subImp=DATA.stock.sub.reduce((a,d)=>a+(d.imp||0),0);
+  const subAdl=DATA.stock.sub.reduce((a,d)=>a+(d.adl||0),0);
+  const subKr=DATA.stock.sub.reduce((a,d)=>a+(d.kr||0),0);
+  const subAll=subImp+subAdl+subKr;
+  const grandBal=totBal;// totBal already includes sub from totals()
   document.getElementById('rpt-main').innerHTML=
-    srow('إجمالي الوارد',N(totIn))+srow('إجمالي المنصرف',N(totOut))+
-    srow('إعادة التغليف',N(totRe))+srow('إجمالي التالف',N(totDmg))+
-    srow('إجمالي المتبقي',N(totBal))+srow('نسبة الصرف',PCT(totOut,totIn)+'%');
-  const subImp=DATA.stock.sub.reduce((a,d)=>a+d.imp,0);
-  const subAdl=DATA.stock.sub.reduce((a,d)=>a+d.adl,0);
+    srow('إجمالي الوارد (رئيسية)',N(totIn))+
+    srow('إجمالي المنصرف',N(totOut))+
+    srow('إعادة التغليف',N(totRe))+
+    srow('إجمالي التالف',N(totDmg))+
+    srow('متبقي الرئيسية',N(totBal-subAll))+
+    srow('متبقي الفرعية',N(subAll))+
+    srow('الإجمالي الكلي المتبقي',N(grandBal))+
+    srow('نسبة الصرف',PCT(totOut,totIn)+'%');
   document.getElementById('rpt-sub').innerHTML=
-    srow('مستورد — متبقي',N(subImp))+srow('عادل — متبقي',N(subAdl))+
-    srow('كريم — متبقي','0')+srow('إجمالي الفرعية',N(subImp+subAdl));
-  const low=DATA.stock.main.filter(d=>['low','zero'].includes(status(d.r,d.w)));
+    srow('مستورد',N(subImp))+
+    srow('عادل',N(subAdl))+
+    srow('كريم',N(subKr))+
+    srow('إجمالي الفرعية',N(subAll));
+  // أصناف تحتاج تجديد (رئيسية + فرعية)
+  const ioMap=ITEMS.reduce((a,s,i)=>{a[s]=i;return a;},{});
+  const allItems=ITEMS.map(s=>{
+    const m=DATA.stock.main.find(d=>d.s===s)||{s,w:0,o:0,d:0,mfg:0,re:0,r:0};
+    const sub=DATA.stock.sub.find(d=>d.s===s)||{imp:0,adl:0,kr:0};
+    const subTot=(sub.imp||0)+(sub.adl||0)+(sub.kr||0);
+    const grand=m.r+subTot;
+    return{...m,subTot,grand};
+  });
+  const low=allItems.filter(d=>d.grand===0||d.grand<500);
   document.getElementById('rpt-low').innerHTML=low.length
-    ?low.map(d=>`<div class="stat-row"><span class="stat-key">${d.s}</span><span>${ST[status(d.r,d.w)].b} <b style="margin-right:6px">${N(d.r)}</b></span></div>`).join('')
+    ?low.map(d=>{const st=d.grand===0?'zero':'low';return`<div class="stat-row"><span class="stat-key">${d.s}</span><span>${ST[st].b} <b style="margin-right:6px">${N(d.grand)}</b></span></div>`;}).join('')
     :'<div style="text-align:center;color:var(--t3);padding:16px;font-size:13px">✓ لا توجد أصناف تحتاج تجديداً</div>';
-  document.getElementById('rpt-tbody').innerHTML=DATA.stock.main.filter(d=>d.w>0||d.r>0).map(d=>`<tr>
-    <td class="td-p">${d.s}</td><td class="td-m">${N(d.w)}</td>
+  // جدول تفصيل كل صنف (رئيسية + فرعية)
+  document.getElementById('rpt-tbody').innerHTML=allItems.map(d=>`<tr>
+    <td class="td-p">${d.s}</td>
+    <td class="td-m">${N(d.w)}</td>
     <td class="td-m" style="color:var(--blue)">${N(d.o)}</td>
     <td class="td-m" style="color:var(--purple)">${N(d.re||0)}</td>
-    <td class="td-m" style="color:var(--red)">${d.d||0}</td>
-    <td class="td-m" style="color:var(--orange)">${d.mfg||0}</td>
-    <td class="td-m td-p">${N(d.r)}</td>
-    <td class="td-m">${PCT(d.o,d.w)}%</td>
-    <td>${ST[status(d.r,d.w)].b}</td>
+    <td class="td-m" style="color:var(--red)">${(d.d||0)+(d.mfg||0)}</td>
+    <td class="td-m">${N(d.r)}</td>
+    <td class="td-m" style="color:var(--green)">${N(d.subTot)}</td>
+    <td class="td-m td-p" style="font-weight:700;color:var(--gold)">${N(d.grand)}</td>
+    <td>${ST[d.grand===0?'zero':d.grand>2000?'good':d.grand>500?'warn':'low'].b}</td>
   </tr>`).join('');
 }
 
@@ -1178,7 +1427,13 @@ function exportCSV(type) {
 }
 
 /* ═══ MODAL ═══ */
-function closeM(id){document.getElementById(id).classList.remove('on');}
+function closeM(id){
+  document.getElementById(id).classList.remove('on');
+  if(id==='inv-modal'){
+    document.getElementById('inv-modal').dataset.editId='';
+    document.getElementById('f-ser').disabled=false;
+  }
+}
 document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');}));
 });

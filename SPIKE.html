@@ -1155,17 +1155,58 @@ tbody tr.row-sel td{background:#FFF8E7;}
 </main>
 </div><!-- end lay -->
 
-<!-- نافذة: تضيف البيانات وارد ولا منصرف -->
-<div id="dest-modal" style="display:none;position:fixed;inset:0;background:rgba(28,26,22,.6);z-index:9500;align-items:center;justify-content:center;padding:16px;font-family:Cairo,sans-serif">
-  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.25)">
-    <div style="font-size:18px;font-weight:700;color:#1A1916;margin-bottom:6px">📂 تضيف البيانات دي فين؟</div>
-    <div id="dest-sum" style="font-size:13px;color:#5C5849;margin-bottom:16px;line-height:1.8;background:#F5F4F1;border-radius:9px;padding:10px 12px"></div>
-    <div style="display:grid;gap:9px">
-      <button onclick="destPick('مستلم')" style="padding:13px;border:none;border-radius:10px;background:#C8860A;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📥 وارد (مستلم)</button>
-      <button onclick="destPick('منصرف')" style="padding:13px;border:none;border-radius:10px;background:#B83232;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📤 منصرف</button>
-      <button onclick="destPick('مرتجع')" style="padding:11px;border:1px solid #C8C4BC;border-radius:10px;background:#F5F4F1;color:#5C5849;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">↩️ مرتجع</button>
+<!-- نافذة: معاينة البيانات قبل الإضافة + اختيار وارد / منصرف -->
+<style>
+#dest-modal .pv-card{background:#fff;border-radius:16px;width:100%;max-width:1050px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.25);overflow:hidden}
+#dest-modal .pv-hd{padding:18px 20px 12px;border-bottom:1px solid #E8E5DF}
+#dest-modal .pv-body{flex:1;overflow:auto;padding:0 20px}
+#dest-modal .pv-ft{padding:12px 20px;border-top:1px solid #E8E5DF;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;background:#FAFAF9}
+#dest-modal table{width:100%;border-collapse:collapse;font-size:13px}
+#dest-modal th{position:sticky;top:0;background:#FAFAF9;padding:8px 6px;text-align:right;color:#9C9488;font-size:11px;border-bottom:2px solid #E8E5DF;z-index:1}
+#dest-modal td{padding:5px 6px;border-bottom:1px solid #F0EEEA}
+#dest-modal tr.pv-off td{opacity:.4;text-decoration:line-through}
+#dest-modal .pv-in{width:100%;border:1px solid #E8E5DF;border-radius:6px;padding:5px 7px;font-size:12px;font-family:Cairo,sans-serif;background:#fff;outline:none}
+#dest-modal .pv-in:focus{border-color:#C8860A}
+#dest-modal .pv-t{flex:1;min-width:120px;padding:11px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;border:2px solid #E8E5DF;background:#fff;color:#5C5849}
+#dest-modal .pv-t.on-in{border-color:#C8860A;background:#C8860A;color:#fff}
+#dest-modal .pv-t.on-out{border-color:#B83232;background:#B83232;color:#fff}
+#dest-modal .pv-t.on-ret{border-color:#5C5849;background:#5C5849;color:#fff}
+#dest-modal .pv-sum{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#5C5849;margin-top:10px}
+#dest-modal .pv-sum b{color:#1A1916}
+#pv-ok{padding:11px 20px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;background:#2D7A4F;color:#fff}
+#pv-ok:disabled{background:#C8C4BC;cursor:not-allowed}
+</style>
+<div id="dest-modal" style="display:none;position:fixed;inset:0;background:rgba(28,26,22,.6);z-index:9500;align-items:center;justify-content:center;padding:12px;font-family:Cairo,sans-serif">
+  <div class="pv-card">
+    <div class="pv-hd">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <div style="font-size:18px;font-weight:700;color:#1A1916" id="pv-title">📋 معاينة البيانات قبل الإضافة</div>
+        <button onclick="destClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9C9488">✕</button>
+      </div>
+      <div style="font-size:12px;color:#9C9488;margin-top:2px">راجع الصفوف — تقدر تعدّل أي خانة أو تشيل علامة ✓ من صف مش عايزه — وبعدين اختار تضيفهم فين واضغط موافقة</div>
+      <div style="font-size:13px;font-weight:700;color:#1A1916;margin:12px 0 7px">١. تضيف البيانات دي فين؟</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="pv-t" id="pv-t-in" onclick="pvSetType('مستلم')">📥 وارد (مستلم)</button>
+        <button class="pv-t" id="pv-t-out" onclick="pvSetType('منصرف')">📤 منصرف</button>
+        <button class="pv-t" id="pv-t-ret" onclick="pvSetType('مرتجع')">↩️ مرتجع</button>
+      </div>
+      <div class="pv-sum" id="pv-sum"></div>
     </div>
-    <button onclick="destClose()" style="width:100%;margin-top:12px;padding:9px;border:none;background:none;color:#9C9488;font-size:13px;cursor:pointer;font-family:Cairo,sans-serif">إلغاء — أراجع الجدول الأول</button>
+    <div class="pv-body">
+      <table>
+        <thead><tr>
+          <th style="width:30px"><input type="checkbox" id="pv-all" checked onchange="pvAll(this.checked)" title="تحديد الكل"></th>
+          <th style="width:34px">#</th><th style="width:140px">التاريخ</th><th>البيان</th>
+          <th style="width:110px">الوزن القائم</th><th style="width:80px">العيار</th>
+          <th style="width:105px;color:#C8860A">وزن 875 ✦</th><th style="width:95px">وزن 995</th><th style="width:40px"></th>
+        </tr></thead>
+        <tbody id="pv-tb"></tbody>
+      </table>
+    </div>
+    <div class="pv-ft">
+      <button onclick="destClose()" class="btn bgh">إلغاء</button>
+      <button id="pv-ok" onclick="pvApprove()" disabled>اختار وارد أو منصرف الأول</button>
+    </div>
   </div>
 </div>
 
@@ -2456,33 +2497,92 @@ async function manualSync(){
 
 
 // ===== استيراد موحد: يسأل وارد ولا مرتجع ولا منصرف =====
-var _destPending=null;
-function _rowW8(r){return toNum(r.w875!==undefined?r.w875:r.w21);}
+var _pv=null; // {rows, source, onDone, type, show}
 function askDest(rows,source,onDone){
-  rows=(rows||[]).filter(function(r){return toNum(r.weight)>0;});
+  rows=(rows||[]).filter(function(r){return toNum(r.weight)>0;}).map(function(r){
+    var w=toNum(r.weight),k=toNum(r.karat)||875;
+    return {date:r.date||today(),client:(r.client||'')+'',weight:w,karat:k,
+      w875:toNum(r.w875!==undefined?r.w875:r.w21)||W8(w,k),w995:toNum(r.w995)||w*k/999.5,pcs:toNum(r.pcs)||0,inc:true};
+  });
   if(!rows.length){toast('⚠️ لا توجد بيانات للإضافة','err');return;}
-  _destPending={rows:rows,source:source,onDone:onDone};
-  var tw=0,t8=0;
-  for(var i=0;i<rows.length;i++){tw+=toNum(rows[i].weight);t8+=_rowW8(rows[i])||W8(toNum(rows[i].weight),toNum(rows[i].karat)||875);}
-  el('dest-sum').innerHTML='<b>'+N(rows.length,0)+'</b> سجل من '+esc(source)+' — الوزن القائم <b>'+N(tw)+'</b> جم — وزن 875 <b style="color:#C8860A">'+N(t8)+'</b> جم';
+  _pv={rows:rows,source:source,onDone:onDone,type:null,show:300};
+  txt('pv-title','📋 معاينة البيانات قبل الإضافة — من '+source);
+  el('pv-all').checked=true;
+  pvSetType(null);
+  pvRender();
   el('dest-modal').style.display='flex';
 }
-function destClose(){el('dest-modal').style.display='none';_destPending=null;}
-function destPick(type){
-  var P=_destPending;if(!P)return;
-  el('dest-modal').style.display='none';_destPending=null;
-  var isOut=type==='منصرف',now=Date.now(),added=0,base=now*10;
+function pvRow(i){
+  var r=_pv.rows[i];
+  return '<tr id="pv-r'+i+'" class="'+(r.inc?'':'pv-off')+'">'
+    +'<td><input type="checkbox" '+(r.inc?'checked':'')+' onchange="pvInc('+i+',this.checked)"></td>'
+    +'<td style="color:#9C9488;font-size:11px">'+(i+1)+'</td>'
+    +'<td><input class="pv-in" type="date" value="'+esc(r.date)+'" onchange="pvSet('+i+',\'date\',this.value)"></td>'
+    +'<td><input class="pv-in" type="text" value="'+esc(r.client)+'" onchange="pvSet('+i+',\'client\',this.value)" style="font-weight:600"></td>'
+    +'<td><input class="pv-in" type="number" step="0.001" value="'+r.weight+'" onchange="pvSet('+i+',\'weight\',this.value)"></td>'
+    +'<td><input class="pv-in" type="number" step="0.1" value="'+r.karat+'" onchange="pvSet('+i+',\'karat\',this.value)"></td>'
+    +'<td id="pv-8-'+i+'" style="color:#C8860A;font-weight:700">'+N(r.w875)+'</td>'
+    +'<td id="pv-9-'+i+'">'+N(r.w995)+'</td>'
+    +'<td><button onclick="pvDel('+i+')" title="حذف الصف" style="background:#FCEAEA;border:1px solid #f0c4c4;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;color:#B83232">🗑</button></td>'
+    +'</tr>';
+}
+function pvRender(){
+  var h=[],n=_pv.rows.length,lim=Math.min(n,_pv.show);
+  for(var i=0;i<lim;i++)h.push(pvRow(i));
+  if(lim<n)h.push('<tr><td colspan="9" style="text-align:center;padding:12px"><span style="font-size:12px;color:#9C9488;margin-left:8px">معروض '+N(lim,0)+' من '+N(n,0)+' — الباقي هيتضاف برضه</span><button class="btn bgh bsm" onclick="_pv.show+=500;pvRender()">⬇️ عرض المزيد</button></td></tr>');
+  if(!n)h.push('<tr><td colspan="9" style="text-align:center;padding:24px;color:#9C9488">مفيش صفوف</td></tr>');
+  el('pv-tb').innerHTML=h.join('');
+  pvTotals();
+}
+function pvSet(i,f,v){
+  var r=_pv.rows[i];if(!r)return;
+  if(f==='date'||f==='client')r[f]=v;
+  else{
+    r[f]=toNum(v);
+    if(f==='karat'&&!r.karat)r.karat=875;
+    r.w875=W8(r.weight,r.karat);r.w995=r.weight*r.karat/999.5;
+    txt('pv-8-'+i,N(r.w875));txt('pv-9-'+i,N(r.w995));
+  }
+  pvTotals();
+}
+function pvInc(i,c){_pv.rows[i].inc=c;var tr=el('pv-r'+i);if(tr)tr.className=c?'':'pv-off';pvTotals();}
+function pvAll(c){for(var i=0;i<_pv.rows.length;i++)_pv.rows[i].inc=c;pvRender();}
+function pvDel(i){_pv.rows.splice(i,1);pvRender();}
+function pvSetType(t){
+  if(_pv)_pv.type=t;
+  el('pv-t-in').className='pv-t'+(t==='مستلم'?' on-in':'');
+  el('pv-t-out').className='pv-t'+(t==='منصرف'?' on-out':'');
+  el('pv-t-ret').className='pv-t'+(t==='مرتجع'?' on-ret':'');
+  if(_pv)pvTotals();
+}
+function pvTotals(){
+  var n=0,tw=0,t8=0,t9=0,skip=0;
+  for(var i=0;i<_pv.rows.length;i++){var r=_pv.rows[i];if(!r.inc||!(r.weight>0)){skip++;continue;}n++;tw+=r.weight;t8+=r.w875;t9+=r.w995;}
+  el('pv-sum').innerHTML='<span>✓ هيتضاف: <b>'+N(n,0)+'</b> سجل</span>'
+    +(skip?'<span style="color:#B83232">مستبعد: <b style="color:#B83232">'+N(skip,0)+'</b></span>':'')
+    +'<span>الوزن القائم: <b>'+N(tw)+'</b> جم</span>'
+    +'<span>وزن 875: <b style="color:#C8860A">'+N(t8)+'</b> جم</span>'
+    +'<span>وزن 995: <b>'+N(t9)+'</b> جم</span>';
+  var b=el('pv-ok'),t=_pv.type;
+  if(!t){b.disabled=true;b.textContent='اختار وارد أو منصرف الأول';}
+  else if(!n){b.disabled=true;b.textContent='مفيش صفوف محددة';}
+  else{b.disabled=false;b.textContent='✅ موافقة وإضافة '+N(n,0)+' سجل إلى '+(t==='منصرف'?'المنصرف':t==='مرتجع'?'المرتجع':'الوارد');}
+}
+function destClose(){el('dest-modal').style.display='none';_pv=null;}
+function pvApprove(){
+  var P=_pv;if(!P||!P.type)return;
+  var type=P.type,isOut=type==='منصرف',now=Date.now(),added=0,base=now*10;
   for(var i=0;i<P.rows.length;i++){
     var r=P.rows[i];
-    var w=toNum(r.weight),k=toNum(r.karat)||875;
-    if(w<=0)continue;
-    var w8=_rowW8(r)||W8(w,k),w9=toNum(r.w995)||W9(w,k);
-    var rec={id:base+i,date:r.date||today(),type:type,desc:(r.client||(isOut?'منصرف':'مستورد'))+'',
-      w:w,k:k,w8:+w8.toFixed(3),w9:+w9.toFixed(3),w7:W7(w,k),pcs:toNum(r.pcs)||0,
+    if(!r.inc||!(r.weight>0))continue;
+    var w=r.weight,k=r.karat||875;
+    var rec={id:base+i,date:r.date||today(),type:type,desc:(r.client||(isOut?'منصرف':'مستورد')),
+      w:w,k:k,w8:+(+r.w875).toFixed(3),w9:+(+r.w995).toFixed(3),w7:W7(w,k),pcs:r.pcs||0,
       notes:'مستورد من '+P.source,_t:now};
     if(isOut){rec.detail='';OUT.push(rec);}else INC.push(rec);
     added++;
   }
+  el('dest-modal').style.display='none';_pv=null;
   dataChanged();
   updateKPIs();
   toast('✅ تم إضافة '+added+' سجل إلى '+(isOut?'المنصرف':type==='مرتجع'?'المرتجع':'الوارد'));
@@ -2491,6 +2591,7 @@ function destPick(type){
   G(pg);
   setTimeout(function(){stab(pg,2);},50);
 }
+function destPick(type){if(_pv){_pv.type=type;pvApprove();}} // للتوافق
 
 // ===== SCAN =====
 var _scRows = [];

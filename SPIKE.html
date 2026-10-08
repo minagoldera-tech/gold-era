@@ -324,7 +324,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
     <button class="nb" id="nb-in" onclick="G('in')">📥 الوارد والمرتجع <span class="nbdg" id="bdg-in">0</span></button>
     <button class="nb" id="nb-out" onclick="G('out')">📤 المنصرف <span class="nbdg" id="bdg-out">0</span></button>
     <div class="nl">المرجع</div>
-    <button class="nb" id="nb-scan" onclick="G('scan')">📷 رفع صورة وإدخال</button>
+    <button class="nb" id="nb-scan" onclick="G('scan')">📤 رفع Excel / PDF / صورة</button>
     <button class="nb" id="nb-pdf2xl" onclick="G('pdf2xl')">🔄 تحويل PDF لـ Excel</button>
     <button class="nb" id="nb-cat" onclick="G('cat')">📋 جدول الأصناف</button>
     <div class="nl">التحليل</div>
@@ -462,11 +462,11 @@ tbody tr.row-sel td{background:#FFF8E7;}
     <div class="card">
       <div class="sh"><div><div class="st">📋 سجل الوارد والمرتجع</div><div class="ss" id="in-sub"></div></div><span class="tag" id="in-cnt">0 سجل</span></div>
       <div class="srow">
-        <input type="text" id="in-srch" placeholder="🔍 بحث..." oninput="renderIn()" style="flex:1;min-width:150px">
-        <input type="date" id="in-from" oninput="renderIn()">
+        <input type="text" id="in-srch" placeholder="🔍 بحث..." oninput="filterIn()" style="flex:1;min-width:150px">
+        <input type="date" id="in-from" oninput="filterIn()">
         <span style="color:#9C9488;font-size:12px">إلى</span>
-        <input type="date" id="in-to" oninput="renderIn()">
-        <select id="in-ftype" onchange="renderIn()" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-family:Cairo,sans-serif;font-size:13px;outline:none;background:#fff">
+        <input type="date" id="in-to" oninput="filterIn()">
+        <select id="in-ftype" onchange="filterIn()" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-family:Cairo,sans-serif;font-size:13px;outline:none;background:#fff">
           <option value="">الكل</option><option value="مستلم">مستلم</option><option value="مرتجع">مرتجع</option>
         </select>
       </div>
@@ -576,10 +576,10 @@ tbody tr.row-sel td{background:#FFF8E7;}
     <div class="card">
       <div class="sh"><div><div class="st">📋 سجل المنصرف من المصنع</div><div class="ss" id="out-sub"></div></div><span class="tag" id="out-cnt">0 سجل</span></div>
       <div class="srow">
-        <input type="text" id="out-srch" placeholder="🔍 بحث..." oninput="renderOut()" style="flex:1;min-width:150px">
-        <input type="date" id="out-from" oninput="renderOut()">
+        <input type="text" id="out-srch" placeholder="🔍 بحث..." oninput="filterOut()" style="flex:1;min-width:150px">
+        <input type="date" id="out-from" oninput="filterOut()">
         <span style="color:#9C9488;font-size:12px">إلى</span>
-        <input type="date" id="out-to" oninput="renderOut()">
+        <input type="date" id="out-to" oninput="filterOut()">
       </div>
       <div class="tw">
         <table>
@@ -864,55 +864,209 @@ tbody tr.row-sel td{background:#FFF8E7;}
 </div>
 
 
-<!-- SCAN PAGE = EXCEL IMPORT -->
+<!-- SCAN PAGE -->
 <div class="pg" id="p-scan">
-  <div class="card">
-    <div class="sh">
-      <div><div class="st">📊 استيراد من Excel</div><div class="ss">ارفع ملف Excel وتُضاف كل الصفوف فوراً بدون إنترنت</div></div>
+
+  <!-- Tabs -->
+  <div class="card" style="margin-bottom:13px;padding:13px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button id="sc-tab1" onclick="scSetTab(1)" style="flex:1;padding:10px;background:#C8860A;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">📷 رفع صورة وإدخال</button>
+      <button id="sc-tab2" onclick="scSetTab(2)" style="flex:1;padding:10px;background:#F5F4F1;color:#5C5849;border:1px solid #C8C4BC;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">📊 استيراد Excel / PDF</button>
     </div>
-    <div id="xl-drop" onclick="document.getElementById('xl-file').click()"
-      ondragover="event.preventDefault();this.style.borderColor='#C8860A';this.style.background='#FFF8E7'"
-      ondragleave="this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9'"
-      ondrop="event.preventDefault();this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9';xlHandleFile(event.dataTransfer.files[0])"
-      style="border:2px dashed #C8C4BC;border-radius:12px;padding:44px 20px;text-align:center;cursor:pointer;background:#FAFAF9;transition:all .2s">
-      <input type="file" id="xl-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="xlHandleFile(this.files[0])">
-      <div style="font-size:52px;margin-bottom:12px">📊</div>
-      <div style="font-size:16px;font-weight:700;color:#1A1916;margin-bottom:6px">اسحب ملف Excel هنا أو انقر للاختيار</div>
-      <div style="font-size:13px;color:#9C9488">xlsx · xls · csv — جداول الوارد والمنصرف</div>
-    </div>
-    <div style="background:#EBF0FA;border:1px solid #b8cbef;border-radius:10px;padding:14px 16px;margin-top:14px;font-size:13px;color:#2B5FA6;line-height:1.8">
-      <strong>تنسيق الملف المطلوب:</strong> أعمدة تحتوي على التاريخ · البيان · الوزن · العيار · وزن 875 · وزن 995
+    <div style="font-size:12px;color:#9C9488;margin-top:8px;padding:8px 12px;background:#FFF8E7;border-radius:8px;border:1px solid #E8C547">
+      💡 <strong>تلميح:</strong> حول PDF لـ Excel مجاناً من <a href="https://www.ilovepdf.com/pdf_to_excel" target="_blank" style="color:#C8860A;font-weight:700">ilovepdf.com</a> ثم ارفعه هنا
     </div>
   </div>
 
-  <div class="card" id="xl-preview" style="display:none">
+  <!-- TAB 1: Image -->
+  <div id="sc-area1">
+  <!-- Upload Zone -->
+  <div class="card" id="scan-upload-card">
     <div class="sh">
-      <div><div class="st">📋 معاينة البيانات</div><div class="ss" id="xl-sub">جاري التحليل...</div></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn bgh bsm" onclick="xlReset()">↩️ ملف آخر</button>
-        <button class="btn bg" id="xl-confirm-btn" onclick="xlConfirm()" style="display:none">✅ استيراد الكل للوارد</button>
+      <div><div class="st">📷 رفع صورة جدول وارد</div><div class="ss">ارفع الصورة وأدخل البيانات بجانبها مباشرة</div></div>
+    </div>
+    <div id="scan-drop" onclick="document.getElementById('scan-file').click()"
+      ondragover="event.preventDefault();this.style.borderColor='#C8860A';this.style.background='#FFF8E7'"
+      ondragleave="this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9'"
+      ondrop="event.preventDefault();this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9';scanHandleFile(event.dataTransfer.files[0])"
+      style="border:2px dashed #C8C4BC;border-radius:12px;padding:44px 20px;text-align:center;cursor:pointer;background:#FAFAF9;transition:all .2s">
+      <input type="file" id="scan-file" accept="image/*" style="display:none" onchange="scanHandleFile(this.files[0])">
+      <div style="font-size:52px;margin-bottom:12px">🖼️</div>
+      <div style="font-size:16px;font-weight:700;color:#1A1916;margin-bottom:6px">اسحب صورة الجدول هنا أو انقر للاختيار</div>
+      <div style="font-size:13px;color:#9C9488">PNG · JPG · JPEG</div>
+    </div>
+  </div>
+
+  <!-- Main Entry Panel - Image + Form side by side -->
+  <div id="scan-entry" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px">
+      
+      <!-- Left: Image -->
+      <div class="card" style="padding:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700">📷 الصورة</div>
+          <button onclick="scanReset()" style="background:none;border:none;font-size:12px;color:#9C9488;cursor:pointer">✕ صورة أخرى</button>
+        </div>
+        <img id="scan-img" style="width:100%;border-radius:8px;border:1px solid #E8E5DF;cursor:zoom-in" src="" onclick="scanZoom()" title="انقر للتكبير">
+        <div style="font-size:11px;color:#9C9488;text-align:center;margin-top:6px">انقر على الصورة للتكبير</div>
+      </div>
+
+      <!-- Right: Entry Form -->
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px">✏️ إدخال البيانات صف بصف</div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="fg"><label>التاريخ</label><input type="date" id="sc-date" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
+          <div class="fg"><label>البيان / العميل</label><input type="text" id="sc-client" placeholder="مثال: المصنع" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
+          <div class="fg"><label>الوزن القائم (جم)</label><input type="number" id="sc-w" step="0.01" placeholder="0.00" oninput="scAutoCalc()" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
+          <div class="fg"><label>العيار</label><input type="number" id="sc-k" value="875" step="1" oninput="scAutoCalc()" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
+          <div class="fg"><label>وزن 875</label><input type="number" id="sc-w875" step="0.01" placeholder="0.00" style="border:1px solid #E8C547;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%;background:#FFF8E7;font-weight:600;color:#C8860A"></div>
+          <div class="fg"><label>وزن 995</label><input type="number" id="sc-w995" step="0.01" placeholder="0.00" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button onclick="scAddRow()" style="flex:1;background:#C8860A;color:#fff;border:none;border-radius:9px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">➕ إضافة للقائمة</button>
+          <button onclick="scAddRow(true)" style="background:#EBF5EF;color:#2D7A4F;border:1px solid #b8dfc8;border-radius:9px;padding:11px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif" title="إضافة وتكرار نفس البيان والتاريخ">➕ + تكرار</button>
+        </div>
+
+        <!-- Running totals -->
+        <div style="margin-top:12px;background:#F5F4F1;border-radius:8px;padding:10px 12px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#9C9488;margin-bottom:4px">
+            <span>السجلات المضافة</span><span id="sc-cnt-mini" style="font-weight:700;color:#1A1916">0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#9C9488;margin-bottom:4px">
+            <span>إجمالي وزن 875</span><span id="sc-tot-mini" style="font-weight:700;color:#C8860A">0.000 جم</span>
+          </div>
+        </div>
       </div>
     </div>
-    <div id="xl-status" style="text-align:center;padding:24px;color:#9C9488" id="xl-msg">جاري القراءة...</div>
-    <div id="xl-table-wrap" style="display:none;overflow-x:auto">
+
+    <!-- Preview Table -->
+    <div class="card" id="sc-preview" style="display:none">
+      <div class="sh">
+        <div><div class="st">📋 السجلات المضافة</div><div class="ss" id="sc-preview-sub"></div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn bgh bsm" onclick="scanReset()">↩️ مسح الكل</button>
+          <button class="btn bg" onclick="scanConfirm()">✅ اعتماد وإضافة (وارد / منصرف)</button>
+        </div>
+      </div>
       <div class="cbar" style="margin-bottom:12px">
-        <div class="ci"><div class="cl">السجلات</div><div class="cv" id="xl-cnt">0</div></div>
-        <div class="ci"><div class="cl">إجمالي الوزن</div><div class="cv" id="xl-tw">0.000 جم</div></div>
-        <div class="ci"><div class="cl">إجمالي 875</div><div class="cv" id="xl-t875">0.000 جم</div></div>
+        <div class="ci"><div class="cl">عدد السجلات</div><div class="cv" id="sc-cnt">0</div></div>
+        <div class="ci"><div class="cl">إجمالي الوزن القائم</div><div class="cv" id="sc-tw">0.000 جم</div></div>
+        <div class="ci"><div class="cl">إجمالي وزن 875</div><div class="cv" id="sc-t875">0.000 جم</div></div>
+        <div class="ci"><div class="cl">إجمالي وزن 995</div><div class="cv" id="sc-t995">0.000 جم</div></div>
       </div>
-      <table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr style="background:#FAFAF9;border-bottom:2px solid #E8E5DF">
-          <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">#</th>
-          <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">التاريخ</th>
-          <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">البيان</th>
-          <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">الوزن</th>
-          <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">العيار</th>
-          <th style="padding:9px 10px;text-align:right;color:#C8860A;font-size:11px">وزن 875 ✦</th>
-          <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">وزن 995</th>
-        </tr></thead>
-        <tbody id="xl-tbody"></tbody>
-      </table>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#FAFAF9;border-bottom:2px solid #E8E5DF">
+            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">#</th>
+            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">التاريخ</th>
+            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">البيان</th>
+            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">الوزن القائم</th>
+            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">العيار</th>
+            <th style="padding:9px 10px;text-align:right;color:#C8860A;font-size:11px">وزن 875 ✦</th>
+            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">وزن 995</th>
+            <th style="padding:9px 10px;text-align:center;color:#9C9488;font-size:11px">حذف</th>
+          </tr></thead>
+          <tbody id="sc-tbody"></tbody>
+          <tfoot><tr style="background:#FFF8E7;border-top:2px solid #E8C547">
+            <td colspan="3" style="padding:9px 10px;font-weight:700;color:#8B5E04">الإجمالي</td>
+            <td style="padding:9px 10px;font-weight:700" id="sc-ft-w">0.000 جم</td>
+            <td></td>
+            <td style="padding:9px 10px;font-weight:700;color:#C8860A;font-size:14px" id="sc-ft-875">0.000 جم</td>
+            <td style="padding:9px 10px;font-weight:700" id="sc-ft-995">0.000 جم</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn bgh bsm" onclick="scanReset()">↩️ مسح الكل</button>
+        <button class="btn bg" onclick="scanConfirm()">✅ اعتماد وإضافة (وارد / منصرف)</button>
+      </div>
     </div>
+  </div>
+
+  </div><!-- end sc-area1 -->
+
+  <!-- TAB 2: Excel Import -->
+  <div id="sc-area2" style="display:none">
+    <div class="card">
+      <div class="sh">
+        <div><div class="st">📊 استيراد من Excel</div><div class="ss">ارفع ملف Excel أو CSV أو PDF — وهيسألك تضيفه وارد ولا منصرف</div></div>
+      </div>
+      <!-- File type selector -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button id="ft-xl" onclick="setFileTab('xl')" style="flex:1;padding:9px;background:#C8860A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📊 Excel / CSV</button>
+        <button id="ft-pdf" onclick="setFileTab('pdf')" style="flex:1;padding:9px;background:#F5F4F1;color:#5C5849;border:1px solid #C8C4BC;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📄 PDF جدول</button>
+      </div>
+
+      <!-- Excel upload -->
+      <div id="xl-drop2-wrap">
+      <div id="xl-drop2" onclick="document.getElementById('xl-file2').click()"
+        ondragover="event.preventDefault();this.style.borderColor='#C8860A';this.style.background='#FFF8E7'"
+        ondragleave="this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9'"
+        ondrop="event.preventDefault();this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9';xlHandleFile2(event.dataTransfer.files[0])"
+        style="border:2px dashed #C8C4BC;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;background:#FAFAF9;transition:all .2s;margin-bottom:13px">
+        <input type="file" id="xl-file2" accept=".xlsx,.xls,.csv" style="display:none" onchange="xlHandleFile2(this.files[0])">
+        <div style="font-size:48px;margin-bottom:10px">📊</div>
+        <div style="font-size:15px;font-weight:700;color:#1A1916;margin-bottom:5px">اسحب ملف Excel أو CSV هنا</div>
+        <div style="font-size:13px;color:#9C9488">xlsx · xls · csv</div>
+      </div>
+      </div>
+
+      <!-- PDF upload -->
+      <div id="pdf-drop2-wrap" style="display:none">
+        <div style="background:#EBF0FA;border:1px solid #b8cbef;border-radius:9px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#2B5FA6">
+          📄 يقرأ النص من PDF مباشرة — يعمل مع جداول PDF النصية (غير الصور)
+        </div>
+        <div style="background:#FFF8E7;border:1px solid #E8C547;border-radius:9px;padding:11px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div style="font-size:13px;color:#8B5E04">📸 إذا كان الـ PDF صورة ممسوحة — حوّله لـ Excel أولاً</div>
+          <a href="https://www.ilovepdf.com/pdf_to_excel" target="_blank" style="background:#C8860A;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;text-decoration:none;display:inline-block">🔗 فتح ilovepdf</a>
+        </div>
+      <div id="pdf-drop2" onclick="document.getElementById('pdf-file2').click()"
+        ondragover="event.preventDefault();this.style.borderColor='#C8860A';this.style.background='#FFF8E7'"
+        ondragleave="this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9'"
+        ondrop="event.preventDefault();this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9';pdfHandleFile(event.dataTransfer.files[0])"
+        style="border:2px dashed #C8C4BC;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;background:#FAFAF9;transition:all .2s;margin-bottom:13px">
+        <input type="file" id="pdf-file2" accept=".pdf" style="display:none" onchange="pdfHandleFile(this.files[0])">
+        <div style="font-size:48px;margin-bottom:10px">📄</div>
+        <div style="font-size:15px;font-weight:700;color:#1A1916;margin-bottom:5px">اسحب ملف PDF الجدول هنا</div>
+        <div style="font-size:13px;color:#9C9488">يستخرج الأرقام تلقائياً ويعرضها للمراجعة</div>
+      </div>
+      <div id="pdf-status" style="display:none;text-align:center;padding:16px;color:#9C9488;font-size:13px"></div>
+      </div>
+      <div id="xl-status2" style="display:none;text-align:center;padding:20px;color:#9C9488"></div>
+      <div id="xl-preview2" style="display:none">
+        <div class="cbar" style="margin-bottom:12px">
+          <div class="ci"><div class="cl">السجلات</div><div class="cv" id="xl2-cnt">0</div></div>
+          <div class="ci"><div class="cl">إجمالي الوزن القائم</div><div class="cv" id="xl2-tw">0.000 جم</div></div>
+          <div class="ci"><div class="cl">إجمالي وزن 875</div><div class="cv" id="xl2-t875">0.000 جم</div></div>
+        </div>
+        <div style="overflow-x:auto;margin-bottom:12px">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead><tr style="background:#FAFAF9;border-bottom:2px solid #E8E5DF">
+              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">#</th>
+              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">التاريخ</th>
+              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">البيان</th>
+              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">الوزن</th>
+              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">العيار</th>
+              <th style="padding:8px 10px;text-align:right;color:#C8860A;font-size:11px">وزن 875 ✦</th>
+              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">وزن 995</th>
+            </tr></thead>
+            <tbody id="xl2-tbody"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button onclick="xlReset2()" class="btn bgh bsm">↩️ ملف آخر</button>
+          <button onclick="xlConfirm2()" class="btn bg">✅ إضافة البيانات (وارد / منصرف)</button>
+        </div>
+      </div>
+    </div>
+  </div><!-- end sc-area2 -->
+
+  <!-- Zoom Modal -->
+  <div id="scan-zoom-modal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out">
+    <img id="scan-zoom-img" style="max-width:95vw;max-height:95vh;border-radius:8px;object-fit:contain">
   </div>
 </div>
 
@@ -991,7 +1145,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end">
         <button onclick="p2xlReset()" class="btn bgh bsm">↩️ ملف آخر</button>
-        <button onclick="p2xlConfirm()" class="btn bg">✅ استيراد كل البيانات للوارد</button>
+        <button onclick="p2xlConfirm()" class="btn bg">✅ إضافة البيانات (وارد / منصرف)</button>
       </div>
     </div>
   </div>
@@ -1000,6 +1154,20 @@ tbody tr.row-sel td{background:#FFF8E7;}
   </div><!-- end ct -->
 </main>
 </div><!-- end lay -->
+
+<!-- نافذة: تضيف البيانات وارد ولا منصرف -->
+<div id="dest-modal" style="display:none;position:fixed;inset:0;background:rgba(28,26,22,.6);z-index:9500;align-items:center;justify-content:center;padding:16px;font-family:Cairo,sans-serif">
+  <div style="background:#fff;border-radius:16px;padding:22px;width:100%;max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+    <div style="font-size:18px;font-weight:700;color:#1A1916;margin-bottom:6px">📂 تضيف البيانات دي فين؟</div>
+    <div id="dest-sum" style="font-size:13px;color:#5C5849;margin-bottom:16px;line-height:1.8;background:#F5F4F1;border-radius:9px;padding:10px 12px"></div>
+    <div style="display:grid;gap:9px">
+      <button onclick="destPick('مستلم')" style="padding:13px;border:none;border-radius:10px;background:#C8860A;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📥 وارد (مستلم)</button>
+      <button onclick="destPick('منصرف')" style="padding:13px;border:none;border-radius:10px;background:#B83232;color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📤 منصرف</button>
+      <button onclick="destPick('مرتجع')" style="padding:11px;border:1px solid #C8C4BC;border-radius:10px;background:#F5F4F1;color:#5C5849;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">↩️ مرتجع</button>
+    </div>
+    <button onclick="destClose()" style="width:100%;margin-top:12px;padding:9px;border:none;background:none;color:#9C9488;font-size:13px;cursor:pointer;font-family:Cairo,sans-serif">إلغاء — أراجع الجدول الأول</button>
+  </div>
+</div>
 
 <script>
 // ===================== CATALOG =====================
@@ -1052,12 +1220,38 @@ function W7(w,k){return w*k/750;}
 function today(){return new Date().toISOString().split('T')[0];}
 function el(id){return document.getElementById(id);}
 function txt(id,v){var e=el(id);if(e)e.textContent=v;}
+// تنسيق التاريخ مع كاش — كان أبطأ جزء في السيستم (كان بيتنفذ آلاف المرات مع كل فتح صفحة)
+var _fmtCache={},_fmtDT=null;
 function fmtDate(d){
   if(!d)return '';
+  var c=_fmtCache[d];
+  if(c!==undefined)return c;
   try{
-    var dt=new Date(d+'T00:00:00');
-    return dt.toLocaleDateString('ar-EG-u-nu-latn',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  }catch(e){return d;}
+    if(!_fmtDT)_fmtDT=new Intl.DateTimeFormat('ar-EG-u-nu-latn',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    c=_fmtDT.format(new Date(d+'T00:00:00'));
+  }catch(e){c=d;}
+  _fmtCache[d]=c;
+  return c;
+}
+function esc(s){return (s===undefined||s===null?'':String(s)).replace(/[&<>"]/g,function(ch){return ch==='&'?'&amp;':ch==='<'?'&lt;':ch==='>'?'&gt;':'&quot;';});}
+// رقم من نص (يدعم الفواصل والأرقام العربية)
+function toNum(v){
+  if(typeof v==='number')return isFinite(v)?v:0;
+  if(v===null||v===undefined)return 0;
+  var s=String(v).replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).replace(/[۰-۹]/g,function(c){return c.charCodeAt(0)-1776;})
+    .replace(/٫/g,'.').replace(/[,٬\s]/g,'');
+  var n=parseFloat(s);
+  return isNaN(n)?0:n;
+}
+
+// ===== تتبع التغييرات (عشان منعيدش رسم الجداول من غير داعي) =====
+var DATA_VER=1,_rv={in:0,out:0,kpi:0,ov:0};
+var DEL={}; // سجلات محذوفة: id -> وقت الحذف (للمزامنة بين الأجهزة)
+function dataChanged(){
+  DATA_VER++;
+  clearTimeout(window._saveT);
+  window._saveT=setTimeout(_autoSave,400);
+  if(typeof schedulePush==='function')schedulePush();
 }
 
 // ===================== INIT =====================
@@ -1067,8 +1261,8 @@ el('out-fw-date').value=today();
 el('TD').textContent=fmtDate(today());
 
 // ===================== NAV =====================
-var PT={pdf2xl:'تحويل PDF لـ Excel',scan:'رفع صورة جدول وارد',overview:'نظرة عامة وتحليل',dash:'لوحة التحكم',in:'الوارد والمرتجع',out:'المنصرف من المصنع',cat:'جدول الأصناف',inv:'المخزون والمطابقة',rep:'التقارير الشاملة'};
-var PS={pdf2xl:'تحويل ملف PDF جدول إلى Excel ثم استيراده مباشرة',scan:'ارفع الصورة وأدخل البيانات بجانبها مباشرة',overview:'تحليل شامل للبيانات والأرصدة',dash:'نظرة عامة على حركة الذهب',in:'إضافة وتصفح سجلات الوارد والمرتجع',out:'إضافة دفعات المنصرف بنظام السلة',cat:'مرجع الأوزان لجميع الأصناف محوّلة لعيار 875',inv:'مطابقة المخزون والأرصدة بالعيارات المختلفة',rep:'التقارير والإحصائيات التفصيلية'};
+var PT={pdf2xl:'تحويل PDF لـ Excel',scan:'رفع ملف Excel / PDF / صورة',overview:'نظرة عامة وتحليل',dash:'لوحة التحكم',in:'الوارد والمرتجع',out:'المنصرف من المصنع',cat:'جدول الأصناف',inv:'المخزون والمطابقة',rep:'التقارير الشاملة'};
+var PS={pdf2xl:'تحويل ملف PDF جدول إلى Excel ثم استيراده مباشرة',scan:'ارفع الملف واختار تضيفه وارد ولا مرتجع ولا منصرف',overview:'تحليل شامل للبيانات والأرصدة',dash:'نظرة عامة على حركة الذهب',in:'إضافة وتصفح سجلات الوارد والمرتجع',out:'إضافة دفعات المنصرف بنظام السلة',cat:'مرجع الأوزان لجميع الأصناف محوّلة لعيار 875',inv:'مطابقة المخزون والأرصدة بالعيارات المختلفة',rep:'التقارير والإحصائيات التفصيلية'};
 
 function G(name){
   document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
@@ -1077,16 +1271,16 @@ function G(name){
   if(pg)pg.classList.add('on');
   if(nb)nb.classList.add('on');
   txt('TT',PT[name]||name); txt('TS',PS[name]||'');
+  // الرسم بعد ما الصفحة تظهر — عشان الضغط على أي ورقة يبقى فوري
+  clearTimeout(window._gT);
+  window._gT=setTimeout(function(){renderPage(name);},0);
+}
+function renderPage(name){
   if(name==='cat')renderCat();
-  if(name==='overview')renderOverview();
-  if(name==='scan'){
-    resetScan();
-    var w=document.getElementById('scan-api-warn');
-    if(w) w.style.display = localStorage.getItem('sb_api_key')?'none':'block';
-  }
-  if(name==='in'){renderIgr('in');renderIn();}
-  if(name==='out'){renderIgr('out');renderOut();}
-  updateKPIs();
+  if(name==='overview'&&_rv.ov!==DATA_VER)renderOverview();
+  if(name==='in'){if(!el('in-igr')||!el('in-igr').children.length)renderIgr('in');if(_rv.in!==DATA_VER)renderIn();}
+  if(name==='out'){if(!el('out-igr')||!el('out-igr').children.length)renderIgr('out');if(_rv.out!==DATA_VER)renderOut();}
+  if(_rv.kpi!==DATA_VER)updateKPIs();
 }
 
 // ===================== TABS =====================
@@ -1097,7 +1291,7 @@ function stab(page,n){
     if(b)b.classList.toggle('on',i===n);
     if(p)p.classList.toggle('on',i===n);
   }
-  if(n===2){if(page==='in')renderIn();else renderOut();}
+  if(n===2){if(page==='in'){if(_rv.in!==DATA_VER)renderIn();}else if(_rv.out!==DATA_VER)renderOut();}
 }
 
 // ===================== INPUT MODE =====================
@@ -1257,9 +1451,9 @@ function confirmCart(){
   OUT.push({id:Date.now(),date:d,type:'منصرف',
     desc:note,detail:names.join(' | '),
     pcs:totpcs,w:totw,k:875,
-    w8:tot875,w9:tot999,w7:W7(totw,875),notes:''});
+    w8:tot875,w9:tot999,w7:W7(totw,875),notes:'',_t:Date.now()});
   CART=[];el('out-note').value='';
-  renderCart();updateKPIs();renderOut();
+  dataChanged();renderCart();updateKPIs();renderOut();
   toast('✅ تم اعتماد الدفعة وحفظها بنجاح');
   stab('out',2);
 }
@@ -1271,9 +1465,9 @@ function addOutFW(){
   var k=parseFloat(el('out-fw-k').value)||875,d=el('out-fw-date').value||today();
   OUT.push({id:Date.now(),date:d,type:'منصرف',
     desc:el('out-fw-d').value||'وزن حر',detail:'',
-    pcs:1,w:w,k:k,w8:W8(w,k),w9:W9(w,k),w7:W7(w,k),notes:''});
+    pcs:1,w:w,k:k,w8:W8(w,k),w9:W9(w,k),w7:W7(w,k),notes:'',_t:Date.now()});
   el('out-fw-w').value='';el('out-fw-d').value='';
-  calcOutFW();updateKPIs();renderOut();toast('✅ تم الحفظ');
+  dataChanged();calcOutFW();updateKPIs();renderOut();toast('✅ تم الحفظ');
 }
 
 // ===================== ADD INCOMING =====================
@@ -1283,7 +1477,8 @@ function addIn(){
   var k=parseFloat(el('in-k').value)||875;
   INC.push({id:Date.now(),date:el('in-date').value||today(),type:el('in-type').value,
     desc:el('in-desc').value||'بدون بيان',w:w,k:k,
-    w8:W8(w,k),w9:W9(w,k),w7:W7(w,k),pcs:0,notes:el('in-n').value});
+    w8:W8(w,k),w9:W9(w,k),w7:W7(w,k),pcs:0,notes:el('in-n').value,_t:Date.now()});
+  dataChanged();
   el('in-w').value='';el('in-desc').value='';el('in-n').value='';
   el('in-fw-w').value='';el('in-fw-d').value='';
   selIn=null;
@@ -1293,8 +1488,8 @@ function addIn(){
 }
 
 // ===================== DELETE =====================
-function delIn(id){if(!confirm('حذف هذا السجل؟'))return;for(var i=0;i<INC.length;i++)if(INC[i].id===id){INC.splice(i,1);break;}updateKPIs();renderIn();toast('🗑️ تم الحذف');}
-function delOut(id){if(!confirm('حذف هذا السجل؟'))return;for(var i=0;i<OUT.length;i++)if(OUT[i].id===id){OUT.splice(i,1);break;}updateKPIs();renderOut();toast('🗑️ تم الحذف');}
+function delIn(id){if(!confirm('حذف هذا السجل؟'))return;for(var i=0;i<INC.length;i++)if(INC[i].id===id){INC.splice(i,1);break;}DEL[id]=Date.now();delete inSelIds[id];dataChanged();updateKPIs();renderIn();toast('🗑️ تم الحذف');}
+function delOut(id){if(!confirm('حذف هذا السجل؟'))return;for(var i=0;i<OUT.length;i++)if(OUT[i].id===id){OUT.splice(i,1);break;}DEL[id]=Date.now();delete outSelIds[id];dataChanged();updateKPIs();renderOut();toast('🗑️ تم الحذف');}
 
 // ===================== EDIT MODAL =====================
 function openEdit(cat,id){
@@ -1317,9 +1512,15 @@ function saveEdit(){
     if(arr[i].id===id){
       arr[i].date=el('em-date').value;arr[i].type=el('em-type').value;arr[i].desc=el('em-desc').value;
       arr[i].w=w;arr[i].k=k;arr[i].w8=W8(w,k);arr[i].w9=W9(w,k);arr[i].w7=W7(w,k);
-      arr[i].pcs=parseInt(el('em-pcs').value)||0;arr[i].notes=el('em-notes').value;break;
+      arr[i].pcs=parseInt(el('em-pcs').value)||0;arr[i].notes=el('em-notes').value;arr[i]._t=Date.now();
+      // لو النوع اتغير بين وارد ومنصرف — انقل السجل للجدول الصح
+      var mv=arr[i];
+      if(cat==='in'&&mv.type==='منصرف'){INC.splice(i,1);if(mv.detail===undefined)mv.detail='';OUT.push(mv);}
+      else if(cat==='out'&&mv.type!=='منصرف'){OUT.splice(i,1);INC.push(mv);}
+      break;
     }
   }
+  dataChanged();renderIn();renderOut();
   closeEdit();updateKPIs();if(cat==='in')renderIn();else renderOut();toast('✅ تم حفظ التعديل');
 }
 window.onclick=function(e){if(e.target===el('emod'))closeEdit();if(e.target===el('cemod'))closeCartEdit();};
@@ -1345,58 +1546,77 @@ function updateOutSelBar(){
   txt('out-sel-count',N(n,0)+' صف محدد');
   txt('out-sum-w',N(sw)+' جم');txt('out-sum-875',N(s875)+' جم');txt('out-sum-999',N(s999)+' جم');txt('out-sum-pcs',N(spcs,0));
 }
+// تحديد الكل = كل النتائج بعد الفلترة (مش بس الظاهر في الصفحة)
+var _inFiltered=[],_outFiltered=[],_inShow=200,_outShow=200,PAGE_STEP=300;
 function toggleAllIn(checked){
+  for(var i=0;i<_inFiltered.length;i++){if(checked)inSelIds[_inFiltered[i].id]=true;else delete inSelIds[_inFiltered[i].id];}
   document.querySelectorAll('#in-tb .row-chk').forEach(function(cb){
-    cb.checked=checked;var id=parseInt(cb.dataset.id);
-    if(checked)inSelIds[id]=true;else delete inSelIds[id];
-    var tr=cb.closest('tr');if(tr)tr.classList.toggle('row-sel',checked);
+    cb.checked=checked;var tr=cb.closest('tr');if(tr)tr.classList.toggle('row-sel',checked);
   });
   updateInSelBar();
 }
 function toggleAllOut(checked){
+  for(var i=0;i<_outFiltered.length;i++){if(checked)outSelIds[_outFiltered[i].id]=true;else delete outSelIds[_outFiltered[i].id];}
   document.querySelectorAll('#out-tb .row-chk').forEach(function(cb){
-    cb.checked=checked;var id=parseInt(cb.dataset.id);
-    if(checked)outSelIds[id]=true;else delete outSelIds[id];
-    var tr=cb.closest('tr');if(tr)tr.classList.toggle('row-sel',checked);
+    cb.checked=checked;var tr=cb.closest('tr');if(tr)tr.classList.toggle('row-sel',checked);
   });
   updateOutSelBar();
 }
+function filterIn(){clearTimeout(window._fiT);window._fiT=setTimeout(function(){_inShow=200;renderIn();},250);}
+function filterOut(){clearTimeout(window._foT);window._foT=setTimeout(function(){_outShow=200;renderOut();},250);}
+function moreIn(){_inShow+=PAGE_STEP;renderIn();}
+function moreOut(){_outShow+=PAGE_STEP;renderOut();}
+function allIn(){_inShow=1e9;renderIn();}
+function allOut(){_outShow=1e9;renderOut();}
+function moreRow(shown,total,fnMore,fnAll){
+  return '<tr><td colspan="12" style="text-align:center;padding:14px;background:#FAFAF9">'
+    +'<span style="font-size:12px;color:#9C9488;margin-left:10px">معروض '+N(shown,0)+' من '+N(total,0)+'</span>'
+    +'<button class="btn bgh bsm" onclick="'+fnMore+'()" style="margin-left:6px">⬇️ عرض '+N(Math.min(PAGE_STEP,total-shown),0)+' كمان</button>'
+    +'<button class="btn bgh bsm" onclick="'+fnAll+'()">عرض الكل</button>'
+    +'</td></tr>';
+}
+
 function clearSelIn(){inSelIds={};document.querySelectorAll('#in-tb .row-chk').forEach(function(cb){cb.checked=false;});document.querySelectorAll('#in-tb tr').forEach(function(tr){tr.classList.remove('row-sel');});el('in-sel-bar').classList.add('hide');var ca=el('in-chk-all');if(ca)ca.checked=false;}
 function clearSelOut(){outSelIds={};document.querySelectorAll('#out-tb .row-chk').forEach(function(cb){cb.checked=false;});document.querySelectorAll('#out-tb tr').forEach(function(tr){tr.classList.remove('row-sel');});el('out-sel-bar').classList.add('hide');var ca=el('out-chk-all');if(ca)ca.checked=false;}
 
 // ===================== RENDER IN =====================
 function renderIn(){
+  _rv.in=DATA_VER;
   var srch=(el('in-srch')&&el('in-srch').value||'').trim().toLowerCase();
   var from=el('in-from')&&el('in-from').value||'';
   var to=el('in-to')&&el('in-to').value||'';
   var ftype=el('in-ftype')&&el('in-ftype').value||'';
-  var arr=[].concat(INC).filter(function(r){
+  var arr=INC.filter(function(r){
     if(srch&&(r.desc||'').toLowerCase().indexOf(srch)<0&&(r.date||'').indexOf(srch)<0)return false;
     if(from&&r.date<from)return false;if(to&&r.date>to)return false;
     if(ftype&&r.type!==ftype)return false;return true;
   }).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.id-a.id;});
+  _inFiltered=arr;
   txt('in-cnt',N(arr.length,0)+' سجل');
   txt('in-sub','من إجمالي '+N(INC.length,0)+' سجل');
   txt('bdg-in',INC.length);
-  var tb=el('in-tb'),h='';
+  var tb=el('in-tb'),h=[];
+  if(!tb)return;
   if(!arr.length){tb.innerHTML='<tr><td colspan="12" style="text-align:center;padding:28px;color:#9C9488">لا توجد نتائج</td></tr>';return;}
-  for(var i=0;i<arr.length;i++){
+  var lim=Math.min(arr.length,_inShow);
+  for(var i=0;i<lim;i++){
     var r=arr[i],sel=!!inSelIds[r.id];
-    h+='<tr class="'+(sel?'row-sel':'')+'">'
+    h.push('<tr class="'+(sel?'row-sel':'')+'">'
       +'<td><input type="checkbox" class="row-chk" data-id="'+r.id+'" '+(sel?'checked':'')+' onchange="onChkIn(this)"></td>'
       +'<td style="color:#9C9488;font-size:11px">'+(i+1)+'</td>'
       +'<td style="white-space:nowrap;font-size:12px">'+fmtDate(r.date)+'</td>'
-      +'<td style="font-weight:600">'+r.desc+'</td>'
-      +'<td><span class="bdg '+(r.type==='مستلم'?'bi':'br')+'">'+r.type+'</span></td>'
+      +'<td style="font-weight:600">'+esc(r.desc)+'</td>'
+      +'<td><span class="bdg '+(r.type==='مستلم'?'bi':'br')+'">'+esc(r.type)+'</span></td>'
       +'<td>'+N(r.w)+' جم</td><td>'+r.k+'</td>'
       +'<td style="color:#C8860A;font-weight:700">'+N(r.w8)+' جم</td>'
       +'<td>'+N(r.w9)+' جم</td>'
-      +'<td style="color:#9C9488;font-size:12px">'+(r.notes||'—')+'</td>'
+      +'<td style="color:#9C9488;font-size:12px">'+(esc(r.notes)||'—')+'</td>'
       +'<td><button class="btn bgh bsm" onclick="openEdit(\'in\','+r.id+')">✏️ تعديل</button></td>'
       +'<td><button class="btn bd bsm" onclick="delIn('+r.id+')">🗑 حذف</button></td>'
-      +'</tr>';
+      +'</tr>');
   }
-  tb.innerHTML=h;
+  if(lim<arr.length)h.push(moreRow(lim,arr.length,'moreIn','allIn'));
+  tb.innerHTML=h.join('');
 }
 function onChkIn(cb){
   var id=parseInt(cb.dataset.id);
@@ -1407,35 +1627,40 @@ function onChkIn(cb){
 
 // ===================== RENDER OUT =====================
 function renderOut(){
+  _rv.out=DATA_VER;
   var srch=(el('out-srch')&&el('out-srch').value||'').trim().toLowerCase();
   var from=el('out-from')&&el('out-from').value||'';
   var to=el('out-to')&&el('out-to').value||'';
-  var arr=[].concat(OUT).filter(function(r){
+  var arr=OUT.filter(function(r){
     if(srch&&(r.desc||'').toLowerCase().indexOf(srch)<0&&(r.date||'').indexOf(srch)<0)return false;
     if(from&&r.date<from)return false;if(to&&r.date>to)return false;return true;
   }).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.id-a.id;});
+  _outFiltered=arr;
   txt('out-cnt',N(arr.length,0)+' سجل');
   txt('out-sub','من إجمالي '+N(OUT.length,0)+' سجل');
   txt('bdg-out',OUT.length);
-  var tb=el('out-tb'),h='';
+  var tb=el('out-tb'),h=[];
+  if(!tb)return;
   if(!arr.length){tb.innerHTML='<tr><td colspan="12" style="text-align:center;padding:28px;color:#9C9488">لا توجد نتائج</td></tr>';return;}
-  for(var i=0;i<arr.length;i++){
+  var lim=Math.min(arr.length,_outShow);
+  for(var i=0;i<lim;i++){
     var r=arr[i],sel=!!outSelIds[r.id];
-    h+='<tr class="'+(sel?'row-sel':'')+'">'
+    h.push('<tr class="'+(sel?'row-sel':'')+'">'
       +'<td><input type="checkbox" class="row-chk" data-id="'+r.id+'" '+(sel?'checked':'')+' onchange="onChkOut(this)"></td>'
       +'<td style="color:#9C9488;font-size:11px">'+(i+1)+'</td>'
       +'<td style="white-space:nowrap;font-size:12px">'+fmtDate(r.date)+'</td>'
-      +'<td style="font-weight:600">'+(r.desc||'')+(r.detail?'<div style="font-size:11px;color:#9C9488;margin-top:2px">'+r.detail+'</div>':'')+'</td>'
-      +'<td>'+N(r.pcs,0)+'</td>'
+      +'<td style="font-weight:600">'+esc(r.desc)+(r.detail?'<div style="font-size:11px;color:#9C9488;margin-top:2px">'+esc(r.detail)+'</div>':'')+'</td>'
+      +'<td>'+N(r.pcs||0,0)+'</td>'
       +'<td>'+N(r.w)+' جم</td><td>'+r.k+'</td>'
       +'<td style="color:#C8860A;font-weight:700">'+N(r.w8)+' جم</td>'
       +'<td>'+N(r.w9)+' جم</td>'
-      +'<td style="color:#9C9488;font-size:12px">'+(r.notes||'—')+'</td>'
+      +'<td style="color:#9C9488;font-size:12px">'+(esc(r.notes)||'—')+'</td>'
       +'<td><button class="btn bgh bsm" onclick="openEdit(\'out\','+r.id+')">✏️ تعديل</button></td>'
       +'<td><button class="btn bd bsm" onclick="delOut('+r.id+')">🗑 حذف</button></td>'
-      +'</tr>';
+      +'</tr>');
   }
-  tb.innerHTML=h;
+  if(lim<arr.length)h.push(moreRow(lim,arr.length,'moreOut','allOut'));
+  tb.innerHTML=h.join('');
 }
 function onChkOut(cb){
   var id=parseInt(cb.dataset.id);
@@ -1446,6 +1671,7 @@ function onChkOut(cb){
 
 // ===================== UPDATE KPIs =====================
 function updateKPIs(){
+  _rv.kpi=DATA_VER;
   var inR=[],retR=[];
   for(var i=0;i<INC.length;i++){if(INC[i].type==='مستلم')inR.push(INC[i]);else retR.push(INC[i]);}
   var tin8=0,tin9=0,tin7=0,tret8=0,tret9=0,tret7=0,tout8=0,tout9=0,tout7=0,tpcs=0;
@@ -1495,6 +1721,7 @@ function updateKPIs(){
 
 // ===================== OVERVIEW =====================
 function renderOverview(){
+  _rv.ov=DATA_VER;
   var inR=[],retR=[];
   for(var i=0;i<INC.length;i++){if(INC[i].type==='مستلم')inR.push(INC[i]);else retR.push(INC[i]);}
   var tin8=0,tin9=0,tin7=0,tret8=0,tret9=0,tret7=0,tout8=0,tout9=0,tout7=0,tpcs=0;
@@ -1880,65 +2107,187 @@ function _saveUsers(){
   ghPushUsers();
 }
 
-// ===== DATA SYNC via JSONBin =====
+// ===== DATA SYNC via JSONBin (نسخة جديدة: دمج بدل الكتابة فوق بيانات الأجهزة التانية) =====
+// الفكرة:
+//  - كل سجل جديد/متعدل بياخد _t (وقت التعديل)، وكل سجل محذوف بيتسجل في DEL.
+//  - المزامنة = سحب → دمج (الأحدث يكسب) → رفع. فمفيش جهاز يمسح شغل جهاز تاني.
+//  - بنرفع بس الفرق عن البيانات المدمجة في الملف (_PDF_INC/_PDF_OUT) عشان الحجم يبقى صغير جداً.
+//  - رفع تلقائي بعد أي تعديل بثانيتين، وسحب تلقائي كل دقيقة ونص وعند الرجوع للصفحة.
+var SYNC_PULL_MS=90000;
+var _syncBusy=false,_syncAgain=false,_pushT=null,_lastSyncOk=null;
 
-// رفع بيانات الحركة إلى JSONBin
-async function ghPush(){
-  try{
-    var ctrl = new AbortController();
-    var tid = setTimeout(function(){ ctrl.abort(); }, 10000);
-    var r = await fetch(_JB_URL + _JB_DATA_BIN, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': _JB_KEY
-      },
-      body: JSON.stringify({inc:INC, out:OUT, ts:new Date().toISOString()}),
-      signal: ctrl.signal
-    });
-    clearTimeout(tid);
-    if(r.ok){ _autoSave(); }
-    else { console.warn('jbPush err:', await r.text()); }
-  }catch(e){ console.warn('jbPush exception:',e); }
+function _pack(r){return [r.id,r.date||'',r.type||'',r.desc||'',r.detail||'',+r.w||0,+r.k||0,+r.w8||0,+r.w9||0,+r.w7||0,+r.pcs||0,r.notes||'',r._t||0];}
+function _unpack(a){var o={id:a[0],date:a[1],type:a[2],desc:a[3],detail:a[4],w:a[5],k:a[6],w8:a[7],w9:a[8],w7:a[9],pcs:a[10],notes:a[11]};if(a[12])o._t=a[12];if(!o.detail)delete o.detail;return o;}
+function _fp(r){var a=_pack(r);a.pop();return JSON.stringify(a);}
+
+// نسخة أصلية ثابتة من البيانات المدمجة في الملف (لازم تتعمل قبل أي تعديل)
+var _BASE={},BASE_ID='none';
+(function(){
+  if(typeof _PDF_INC==='undefined')return;
+  for(var i=0;i<_PDF_INC.length;i++){var r=_PDF_INC[i];_BASE[r.id]={c:'i',a:_pack(r),fp:_fp(r)};}
+  for(var i=0;i<_PDF_OUT.length;i++){var r=_PDF_OUT[i];_BASE[r.id]={c:'o',a:_pack(r),fp:_fp(r)};}
+  BASE_ID='P'+_PDF_INC.length+'_'+_PDF_OUT.length+'_'+(_PDF_INC.length?_PDF_INC[_PDF_INC.length-1].id:0);
+})();
+function baseClone(){
+  var inc=[],out=[];
+  for(var id in _BASE){var b=_BASE[id];(b.c==='i'?inc:out).push(_unpack(b.a));}
+  return {inc:inc,out:out};
 }
 
-// سحب بيانات الحركة من JSONBin
-async function ghPull(){
-  try{
-    var ctrl = new AbortController();
-    var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
-    var r = await fetch(_JB_URL + _JB_DATA_BIN + '/latest', {
-      headers: {'X-Master-Key': _JB_KEY},
-      signal: ctrl.signal
-    });
-    clearTimeout(tid);
-    if(!r.ok) return false;
-    var d = await r.json();
-    if(d.record && d.record.inc !== undefined){
-      // لو الـ bin فاضي، احتفظ بالبيانات المحلية
-      var remoteHasData = (d.record.inc && d.record.inc.length > 0) || 
-                          (d.record.out && d.record.out.length > 0);
-      if(remoteHasData){
-        INC = d.record.inc;
-        OUT = d.record.out || [];
-        _autoSave();
-      } else if(INC.length===0 && typeof _PDF_INC!=='undefined'){
-        INC = _PDF_INC.slice();
-        OUT = _PDF_OUT.slice();
-        _autoSave();
-      }
-      return true;
+// تحويل البيانات الحالية لشكل صغير للرفع
+function syncEncode(){
+  var recs=[],present={};
+  function scan(arr,c){
+    for(var i=0;i<arr.length;i++){
+      var r=arr[i];present[r.id]=1;
+      var b=_BASE[r.id];
+      if(!b||b.c!==c||r._t||b.fp!==_fp(r))recs.push([c].concat(_pack(r)));
     }
-    return false;
-  }catch(e){ console.warn('jbPull exception:',e); return false; }
+  }
+  scan(INC,'i');scan(OUT,'o');
+  for(var id in _BASE){if(!present[id]&&!DEL[id])DEL[id]=1;}
+  var del=[];for(var id in DEL)del.push([+id,DEL[id]]);
+  return {v:3,base:BASE_ID,recs:recs,del:del,ts:new Date().toISOString(),by:_CU?_CU.u:''};
 }
 
-// مزامنة عند بدء الجلسة
-async function ghSyncOnLogin(){
-  var pulled = await ghPull();
-  if(!pulled){ await ghPush(); }
-  return pulled;
+// فك البيانات اللي جاية من السيرفر → خريطة id -> {c, r} + المحذوفات
+function syncDecode(doc){
+  var M={},D={};
+  if(doc&&doc.v===3){
+    for(var id in _BASE){var b=_BASE[id];M[id]={c:b.c,r:_unpack(b.a)};}
+    var recs=doc.recs||[];
+    for(var i=0;i<recs.length;i++){var a=recs[i];M[a[1]]={c:a[0],r:_unpack(a.slice(1))};}
+    var del=doc.del||[];
+    for(var i=0;i<del.length;i++)D[del[i][0]]=del[i][1];
+  }else if(doc&&(doc.inc||doc.out)){ // الشكل القديم {inc,out}
+    (doc.inc||[]).forEach(function(r){M[r.id]={c:'i',r:r};});
+    (doc.out||[]).forEach(function(r){M[r.id]={c:'o',r:r};});
+  }
+  return {M:M,D:D};
 }
+
+// دمج المحلي مع السيرفر — الأحدث يكسب، والحذف يكسب لو أحدث من آخر تعديل
+function syncMerge(remote){
+  var L={},M={},localChanged=false,remoteChanged=false;
+  for(var i=0;i<INC.length;i++)L[INC[i].id]={c:'i',r:INC[i]};
+  for(var i=0;i<OUT.length;i++)L[OUT[i].id]={c:'o',r:OUT[i]};
+  for(var id in L)M[id]=L[id];
+  for(var id in remote.M){
+    var rm=remote.M[id],lc=M[id];
+    if(!lc){M[id]=rm;continue;}
+    var tr=rm.r._t||0,tl=lc.r._t||0;
+    if(tr>tl)M[id]=rm;
+    else if(tr===tl&&lc.c!==rm.c&&!tl)M[id]=rm;
+  }
+  var D={};
+  for(var id in DEL)D[id]=DEL[id];
+  for(var id in remote.D){if(!D[id]||remote.D[id]>D[id])D[id]=remote.D[id];}
+  for(var id in D){if(M[id]&&D[id]>=(M[id].r._t||0))delete M[id];}
+  // هل المحلي اتغير؟
+  var nL=0,nM=0;
+  for(var id in L)nL++;
+  for(var id in M){nM++;if(!L[id]||L[id].r!==M[id].r||L[id].c!==M[id].c)localChanged=true;}
+  if(nL!==nM)localChanged=true;
+  // هل لازم نرفع؟
+  var nR=0;for(var id in remote.M)nR++;
+  if(nR!==nM)remoteChanged=true;
+  else for(var id in M){var rr=remote.M[id];if(!rr||rr.c!==M[id].c||((rr.r._t||0)!==(M[id].r._t||0))||(rr.r!==M[id].r&&_fp(rr.r)!==_fp(M[id].r))){remoteChanged=true;break;}}
+  if(!remoteChanged){for(var id in D){if(remote.D[id]!==D[id]){remoteChanged=true;break;}}}
+  if(localChanged){
+    var inc=[],out=[];
+    for(var id in M)(M[id].c==='i'?inc:out).push(M[id].r);
+    INC=inc;OUT=out;
+  }
+  DEL=D;
+  return {localChanged:localChanged,needPush:remoteChanged};
+}
+
+function setSyncState(state,msg){
+  var e=document.getElementById('sync-status');if(!e)return;
+  clearTimeout(e._fadeTimer);
+  e.style.opacity='1';
+  var t=new Date().toLocaleTimeString('ar-EG-u-nu-latn',{hour:'2-digit',minute:'2-digit'});
+  if(state==='busy'){e.textContent='⏳ مزامنة...';e.style.background='#FFF8E7';e.style.color='#8B5E04';e.style.borderColor='#E8C547';}
+  else if(state==='ok'){e.textContent='🟢 متزامن '+t;e.style.background='#EBF5EF';e.style.color='#2D7A4F';e.style.borderColor='#b8dfc8';e.title='آخر مزامنة ناجحة: '+t;}
+  else if(state==='pending'){e.textContent='🟡 تغييرات لم تُرفع بعد';e.style.background='#FFF8E7';e.style.color='#8B5E04';e.style.borderColor='#E8C547';}
+  else{e.textContent='🔴 المزامنة فشلت — '+(msg||'');e.style.background='#FCEAEA';e.style.color='#B83232';e.style.borderColor='#f0c4c4';e.title=msg||'';}
+}
+
+async function _jb(method,body){
+  var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},20000);
+  try{
+    var opt={method:method,headers:{'X-Master-Key':_JB_KEY},signal:ctrl.signal,cache:'no-store'};
+    if(body){opt.headers['Content-Type']='application/json';opt.body=JSON.stringify(body);}
+    var r=await fetch(_JB_URL+_JB_DATA_BIN+(method==='GET'?'/latest':''),opt);
+    var txt=await r.text(),js=null;try{js=JSON.parse(txt);}catch(e){}
+    if(!r.ok){
+      var m=(js&&js.message)||txt||('HTTP '+r.status);
+      var why=r.status===401?'مفتاح JSONBin غير صحيح':r.status===403?'الحساب وصل للحد (عدد الطلبات أو حجم البيانات)':r.status===413?'حجم البيانات أكبر من المسموح':r.status===404?'الـ Bin غير موجود':r.status===429?'طلبات كتير — هيعيد المحاولة':'خطأ من السيرفر';
+      throw {msg:why+' ('+r.status+': '+String(m).substring(0,120)+')'};
+    }
+    return js;
+  }catch(e){
+    if(e&&e.msg)throw e;
+    throw {msg:(e&&e.name==='AbortError')?'السيرفر مردش (انتهت المهلة)':(navigator.onLine===false?'مفيش إنترنت':'تعذر الاتصال بالسيرفر')};
+  }finally{clearTimeout(tid);}
+}
+
+async function syncNow(silent){
+  if(!_CU)return false;
+  if(_syncBusy){_syncAgain=true;return false;}
+  _syncBusy=true;
+  if(!silent)setSyncState('busy');
+  var ok=false;
+  try{
+    var js=await _jb('GET');
+    var doc=js&&js.record!==undefined?js.record:js;
+    var hasRemote=doc&&((doc.v===3)||(doc.inc&&doc.inc.length)||(doc.out&&doc.out.length));
+    var res={localChanged:false,needPush:true};
+    if(hasRemote){
+      if(doc.v===3&&doc.base&&doc.base!==BASE_ID)console.warn('نسخة الملف مختلفة عن الأجهزة الأخرى',doc.base,BASE_ID);
+      res=syncMerge(syncDecode(doc));
+    }
+    if(res.needPush)await _jb('PUT',syncEncode());
+    if(res.localChanged){DATA_VER++;refreshVisible();}
+    _autoSave();
+    _lastSyncOk=Date.now();
+    setSyncState('ok');
+    ok=true;
+  }catch(e){
+    setSyncState('err',e&&e.msg?e.msg:String(e));
+    console.warn('sync error',e);
+  }finally{
+    _syncBusy=false;
+    if(_syncAgain){_syncAgain=false;setTimeout(function(){syncNow(true);},300);}
+  }
+  return ok;
+}
+function schedulePush(){
+  if(!_CU)return;
+  setSyncState('pending');
+  clearTimeout(_pushT);
+  _pushT=setTimeout(function(){syncNow(true);},1500);
+}
+// إعادة رسم الصفحة الظاهرة بس
+function refreshVisible(){
+  var pg=document.querySelector('.pg.on');
+  var name=pg?pg.id.replace('p-',''):'dash';
+  updateKPIs();
+  if(name==='in')renderIn();
+  else if(name==='out')renderOut();
+  else if(name==='overview')renderOverview();
+}
+// للتوافق مع الكود القديم
+async function ghPush(){schedulePush();}
+async function ghPull(){return syncNow();}
+// سحب تلقائي
+setInterval(function(){if(_CU&&!document.hidden)syncNow(true);},SYNC_PULL_MS);
+document.addEventListener('visibilitychange',function(){
+  if(!document.hidden&&_CU&&(!_lastSyncOk||Date.now()-_lastSyncOk>15000))syncNow(true);
+  if(document.hidden)_autoSave();
+});
+window.addEventListener('online',function(){if(_CU)syncNow();});
+window.addEventListener('beforeunload',function(){try{_autoSave();}catch(e){}});
 // ===== END DATA SYNC =====
 
 async function ghPushUsers(){
@@ -1996,47 +2345,28 @@ function tryLogin(){
   if(rb) rb.style.display = found.role==='admin'?'inline-flex':'none';
   // Apply page permissions
   applyPerms(found);
-  // تحميل البيانات: أولوية GitHub، ثم localStorage، ثم البيانات المدمجة
-  (async function(){
-    // اعرض البيانات المحلية فوراً بدون انتظار
-    var saved = localStorage.getItem('sb_shared_data');
-    var localLoaded = false;
-    if(saved){
-      try{
-        var d=JSON.parse(saved);
-        if(d && typeof d === 'object' && ('inc' in d)){
-          INC = (d.inc && d.inc.length>0) ? d.inc : (typeof _PDF_INC!=='undefined'?_PDF_INC:[]);
-          OUT = (d.out && d.out.length>0) ? d.out : (typeof _PDF_OUT!=='undefined'?_PDF_OUT:[]);
-          localLoaded = true;
-        }
-      }catch(e){}
-    }
-    if(!localLoaded){
-      if(typeof _PDF_INC!=='undefined'){ INC=_PDF_INC.slice(); OUT=_PDF_OUT.slice(); }
-      try{
-        var _initData={inc:INC,out:OUT};
-        localStorage.setItem('sb_shared_data',JSON.stringify(_initData));
-      }catch(e){}
-    }
-    updateKPIs(); renderIn(); renderOut();
-    applyPerms(_CU);
-
-    // مزامنة في الخلفية بدون تعليق الموقع
-    _syncMsg('sync-status','⏳ مزامنة...');
-    ghSyncOnLogin().then(function(synced){
-      if(synced){
-        _syncMsg('sync-status','✅ تمت المزامنة');
-        updateKPIs(); renderIn(); renderOut();
-      } else {
-        _syncMsg('sync-status','📱 وضع محلي');
-      }
-    }).catch(function(){ _syncMsg('sync-status','📱 وضع محلي'); });
-  })();
-
-  // Auto-save every 30s
-  setInterval(_autoSave, 30000);
-  // Auto-sync with GitHub every 5 min
-  setInterval(function(){ if(_CU) ghPush(); }, 300000);
+  var ud=document.getElementById('user-disp');if(ud)ud.textContent=found.name;
+  // تحميل البيانات المحلية فوراً، وبعدين مزامنة في الخلفية
+  var saved=null;
+  try{saved=JSON.parse(localStorage.getItem('sb_shared_data')||'null');}catch(e){}
+  if(saved&&typeof saved==='object'&&('inc' in saved)){
+    DEL=saved.del||{};
+    var hasAny=(saved.inc&&saved.inc.length)||(saved.out&&saved.out.length);
+    if(hasAny||Object.keys(DEL).length){INC=saved.inc||[];OUT=saved.out||[];}
+    else{var bc=baseClone();INC=bc.inc;OUT=bc.out;}
+  }else{
+    var bc=baseClone();INC=bc.inc;OUT=bc.out;DEL={};
+    _autoSave();
+  }
+  if(Object.keys(DEL).length){
+    INC=INC.filter(function(r){return !DEL[r.id]||(r._t||0)>DEL[r.id];});
+    OUT=OUT.filter(function(r){return !DEL[r.id]||(r._t||0)>DEL[r.id];});
+  }
+  DATA_VER++;
+  updateKPIs();renderIn();renderOut();
+  applyPerms(_CU);
+  syncNow();
+  if(!window._autoSaveIv)window._autoSaveIv=setInterval(_autoSave,30000);
 }
 
 function loadBuiltinData(){
@@ -2047,8 +2377,9 @@ function loadBuiltinData(){
 
 // _autoSave: حفظ البيانات في localStorage
 function _autoSave(){
+  if(!_CU)return; // قبل تسجيل الدخول متكتبش فوق البيانات المحفوظة
   try{
-    var data = {inc: INC, out: OUT};
+    var data = {inc: INC, out: OUT, del: DEL};
     localStorage.setItem('sb_shared_data', JSON.stringify(data));
   }catch(e){
     console.warn('AutoSave failed:', e);
@@ -2115,30 +2446,51 @@ function applyPerms(user){
 
 async function manualSync(){
   if(!_CU){toast('⚠️ يرجى تسجيل الدخول','err');return;}
-  _syncMsg('sync-status','⏳ جاري المزامنة...');
-  _autoSave(); // حفظ محلي أولاً
-
-  // سحب من GitHub ثم رفع
-  var pulled = await ghPull();
-  if(pulled){
-    // تم السحب، دمج ثم رفع
-    _syncMsg('sync-status','⬇️ تم السحب، جاري الرفع...');
-    updateKPIs(); renderIn(); renderOut();
-  }
-  await ghPush();
-  await ghPushUsers();
-
-  if(pulled){
-    _syncMsg('sync-status','✅ مزامنة كاملة');
-    toast('✅ تمت المزامنة مع GitHub','ok');
-  } else {
-    _syncMsg('sync-status','⚠️ تم الحفظ محلياً فقط — تحقق من التوكن');
-    toast('⚠️ 📱 وضع محلي','err');
-  }
+  _autoSave();
+  var ok=await syncNow();
+  if(ok){toast('✅ تمت المزامنة — البيانات متطابقة مع باقي الأجهزة','ok');}
+  else{toast('⚠️ المزامنة فشلت — البيانات محفوظة على الجهاز ده وهتترفع أول ما الاتصال يرجع','err');}
 }
 
 // ===== END GITHUB SYNC =====
 
+
+// ===== استيراد موحد: يسأل وارد ولا مرتجع ولا منصرف =====
+var _destPending=null;
+function _rowW8(r){return toNum(r.w875!==undefined?r.w875:r.w21);}
+function askDest(rows,source,onDone){
+  rows=(rows||[]).filter(function(r){return toNum(r.weight)>0;});
+  if(!rows.length){toast('⚠️ لا توجد بيانات للإضافة','err');return;}
+  _destPending={rows:rows,source:source,onDone:onDone};
+  var tw=0,t8=0;
+  for(var i=0;i<rows.length;i++){tw+=toNum(rows[i].weight);t8+=_rowW8(rows[i])||W8(toNum(rows[i].weight),toNum(rows[i].karat)||875);}
+  el('dest-sum').innerHTML='<b>'+N(rows.length,0)+'</b> سجل من '+esc(source)+' — الوزن القائم <b>'+N(tw)+'</b> جم — وزن 875 <b style="color:#C8860A">'+N(t8)+'</b> جم';
+  el('dest-modal').style.display='flex';
+}
+function destClose(){el('dest-modal').style.display='none';_destPending=null;}
+function destPick(type){
+  var P=_destPending;if(!P)return;
+  el('dest-modal').style.display='none';_destPending=null;
+  var isOut=type==='منصرف',now=Date.now(),added=0,base=now*10;
+  for(var i=0;i<P.rows.length;i++){
+    var r=P.rows[i];
+    var w=toNum(r.weight),k=toNum(r.karat)||875;
+    if(w<=0)continue;
+    var w8=_rowW8(r)||W8(w,k),w9=toNum(r.w995)||W9(w,k);
+    var rec={id:base+i,date:r.date||today(),type:type,desc:(r.client||(isOut?'منصرف':'مستورد'))+'',
+      w:w,k:k,w8:+w8.toFixed(3),w9:+w9.toFixed(3),w7:W7(w,k),pcs:toNum(r.pcs)||0,
+      notes:'مستورد من '+P.source,_t:now};
+    if(isOut){rec.detail='';OUT.push(rec);}else INC.push(rec);
+    added++;
+  }
+  dataChanged();
+  updateKPIs();
+  toast('✅ تم إضافة '+added+' سجل إلى '+(isOut?'المنصرف':type==='مرتجع'?'المرتجع':'الوارد'));
+  if(typeof P.onDone==='function')P.onDone();
+  var pg=isOut?'out':'in';
+  G(pg);
+  setTimeout(function(){stab(pg,2);},50);
+}
 
 // ===== SCAN =====
 var _scRows = [];
@@ -2252,24 +2604,8 @@ function scDel(i){
 
 function scanConfirm(){
   if(!_scRows.length){toast('⚠️ لا توجد بيانات','err');return;}
-  var added=0;
-  for(var i=0;i<_scRows.length;i++){
-    var r=_scRows[i];
-    var w=parseFloat(r.weight)||0,k=parseFloat(r.karat)||875;
-    if(w<=0)continue;
-    INC.push({id:Date.now()+i,date:r.date||today(),type:'مستلم',
-      desc:r.client||'مستورد',w:w,k:k,
-      w8:parseFloat(r.w21)||(w*k/875),
-      w9:parseFloat(r.w995)||(w*k/999.5),
-      w7:W7(w,k),pcs:0,notes:'مستورد من صورة'});
-    added++;
-  }
-  _autoSave();
-  if(typeof ghPush==='function')ghPush();
-  updateKPIs();renderIn();
-  toast('✅ تم إضافة '+added+' سجل للوارد');
-  scanReset();G('in');
-  setTimeout(function(){stab('in',2);},300);
+  var rows=_scRows.map(function(r){return {date:r.date,client:r.client,weight:r.weight,karat:r.karat,w875:r.w21,w995:r.w995};});
+  askDest(rows,'صورة',function(){scanReset();});
 }
 
 // File type tab
@@ -2287,7 +2623,7 @@ function setFileTab(t){
 
 // PDF Parser
 function pdfHandleFile(file){
-  if(!file||file.type!=='application/pdf'){toast('⚠️ اختر ملف PDF','err');return;}
+  if(!file||!(file.type==='application/pdf'||/\.pdf$/i.test(file.name||''))){toast('⚠️ اختر ملف PDF','err');return;}
   var ps=document.getElementById('pdf-status');
   ps.style.display='block';ps.textContent='جاري قراءة PDF...';
   document.getElementById('xl-preview2').style.display='none';
@@ -2346,49 +2682,44 @@ function pdfProcess(file){
 
 function pdfParseText(text){
   var ps=document.getElementById('pdf-status');
+  text=text.replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).replace(/٫/g,'.');
   var lines=text.split('\n');
   var rows=[];
-  var todayStr=today();
+  var lastDate=today();
   for(var i=0;i<lines.length;i++){
     var line=lines[i].trim();
     if(!line||line.length<3)continue;
-    // Extract all numbers
-    var nums=line.match(/[\d,\.]+/g);
-    if(!nums||nums.length<2)continue;
+    if(/إجمال|اجمال|الإجمالي|total/i.test(line))continue;
+    // التاريخ في السطر (لو موجود)
+    var dm=line.match(/(\d{4})[\-\/\.](\d{1,2})[\-\/\.](\d{1,2})/)||null,dStr=null;
+    if(dm){dStr=dm[1]+'-'+('0'+dm[2]).slice(-2)+'-'+('0'+dm[3]).slice(-2);}
+    else{dm=line.match(/(\d{1,2})[\-\/\.](\d{1,2})[\-\/\.](\d{4})/);if(dm)dStr=dm[3]+'-'+('0'+dm[2]).slice(-2)+'-'+('0'+dm[1]).slice(-2);}
+    var rest=dm?line.replace(dm[0],' '):line;
+    if(dStr)lastDate=dStr;
+    var nums=rest.match(/\d[\d,]*(?:\.\d+)?/g);
+    if(!nums)continue;
     var cleanNums=[];
-    for(var j=0;j<nums.length;j++){
-      var n=parseFloat(nums[j].replace(/,/g,''));
-      if(!isNaN(n)&&n>0) cleanNums.push(n);
-    }
-    if(cleanNums.length<2)continue;
-    // Find weight (largest), karat (700-999 range), w875, w995
-    var weight=0,karat=875,w875=0,w995=0;
-    var karatNums=cleanNums.filter(function(n){return n>=700&&n<=999;});
-    var bigNums=cleanNums.filter(function(n){return n>=100;});
-    if(karatNums.length>0) karat=karatNums[0];
-    if(bigNums.length>0){
-      bigNums.sort(function(a,b){return b-a;});
-      weight=bigNums[0];
-      if(bigNums.length>1) w875=bigNums[1];
-      if(bigNums.length>2) w995=bigNums[2];
-    }
-    if(!w875) w875=weight*karat/875;
-    if(!w995) w995=weight*karat/999.5;
-    // Extract text part as client
-    var textPart=line.replace(/[\d,\.\-\/\|]+/g,' ').replace(/\s+/g,' ').trim();
-    if(!textPart||textPart.length<2) textPart='المصنع';
-    if(weight>10&&weight<100000){
-      rows.push({date:todayStr,client:textPart.substring(0,30),weight:parseFloat(weight.toFixed(3)),karat:karat,w875:parseFloat(w875.toFixed(3)),w995:parseFloat(w995.toFixed(3))});
-    }
+    for(var j=0;j<nums.length;j++){var n=parseFloat(nums[j].replace(/,/g,''));if(!isNaN(n)&&n>0)cleanNums.push(n);}
+    if(!cleanNums.length)continue;
+    var karat=875,karatIdx=-1;
+    for(var j=0;j<cleanNums.length;j++){var n=cleanNums[j];if(n===875||n===750||n===999.9||n===999||n===995||n===995.5||n===916||n===583){karat=n;karatIdx=j;break;}}
+    var ws=cleanNums.filter(function(n,j){return j!==karatIdx&&n>0.01;});
+    if(!ws.length)continue;
+    var weight=Math.max.apply(null,ws.filter(function(n){return n<100000;}).concat([0]));
+    if(!(weight>0))continue;
+    var w875=weight*karat/875,w995=weight*karat/999.5;
+    var textPart=rest.replace(/[\d,\.\-\/\|×x]+/g,' ').replace(/\s+/g,' ').trim();
+    if(!textPart||textPart.length<2)textPart='مستورد';
+    rows.push({date:dStr||lastDate,client:textPart.substring(0,40),weight:+weight.toFixed(3),karat:karat,w875:+w875.toFixed(3),w995:+w995.toFixed(3)});
   }
   if(!rows.length){
-    ps.textContent='لم يتم العثور على بيانات أرقام في الـ PDF — تأكد أن الملف يحتوي نصاً وليس صورة';
+    ps.textContent='لم يتم العثور على بيانات أرقام في الـ PDF — لو الملف صورة ممسوحة حوّله لـ Excel الأول';
     return;
   }
   _xlRows2=rows;
   ps.style.display='none';
   xlShowPreview2();
-  toast('✅ تم قراءة '+rows.length+' سجل من PDF');
+  askDest(_xlRows2,'PDF',function(){xlReset2();});
 }
 
 // Tab switching
@@ -2402,6 +2733,70 @@ function scSetTab(n){
   document.getElementById('sc-tab2').style.background = n===2?'#C8860A':'#F5F4F1';
   document.getElementById('sc-tab2').style.color = n===2?'#fff':'#5C5849';
   document.getElementById('sc-tab2').style.border = n===2?'none':'1px solid #C8C4BC';
+}
+
+// قراءة جدول Excel بشكل مرن (يستخدمها استيراد Excel وصفحة PDF→Excel)
+function parseSheetRows(data){
+  var out=[];
+  if(!data||data.length<1)return out;
+  var headerRow=-1;
+  for(var i=0;i<Math.min(15,data.length);i++){
+    var r=(data[i]||[]).join(' ');
+    if(/تاريخ|وزن|الوزن|عيار|بيان|date|weight/i.test(r)){headerRow=i;break;}
+  }
+  var cols={date:-1,client:-1,weight:-1,karat:-1,w875:-1,w995:-1,pcs:-1};
+  if(headerRow>=0){
+    var headers=data[headerRow];
+    for(var j=0;j<headers.length;j++){
+      var h=(headers[j]+'').trim(),hl=h.toLowerCase();
+      if(!h)continue;
+      if(cols.date<0&&(h.indexOf('تاريخ')>=0||hl.indexOf('date')>=0))cols.date=j;
+      else if(cols.client<0&&(h.indexOf('اسم')>=0||h.indexOf('بيان')>=0||h.indexOf('عميل')>=0||h.indexOf('صنف')>=0||hl==='client'||hl==='desc'))cols.client=j;
+      else if(cols.karat<0&&(h.indexOf('عيار')>=0||hl==='karat')&&h.indexOf('وزن')<0)cols.karat=j;
+      else if(cols.w875<0&&(h.indexOf('21')>=0||h.indexOf('875')>=0))cols.w875=j;
+      else if(cols.w995<0&&(h.indexOf('995')>=0||h.indexOf('999')>=0||h.indexOf('24')>=0))cols.w995=j;
+      else if(cols.pcs<0&&(h.indexOf('عدد')>=0||h.indexOf('قطع')>=0||hl==='pcs'))cols.pcs=j;
+      else if(cols.weight<0&&(h.indexOf('وزن')>=0||h.indexOf('قائم')>=0||hl.indexOf('weight')>=0))cols.weight=j;
+    }
+  }
+  var lastDate=today();
+  for(var i=headerRow+1;i<data.length;i++){
+    var row=data[i]||[];
+    var rowTxt=row.join(' ');
+    if(!rowTxt.trim())continue;
+    if(/إجمال|اجمال|total/i.test(rowTxt))continue; // تجاهل صفوف الإجمالي
+    var w=cols.weight>=0?toNum(row[cols.weight]):0;
+    if(w<=0&&cols.weight<0){
+      for(var j=0;j<row.length;j++){
+        if(j===cols.date||j===cols.karat||j===cols.pcs)continue;
+        var v=toNum(row[j]);
+        if(v>0&&v<100000&&v>w&&!(v>=20000&&v<=80000&&typeof row[j]==='number'&&cols.date<0))w=v;
+      }
+    }
+    if(w<=0)continue;
+    var k=cols.karat>=0?(toNum(row[cols.karat])||875):875;
+    if(k<300||k>1000)k=875;
+    var w8=cols.w875>=0?toNum(row[cols.w875]):0;
+    var w9=cols.w995>=0?toNum(row[cols.w995]):0;
+    if(!(w8>0))w8=w*k/875;
+    if(!(w9>0))w9=w*k/999.5;
+    var rawDate=cols.date>=0?row[cols.date]:'';
+    var d=rawDate!==''&&rawDate!==undefined&&rawDate!==null?xlParseDate2(rawDate):lastDate;
+    lastDate=d;
+    var cl=(cols.client>=0?(row[cols.client]||''):'').toString().trim()||'مستورد';
+    out.push({date:d,client:cl,weight:+w.toFixed(3),karat:k,w875:+w8.toFixed(3),w995:+w9.toFixed(3),pcs:cols.pcs>=0?toNum(row[cols.pcs]):0});
+  }
+  return out;
+}
+function readWorkbookRows(buf){
+  var wb=XLSX.read(buf,{type:'array'});
+  for(var s=0;s<wb.SheetNames.length;s++){
+    var ws=wb.Sheets[wb.SheetNames[s]];
+    var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+    var rows=parseSheetRows(data);
+    if(rows.length)return rows;
+  }
+  return [];
 }
 
 // Excel Import
@@ -2431,105 +2826,35 @@ function xlProcess2(file){
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      var wb=XLSX.read(e.target.result,{type:'array'});
-      var ws=wb.Sheets[wb.SheetNames[0]];
-      var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-      xlParseData2(data);
+      _xlRows2=readWorkbookRows(e.target.result);
+      if(!_xlRows2.length){
+        var st=document.getElementById('xl-status2');
+        st.textContent='لم يتم العثور على بيانات — لازم يكون فيه عمود للوزن (مثلاً: الوزن / وزن قائم)';st.style.display='block';
+        return;
+      }
+      xlShowPreview2();
+      askDest(_xlRows2,'Excel',function(){xlReset2();});
     }catch(err){
       document.getElementById('xl-status2').textContent='خطأ في قراءة الملف: '+err.message;
     }
   };
   reader.readAsArrayBuffer(file);
 }
-
-function xlParseData2(data){
-  _xlRows2=[];
-  if(!data||data.length<2){document.getElementById('xl-status2').textContent='الملف فارغ';return;}
-
-  // Find header row
-  var headerRow=0;
-  for(var i=0;i<Math.min(6,data.length);i++){
-    var r=data[i].join(' ');
-    if(r.indexOf('تاريخ')>=0||r.indexOf('وزن')>=0||r.indexOf('date')>=0||r.indexOf('Date')>=0){headerRow=i;break;}
-  }
-
-  var headers=data[headerRow];
-  var cols={date:-1,client:-1,weight:-1,karat:-1,w875:-1,w995:-1};
-
-  for(var j=0;j<headers.length;j++){
-    var h=(headers[j]+'').trim();
-    var hl=h.toLowerCase();
-    // Date
-    if(h.indexOf('تاريخ')>=0||hl==='date'||h.indexOf('Date')>=0) cols.date=j;
-    // Client
-    else if(h.indexOf('اسم')>=0||h.indexOf('بيان')>=0||h.indexOf('عميل')>=0||hl==='client') cols.client=j;
-    // Weight 875 / 21
-    else if(h.indexOf('21')>=0||h.indexOf('875')>=0) cols.w875=j;
-    // Weight 995
-    else if(h.indexOf('995')>=0) cols.w995=j;
-    // Karat
-    else if(h.indexOf('عيار')>=0||hl==='karat') cols.karat=j;
-    // Weight (قائم = original weight)
-    else if(h.indexOf('وزن')>=0||h.indexOf('قائم')>=0||hl==='weight') cols.weight=j;
-  }
-
-  // If cols still not found, try Arabic partial matches
-  if(cols.weight<0){
-    for(var j=0;j<headers.length;j++){
-      var h=(headers[j]+'').trim();
-      if(h.indexOf('وزن')>=0&&h.indexOf('21')<0&&h.indexOf('995')<0&&cols.weight<0) cols.weight=j;
-    }
-  }
-
-  var todayStr=today();
-  for(var i=headerRow+1;i<data.length;i++){
-    var row=data[i];
-
-    // Get weight - try col then scan all numeric cols
-    var w=cols.weight>=0?parseFloat(row[cols.weight])||0:0;
-    if(w<=0){
-      // scan for largest reasonable weight
-      for(var j=0;j<row.length;j++){
-        var v=parseFloat(row[j])||0;
-        if(v>10&&v<100000&&v>w) w=v;
-      }
-    }
-    if(w<=0)continue;
-
-    var k=cols.karat>=0?(parseFloat(row[cols.karat])||875):875;
-    if(k<700||k>1000) k=875;
-
-    var w8=cols.w875>=0?(parseFloat(row[cols.w875])||0):0;
-    var w9=cols.w995>=0?(parseFloat(row[cols.w995])||0):0;
-    if(!w8||w8<=0) w8=parseFloat((w*k/875).toFixed(3));
-    if(!w9||w9<=0) w9=parseFloat((w*k/999.5).toFixed(3));
-
-    var rawDate=cols.date>=0?row[cols.date]:'';
-    var d=rawDate?xlParseDate2(rawDate):todayStr;
-    var cl=(cols.client>=0?(row[cols.client]||''):'').toString().trim()||'مستورد';
-
-    _xlRows2.push({date:d,client:cl,weight:w,karat:k,w875:parseFloat(w8.toFixed(3)),w995:parseFloat(w9.toFixed(3))});
-  }
-
-  if(!_xlRows2.length){
-    document.getElementById('xl-status2').textContent='لم يتم العثور على بيانات — تأكد من تنسيق الملف';
-    document.getElementById('xl-status2').style.display='block';
-    return;
-  }
-  xlShowPreview2();
-}
+function xlParseData2(data){_xlRows2=parseSheetRows(data);if(_xlRows2.length)xlShowPreview2();}
 
 function xlParseDate2(val){
-  if(!val)return today();
-  var s=val+'';
-  if(/^\d{4,5}$/.test(s.trim())){
-    var d=new Date((parseInt(s)-25569)*86400*1000);
+  if(val===''||val===null||val===undefined)return today();
+  if(val instanceof Date&&!isNaN(val))return val.toISOString().split('T')[0];
+  if(typeof val==='number'&&val>20000&&val<80000){
+    var d=new Date(Math.round((val-25569)*86400*1000));
     return d.toISOString().split('T')[0];
   }
-  var m=s.match(/(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})/);
+  var s=(val+'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).trim();
+  if(/^\d{5}(\.\d+)?$/.test(s)){var d2=new Date(Math.round((parseFloat(s)-25569)*86400*1000));return d2.toISOString().split('T')[0];}
+  var m=s.match(/(\d{4})[\-\/\.](\d{1,2})[\-\/\.](\d{1,2})/);
   if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
-  m=s.match(/(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{4})/);
-  if(m)return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');
+  m=s.match(/(\d{1,2})[\-\/\.](\d{1,2})[\-\/\.](\d{2,4})/);
+  if(m){var y=m[3].length===2?'20'+m[3]:m[3];return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');}
   return today();
 }
 
@@ -2541,7 +2866,7 @@ function xlShowPreview2(){
     h+='<tr style="border-bottom:1px solid #E8E5DF">'
       +'<td style="padding:7px 10px;color:#9C9488;font-size:11px">'+(i+1)+'</td>'
       +'<td style="padding:7px 10px">'+r.date+'</td>'
-      +'<td style="padding:7px 10px;font-weight:600">'+r.client+'</td>'
+      +'<td style="padding:7px 10px;font-weight:600">'+esc(r.client)+'</td>'
       +'<td style="padding:7px 10px">'+N(r.weight)+' جم</td>'
       +'<td style="padding:7px 10px">'+r.karat+'</td>'
       +'<td style="padding:7px 10px;color:#C8860A;font-weight:700">'+N(r.w875)+' جم</td>'
@@ -2558,22 +2883,7 @@ function xlShowPreview2(){
 
 function xlConfirm2(){
   if(!_xlRows2.length){toast('⚠️ لا توجد بيانات','err');return;}
-  var added=0;
-  for(var i=0;i<_xlRows2.length;i++){
-    var r=_xlRows2[i];
-    if(r.weight<=0)continue;
-    INC.push({id:Date.now()+i,date:r.date,type:'مستلم',
-      desc:r.client||'مستورد',w:r.weight,k:r.karat,
-      w8:r.w875,w9:r.w995,w7:W7(r.weight,r.karat),
-      pcs:0,notes:'مستورد من Excel'});
-    added++;
-  }
-  _autoSave();
-  if(typeof ghPush==='function')ghPush();
-  updateKPIs();renderIn();
-  toast('✅ تم استيراد '+added+' سجل للوارد');
-  xlReset2();scSetTab(1);G('in');
-  setTimeout(function(){stab('in',2);},300);
+  askDest(_xlRows2,'ملف',function(){xlReset2();scSetTab(1);});
 }
 
 // ===== END SCAN =====
@@ -2605,57 +2915,24 @@ function p2xlProcess(file){
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      var wb=XLSX.read(e.target.result,{type:'array'});
-      var ws=wb.Sheets[wb.SheetNames[0]];
-      var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-      p2xlParseData(data);
+      p2xlShow(readWorkbookRows(e.target.result));
     }catch(err){
       document.getElementById('p2xl-status').textContent='خطأ في قراءة الملف: '+err.message;
     }
   };
   reader.readAsArrayBuffer(file);
 }
-
-function p2xlParseData(data){
-  _p2xlRows=[];
-  if(!data||data.length<2){document.getElementById('p2xl-status').textContent='الملف فارغ';return;}
-  var headerRow=0;
-  for(var i=0;i<Math.min(6,data.length);i++){
-    var r=data[i].join(' ');
-    if(r.indexOf('تاريخ')>=0||r.indexOf('وزن')>=0||r.indexOf('date')>=0){headerRow=i;break;}
-  }
-  var headers=data[headerRow];
-  var cols={date:-1,client:-1,weight:-1,karat:-1,w875:-1,w995:-1};
-  for(var j=0;j<headers.length;j++){
-    var h=(headers[j]+'').trim();
-    if(h.indexOf('تاريخ')>=0||h.toLowerCase()==='date') cols.date=j;
-    else if(h.indexOf('اسم')>=0||h.indexOf('بيان')>=0||h.indexOf('عميل')>=0) cols.client=j;
-    else if(h.indexOf('21')>=0||h.indexOf('875')>=0) cols.w875=j;
-    else if(h.indexOf('995')>=0) cols.w995=j;
-    else if(h.indexOf('عيار')>=0) cols.karat=j;
-    else if(h.indexOf('وزن')>=0||h.indexOf('قائم')>=0) cols.weight=j;
-  }
-  var todayStr=today();
-  for(var i=headerRow+1;i<data.length;i++){
-    var row=data[i];
-    var w=cols.weight>=0?parseFloat(row[cols.weight])||0:0;
-    if(w<=0)continue;
-    var k=cols.karat>=0?(parseFloat(row[cols.karat])||875):875;
-    if(k<700||k>1000)k=875;
-    var w8=cols.w875>=0?(parseFloat(row[cols.w875])||0):w*k/875;
-    var w9=cols.w995>=0?(parseFloat(row[cols.w995])||0):w*k/999.5;
-    var d=cols.date>=0&&row[cols.date]?xlParseDate2(row[cols.date]):todayStr;
-    var cl=(cols.client>=0?(row[cols.client]||'')+'':'مستورد').trim()||'مستورد';
-    _p2xlRows.push({date:d,client:cl,weight:w,karat:k,w875:parseFloat(w8.toFixed(3)),w995:parseFloat(w9.toFixed(3))});
-  }
-  if(!_p2xlRows.length){document.getElementById('p2xl-status').textContent='لم يتم العثور على بيانات';return;}
+function p2xlParseData(data){p2xlShow(parseSheetRows(data));}
+function p2xlShow(rows){
+  _p2xlRows=rows||[];
+  if(!_p2xlRows.length){document.getElementById('p2xl-status').textContent='لم يتم العثور على بيانات — لازم يكون فيه عمود للوزن';return;}
   var totW=0,tot875=0,h='';
   for(var i=0;i<_p2xlRows.length;i++){
     var r=_p2xlRows[i];totW+=r.weight;tot875+=r.w875;
     h+='<tr style="border-bottom:1px solid #E8E5DF">'
-      +'<td style="padding:7px 10px;color:#9C9488;font-size:11px">'+( i+1)+'</td>'
+      +'<td style="padding:7px 10px;color:#9C9488;font-size:11px">'+(i+1)+'</td>'
       +'<td style="padding:7px 10px">'+r.date+'</td>'
-      +'<td style="padding:7px 10px;font-weight:600">'+r.client+'</td>'
+      +'<td style="padding:7px 10px;font-weight:600">'+esc(r.client)+'</td>'
       +'<td style="padding:7px 10px">'+N(r.weight)+' جم</td>'
       +'<td style="padding:7px 10px">'+r.karat+'</td>'
       +'<td style="padding:7px 10px;color:#C8860A;font-weight:700">'+N(r.w875)+' جم</td>'
@@ -2668,24 +2945,12 @@ function p2xlParseData(data){
   txt('p2xl-cnt',N(_p2xlRows.length,0)+' سجل');
   txt('p2xl-tw',N(totW)+' جم');
   txt('p2xl-t875',N(tot875)+' جم');
+  askDest(_p2xlRows,'Excel',function(){p2xlReset();});
 }
 
 function p2xlConfirm(){
   if(!_p2xlRows.length){toast('⚠️ لا توجد بيانات','err');return;}
-  var added=0;
-  for(var i=0;i<_p2xlRows.length;i++){
-    var r=_p2xlRows[i];if(r.weight<=0)continue;
-    INC.push({id:Date.now()+i,date:r.date,type:'مستلم',
-      desc:r.client||'مستورد',w:r.weight,k:r.karat,
-      w8:r.w875,w9:r.w995,w7:W7(r.weight,r.karat),
-      pcs:0,notes:'مستورد من PDF→Excel'});
-    added++;
-  }
-  _autoSave();if(typeof ghPush==='function')ghPush();
-  updateKPIs();renderIn();
-  toast('✅ تم استيراد '+added+' سجل للوارد');
-  p2xlReset();G('in');
-  setTimeout(function(){stab('in',2);},300);
+  askDest(_p2xlRows,'Excel',function(){p2xlReset();});
 }
 // ===== END PDF2XL =====
 
@@ -2699,6 +2964,24 @@ function toggleUserMenu(){
   var m=document.getElementById('user-menu');
   if(!m) return;
   m.style.display = m.style.display==='block' ? 'none' : 'block';
+}
+function showUserMenu(){
+  var m=document.getElementById('user-menu');if(!m)return;
+  var a=document.getElementById('user-menu-admin');if(a)a.style.display=(_CU&&_CU.role==='admin')?'block':'none';
+  toggleUserMenu();
+}
+function exportData(){
+  closeUserMenu();
+  function go(){
+    var wb=XLSX.utils.book_new();
+    function rows(arr){return arr.map(function(r){return {'التاريخ':r.date,'النوع':r.type,'البيان':r.desc,'التفاصيل':r.detail||'','القطع':r.pcs||0,'الوزن القائم':+(+r.w).toFixed(3),'العيار':r.k,'وزن 875':+(+r.w8).toFixed(3),'وزن 999.9':+(+r.w9).toFixed(3),'ملاحظات':r.notes||''};});}
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows(INC)),'الوارد');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows(OUT)),'المنصرف');
+    XLSX.writeFile(wb,'سبايك-'+today()+'.xlsx');
+  }
+  if(window.XLSX){go();return;}
+  var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=go;s.onerror=function(){toast('⚠️ تعذر تحميل مكتبة Excel','err');};document.head.appendChild(s);
 }
 function openAdmin(){ admOpen(); }
 function admOpen(){
@@ -2818,229 +3101,20 @@ function doLogout(){
 function resetAll(){
   if(!confirm('⚠️ تحذير: سيتم حذف جميع البيانات نهائياً. هل أنت متأكد؟')) return;
   if(!confirm('⚠️ تأكيد أخير: سيتم مسح كل السجلات والمتابعة؟')) return;
+  var now=Date.now();
+  INC.forEach(function(r){DEL[r.id]=now;});OUT.forEach(function(r){DEL[r.id]=now;});
+  for(var id in _BASE)DEL[id]=now;
   INC=[]; OUT=[];
-  localStorage.removeItem('sb_shared_data');
+  dataChanged();
   if(_CU) localStorage.removeItem('sb_data_'+_CU.u);
   updateKPIs();
   try{renderIn();}catch(e){}
   try{renderOut();}catch(e){}
   try{renderCat();}catch(e){}
   toast('✅ تم التصفير النهائي','ok');
-  setTimeout(function(){ghPush();},500);
 }
 </script>
 
-
-</body>
-</html><!-- SCAN PAGE -->
-<div class="pg" id="p-scan">
-
-  <!-- Tabs -->
-  <div class="card" style="margin-bottom:13px;padding:13px">
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <button id="sc-tab1" onclick="scSetTab(1)" style="flex:1;padding:10px;background:#C8860A;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">📷 رفع صورة وإدخال</button>
-      <button id="sc-tab2" onclick="scSetTab(2)" style="flex:1;padding:10px;background:#F5F4F1;color:#5C5849;border:1px solid #C8C4BC;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">📊 استيراد Excel</button>
-    </div>
-    <div style="font-size:12px;color:#9C9488;margin-top:8px;padding:8px 12px;background:#FFF8E7;border-radius:8px;border:1px solid #E8C547">
-      💡 <strong>تلميح:</strong> حول PDF لـ Excel مجاناً من <a href="https://www.ilovepdf.com/pdf_to_excel" target="_blank" style="color:#C8860A;font-weight:700">ilovepdf.com</a> ثم ارفعه هنا
-    </div>
-  </div>
-
-  <!-- TAB 1: Image -->
-  <div id="sc-area1">
-  <!-- Upload Zone -->
-  <div class="card" id="scan-upload-card">
-    <div class="sh">
-      <div><div class="st">📷 رفع صورة جدول وارد</div><div class="ss">ارفع الصورة وأدخل البيانات بجانبها مباشرة</div></div>
-    </div>
-    <div id="scan-drop" onclick="document.getElementById('scan-file').click()"
-      ondragover="event.preventDefault();this.style.borderColor='#C8860A';this.style.background='#FFF8E7'"
-      ondragleave="this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9'"
-      ondrop="event.preventDefault();this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9';scanHandleFile(event.dataTransfer.files[0])"
-      style="border:2px dashed #C8C4BC;border-radius:12px;padding:44px 20px;text-align:center;cursor:pointer;background:#FAFAF9;transition:all .2s">
-      <input type="file" id="scan-file" accept="image/*" style="display:none" onchange="scanHandleFile(this.files[0])">
-      <div style="font-size:52px;margin-bottom:12px">🖼️</div>
-      <div style="font-size:16px;font-weight:700;color:#1A1916;margin-bottom:6px">اسحب صورة الجدول هنا أو انقر للاختيار</div>
-      <div style="font-size:13px;color:#9C9488">PNG · JPG · JPEG</div>
-    </div>
-  </div>
-
-  <!-- Main Entry Panel - Image + Form side by side -->
-  <div id="scan-entry" style="display:none">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px">
-      
-      <!-- Left: Image -->
-      <div class="card" style="padding:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-size:13px;font-weight:700">📷 الصورة</div>
-          <button onclick="scanReset()" style="background:none;border:none;font-size:12px;color:#9C9488;cursor:pointer">✕ صورة أخرى</button>
-        </div>
-        <img id="scan-img" style="width:100%;border-radius:8px;border:1px solid #E8E5DF;cursor:zoom-in" src="" onclick="scanZoom()" title="انقر للتكبير">
-        <div style="font-size:11px;color:#9C9488;text-align:center;margin-top:6px">انقر على الصورة للتكبير</div>
-      </div>
-
-      <!-- Right: Entry Form -->
-      <div class="card">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px">✏️ إدخال البيانات صف بصف</div>
-        
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div class="fg"><label>التاريخ</label><input type="date" id="sc-date" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
-          <div class="fg"><label>البيان / العميل</label><input type="text" id="sc-client" placeholder="مثال: المصنع" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
-          <div class="fg"><label>الوزن القائم (جم)</label><input type="number" id="sc-w" step="0.01" placeholder="0.00" oninput="scAutoCalc()" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
-          <div class="fg"><label>العيار</label><input type="number" id="sc-k" value="875" step="1" oninput="scAutoCalc()" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
-          <div class="fg"><label>وزن 875</label><input type="number" id="sc-w875" step="0.01" placeholder="0.00" style="border:1px solid #E8C547;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%;background:#FFF8E7;font-weight:600;color:#C8860A"></div>
-          <div class="fg"><label>وزن 995</label><input type="number" id="sc-w995" step="0.01" placeholder="0.00" style="border:1px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;outline:none;width:100%"></div>
-        </div>
-
-        <div style="display:flex;gap:8px">
-          <button onclick="scAddRow()" style="flex:1;background:#C8860A;color:#fff;border:none;border-radius:9px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">➕ إضافة للقائمة</button>
-          <button onclick="scAddRow(true)" style="background:#EBF5EF;color:#2D7A4F;border:1px solid #b8dfc8;border-radius:9px;padding:11px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif" title="إضافة وتكرار نفس البيان والتاريخ">➕ + تكرار</button>
-        </div>
-
-        <!-- Running totals -->
-        <div style="margin-top:12px;background:#F5F4F1;border-radius:8px;padding:10px 12px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:#9C9488;margin-bottom:4px">
-            <span>السجلات المضافة</span><span id="sc-cnt-mini" style="font-weight:700;color:#1A1916">0</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:#9C9488;margin-bottom:4px">
-            <span>إجمالي وزن 875</span><span id="sc-tot-mini" style="font-weight:700;color:#C8860A">0.000 جم</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Preview Table -->
-    <div class="card" id="sc-preview" style="display:none">
-      <div class="sh">
-        <div><div class="st">📋 السجلات المضافة</div><div class="ss" id="sc-preview-sub"></div></div>
-        <div style="display:flex;gap:8px">
-          <button class="btn bgh bsm" onclick="scanReset()">↩️ مسح الكل</button>
-          <button class="btn bg" onclick="scanConfirm()">✅ اعتماد وإضافة للوارد</button>
-        </div>
-      </div>
-      <div class="cbar" style="margin-bottom:12px">
-        <div class="ci"><div class="cl">عدد السجلات</div><div class="cv" id="sc-cnt">0</div></div>
-        <div class="ci"><div class="cl">إجمالي الوزن القائم</div><div class="cv" id="sc-tw">0.000 جم</div></div>
-        <div class="ci"><div class="cl">إجمالي وزن 875</div><div class="cv" id="sc-t875">0.000 جم</div></div>
-        <div class="ci"><div class="cl">إجمالي وزن 995</div><div class="cv" id="sc-t995">0.000 جم</div></div>
-      </div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <thead><tr style="background:#FAFAF9;border-bottom:2px solid #E8E5DF">
-            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">#</th>
-            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">التاريخ</th>
-            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">البيان</th>
-            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">الوزن القائم</th>
-            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">العيار</th>
-            <th style="padding:9px 10px;text-align:right;color:#C8860A;font-size:11px">وزن 875 ✦</th>
-            <th style="padding:9px 10px;text-align:right;color:#9C9488;font-size:11px">وزن 995</th>
-            <th style="padding:9px 10px;text-align:center;color:#9C9488;font-size:11px">حذف</th>
-          </tr></thead>
-          <tbody id="sc-tbody"></tbody>
-          <tfoot><tr style="background:#FFF8E7;border-top:2px solid #E8C547">
-            <td colspan="3" style="padding:9px 10px;font-weight:700;color:#8B5E04">الإجمالي</td>
-            <td style="padding:9px 10px;font-weight:700" id="sc-ft-w">0.000 جم</td>
-            <td></td>
-            <td style="padding:9px 10px;font-weight:700;color:#C8860A;font-size:14px" id="sc-ft-875">0.000 جم</td>
-            <td style="padding:9px 10px;font-weight:700" id="sc-ft-995">0.000 جم</td>
-            <td></td>
-          </tr></tfoot>
-        </table>
-      </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
-        <button class="btn bgh bsm" onclick="scanReset()">↩️ مسح الكل</button>
-        <button class="btn bg" onclick="scanConfirm()">✅ اعتماد وإضافة للوارد</button>
-      </div>
-    </div>
-  </div>
-
-  </div><!-- end sc-area1 -->
-
-  <!-- TAB 2: Excel Import -->
-  <div id="sc-area2" style="display:none">
-    <div class="card">
-      <div class="sh">
-        <div><div class="st">📊 استيراد من Excel</div><div class="ss">ارفع ملف Excel أو CSV وتُضاف البيانات فوراً</div></div>
-      </div>
-      <!-- File type selector -->
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button id="ft-xl" onclick="setFileTab('xl')" style="flex:1;padding:9px;background:#C8860A;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📊 Excel / CSV</button>
-        <button id="ft-pdf" onclick="setFileTab('pdf')" style="flex:1;padding:9px;background:#F5F4F1;color:#5C5849;border:1px solid #C8C4BC;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📄 PDF جدول</button>
-      </div>
-
-      <!-- Excel upload -->
-      <div id="xl-drop2-wrap">
-      <div id="xl-drop2" onclick="document.getElementById('xl-file2').click()"
-        ondragover="event.preventDefault();this.style.borderColor='#C8860A';this.style.background='#FFF8E7'"
-        ondragleave="this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9'"
-        ondrop="event.preventDefault();this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9';xlHandleFile2(event.dataTransfer.files[0])"
-        style="border:2px dashed #C8C4BC;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;background:#FAFAF9;transition:all .2s;margin-bottom:13px">
-        <input type="file" id="xl-file2" accept=".xlsx,.xls,.csv" style="display:none" onchange="xlHandleFile2(this.files[0])">
-        <div style="font-size:48px;margin-bottom:10px">📊</div>
-        <div style="font-size:15px;font-weight:700;color:#1A1916;margin-bottom:5px">اسحب ملف Excel أو CSV هنا</div>
-        <div style="font-size:13px;color:#9C9488">xlsx · xls · csv</div>
-      </div>
-      </div>
-
-      <!-- PDF upload -->
-      <div id="pdf-drop2-wrap" style="display:none">
-        <div style="background:#EBF0FA;border:1px solid #b8cbef;border-radius:9px;padding:11px 14px;margin-bottom:10px;font-size:13px;color:#2B5FA6">
-          📄 يقرأ النص من PDF مباشرة — يعمل مع جداول PDF النصية (غير الصور)
-        </div>
-        <div style="background:#FFF8E7;border:1px solid #E8C547;border-radius:9px;padding:11px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <div style="font-size:13px;color:#8B5E04">📸 إذا كان الـ PDF صورة ممسوحة — حوّله لـ Excel أولاً</div>
-          <a href="https://www.ilovepdf.com/pdf_to_excel" target="_blank" style="background:#C8860A;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;text-decoration:none;display:inline-block">🔗 فتح ilovepdf</a>
-        </div>
-      <div id="pdf-drop2" onclick="document.getElementById('pdf-file2').click()"
-        ondragover="event.preventDefault();this.style.borderColor='#C8860A';this.style.background='#FFF8E7'"
-        ondragleave="this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9'"
-        ondrop="event.preventDefault();this.style.borderColor='#C8C4BC';this.style.background='#FAFAF9';pdfHandleFile(event.dataTransfer.files[0])"
-        style="border:2px dashed #C8C4BC;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;background:#FAFAF9;transition:all .2s;margin-bottom:13px">
-        <input type="file" id="pdf-file2" accept=".pdf" style="display:none" onchange="pdfHandleFile(this.files[0])">
-        <div style="font-size:48px;margin-bottom:10px">📄</div>
-        <div style="font-size:15px;font-weight:700;color:#1A1916;margin-bottom:5px">اسحب ملف PDF الجدول هنا</div>
-        <div style="font-size:13px;color:#9C9488">يستخرج الأرقام تلقائياً ويعرضها للمراجعة</div>
-      </div>
-      <div id="pdf-status" style="display:none;text-align:center;padding:16px;color:#9C9488;font-size:13px"></div>
-      </div>
-      <div id="xl-status2" style="display:none;text-align:center;padding:20px;color:#9C9488"></div>
-      <div id="xl-preview2" style="display:none">
-        <div class="cbar" style="margin-bottom:12px">
-          <div class="ci"><div class="cl">السجلات</div><div class="cv" id="xl2-cnt">0</div></div>
-          <div class="ci"><div class="cl">إجمالي الوزن القائم</div><div class="cv" id="xl2-tw">0.000 جم</div></div>
-          <div class="ci"><div class="cl">إجمالي وزن 875</div><div class="cv" id="xl2-t875">0.000 جم</div></div>
-        </div>
-        <div style="overflow-x:auto;margin-bottom:12px">
-          <table style="width:100%;border-collapse:collapse;font-size:13px">
-            <thead><tr style="background:#FAFAF9;border-bottom:2px solid #E8E5DF">
-              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">#</th>
-              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">التاريخ</th>
-              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">البيان</th>
-              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">الوزن</th>
-              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">العيار</th>
-              <th style="padding:8px 10px;text-align:right;color:#C8860A;font-size:11px">وزن 875 ✦</th>
-              <th style="padding:8px 10px;text-align:right;color:#9C9488;font-size:11px">وزن 995</th>
-            </tr></thead>
-            <tbody id="xl2-tbody"></tbody>
-          </table>
-        </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button onclick="xlReset2()" class="btn bgh bsm">↩️ ملف آخر</button>
-          <button onclick="xlConfirm2()" class="btn bg">✅ استيراد كل البيانات للوارد</button>
-        </div>
-      </div>
-    </div>
-  </div><!-- end sc-area2 -->
-
-  <!-- Zoom Modal -->
-  <div id="scan-zoom-modal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out">
-    <img id="scan-zoom-img" style="max-width:95vw;max-height:95vh;border-radius:8px;object-fit:contain">
-  </div>
-</div>
-
-  </div><!-- end ct -->
-</main>
-</div><!-- end lay -->
 
 </body>
 </html>

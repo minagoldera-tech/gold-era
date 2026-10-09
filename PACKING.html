@@ -713,7 +713,21 @@ async function loadAll() {
   DATA.stock.main = keyed(sm);
   DATA.stock.sub = ss ? keyed(ss) : [];
   if(users) DATA.users = arr(users);
+  derive();
   DATA.suppliers = sups ? Object.entries(sups).filter(([k,v])=>v).map(([k,v])=>({...v,_key:k})) : [];
+}
+/* أعمدة الحركة تُحسب ولا تُقرأ من عدادات مخزنة قد تكون ناقصة:
+   - الرئيسية: منصرف للفرعية = الوارد − المتبقي (لأن الرئيسية ليس لها إلا وارد ومنصرف للفرعية)
+   - الفرعية: منصرف / تالف يدوي / تالف مصنع / إعادة تغليف = مجموع فواتير الفرعية */
+function derive(){
+  DATA.stock.main.forEach(d=>{ d.o=Math.max(0,(d.w||0)-(d.r||0)); });
+  const agg={};
+  DATA.invoices.filter(i=>i.vault==='sub').forEach(inv=>{
+    const k={'منصرف':'out','تالف يدوي':'d','تالف مصنع الهند':'mfg','تالف مصنع':'mfg','إعادة التغليف':'re'}[inv.type];
+    if(!k) return;
+    (inv.items||[]).forEach(({item,qty})=>{ agg[item]=agg[item]||{out:0,d:0,mfg:0,re:0}; agg[item][k]+=qty||0; });
+  });
+  DATA.stock.sub.forEach(d=>{ const a=agg[d.s]||{out:0,d:0,mfg:0,re:0}; d.out=a.out; d.d=a.d; d.mfg=a.mfg; d.re=a.re; });
 }
 function renderAll() {
   renderDash(); renderStock(); renderInv(); renderReport(); renderSuppliers(); renderUsers();
@@ -775,6 +789,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         DATA.stock.sub=clean;
       }
     }
+    derive();
     document.getElementById('loader').classList.add('off');
     document.getElementById('login-wrap').classList.remove('off');
     setSync('ok');

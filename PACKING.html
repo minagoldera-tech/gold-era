@@ -684,7 +684,7 @@ const byItem = (a,b)=>(IORD[a.s]??99)-(IORD[b.s]??99);
 /* أنواع الحركات حسب الخزنة */
 const TYPES = {
   main: [{v:'وارد',l:'وارد'},{v:'منصرف للفرعية',l:'منصرف للفرعية'}],
-  sub:  [{v:'منصرف',l:'منصرف'},{v:'تالف يدوي',l:'تالف يدوي'},{v:'تالف مصنع الهند',l:'تالف مصنع الهند'},{v:'إعادة التغليف',l:'إعادة التغليف'}],
+  sub:  [{v:'وارد',l:'وارد'},{v:'منصرف',l:'منصرف'},{v:'تالف يدوي',l:'تالف يدوي'},{v:'تالف مصنع الهند',l:'تالف مصنع الهند'},{v:'إعادة التغليف',l:'إعادة التغليف'}],
 };
 
 /* ═══ REST API HELPERS ═══ */
@@ -713,8 +713,8 @@ async function loadAll() {
   DATA.stock.main = keyed(sm);
   DATA.stock.sub = ss ? keyed(ss) : [];
   if(users) DATA.users = arr(users);
-  derive();
   DATA.suppliers = sups ? Object.entries(sups).filter(([k,v])=>v).map(([k,v])=>({...v,_key:k})) : [];
+  derive();
 }
 /* أعمدة الحركة تُحسب ولا تُقرأ من عدادات مخزنة قد تكون ناقصة:
    - الرئيسية: منصرف للفرعية = الوارد − المتبقي (لأن الرئيسية ليس لها إلا وارد ومنصرف للفرعية)
@@ -727,7 +727,14 @@ function derive(){
     if(!k) return;
     (inv.items||[]).forEach(({item,qty})=>{ agg[item]=agg[item]||{out:0,d:0,mfg:0,re:0}; agg[item][k]+=qty||0; });
   });
-  DATA.stock.sub.forEach(d=>{ const a=agg[d.s]||{out:0,d:0,mfg:0,re:0}; d.out=a.out; d.d=a.d; d.mfg=a.mfg; d.re=a.re; });
+  const inn={}; const addIn=(item,q)=>{inn[item]=(inn[item]||0)+(q||0);};
+  DATA.invoices.forEach(inv=>{
+    if((inv.vault==='sub'&&inv.type==='وارد')||(inv.vault==='main'&&inv.type==='منصرف للفرعية'))
+      (inv.items||[]).forEach(({item,qty})=>addIn(item,qty));
+  });
+  (DATA.suppliers||[]).forEach(e=>{ if(!e.addToStock) return;
+    (e.items?arr(e.items):[{item:e.item,net:e.net}]).forEach(i=>addIn(i.item,i.net)); });
+  DATA.stock.sub.forEach(d=>{ const a=agg[d.s]||{out:0,d:0,mfg:0,re:0}; d.out=a.out; d.d=a.d; d.mfg=a.mfg; d.re=a.re; d.inn=inn[d.s]||0; });
 }
 function renderAll() {
   renderDash(); renderStock(); renderInv(); renderReport(); renderSuppliers(); renderUsers();
@@ -1022,6 +1029,7 @@ function renderStock() {
         <div class="sc-lbl">رصيد الفرعية · ${ST[st].label}</div>
         <div class="sc-track"><div class="sc-fill" style="width:${t>0?Math.min(100,t/50):.3}%;background:${ST[st].c}"></div></div>
         <div class="sc-meta">
+          <span><b style="color:var(--gold)">${N(d.inn)}</b>وارد</span>
           <span><b style="color:var(--blue)">${N(d.out)}</b>منصرف</span>
           <span><b style="color:var(--purple)">${N(d.re)}</b>إعادة تغليف</span>
           <span><b style="color:var(--red)">${N(d.d)}</b>تالف يدوي</span>
@@ -1029,10 +1037,10 @@ function renderStock() {
         </div>
       </div>`;
     }).join('')||'<div style="color:var(--t3);text-align:center;padding:24px">لا توجد نتائج</div>';
-    document.getElementById('s-thead').innerHTML='<th>الصنف</th><th>مستورد</th><th>منصرف</th><th>إعادة تغليف</th><th>تالف يدوي</th><th>تالف مصنع</th><th>الحالة</th><th>الرصيد</th>';
+    document.getElementById('s-thead').innerHTML='<th>الصنف</th><th>وارد</th><th>منصرف</th><th>إعادة تغليف</th><th>تالف يدوي</th><th>تالف مصنع</th><th>الحالة</th><th>الرصيد</th>';
     document.getElementById('s-tbody').innerHTML=rows.map(d=>{
       const t=subBal(d);
-      return`<tr><td class="td-p">${d.s}</td><td class="td-m">${N(d.imp)}</td>
+      return`<tr><td class="td-p">${d.s}</td><td class="td-m" style="color:var(--gold)">${N(d.inn)}</td>
         <td class="td-m" style="color:var(--blue)">${N(d.out)}</td>
         <td class="td-m" style="color:var(--purple)">${N(d.re)}</td>
         <td class="td-m" style="color:var(--red)">${N(d.d)}</td>
@@ -1172,11 +1180,16 @@ function setTypeOptions(keep) {
   const list=[...TYPES[vault]];
   if(keep && !list.some(t=>t.v===keep)) list.push({v:keep,l:keep+' (قديم)'});
   sel.innerHTML=list.map(t=>`<option value="${t.v}">${t.l}</option>`).join('');
-  document.getElementById('f-sup-wrap').style.visibility = vault==='sub' ? 'hidden' : '';
+  updSupVis();
   if(list.some(t=>t.v===cur)) sel.value=cur;
   updTypeHint();
 }
+function updSupVis(){
+  const vault=document.getElementById('f-vault').value, type=document.getElementById('f-type').value;
+  document.getElementById('f-sup-wrap').style.visibility = (vault==='sub' && type!=='وارد') ? 'hidden' : '';
+}
 function updTypeHint(){
+  updSupVis();
   const vault=document.getElementById('f-vault').value, type=document.getElementById('f-type').value;
   const h={
     'main|وارد':'يُضاف للوارد والمتبقي في الرئيسية',
@@ -1641,7 +1654,7 @@ function exportCSV(type) {
   }
   if(type==='stock'){
     if(CV==='main') dl([line(['الصنف','وارد','منصرف للفرعية','المتبقي']),...DATA.stock.main.map(d=>line([d.s,d.w||0,d.o||0,d.r||0]))],'stock-main.csv');
-    else dl([line(['الصنف','مستورد','منصرف','إعادة تغليف','تالف يدوي','تالف مصنع','الرصيد']),...DATA.stock.sub.map(d=>line([d.s,d.imp||0,d.out||0,d.re||0,d.d||0,d.mfg||0,subBal(d)]))],'stock-sub.csv');
+    else dl([line(['الصنف','وارد','منصرف','إعادة تغليف','تالف يدوي','تالف مصنع','الرصيد']),...DATA.stock.sub.map(d=>line([d.s,d.inn||0,d.out||0,d.re||0,d.d||0,d.mfg||0,subBal(d)]))],'stock-sub.csv');
   }
   else if(type==='inv') dl([line(['رقم الفاتورة','التاريخ','الوقت','الخزنة','النوع','المورد','الإجمالي','ملاحظات']),...DATA.invoices.map(r=>line([r.id,r.date,r.time,r.vault==='main'?'الرئيسية':'الفرعية',r.type,r.supplier,(r.items||[]).reduce((a,i)=>a+i.qty,0),r.notes]))],'invoices.csv');
   else if(type==='sup'){

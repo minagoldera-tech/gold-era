@@ -271,6 +271,10 @@ tbody tr:hover{background:var(--bg)}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         التقارير
       </button>
+      <button class="tni" onclick="goto('suppliers',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+        الموردون
+      </button>
       <button class="tni" id="nav-users" onclick="goto('users',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
         المستخدمون
@@ -431,11 +435,26 @@ tbody tr:hover{background:var(--bg)}
       <div class="card" style="margin-bottom:20px"><div class="card-title">أصناف تحتاج تجديد</div><div id="rpt-low"></div></div>
       <div class="tbl-wrap">
         <div class="tbl-hd"><span class="tbl-title">تفصيل كل صنف</span></div>
-        <table><thead><tr><th>الصنف</th><th>وارد</th><th>منصرف</th><th>إعادة تغليف</th><th>تالف</th><th>متبقي رئيسية</th><th>متبقي فرعية</th><th>الإجمالي الكلي</th><th>الحالة</th></tr></thead><tbody id="rpt-tbody"></tbody></table>
+        <table><thead><tr><th>الصنف</th><th>وارد (رئيسية)</th><th>منصرف للفرعية</th><th>متبقي رئيسية</th><th>متبقي فرعية</th><th>تالف (فرعية)</th><th>إعادة تغليف (فرعية)</th><th>الإجمالي الكلي</th><th>الحالة</th></tr></thead><tbody id="rpt-tbody"></tbody></table>
       </div>
     </div>
 
     <!-- USERS -->
+    <div id="page-suppliers" class="page">
+      <div class="sec-hd">
+        <div><div class="sec-title">الموردون</div><div class="sec-sub">حسابات عادل وكريم — الكروت والفحص</div></div>
+        <button class="btn btn-primary" onclick="openSupplierEntry()">+ إضافة حركة</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="tbl-wrap" id="sup-adl-card"></div>
+        <div class="tbl-wrap" id="sup-kr-card"></div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-hd"><span class="tbl-title">سجل الحركات</span></div>
+        <table><thead><tr><th>التاريخ</th><th>المورد</th><th>الصنف</th><th>سعر الكارت</th><th>كروت وردت</th><th>كروت مرفوضة</th><th>كروت صافي</th><th>أضيف للمخزون</th><th>ملاحظات</th></tr></thead><tbody id="sup-tbody"></tbody></table>
+      </div>
+    </div>
+
     <div id="page-users" class="page">
       <div class="sec-hd">
         <div><div class="sec-title">إدارة المستخدمين</div><div class="sec-sub">صلاحيات وحسابات النظام</div></div>
@@ -538,6 +557,30 @@ tbody tr:hover{background:var(--bg)}
 </div>
 
 <!-- RESET CONFIRM MODAL -->
+<div class="overlay" id="sup-modal">
+  <div class="modal" style="width:480px">
+    <div class="modal-hd"><div><h2>إضافة حركة مورد</h2><p>كروت الفحص والإضافة للمخزون</p></div><button class="modal-x" onclick="closeM('sup-modal')">✕</button></div>
+    <div class="modal-body" style="padding:20px;display:grid;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label class="lbl">المورد</label><select class="inp" id="sup-name"><option value="عادل">عادل</option><option value="كريم">كريم</option></select></div>
+        <div><label class="lbl">الصنف</label><select class="inp" id="sup-item"></select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div><label class="lbl">سعر الكارت (جنيه)</label><input class="inp" type="number" id="sup-price" min="0" placeholder="0"></div>
+        <div><label class="lbl">كروت وردت</label><input class="inp" type="number" id="sup-received" min="0" placeholder="0" oninput="calcSupNet()"></div>
+        <div><label class="lbl">كروت مرفوضة</label><input class="inp" type="number" id="sup-rejected" min="0" placeholder="0" oninput="calcSupNet()"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center">
+        <div><label class="lbl">كروت صافي</label><input class="inp" type="number" id="sup-net" readonly style="background:var(--bg2)"></div>
+        <div style="display:flex;align-items:center;gap:8px;padding-top:20px"><input type="checkbox" id="sup-add-stock" style="width:16px;height:16px"><label style="font-size:13px;cursor:pointer" for="sup-add-stock">أضف الصافي للمخزون الفرعي</label></div>
+      </div>
+      <div><label class="lbl">ملاحظات</label><input class="inp" type="text" id="sup-notes" placeholder="اختياري..."></div>
+      <div id="sup-err" style="color:var(--red);font-size:12px;min-height:16px"></div>
+    </div>
+    <div class="modal-ft"><div></div><div style="display:flex;gap:8px"><button class="btn btn-outline" onclick="closeM('sup-modal')">إلغاء</button><button class="btn btn-primary" onclick="saveSupEntry()">حفظ</button></div></div>
+  </div>
+</div>
+
 <div class="overlay" id="alert-modal">
   <div class="modal confirm-modal">
     <div class="modal-hd"><div><h2 id="alert-title">تنبيه</h2><p id="alert-sub"></p></div><button class="modal-x" onclick="alertResolve(false)">✕</button></div>
@@ -585,7 +628,7 @@ tbody tr:hover{background:var(--bg)}
 const DB = "https://gold-era-2025-default-rtdb.firebaseio.com";
 
 let CU = null, CV = 'main', VIEW = 'cards', RID = 0;
-let DATA = {stock:{main:[],sub:[]}, invoices:[], users:[]};
+let DATA = {stock:{main:[],sub:[]}, invoices:[], users:[], suppliers:[]};
 
 const ITEMS = ['جنيه','نصف جنيه','ربع جنيه','1 جرام','ربع جرام','نصف جرام','2.5 جرام','5 جرام','10 جرام','15.55 جرام','20 جرام','25 جرام','أونصة 31.10 جرام','50 جرام','100 جرام','1 ك','0.5 ك','0.25 ك'];
 
@@ -612,11 +655,12 @@ function startPolling() {
   pollInterval = setInterval(async () => {
     if(!CU) return;
     try {
-      const [inv, stock, stockSub, users] = await Promise.all([
+      const [inv, stock, stockSub, users, sups] = await Promise.all([
         fbGet('/invoices'),
         fbGet('/stock/main'),
         fbGet('/stock/sub'),
-        fbGet('/users')
+        fbGet('/users'),
+        fbGet('/suppliers')
       ]);
       if(inv) DATA.invoices = Object.values(inv).sort((a,b)=>b.ts-a.ts);
       else DATA.invoices = [];
@@ -624,7 +668,8 @@ function startPolling() {
       if(stockSub) DATA.stock.sub = Object.values(stockSub);
       else DATA.stock.sub = DATA.stock.main.map(d=>({s:d.s,imp:0,adl:0,kr:0}));
       if(users) DATA.users = Object.values(users);
-      renderDash(); renderStock(); renderInv(); renderReport(); renderUsers();
+      DATA.suppliers = sups ? Object.values(sups).sort((a,b)=>b.ts-a.ts) : [];
+      renderDash(); renderStock(); renderInv(); renderReport(); renderSuppliers(); renderUsers();
       document.getElementById('last-upd').textContent = '🔄 آخر مزامنة: ' + new Date().toLocaleTimeString('ar-EG');
       setSync('ok');
     } catch(e) { setSync('err'); }
@@ -753,7 +798,7 @@ async function syncNow() {
     if(stockSub) DATA.stock.sub = Object.values(stockSub);
     else DATA.stock.sub = DATA.stock.main.map(d=>({s:d.s,imp:0,adl:0,kr:0}));
     if(users) DATA.users = Object.values(users);
-    if(CU) { renderDash(); renderStock(); renderInv(); renderReport(); renderUsers(); }
+    if(CU) { renderDash(); renderStock(); renderInv(); renderReport(); renderSuppliers(); renderUsers(); }
     setSync('ok');
     showToast('✓ تمت المزامنة');
   } catch(e) { setSync('err'); showToast('خطأ في المزامنة'); }
@@ -776,7 +821,7 @@ function login() {
   document.getElementById('reset-btn').style.display = rec.role==='admin' ? '' : 'none';
   document.getElementById('new-inv-btn').style.display = can('add') ? '' : 'none';
   startPolling();
-  renderDash(); renderStock(); renderInv(); renderReport(); renderUsers();
+  renderDash(); renderStock(); renderInv(); renderReport(); renderSuppliers(); renderUsers();
 }
 
 function logout() {
@@ -945,13 +990,22 @@ function renderStock() {
 }
 
 /* ═══ INVOICES ═══ */
+const openInvIds = new Set();
 function toggleInvRow(id) {
   const detail = document.getElementById('inv-detail-'+id);
   const arrow = document.getElementById('inv-arrow-'+id);
   if(!detail) return;
   const isOpen = detail.style.display !== 'none';
-  detail.style.display = isOpen ? 'none' : 'table-row';
-  arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+  if(isOpen){ detail.style.display='none'; arrow.style.transform='rotate(0deg)'; openInvIds.delete(id); }
+  else{ detail.style.display='table-row'; arrow.style.transform='rotate(180deg)'; openInvIds.add(id); }
+}
+function restoreOpenInvRows() {
+  openInvIds.forEach(id=>{
+    const detail = document.getElementById('inv-detail-'+id);
+    const arrow = document.getElementById('inv-arrow-'+id);
+    if(detail){ detail.style.display='table-row'; arrow.style.transform='rotate(180deg)'; }
+    else{ openInvIds.delete(id); }
+  });
 }
 
 function renderInv() {
@@ -1017,6 +1071,7 @@ function renderInv() {
       </td>
     </tr>`;
   }).join('')||empty(9);
+  restoreOpenInvRows();
 }
 
 /* ═══ INVOICE MODAL ═══ */
@@ -1151,24 +1206,37 @@ async function saveInv() {
         }
       }
       items.forEach(({item,qty})=>{
-        // تحديث الخزنة الفرعية
         const sidx=DATA.stock.sub.findIndex(d=>d.s===item);
         if(sidx>=0){
           const ds={...DATA.stock.sub[sidx]};
-          ds[supCol]=(ds[supCol]||0)+(type==='وارد'?qty:-qty);
-          if(ds[supCol]<0) ds[supCol]=0;
+          if(type==='وارد'){
+            // وارد: يزيد في عمود المورد
+            ds[supCol]=(ds[supCol]||0)+qty;
+          } else if(type==='منصرف'){
+            // منصرف للتغليف: ينقص من المورد
+            ds[supCol]=Math.max(0,(ds[supCol]||0)-qty);
+          } else if(type==='إعادة التغليف'){
+            ds[supCol]=Math.max(0,(ds[supCol]||0)-qty);
+            ds.re=(ds.re||0)+qty;
+          } else if(type==='تالف يدوي'){
+            ds[supCol]=Math.max(0,(ds[supCol]||0)-qty);
+            ds.d=(ds.d||0)+qty;
+          } else if(type==='تالف مصنع'){
+            ds[supCol]=Math.max(0,(ds[supCol]||0)-qty);
+            ds.mfg=(ds.mfg||0)+qty;
+          }
           updates[sidx]=ds;
         }
-        // وارد فرعية = تحويل من الرئيسية (ينقص متبقي الرئيسية)
+        // وارد فرعية = تحويل من الرئيسية (ينقص متبقي الرئيسية + يزيد منصرف)
         if(type==='وارد'){
           const midx=DATA.stock.main.findIndex(d=>d.s===item);
           if(midx>=0){
             const dm={...DATA.stock.main[midx]};
+            dm.o=(dm.o||0)+qty;
             dm.r=Math.max(0,dm.r-qty);
             mainUpdates[midx]=dm;
           }
         }
-        // منصرف من الفرعية = ينقص من الفرعية فقط (لا يؤثر على الرئيسية)
       });
       for(const [idx,d] of Object.entries(updates)) await fbSet('/stock/sub/'+idx, d);
       for(const [idx,d] of Object.entries(mainUpdates)) await fbSet('/stock/main/'+idx, d);
@@ -1235,14 +1303,16 @@ async function deleteInv(id) {
   if(!inv){showToast('الفاتورة غير موجودة');return;}
   setSync('sync');
   try {
-    const {vault,type,supplier,items}=inv;
+    const vault=inv.vault||'main';
+    const type=inv.type;
+    const supplier=inv.supplier||'مستورد';
+    const items=inv.items||[];
     const subUpdates={};
     const mainUpdates={};
 
     if(vault==='sub'){
       const supCol=supplier==='مستورد'?'imp':supplier==='محلي عادل'?'adl':'kr';
       items.forEach(({item,qty})=>{
-        // عكس الفرعية
         const sidx=DATA.stock.sub.findIndex(d=>d.s===item);
         if(sidx>=0){
           const ds={...DATA.stock.sub[sidx]};
@@ -1250,7 +1320,6 @@ async function deleteInv(id) {
           else ds[supCol]=(ds[supCol]||0)+qty;
           subUpdates[sidx]=ds;
         }
-        // عكس الرئيسية (وارد فرعية كان خصم من الرئيسية)
         if(type==='وارد'){
           const midx=DATA.stock.main.findIndex(d=>d.s===item);
           if(midx>=0){
@@ -1262,7 +1331,7 @@ async function deleteInv(id) {
       });
     } else {
       items.forEach(({item,qty})=>{
-        const midx=DATA.stock.main.findIndex(d=>d.s===item||item.startsWith(d.s));
+        const midx=DATA.stock.main.findIndex(d=>d.s===item);
         if(midx>=0){
           const dm={...DATA.stock.main[midx]};
           if(type==='وارد'){dm.w=Math.max(0,dm.w-qty);dm.r=Math.max(0,dm.r-qty);}
@@ -1283,6 +1352,91 @@ async function deleteInv(id) {
     setSync('ok');
     await syncNow();
   } catch(e){ setSync('err'); showToast('خطأ: '+e.message); }
+}
+
+/* ═══ SUPPLIERS ═══ */
+function openSupplierEntry() {
+  // ملء الأصناف
+  const opts = ITEMS.map(i=>`<option>${i}</option>`).join('');
+  document.getElementById('sup-item').innerHTML = opts;
+  document.getElementById('sup-price').value='';
+  document.getElementById('sup-received').value='';
+  document.getElementById('sup-rejected').value='';
+  document.getElementById('sup-net').value='';
+  document.getElementById('sup-notes').value='';
+  document.getElementById('sup-add-stock').checked=false;
+  document.getElementById('sup-err').textContent='';
+  document.getElementById('sup-modal').classList.add('on');
+}
+function calcSupNet() {
+  const rec=parseInt(document.getElementById('sup-received').value)||0;
+  const rej=parseInt(document.getElementById('sup-rejected').value)||0;
+  document.getElementById('sup-net').value=Math.max(0,rec-rej);
+}
+async function saveSupEntry() {
+  const sup=document.getElementById('sup-name').value;
+  const item=document.getElementById('sup-item').value;
+  const price=parseFloat(document.getElementById('sup-price').value)||0;
+  const received=parseInt(document.getElementById('sup-received').value)||0;
+  const rejected=parseInt(document.getElementById('sup-rejected').value)||0;
+  const net=Math.max(0,received-rejected);
+  const addToStock=document.getElementById('sup-add-stock').checked;
+  const notes=document.getElementById('sup-notes').value.trim();
+  const errEl=document.getElementById('sup-err');
+  if(!received){errEl.textContent='أدخل عدد الكروت الواردة';return;}
+  setSync('sync');
+  try {
+    const entry={ts:Date.now(),date:new Date().toLocaleDateString('ar-EG'),sup,item,price,received,rejected,net,addToStock,notes,by:CU.user};
+    const key='sup_'+Date.now();
+    await fbSet('/suppliers/'+key, entry);
+    if(addToStock && net>0){
+      const supCol=sup==='عادل'?'adl':'kr';
+      const sidx=DATA.stock.sub.findIndex(d=>d.s===item);
+      if(sidx>=0){
+        const ds={...DATA.stock.sub[sidx]};
+        ds[supCol]=(ds[supCol]||0)+net;
+        await fbSet('/stock/sub/'+sidx, ds);
+      }
+    }
+    closeM('sup-modal');
+    setSync('ok');
+    showToast('✓ تم حفظ الحركة'+(addToStock?` وإضافة ${N(net)} للمخزون`:''));
+    await syncNow();
+  } catch(e){setSync('err');showToast('خطأ: '+e.message);}
+}
+function renderSuppliers() {
+  if(!DATA.suppliers) DATA.suppliers=[];
+  // ملخص عادل
+  const adlEntries=DATA.suppliers.filter(d=>d.sup==='عادل');
+  const krEntries=DATA.suppliers.filter(d=>d.sup==='كريم');
+  const supSummary=(name,entries)=>{
+    const totRec=entries.reduce((a,d)=>a+d.received,0);
+    const totRej=entries.reduce((a,d)=>a+d.rejected,0);
+    const totNet=entries.reduce((a,d)=>a+d.net,0);
+    const totVal=entries.reduce((a,d)=>a+(d.price*d.net),0);
+    return`<div class="tbl-hd"><span class="tbl-title">${name}</span></div>
+    <div style="padding:16px;display:grid;gap:8px">
+      ${srow('إجمالي الوارد',N(totRec)+' كارت')}
+      ${srow('إجمالي المرفوض',N(totRej)+' كارت')}
+      ${srow('الصافي',N(totNet)+' كارت')}
+      ${srow('القيمة الإجمالية',N(totVal)+' جنيه')}
+    </div>`;
+  };
+  document.getElementById('sup-adl-card').innerHTML=supSummary('عادل',adlEntries);
+  document.getElementById('sup-kr-card').innerHTML=supSummary('كريم',krEntries);
+  // جدول الحركات
+  const rows=[...DATA.suppliers].sort((a,b)=>b.ts-a.ts);
+  document.getElementById('sup-tbody').innerHTML=rows.map(d=>`<tr>
+    <td class="td-s">${d.date}</td>
+    <td class="td-p">${d.sup}</td>
+    <td class="td-p">${d.item}</td>
+    <td class="td-m">${N(d.price)}</td>
+    <td class="td-m">${N(d.received)}</td>
+    <td class="td-m" style="color:var(--red)">${N(d.rejected)}</td>
+    <td class="td-m td-p">${N(d.net)}</td>
+    <td class="td-m">${d.addToStock?'<span class="badge b-green">✓ أضيف</span>':'—'}</td>
+    <td class="td-s">${d.notes||'—'}</td>
+  </tr>`).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--t3);padding:20px">لا توجد حركات</td></tr>';
 }
 
 /* ═══ CUSTOM ALERT ═══ */
@@ -1360,17 +1514,25 @@ function renderReport() {
     ?low.map(d=>{const st=d.grand===0?'zero':'low';return`<div class="stat-row"><span class="stat-key">${d.s}</span><span>${ST[st].b} <b style="margin-right:6px">${N(d.grand)}</b></span></div>`;}).join('')
     :'<div style="text-align:center;color:var(--t3);padding:16px;font-size:13px">✓ لا توجد أصناف تحتاج تجديداً</div>';
   // جدول تفصيل كل صنف (رئيسية + فرعية)
-  document.getElementById('rpt-tbody').innerHTML=allItems.map(d=>`<tr>
-    <td class="td-p">${d.s}</td>
-    <td class="td-m">${N(d.w)}</td>
-    <td class="td-m" style="color:var(--blue)">${N(d.o)}</td>
-    <td class="td-m" style="color:var(--purple)">${N(d.re||0)}</td>
-    <td class="td-m" style="color:var(--red)">${(d.d||0)+(d.mfg||0)}</td>
-    <td class="td-m">${N(d.r)}</td>
-    <td class="td-m" style="color:var(--green)">${N(d.subTot)}</td>
-    <td class="td-m td-p" style="font-weight:700;color:var(--gold)">${N(d.grand)}</td>
-    <td>${ST[d.grand===0?'zero':d.grand>2000?'good':d.grand>500?'warn':'low'].b}</td>
-  </tr>`).join('');
+  document.getElementById('rpt-tbody').innerHTML=allItems.map(d=>{
+    const sub=DATA.stock.sub.find(s=>s.s===d.s)||{imp:0,adl:0,kr:0,d:0,mfg:0,re:0};
+    const subTot=(sub.imp||0)+(sub.adl||0)+(sub.kr||0);
+    const subDmg=(sub.d||0)+(sub.mfg||0);
+    const subRe=(sub.re||0);
+    const grand=d.r+subTot;
+    const st=grand===0?'zero':grand>2000?'good':grand>500?'warn':'low';
+    return`<tr>
+      <td class="td-p">${d.s}</td>
+      <td class="td-m">${N(d.w)}</td>
+      <td class="td-m" style="color:var(--blue)">${N(d.o)}</td>
+      <td class="td-m">${N(d.r)}</td>
+      <td class="td-m" style="color:var(--green)">${N(subTot)}</td>
+      <td class="td-m" style="color:var(--red)">${subDmg||'—'}</td>
+      <td class="td-m" style="color:var(--purple)">${subRe||'—'}</td>
+      <td class="td-m td-p" style="font-weight:700;color:var(--gold)">${N(grand)}</td>
+      <td>${ST[st].b}</td>
+    </tr>`;
+  }).join('');
 }
 
 /* ═══ USERS ═══ */

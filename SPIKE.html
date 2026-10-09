@@ -1622,6 +1622,7 @@ function clearSelOut(){outSelIds={};document.querySelectorAll('#out-tb .row-chk'
 
 // ===================== RENDER IN =====================
 function renderIn(){
+  if(typeof xsClear==="function")xsClear();
   _rv.in=DATA_VER;
   var srch=(el('in-srch')&&el('in-srch').value||'').trim().toLowerCase();
   var from=el('in-from')&&el('in-from').value||'';
@@ -1668,6 +1669,7 @@ function onChkIn(cb){
 
 // ===================== RENDER OUT =====================
 function renderOut(){
+  if(typeof xsClear==="function")xsClear();
   _rv.out=DATA_VER;
   var srch=(el('out-srch')&&el('out-srch').value||'').trim().toLowerCase();
   var from=el('out-from')&&el('out-from').value||'';
@@ -1762,6 +1764,7 @@ function updateKPIs(){
 
 // ===================== OVERVIEW =====================
 function renderOverview(){
+  if(typeof xsClear==="function")xsClear();
   _rv.ov=DATA_VER;
   var inR=[],retR=[];
   for(var i=0;i<INC.length;i++){if(INC[i].type==='مستلم')inR.push(INC[i]);else retR.push(INC[i]);}
@@ -2089,6 +2092,102 @@ function renderMonthlyChart(moKeys,months){
   chartEl.innerHTML=h;
 }
 
+
+// ===================== تحديد الخلايا وجمعها (زي الإكسيل) =====================
+// اسحب بالماوس على الخلايا ← شريط تحت فيه العدد والمجموع والمتوسط وأقل وأكبر قيمة.
+// Ctrl + ضغطة = إضافة خلايا متفرقة | Shift + ضغطة = تحديد مدى | Ctrl+C = نسخ | Esc = إلغاء
+var XS={table:null,a:null,b:null,extra:[],cells:[],drag:false};
+(function(){
+  var st=document.createElement('style');
+  st.textContent='td.xsel{background:#FFF1BF !important;box-shadow:inset 0 0 0 1px #C8860A}'
+    +'#xs-bar{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:9800;background:#1C1A16;color:#fff;border-radius:12px;padding:9px 14px;display:none;align-items:center;gap:14px;font-family:Cairo,sans-serif;font-size:13px;box-shadow:0 8px 28px rgba(0,0,0,.3);flex-wrap:wrap;max-width:calc(100vw - 24px)}'
+    +'#xs-bar .xl{color:rgba(255,255,255,.55);font-size:11px;margin-left:4px}#xs-bar b{color:#F5C842;font-size:14px}'
+    +'#xs-bar button{background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:7px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px}'
+    +'.ct table td,#dest-modal table td{cursor:cell}';
+  document.head.appendChild(st);
+  var bar=document.createElement('div');bar.id='xs-bar';document.body.appendChild(bar);
+})();
+function xsPos(td){return {r:td.parentNode.rowIndex,c:td.cellIndex};}
+function xsNum(td){
+  var t=(td.textContent||'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).replace(/جم|جرام|%|−/g,function(m){return m==='−'?'-':'';}).replace(/[\s,٬]/g,'');
+  if(!/^[-+]?\d+(\.\d+)?$/.test(t))return null;
+  return parseFloat(t);
+}
+function xsClear(){
+  for(var i=0;i<XS.cells.length;i++)XS.cells[i].classList.remove('xsel');
+  XS.cells=[];XS.extra=[];XS.a=XS.b=null;XS.table=null;
+  var bar=document.getElementById('xs-bar');if(bar)bar.style.display='none';
+}
+function xsPaint(){
+  for(var i=0;i<XS.cells.length;i++)XS.cells[i].classList.remove('xsel');
+  var ranges=XS.extra.concat([{a:XS.a,b:XS.b}]),seen=[],cells=[];
+  for(var k=0;k<ranges.length;k++){
+    var R=ranges[k];if(!R.a)continue;
+    var r1=Math.min(R.a.r,R.b.r),r2=Math.max(R.a.r,R.b.r),c1=Math.min(R.a.c,R.b.c),c2=Math.max(R.a.c,R.b.c);
+    for(var r=r1;r<=r2;r++){
+      var tr=XS.table.rows[r];if(!tr)continue;
+      for(var c=c1;c<=c2;c++){var td=tr.cells[c];if(td&&td.tagName==='TD'&&seen.indexOf(td)<0){seen.push(td);cells.push(td);}}
+    }
+  }
+  XS.cells=cells;
+  for(var i=0;i<cells.length;i++)cells[i].classList.add('xsel');
+  var bar=document.getElementById('xs-bar');
+  if(cells.length<2){bar.style.display='none';return;}
+  var n=0,sum=0,mn=Infinity,mx=-Infinity;
+  for(var i=0;i<cells.length;i++){var v=xsNum(cells[i]);if(v===null)continue;n++;sum+=v;if(v<mn)mn=v;if(v>mx)mx=v;}
+  var h='<span><span class="xl">الخلايا</span><b>'+N(cells.length,0)+'</b></span>';
+  if(n){
+    h+='<span><span class="xl">المجموع</span><b>'+N(sum)+'</b></span>'
+      +'<span><span class="xl">المتوسط</span><b>'+N(sum/n)+'</b></span>'
+      +'<span><span class="xl">أقل</span><b>'+N(mn)+'</b></span>'
+      +'<span><span class="xl">أكبر</span><b>'+N(mx)+'</b></span>'
+      +'<span><span class="xl">أرقام</span><b>'+N(n,0)+'</b></span>';
+  }else h+='<span class="xl">مفيش أرقام في التحديد</span>';
+  h+='<button onclick="xsCopySum()" title="نسخ المجموع">📋 نسخ المجموع</button><button onclick="xsClear()">✕</button>';
+  bar.innerHTML=h;bar.style.display='flex';
+  XS.sum=sum;
+}
+function xsCopy(text){
+  try{navigator.clipboard.writeText(text);toast('📋 تم النسخ');}
+  catch(e){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('📋 تم النسخ');}catch(x){}document.body.removeChild(ta);}
+}
+function xsCopySum(){xsCopy(String(+(XS.sum||0).toFixed(3)));}
+document.addEventListener('mousedown',function(e){
+  if(e.button!==0||!e.target.closest)return;
+  if(e.target.closest('#xs-bar'))return;
+  var td=e.target.closest('td');
+  if(!td||!td.closest('.ct, #dest-modal')||e.target.closest('input,button,select,a,textarea,label')){
+    if(!td&&!e.target.closest('input,button,select,a,textarea'))xsClear();
+    return;
+  }
+  var tbl=td.closest('table'),p=xsPos(td);
+  if(e.shiftKey&&XS.table===tbl&&XS.a){XS.b=p;}
+  else if((e.ctrlKey||e.metaKey)&&XS.table===tbl&&XS.a){XS.extra.push({a:XS.a,b:XS.b});XS.a=XS.b=p;}
+  else{for(var i=0;i<XS.cells.length;i++)XS.cells[i].classList.remove('xsel');XS.cells=[];XS.table=tbl;XS.extra=[];XS.a=XS.b=p;}
+  XS.drag=true;e.preventDefault();
+  xsPaint();
+});
+document.addEventListener('mouseover',function(e){
+  if(!XS.drag||!e.target.closest)return;
+  var td=e.target.closest('td');
+  if(!td||td.closest('table')!==XS.table)return;
+  var p=xsPos(td);if(XS.b&&p.r===XS.b.r&&p.c===XS.b.c)return;
+  XS.b=p;xsPaint();
+});
+document.addEventListener('mouseup',function(){XS.drag=false;});
+document.addEventListener('keydown',function(e){
+  if(!XS.cells.length)return;
+  if(e.key==='Escape'){xsClear();return;}
+  var ae=document.activeElement;
+  if((e.ctrlKey||e.metaKey)&&(e.key==='c'||e.key==='C')&&!(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))&&XS.cells.length>1){
+    // نسخ الخلايا كجدول (يتلصق في الإكسيل)
+    var rows={},keys=[];
+    XS.cells.forEach(function(td){var r=td.parentNode.rowIndex;if(!rows[r]){rows[r]=[];keys.push(r);}rows[r].push(td);});
+    keys.sort(function(a,b){return a-b;});
+    var out=keys.map(function(r){return rows[r].sort(function(a,b){return a.cellIndex-b.cellIndex;}).map(function(td){var v=xsNum(td);return v===null?(td.textContent||'').trim():v;}).join('\t');}).join('\n');
+    xsCopy(out);e.preventDefault();
+  }
+});
 
 // ===================== TOAST =====================
 function toast(msg,type){
@@ -2527,6 +2626,7 @@ function pvRow(i){
     +'</tr>';
 }
 function pvRender(){
+  if(typeof xsClear==="function")xsClear();
   var h=[],n=_pv.rows.length,lim=Math.min(n,_pv.show);
   for(var i=0;i<lim;i++)h.push(pvRow(i));
   if(lim<n)h.push('<tr><td colspan="9" style="text-align:center;padding:12px"><span style="font-size:12px;color:#9C9488;margin-left:8px">معروض '+N(lim,0)+' من '+N(n,0)+' — الباقي هيتضاف برضه</span><button class="btn bgh bsm" onclick="_pv.show+=500;pvRender()">⬇️ عرض المزيد</button></td></tr>');

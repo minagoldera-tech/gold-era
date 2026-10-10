@@ -319,6 +319,19 @@ tr:hover .ed-btn{opacity:1}
   @page{size:A4;margin:11mm}
 }
 @media(max-width:820px){#report-page{padding:22px 18px}}
+
+/* ═══ تحديد الخلايا وجمعها (زي Excel) ═══ */
+#content td.cell-sel{background:rgba(200,149,42,.20)!important;box-shadow:inset 0 0 0 1px var(--gold)}
+#content td.cell-sel .sg-in{background:rgba(200,149,42,.12)}
+body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-select:none!important}
+#sel-bar{position:fixed;bottom:16px;left:16px;z-index:350;display:none;align-items:center;gap:14px;background:var(--card);border:1px solid var(--gold-d);border-radius:12px;padding:9px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:.8rem;color:var(--text2)}
+#sel-bar.on{display:flex}
+#sel-bar b{font-family:'Cairo',sans-serif;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums}
+#sel-bar .sb-sum b{color:var(--gold-l);font-size:1.05rem;cursor:pointer}
+#sel-bar .sep{width:1px;height:18px;background:var(--border)}
+#sel-bar button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.9rem;padding:0 2px}
+#sel-bar button:hover{color:var(--red)}
+@media print{#sel-bar{display:none!important}}
 </style>
 </head>
 <body>
@@ -909,6 +922,14 @@ tr:hover .ed-btn{opacity:1}
 </div>
 
 <div class="toast" id="toast"></div>
+<div id="sel-bar" title="اسحب بالماوس على الخلايا لتحديدها · Ctrl+نقرة لإضافة خلية · Shift+نقرة لمدّ التحديد · Esc للإلغاء">
+  <span class="sb-sum">المجموع: <b id="sel-sum" onclick="selCopy()" title="اضغط لنسخ المجموع">0</b></span>
+  <span class="sep"></span>
+  <span>العدد: <b id="sel-cnt">0</b></span>
+  <span class="sep"></span>
+  <span>المتوسط: <b id="sel-avg">0</b></span>
+  <button onclick="selClear()" title="إلغاء التحديد">✕</button>
+</div>
 
 <script>
 // ╔═══════════════════════════════════════════════════════════════════════╗
@@ -1727,6 +1748,8 @@ function renderSalGrid(){
   const date=$('sal-date').value||td();
   const paid=paidMap(date);
   const act=document.activeElement; const actId=act&&act.classList&&act.classList.contains('sg-in')?act.id:null;
+  // تثبيت موضع الصفحة: نحفظ مكان الجدول على الشاشة قبل إعادة الرسم ونرجّعه بعدها
+  const _anchorTop=tb.getBoundingClientRect().top;
   const weekTot=Object.values(paid).reduce((s,d)=>s+(+d.data().total||0),0);
   $('sal-week-v').textContent=fmt(weekTot);
   // المتوقّع للباقي (مجموع أساسي غير المصروفين)
@@ -1778,8 +1801,12 @@ function renderSalGrid(){
   const firstGirl=gridEmps.findIndex(d=>isGirlEmp(d.data())&&!isPinLast(d.data()));
   if(firstGirl>0) rowsArr.splice(firstGirl,0,'<tr><td colspan="10" style="background:var(--gold-bg);color:var(--gold-l);font-weight:800;font-size:.82rem;padding:8px 12px;text-align:right;border-top:2px solid var(--gold-d)">👧 وردية البنات</td></tr>');
   tb.innerHTML=rowsArr.join('');
-  if(actId){const el=$(actId);if(el){el.focus();try{el.select()}catch{}}}
+  if(actId){const el=$(actId);if(el){try{el.focus({preventScroll:true})}catch{el.focus()}try{el.select()}catch{}}}
   updateUnsaved();
+  // رجّع الصفحة لنفس المكان (حتى لو ظهر/اختفى شريط التنبيه فوق)
+  const _d=tb.getBoundingClientRect().top-_anchorTop;
+  if(Math.abs(_d)>0.5 && cur==='salaries') window.scrollBy(0,_d);
+  if(typeof selRefresh==='function') selRefresh();
 }
 function renderOutside(){
   const w=$('sal-outside'); if(!w) return;
@@ -1849,8 +1876,11 @@ async function saveSalRow(id){
     if(remaining>0.01) toast('صُرف مرتب '+emp.data().name+' ✓ — عليه سلف متبقية '+fmt(remaining),4200);
     else toast('صُرف مرتب '+emp.data().name+' ✓');
     const paid=paidMap(date); paid[id]=true;
-    const nxt=empDocs.find(d=>d.id!==id&&!paid[d.id]);
-    if(nxt) setTimeout(()=>$('sg-days-'+nxt.id)?.focus()||$('sg-b-'+nxt.id)?.focus(),150);
+    // انتقل للصف التالي مباشرة (مش لأول الكشف) بدون ما الصفحة تتحرك
+    const list=payrollEmps(); const pos=list.findIndex(d=>d.id===id);
+    const nxt=list.slice(pos+1).find(d=>!paid[d.id]);
+    if(nxt) setTimeout(()=>{const el=$('sg-days-'+nxt.id)||$('sg-b-'+nxt.id);if(el){try{el.focus({preventScroll:true})}catch{el.focus()}}},150);
+    else if(document.activeElement) try{document.activeElement.blur()}catch{}
   }catch(e2){ toast('خطأ في الحفظ: '+(e2.message||e2.code||'')); }
 }
 async function payAll(){
@@ -2954,6 +2984,115 @@ async function xlImport(){
   toast('تم استيراد '+n+' صف بنجاح ✓ — اتوزعوا على الأوراق',5000);
   xlClear();
 }
+
+// ═══ تحديد الخلايا بالماوس وجمعها (زي Excel) ═══
+let selCells=new Set(), selAnchor=null, selDown=null, selDragging=false;
+function selCellOf(t){ const c=t&&t.closest?t.closest('td'):null; return c&&c.closest('#content table')&&c.closest('tbody')?c:null; }
+function selValOf(td){
+  const inp=td.querySelector('input.sg-in,input[type=number]');
+  if(inp){ const s=String(inp.value||'').trim(); return s===''?null:numv(s); }
+  let s=(td.textContent||'').replace(/ج\.م/g,'').replace(/\s+/g,'').trim();
+  if(!/^[+\-−]?[\d٠-٩][\d٠-٩,]*(\.\d+)?$/.test(s)) return null;
+  const neg=/^[\-−]/.test(s); const n=numv(s.replace(/^[+\-−]/,''));
+  return neg?-n:n;
+}
+function selPos(td){ const tr=td.parentElement; return {r:[...tr.parentElement.rows].indexOf(tr), c:td.cellIndex}; }
+function selRange(a,b){
+  const tbody=a.closest('tbody'); if(!tbody||tbody!==b.closest('tbody')) return [b];
+  const p=selPos(a), q=selPos(b);
+  const r1=Math.min(p.r,q.r), r2=Math.max(p.r,q.r), c1=Math.min(p.c,q.c), c2=Math.max(p.c,q.c);
+  const out=[];
+  for(let r=r1;r<=r2;r++){ const row=tbody.rows[r]; if(!row) continue; for(let c=c1;c<=c2;c++){ if(row.cells[c]) out.push(row.cells[c]); } }
+  return out;
+}
+function selSet(cells){
+  selCells.forEach(c=>c.classList.remove('cell-sel'));
+  selCells=new Set(cells); selCells.forEach(c=>c.classList.add('cell-sel'));
+  selRefresh();
+}
+function selClear(){ selSet([]); selAnchor=null; }
+function selRefresh(){
+  [...selCells].forEach(c=>{ if(!c.isConnected) selCells.delete(c); });
+  const bar=$('sel-bar'); if(!bar) return;
+  let sum=0,n=0;
+  selCells.forEach(c=>{ const v=selValOf(c); if(v!=null&&!isNaN(v)){ sum+=v; n++; } });
+  if(selCells.size<2 && !(selCells.size===1 && n===1 && window._selCtrl)){ bar.classList.remove('on'); return; }
+  $('sel-sum').textContent=sum.toLocaleString('en-US',{maximumFractionDigits:2});
+  $('sel-cnt').textContent=n;
+  $('sel-avg').textContent=n?(sum/n).toLocaleString('en-US',{maximumFractionDigits:2}):'0';
+  bar.classList.add('on');
+  bar._sum=sum;
+}
+function selCopy(){
+  const v=$('sel-bar')._sum||0;
+  try{ navigator.clipboard.writeText(String(Math.round(v*100)/100)); toast('نُسخ المجموع: '+fmtN(v)); }catch(e){}
+}
+document.addEventListener('mousedown',e=>{
+  if(e.button!==0) return;
+  if(e.target.closest&&e.target.closest('#sel-bar')) return;
+  const td=selCellOf(e.target);
+  if(!td){ if(!(e.target.closest&&e.target.closest('button,select,input'))) selClear(); return; }
+  const onCtl=e.target.closest('button,select,a');
+  if(e.shiftKey && selAnchor && selAnchor.isConnected){ e.preventDefault(); selSet(selRange(selAnchor,td)); return; }
+  if(e.ctrlKey||e.metaKey){
+    e.preventDefault(); window._selCtrl=true;
+    const s=new Set(selCells); s.has(td)?s.delete(td):s.add(td); selAnchor=td; selSet([...s]); return;
+  }
+  window._selCtrl=false;
+  if(onCtl) return;
+  selDown=td; selDragging=false;
+  if(selCells.size) selSet([]);
+});
+// تمرير تلقائي أثناء السحب: لو الماوس قرب أعلى/أسفل الشاشة الصفحة تتحرك والتحديد يكمّل معاك
+let selMX=0, selMY=0, selRAF=null;
+function selAtPoint(){
+  if(!selDown) return;
+  const el=document.elementFromPoint(selMX,selMY);
+  const td=selCellOf(el); if(td) selDragTo(td);
+}
+function selAutoLoop(){
+  selRAF=null;
+  if(!selDown||!selDragging) return;
+  const topEdge=(document.getElementById('topbar')?.getBoundingClientRect().bottom||0)+50;
+  const botEdge=window.innerHeight-50;
+  let dy=0;
+  if(selMY<topEdge) dy=-Math.min(40,Math.ceil((topEdge-selMY)/2)+4);
+  else if(selMY>botEdge) dy=Math.min(40,Math.ceil((selMY-botEdge)/2)+4);
+  if(dy){
+    const before=window.scrollY; window.scrollBy(0,dy);
+    if(window.scrollY!==before) selAtPoint();
+    selRAF=requestAnimationFrame(selAutoLoop);
+  }
+}
+document.addEventListener('mousemove',e=>{
+  if(!selDown) return;
+  selMX=e.clientX; selMY=e.clientY;
+  if(selDragging && !selRAF) selRAF=requestAnimationFrame(selAutoLoop);
+});
+// لو حرّكت عجلة الماوس وانت ساحب، التحديد يتبعك برضه
+window.addEventListener('scroll',()=>{ if(selDown&&selDragging) selAtPoint(); },{passive:true});
+document.addEventListener('mouseover',e=>{
+  if(!selDown) return;
+  const td=selCellOf(e.target); if(td) selDragTo(td);
+});
+function selDragTo(td){
+  if(!selDragging && td===selDown) return;
+  if(!selDragging){
+    selDragging=true; selAnchor=selDown; document.body.classList.add('sel-dragging');
+    try{ window.getSelection().removeAllRanges(); }catch(x){}
+    if(document.activeElement&&document.activeElement.classList.contains('sg-in')) document.activeElement.blur();
+  }
+  if(!selAnchor||!selAnchor.isConnected){ selDown=null; return; }
+  selSet(selRange(selAnchor,td));
+  if(!selRAF) selRAF=requestAnimationFrame(selAutoLoop);
+}
+document.addEventListener('mouseup',()=>{
+  selDown=null;
+  if(selRAF){ cancelAnimationFrame(selRAF); selRAF=null; }
+  if(selDragging){ selDragging=false; document.body.classList.remove('sel-dragging'); }
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&selCells.size) selClear(); });
+document.addEventListener('input',e=>{ if(selCells.size&&e.target.closest&&e.target.closest('td.cell-sel')) selRefresh(); });
 
 // live preview of reset amount
 document.addEventListener('input',e=>{

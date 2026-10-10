@@ -3050,19 +3050,30 @@ function selAtPoint(){
   const el=document.elementFromPoint(selMX,selMY);
   const td=selCellOf(el); if(td) selDragTo(td);
 }
-function selAutoLoop(){
+// السرعة بالبكسل في الثانية (ثابتة على أي شاشة): تبدأ بطيئة جداً وأقصاها هادي
+const SEL_SPEED_MIN=120, SEL_SPEED_MAX=200, SEL_EDGE=40; // من 120 لحد 200 بكسل/ثانية
+let selLastT=0, selAcc=0;
+function selAutoLoop(t){
   selRAF=null;
-  if(!selDown||!selDragging) return;
-  const topEdge=(document.getElementById('topbar')?.getBoundingClientRect().bottom||0)+50;
-  const botEdge=window.innerHeight-50;
-  let dy=0;
-  if(selMY<topEdge) dy=-Math.min(40,Math.ceil((topEdge-selMY)/2)+4);
-  else if(selMY>botEdge) dy=Math.min(40,Math.ceil((selMY-botEdge)/2)+4);
-  if(dy){
-    const before=window.scrollY; window.scrollBy(0,dy);
+  if(!selDown||!selDragging){ selLastT=0; selAcc=0; return; }
+  const topEdge=(document.getElementById('topbar')?.getBoundingClientRect().bottom||0)+SEL_EDGE;
+  const botEdge=window.innerHeight-SEL_EDGE;
+  let dir=0, dist=0;
+  if(selMY<topEdge){ dir=-1; dist=topEdge-selMY; }
+  else if(selMY>botEdge){ dir=1; dist=selMY-botEdge; }
+  if(!dir){ selLastT=0; selAcc=0; return; }
+  const now=t||performance.now();
+  const dt=selLastT?Math.min(50,now-selLastT):16; selLastT=now;
+  const k=Math.min(1,dist/(SEL_EDGE*2)); // كل ما تقرب من الحافة أكتر تسرع شوية
+  const speed=SEL_SPEED_MIN+(SEL_SPEED_MAX-SEL_SPEED_MIN)*k;
+  selAcc+=speed*dt/1000;
+  const step=Math.floor(selAcc);
+  if(step>=1){
+    selAcc-=step;
+    const before=window.scrollY; window.scrollBy(0,dir*step);
     if(window.scrollY!==before) selAtPoint();
-    selRAF=requestAnimationFrame(selAutoLoop);
   }
+  selRAF=requestAnimationFrame(selAutoLoop);
 }
 document.addEventListener('mousemove',e=>{
   if(!selDown) return;
@@ -3089,6 +3100,7 @@ function selDragTo(td){
 document.addEventListener('mouseup',()=>{
   selDown=null;
   if(selRAF){ cancelAnimationFrame(selRAF); selRAF=null; }
+  selLastT=0; selAcc=0;
   if(selDragging){ selDragging=false; document.body.classList.remove('sel-dragging'); }
 });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&selCells.size) selClear(); });

@@ -166,6 +166,36 @@ td.muted{color:var(--text2);font-size:.76rem;white-space:nowrap}
 .empty{padding:38px 20px;text-align:center;color:var(--text3);font-size:.82rem}
 .empty-ico{font-size:1.7rem;margin-bottom:6px;opacity:.4}
 
+/* ═══ سجل التغييرات + التكرار ═══ */
+.dup-tag{display:inline-block;margin-right:6px;padding:1px 8px;border-radius:12px;font-size:.64rem;font-weight:700;background:rgba(208,72,72,.16);color:var(--red);border:1px solid rgba(208,72,72,.45);cursor:pointer;white-space:nowrap;vertical-align:middle}
+.dup-tag:hover{background:var(--red);color:#fff}
+tr.dup-row td{background:rgba(208,72,72,.07)}
+.by-ed{display:block;font-size:.64rem;color:var(--gold);margin-top:2px;white-space:nowrap}
+.by-sm{display:block;font-size:.64rem;color:var(--text3);margin-top:2px}
+.badge.ed{background:rgba(200,149,42,.16);color:var(--gold-l)}
+.badge.bk{background:var(--card2);color:var(--text2);border:1px solid var(--border)}
+.au-det{font-size:.72rem;color:var(--text2);line-height:1.7}
+.au-det b{color:var(--text)}
+tr.au-del td{background:rgba(208,72,72,.05)}
+.dup-card{background:var(--card);border:1px solid rgba(208,72,72,.45);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.dup-card .dh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 16px;background:rgba(208,72,72,.08);border-bottom:1px solid var(--border)}
+.dup-card .dh .t{flex:1;font-weight:700;font-size:.85rem}
+.sb-tot.alert{color:var(--red)!important;font-weight:800}
+
+/* ═══ لوحة الألوان (تعليم الصفوف) ═══ */
+tr.marked td{background:color-mix(in srgb,var(--mk) 22%,transparent)!important}
+tr.marked td:first-child{box-shadow:inset -4px 0 0 var(--mk)}
+#mark-pop{position:fixed;z-index:700;background:var(--card);border:1px solid var(--gold-d);border-radius:12px;padding:12px;box-shadow:0 14px 40px rgba(0,0,0,.45);width:240px}
+#mark-pop .mp-t{font-size:.78rem;font-weight:700;color:var(--gold-l);margin-bottom:9px}
+#mark-pop .mp-sw{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+#mark-pop .mp-sw button{height:32px;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:transform .1s}
+#mark-pop .mp-sw button:hover{transform:scale(1.08);border-color:var(--text)}
+#mark-pop .mp-row{display:flex;gap:8px;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--text2)}
+#mark-pop input[type=color]{width:34px;height:26px;border:none;background:none;cursor:pointer;vertical-align:middle}
+#mark-pop .mp-row button{background:var(--card2);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:5px 9px;font-size:.72rem;cursor:pointer}
+#mark-pop .mp-row button:hover{color:var(--red);border-color:var(--red)}
+#mark-pop .mp-h{font-size:.64rem;color:var(--text3);margin-top:9px;line-height:1.6}
+
 /* ═══ DASHBOARD ═══ */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 17px}
@@ -414,6 +444,10 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
     <div class="sb-item" data-s="payweeks"><div class="sb-ico">📁</div><span>حافظة الأسابيع</span></div>
     <div class="sb-item" data-s="search"><div class="sb-ico">🔍</div><span>بحث عامل</span></div>
 
+    <div class="sb-sec">المتابعة والمراجعة</div>
+    <div class="sb-item" data-s="audit"><div class="sb-ico">🕓</div><span>سجل التغييرات</span><span class="sb-tot" id="st-audit"></span></div>
+    <div class="sb-item" data-s="dups"><div class="sb-ico">⚠️</div><span>القيود المكررة</span><span class="sb-tot" id="st-dups">0</span></div>
+
     <div class="sb-sec">الأرشيف والتقارير</div>
     <div class="sb-item" data-s="archive"><div class="sb-ico">🗄️</div><span>إغلاق الشهر والأرشيف</span></div>
     <div class="sb-item" data-s="annual"><div class="sb-ico">📈</div><span>التقارير السنوية</span></div>
@@ -489,15 +523,15 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
           <div class="fg" id="q-advbal-wrap" hidden><label>السلف المستحقة عليه حالياً</label><div class="balbox" id="q-advbal-v">—</div></div>
           <div class="fg" id="q-party-wrap" hidden><label>الجهة / المورد</label><input type="text" id="q-party" list="party-list" placeholder="اسم الجهة…"><datalist id="party-list"></datalist></div>
         </div>
-        <div style="font-size:.68rem;color:var(--text3);margin-top:10px">Enter ينقلك بين الحقول ويحفظ من حقل المبلغ — وبعد الحفظ يرجع المؤشر للبند مباشرة</div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:10px">Enter ينقلك بين الحقول ويحفظ من حقل المبلغ — وبعد الحفظ يرجع المؤشر للبند مباشرة · لو القيد مكرر (نفس المبلغ والبيان والتاريخ) هيظهرلك تنبيه قبل الحفظ · 🎨 كليك يمين على أي صف عشان تلوّنه وتعلّمه</div>
       </div>
 
       <div class="tw">
         <div class="tw-head"><span class="tt">آخر القيود</span><span class="tc" id="recent-cnt"></span></div>
         <div style="overflow-x:auto">
           <table>
-            <thead><tr><th>التاريخ</th><th>الورقة</th><th>البند</th><th>المبلغ (ج.م)</th><th></th></tr></thead>
-            <tbody id="tb-recent"><tr><td colspan="5"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr></tbody>
+            <thead><tr><th>التاريخ</th><th>الورقة</th><th>البند</th><th>المبلغ (ج.م)</th><th>بواسطة</th><th></th></tr></thead>
+            <tbody id="tb-recent"><tr><td colspan="6"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -646,6 +680,32 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
           <tbody id="tb-rp"><tr><td colspan="4"><div class="empty"><div class="empty-ico">🔍</div>اكتب اسم العامل للبحث</div></td></tr></tbody>
         </table></div>
       </div>
+    </div>
+
+    <!-- ═══ سجل التغييرات ═══ -->
+    <div class="section" id="sec-audit">
+      <div class="entry-block">
+        <div class="entry-title">🕓 سجل التغييرات — مين عمل إيه، وإمتى، وخاص بإيه</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+          <div class="fg" style="width:170px"><label>المستخدم</label><select id="au-user" onchange="renderAudit()"><option value="">كل المستخدمين</option></select></div>
+          <div class="fg" style="width:160px"><label>العملية</label><select id="au-act" onchange="renderAudit()"><option value="">كل العمليات</option><option value="add">➕ إضافة</option><option value="edit">✎ تعديل</option><option value="del">🗑 حذف</option><option value="bulk">📦 عمليات مجمّعة</option></select></div>
+          <div class="fg" style="flex:1;min-width:180px"><label>بحث</label><input type="text" id="au-q" placeholder="بند، عامل، ورقة، مبلغ…" oninput="renderAudit()"></div>
+        </div>
+        <div class="muted" style="font-size:.72rem;margin-top:10px;line-height:1.8">كل إضافة أو تعديل أو حذف بيتسجّل هنا تلقائياً باسم المستخدم اللي عمله — وفي التعديل بيظهر القيمة القديمة والجديدة وصاحب القيد الأصلي. ولو مستخدم تاني عمل أي تغيير وانت فاتح البرنامج هيظهرلك تنبيه فوري 🔔.</div>
+      </div>
+      <div class="tw">
+        <div class="tw-head"><span class="tt">آخر التغييرات</span><span class="tc" id="au-cnt"></span></div>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>الوقت</th><th>المستخدم</th><th>العملية</th><th>خاص بـ</th><th>البيان</th><th>المبلغ</th><th>التفاصيل</th></tr></thead>
+          <tbody id="tb-audit"><tr><td colspan="7"><div class="empty"><div class="empty-ico">🕓</div>لا توجد تغييرات مسجّلة بعد</div></td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ═══ القيود المكررة ═══ -->
+    <div class="section" id="sec-dups">
+      <div style="background:rgba(208,72,72,.08);border:1px solid rgba(208,72,72,.45);border-radius:12px;padding:12px 16px;font-size:.82rem;line-height:1.8;margin-bottom:16px">⚠️ هنا بتظهر القيود اللي اتسجّلت أكتر من مرة بـ <b>نفس المبلغ ونفس البيان ونفس التاريخ</b> (وفي المرتبات: نفس العامل اتصرفله مرتين بنفس التاريخ). راجع كل مجموعة: احذف المكرر الغلط، أو اضغط «✓ مش مكرر» لو كان مقصود.</div>
+      <div id="dups-list"></div>
     </div>
 
     <!-- ═══ ARCHIVE / CLOSE MONTH ═══ -->
@@ -895,6 +955,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
     <div class="modal-head"><h2>✎ تعديل القيد</h2><button class="modal-x" onclick="closeEdit()">✕</button></div>
     <div class="modal-body">
       <div class="m-sec" id="edit-dest">—</div>
+      <div id="edit-who" style="font-size:.72rem;color:var(--text2);margin:-4px 0 10px;line-height:1.7"></div>
       <div class="m-form" style="flex-direction:column;gap:10px;align-items:stretch">
         <div class="fg"><label>التاريخ</label><input type="date" id="edit-date"></div>
         <div class="fg" id="edit-party-wrap" hidden><label>الجهة / المورد</label><input type="text" id="edit-party" placeholder="الجهة"></div>
@@ -928,7 +989,18 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
   <span>العدد: <b id="sel-cnt">0</b></span>
   <span class="sep"></span>
   <span>المتوسط: <b id="sel-avg">0</b></span>
+  <span class="sep"></span>
+  <button onclick="openMarkFromSel(event)" title="لوّن الصفوف المحددة" style="color:var(--gold-l);font-size:.8rem;font-weight:700">🎨 لوّن</button>
   <button onclick="selClear()" title="إلغاء التحديد">✕</button>
+</div>
+<div id="mark-pop" hidden>
+  <div class="mp-t" id="mp-title">🎨 لوّن الصف</div>
+  <div class="mp-sw" id="mp-sw"></div>
+  <div class="mp-row">
+    <label>لون مخصص <input type="color" id="mp-custom" value="#C8952A" onchange="applyMark(this.value)"></label>
+    <button onclick="applyMark('')">✕ إزالة اللون</button>
+  </div>
+  <div class="mp-h">اللون بيتحفظ ويظهر على كل الأجهزة · كليك يمين (أو ضغطة طويلة على الموبايل) على أي صف لتلوينه</div>
 </div>
 
 <script>
@@ -960,7 +1032,7 @@ const TITLES = {
   expenses:'المصروفات العامة', hallmark:'الدمغة', tools:'أدوات التشغيل',
   packaging:'الأغلفة', machines:'آلات التشغيل', master:'مصاريف المعلم',
   engineer:'المهندس ابرام', deposit:'العربون المقدم', advances:'السلف',
-  salaries:'المرتبات', payweeks:'حافظة الأسابيع', search:'بحث عامل', archive:'إغلاق الشهر · حافظة الأشهر', annual:'التقارير السنوية',
+  salaries:'المرتبات', payweeks:'حافظة الأسابيع', search:'بحث عامل', audit:'سجل التغييرات', dups:'القيود المكررة', archive:'إغلاق الشهر · حافظة الأشهر', annual:'التقارير السنوية',
 };
 const SEED_EMPS = [
   'يونان صلاح','جرجس ابراهيم','مينا يوسف لبيب','مينا يوسف',
@@ -1031,6 +1103,7 @@ async function initAuth(){
   try{
     if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();
+    installAudit();
     try{ await firebase.auth().signInAnonymously(); }catch(e){ /* الدخول المجهول اختياري — القواعد المفتوحة تكفي */ }
   }catch(e){ $('auth-loading').hidden=true; err('تعذّر الاتصال بـ Firebase: '+(e.message||e.code||'')); return; }
   let snap;
@@ -1099,6 +1172,7 @@ function sheetOrderOf(name){
 }
 async function boot(){
   restoreDrafts(); // استرجاع أي مبالغ مرتبات مكتوبة ولم تُصرف بعد
+  auditMute++;
   try{
     const seeded=await db.doc('config/seeded').get();
     if(!seeded.exists){
@@ -1115,13 +1189,16 @@ async function boot(){
       }
     }
   }catch(e){}
+  auditMute--;
   $('q-date').value=td(); $('sal-date').value=td();
+  subscribeAudit();
 
   // اشتراك واحد على كل القيود (أسرع وأخف من فتح اشتراك لكل ورقة)
   db.collection('entries').onSnapshot(snap=>{
     markSync(snap.metadata);
     const byCat={}; Object.keys(CATS).forEach(c=>byCat[c]=[]);
     snap.docs.forEach(d=>{const c=d.data().category; if(byCat[c]) byCat[c].push(d);});
+    Object.keys(CATS).forEach(c=>catDocs[c]=byCat[c]); rebuildDups();
     Object.keys(CATS).forEach(cat=>{
       catDocs[cat]=byCat[cat];
       const isDep=cat==='deposit';
@@ -1135,7 +1212,7 @@ async function boot(){
     renderRecent(); refreshDash(); updateBal();
   },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
   db.collection('advances').onSnapshot(snap=>{
-    advDocs=snap.docs;
+    advDocs=snap.docs; rebuildDups();
     let take=0,repay=0;
     snap.docs.forEach(d=>{const x=d.data();if(x.carry)return;if(x.kind==='repay')repay+=+x.amount||0;else take+=+x.amount||0;});
     totals['advTake']=take; totals['advRepay']=repay; counts['advances']=snap.size;
@@ -1152,7 +1229,7 @@ async function boot(){
   },e=>{});
   db.collection('kassa').onSnapshot(snap=>{
     markSync(snap.metadata);
-    kassaDocs=snap.docs;
+    kassaDocs=snap.docs; rebuildDups();
     let inc=0,out=0,open=0;
     snap.docs.forEach(d=>{const x=d.data();if(x.type==='in'){inc+=+x.amount||0;if(x.opening)open+=+x.amount||0;}else out+=+x.amount||0;});
     totals['kassa-in']=inc; totals['kassa-out']=out; totals['kassa-open']=open; counts['kassa']=snap.size;
@@ -1161,7 +1238,7 @@ async function boot(){
     renderKassa(); renderRecent(); refreshDash(); updateBal();
   },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
   db.collection('payroll').onSnapshot(snap=>{
-    payDocs=snap.docs;
+    payDocs=snap.docs; rebuildDups();
     const tot=snap.docs.reduce((s,d)=>s+(+d.data().total||0),0);
     totals['salaries']=tot; counts['salaries']=snap.size;
     const el=$('st-salaries'); if(el) el.textContent=fmtN(tot);
@@ -1218,11 +1295,13 @@ function go(s){
   if(s==='salaries'){ if(!$('sal-date').value)$('sal-date').value=td(); renderSalGrid(); }
   if(s==='payweeks') renderWeeks();
   if(s==='xlimport') xlRender();
+  if(s==='audit'){ markAuditSeen(); renderAudit(); }
+  if(s==='dups') renderDups();
   if(s==='master') renderMaster();
   if(s==='search'){ fillRpList(); setTimeout(()=>$('rp-q').focus(),50); }
   if(s==='archive') renderArchiveInfo();
   if(s==='annual'){ fillYearSelect(); renderAnnual(); }
-  if(s==='archive'||s==='annual'||s==='search'||s==='payweeks'||s==='xlimport') $('tb-total').textContent='';
+  if(s==='archive'||s==='annual'||s==='search'||s==='payweeks'||s==='xlimport'||s==='audit'||s==='dups') $('tb-total').textContent='';
 }
 function goEntry(sheet){ go('entry'); $('q-sheet').value=sheet; updateEntryExtras(); $('q-desc').focus(); }
 
@@ -1282,7 +1361,9 @@ async function saveEntry(){
   try{
     let lbl;
     if(sheet==='kassa-in'||sheet==='kassa-out'){
-      await db.collection('kassa').add({type:sheet==='kassa-in'?'in':'out',date,desc,amount:amt,by:me.u,at:new Date().toISOString()});
+      const rec={type:sheet==='kassa-in'?'in':'out',date,desc,amount:amt,by:me.u,at:new Date().toISOString()};
+      if(!dupConfirm('kassa',rec)) return;
+      await db.collection('kassa').add(rec);
       lbl=sheet==='kassa-in'?'الخزنة — وارد':'الخزنة — منصرف';
     }else if(isAdv){
       const empId=$('q-emp').value;
@@ -1290,15 +1371,21 @@ async function saveEntry(){
       if(!emp){ toast('اختر العامل'); $('q-emp').focus(); return; }
       const kind=$('q-advtype').value;
       if(!desc) desc=kind==='repay'?'سداد سلفة':'سلفة';
-      await db.collection('advances').add({empId,empName:emp.data().name,kind,date,desc,amount:amt,by:me.u,at:new Date().toISOString()});
+      const rec={empId,empName:emp.data().name,kind,date,desc,amount:amt,by:me.u,at:new Date().toISOString()};
+      if(!dupConfirm('advances',rec)) return;
+      await db.collection('advances').add(rec);
       lbl=(kind==='repay'?'سداد سلفة — ':'سلفة — ')+emp.data().name;
     }else if(isDep){
       const party=$('q-party').value.trim();
       if(!party){ toast('اكتب اسم الجهة'); $('q-party').focus(); return; }
-      await db.collection('entries').add({category:'deposit',date,desc,amount:amt,party,by:me.u,at:new Date().toISOString()});
+      const rec={category:'deposit',date,desc,amount:amt,party,by:me.u,at:new Date().toISOString()};
+      if(!dupConfirm('entries',rec)) return;
+      await db.collection('entries').add(rec);
       lbl='العربون — '+party;
     }else{
-      await db.collection('entries').add({category:sheet,date,desc,amount:amt,by:me.u,at:new Date().toISOString()});
+      const rec={category:sheet,date,desc,amount:amt,by:me.u,at:new Date().toISOString()};
+      if(!dupConfirm('entries',rec)) return;
+      await db.collection('entries').add(rec);
       lbl=CATS[sheet].label;
     }
     $('q-desc').value=''; $('q-amt').value='';
@@ -1323,14 +1410,15 @@ function renderRecent(){
   const tb=$('tb-recent'); if(!tb) return;
   $('recent-cnt').textContent=all.length?('آخر '+all.length+' قيد'):'';
   tb.innerHTML=all.length===0
-    ?'<tr><td colspan="5"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr>'
+    ?'<tr><td colspan="6"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr>'
     :all.map(d=>{const x=d.data();const col=x.type?'kassa':(x.kind?'advances':'entries');
       const extra=x.kind?empNameOf(x.empId,x.empName):(x.party||'');
-      return`<tr>
+      return`<tr${rowA(col,d.id)}>
       <td class="muted">${fmtd(x.date)}</td>
       <td>${sheetBadge(d)}</td>
-      <td>${extra?'<b>'+esc(extra)+'</b> — ':''}${esc(x.desc)}</td>
+      <td>${extra?'<b>'+esc(extra)+'</b> — ':''}${esc(x.desc)}${dupTag(d.id)}</td>
       <td class="num">${fmtN(x.amount)}</td>
+      <td class="muted">${byHtml(x)}</td>
       <td style="text-align:left">${x.fromPayroll?'<span class="muted" style="font-size:.7rem">تلقائي</span>':'<button class="btn-del" onclick="delTwo(this,()=>delDoc(\''+col+'\',\''+d.id+'\'))">✕</button>'}</td>
     </tr>`}).join('');
 }
@@ -1353,11 +1441,11 @@ function renderCat(cat){
       <thead><tr><th>التاريخ</th><th>البند</th><th>المبلغ (ج.م)</th><th>بواسطة</th><th></th></tr></thead>
       <tbody>${rows.length===0
         ?`<tr><td colspan="5"><div class="empty"><div class="empty-ico">${CATS[cat].icon}</div>لا توجد قيود في هذه الورقة — أضِف من «قيد جديد»</div></td></tr>`
-        :rows.map(d=>{const x=d.data();return`<tr>
+        :rows.map(d=>{const x=d.data();return`<tr${rowA('entries',d.id)}>
           <td class="muted">${fmtd(x.date)}</td>
-          <td>${esc(x.desc)}</td>
+          <td>${esc(x.desc)}${dupTag(d.id)}</td>
           <td class="num">${fmtN(x.amount)}</td>
-          <td class="muted">${esc(x.by||'—')}</td>
+          <td class="muted">${byHtml(x)}</td>
           <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
         </tr>`}).join('')}
       </tbody></table></div>
@@ -1371,11 +1459,11 @@ function renderKassa(){
   $('tot-kassa').textContent=fmt(inc-out);
   tb.innerHTML=rows.length===0
     ?'<tr><td colspan="6"><div class="empty"><div class="empty-ico">🏦</div>لا توجد حركات — أضِف وارد الخزنة من «قيد جديد»</div></td></tr>'
-    :rows.map(d=>{const x=d.data(),isIn=x.type==='in';return`<tr>
-      <td class="muted">${fmtd(x.date)}</td><td>${esc(x.desc)}</td>
+    :rows.map(d=>{const x=d.data(),isIn=x.type==='in';return`<tr${rowA('kassa',d.id)}>
+      <td class="muted">${fmtd(x.date)}</td><td>${esc(x.desc)}${dupTag(d.id)}</td>
       <td><span class="badge ${isIn?'in':'out'}">${isIn?'وارد':'منصرف'}</span></td>
       <td class="num" style="color:var(--${isIn?'green':'red'})">${isIn?'+':'−'}${fmtN(x.amount)}</td>
-      <td class="muted">${esc(x.by||'—')}</td>
+      <td class="muted">${byHtml(x)}</td>
       <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('kassa','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('kassa','${d.id}'))">✕</button></td>
     </tr>`}).join('');
 }
@@ -1405,6 +1493,7 @@ function openEdit(coll,id){
   else if(x.category&&CATS[x.category]) label=CATS[x.category].label+(x.deduct?' (استرداد/خصم)':'');
   else if(coll==='advances') label='سلفة — '+empNameOf(x.empId,x.empName);
   $('edit-dest').textContent=label;
+  { const ew=$('edit-who'); if(ew) ew.innerHTML='أضافه: <b>'+esc(x.by||'—')+'</b>'+(x.at?' — '+esc(fmtDT(x.at)):'')+(x.editedBy?'<br>آخر تعديل: <b>'+esc(x.editedBy)+'</b> — '+esc(fmtDT(x.editedAt)):''); }
   $('edit-err').textContent='';
   $('modal-edit').style.display='flex';
   setTimeout(()=>{ const el=$('edit-desc'); if(el){el.focus();el.select&&el.select();} },60);
@@ -1418,6 +1507,7 @@ async function saveEdit(){
   if(!amount||amount<=0){ $('edit-err').textContent='أدخل مبلغاً صحيحاً'; $('edit-amt').focus(); return; }
   const patch={date,desc,amount};
   if(editRef.hasParty){ patch.party=$('edit-party').value.trim()||desc; }
+  { const cand=Object.assign({},findDocData(editRef.coll,editRef.id)||{},patch); if(!dupConfirm(editRef.coll,cand,editRef.id)) return; }
   try{
     await db.collection(editRef.coll).doc(editRef.id).update(patch);
     toast('تم تعديل القيد ✓');
@@ -1471,13 +1561,13 @@ function renderAdvances(){
       <thead><tr><th>التاريخ</th><th>العامل</th><th>النوع</th><th>البيان</th><th>المبلغ (ج.م)</th><th>بواسطة</th><th></th></tr></thead>
       <tbody>${log.length===0
         ?'<tr><td colspan="7"><div class="empty">لا يوجد قيود</div></td></tr>'
-        :log.map(d=>{const x=d.data(),rep=x.kind==='repay';const typ=x.fromPayroll?'خصم من المرتب':(rep?'سداد نقدي':'صرف سلفة');return`<tr>
+        :log.map(d=>{const x=d.data(),rep=x.kind==='repay';const typ=x.fromPayroll?'خصم من المرتب':(rep?'سداد نقدي':'صرف سلفة');return`<tr${rowA('advances',d.id)}>
           <td class="muted">${fmtd(x.date)}${x.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(x.at)+'</span>':''}</td>
           <td style="font-weight:600">${esc(empNameOf(x.empId,x.empName))}</td>
           <td><span class="badge ${rep?'in':'out'}">${typ}</span></td>
-          <td>${esc(x.desc)}</td>
+          <td>${esc(x.desc)}${dupTag(d.id)}</td>
           <td class="num" style="color:var(--${rep?'green':'red'})">${rep?'−':'+'}${fmtN(x.amount)}</td>
-          <td class="muted">${esc(x.by||'—')}</td>
+          <td class="muted">${byHtml(x)}</td>
           <td style="text-align:left">${x.fromPayroll?'<span class="muted" style="font-size:.7rem">تلقائي</span>':'<button class="btn-del" onclick="delTwo(this,()=>delDoc(\'advances\',\''+d.id+'\'))">✕</button>'}</td>
         </tr>`}).join('')}
       </tbody></table></div>`;
@@ -1508,12 +1598,12 @@ function renderDeposit(){
       <thead><tr><th>التاريخ</th><th>الجهة</th><th>البيان</th><th>المبلغ (ج.م)</th><th>بواسطة</th><th></th></tr></thead>
       <tbody>${rows.length===0
         ?'<tr><td colspan="6"><div class="empty">لا يوجد قيود</div></td></tr>'
-        :rows.map(d=>{const x=d.data();return`<tr>
+        :rows.map(d=>{const x=d.data();return`<tr${rowA('entries',d.id)}>
           <td class="muted">${fmtd(x.date)}</td>
           <td style="font-weight:600">${esc(x.party||'—')}</td>
-          <td>${x.deduct?'<span class="badge in" style="margin-left:5px">خصم</span>':''}${esc(x.desc)||'—'}</td>
+          <td>${x.deduct?'<span class="badge in" style="margin-left:5px">خصم</span>':''}${esc(x.desc)||'—'}${dupTag(d.id)}</td>
           <td class="num" style="color:var(--${x.deduct?'green':'text'})">${x.deduct?'−':''}${fmtN(x.amount)}</td>
-          <td class="muted">${esc(x.by||'—')}</td>
+          <td class="muted">${byHtml(x)}</td>
           <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
         </tr>`}).join('')}
       </tbody></table></div>`;
@@ -1548,8 +1638,8 @@ function renderAdvStmt(){
   let run=0;
   const rows=recs.map(r=>{const rep=r.kind==='repay';run+=rep?-(+r.amount||0):(+r.amount||0);
     const typ=rep?(r.fromPayroll?'خصم من المرتب':'خصم/سداد'):'سلفة';
-    return `<tr><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}</td>
-      <td><span class="badge ${rep?'in':'out'}">${typ}</span></td><td>${esc(r.desc||'—')}</td>
+    return `<tr${rowA(r.kind?'advances':'entries',r.id)}><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}<span class="by-sm">${esc(r.by||'')}${r.editedBy?' · ✎ '+esc(r.editedBy):''}</span></td>
+      <td><span class="badge ${rep?'in':'out'}">${typ}</span></td><td>${esc(r.desc||'—')}${dupTag(r.id)}</td>
       <td class="num" style="color:var(--${rep?'green':'red'})">${rep?'−':'+'}${fmtN(r.amount)}</td>
       <td class="num" style="font-weight:800;color:var(--gold-l)">${fmtN(run)}</td>
       <td style="text-align:left">${r.fromPayroll?'<span class="muted" style="font-size:.7rem">تلقائي</span>':'<button class="btn-del" onclick="delTwo(this,()=>delDoc(\'advances\',\''+r.id+'\'))">✕</button>'}</td></tr>`;}).join('');
@@ -1574,7 +1664,9 @@ async function addAdvDeduct(){
   const type=$('adv-d-type').value;
   if(!amt||amt<=0){ $('adv-d-amt').focus(); toast('أدخل مبلغ الخصم'); return; }
   try{
-    await db.collection('advances').add({kind:'repay',carry:type==='settle',empId:emp.id,empName:emp.data().name,date,desc:type==='settle'?'تسوية سلفة':'سداد سلفة (نقدي)',amount:amt,by:me.u,at:new Date().toISOString()});
+    const rec={kind:'repay',carry:type==='settle',empId:emp.id,empName:emp.data().name,date,desc:type==='settle'?'تسوية سلفة':'سداد سلفة (نقدي)',amount:amt,by:me.u,at:new Date().toISOString()};
+    if(!dupConfirm('advances',Object.assign({},rec,{carry:false}))) return;
+    await db.collection('advances').add(rec);
     const i=$('adv-d-amt'); if(i){ i.value=''; i.blur(); }
     toast('خُصم '+fmt(amt)+' من سلفة '+emp.data().name+' ✓');
     setTimeout(renderAdvStmt,120);
@@ -1594,8 +1686,8 @@ function renderDepStmt(){
   const deducted=recs.filter(r=>r.deduct).reduce((s,r)=>s+(+r.amount||0),0);
   let run=0;
   const rows=recs.map(r=>{run+=r.deduct?-(+r.amount||0):(+r.amount||0);
-    return `<tr><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}</td>
-      <td><span class="badge ${r.deduct?'in':'out'}">${r.deduct?'خصم':'عربون'}</span></td><td>${esc(r.desc||'—')}</td>
+    return `<tr${rowA(r.kind?'advances':'entries',r.id)}><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}<span class="by-sm">${esc(r.by||'')}${r.editedBy?' · ✎ '+esc(r.editedBy):''}</span></td>
+      <td><span class="badge ${r.deduct?'in':'out'}">${r.deduct?'خصم':'عربون'}</span></td><td>${esc(r.desc||'—')}${dupTag(r.id)}</td>
       <td class="num" style="color:var(--${r.deduct?'green':'red'})">${r.deduct?'−':'+'}${fmtN(r.amount)}</td>
       <td class="num" style="font-weight:800;color:var(--gold-l)">${fmtN(run)}</td>
       <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${r.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${r.id}'))">✕</button></td></tr>`;}).join('');
@@ -1620,7 +1712,9 @@ async function addDepDeduct(){
   const desc=($('dep-d-desc').value||'').trim()||'خصم من العربون';
   if(!amt||amt<=0){ $('dep-d-amt').focus(); toast('أدخل مبلغ الخصم'); return; }
   try{
-    await db.collection('entries').add({category:'deposit',deduct:true,party:stmtParty,date,desc,amount:amt,by:me.u,at:new Date().toISOString()});
+    const rec={category:'deposit',deduct:true,party:stmtParty,date,desc,amount:amt,by:me.u,at:new Date().toISOString()};
+    if(!dupConfirm('entries',rec)) return;
+    await db.collection('entries').add(rec);
     const i=$('dep-d-amt'); if(i){ i.value=''; i.blur(); } $('dep-d-desc').value='';
     toast('خُصم '+fmt(amt)+' من عربون '+stmtParty+' ✓');
     setTimeout(renderDepStmt,120);
@@ -1637,8 +1731,8 @@ function renderMaster(){
   const recovered=docs.filter(r=>r.deduct).reduce((s,r)=>s+(+r.amount||0),0);
   let run=0;
   const rows=docs.map(r=>{run+=r.deduct?-(+r.amount||0):(+r.amount||0);
-    return `<tr><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}</td>
-      <td><span class="badge ${r.deduct?'in':'out'}">${r.deduct?'استرداد':'مصروف'}</span></td><td>${esc(r.desc||'—')}</td>
+    return `<tr${rowA(r.kind?'advances':'entries',r.id)}><td class="muted">${fmtd(r.date)}${r.at?' <span style="color:var(--text3);font-size:.72rem">'+fmtTime(r.at)+'</span>':''}<span class="by-sm">${esc(r.by||'')}${r.editedBy?' · ✎ '+esc(r.editedBy):''}</span></td>
+      <td><span class="badge ${r.deduct?'in':'out'}">${r.deduct?'استرداد':'مصروف'}</span></td><td>${esc(r.desc||'—')}${dupTag(r.id)}</td>
       <td class="num" style="color:var(--${r.deduct?'green':'red'})">${r.deduct?'−':'+'}${fmtN(r.amount)}</td>
       <td class="num" style="font-weight:800;color:var(--gold-l)">${fmtN(run)}</td>
       <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${r.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${r.id}'))">✕</button></td></tr>`;}).join('');
@@ -1669,6 +1763,7 @@ async function addMaster(kind){
   const isRec=kind==='recover';
   const rec={category:'master',date,desc:desc||(isRec?'استرداد من المعلم':'مصروف على المعلم'),amount:amt,by:me.u,at:new Date().toISOString()};
   if(isRec) rec.deduct=true;
+  if(!dupConfirm('entries',rec)) return;
   try{
     await db.collection('entries').add(rec);
     const i=$('mst-d-amt'); if(i){ i.value=''; i.blur(); } if($('mst-d-desc')) $('mst-d-desc').value='';
@@ -1914,8 +2009,8 @@ function renderSalHist(){
   $('tot-sal').textContent=fmt(tot);
   tb.innerHTML=rows.length===0
     ?'<tr><td colspan="10"><div class="empty"><div class="empty-ico">👥</div>لا مرتبات حالية — الأسابيع المحفوظة موجودة في «🗂️ الحافظة»</div></td></tr>'
-    :rows.slice(0,200).map(d=>{const x=d.data();return`<tr>
-      <td class="muted">${fmtd(x.date)}</td><td>${esc(empNameOf(x.empId,x.empName))}</td>
+    :rows.slice(0,200).map(d=>{const x=d.data();return`<tr${rowA('payroll',d.id)}>
+      <td class="muted">${fmtd(x.date)}</td><td>${esc(empNameOf(x.empId,x.empName))}${dupTag(d.id)}<span class="by-sm">بواسطة ${esc(x.by||'—')}</span></td>
       <td class="num">${fmtN(x.basic)}</td>
       <td class="num" style="color:var(--green)">${x.extra?'+'+fmtN(x.extra):'—'}</td>
       <td class="num" style="color:var(--green)">${x.bonus?'+'+fmtN(x.bonus):'—'}</td>
@@ -1981,7 +2076,8 @@ async function saveWeekToKeeper(){
     await db.collection('payweeks').add({date, label:L.label, weekNo:L.wk, monthLabel:L.monthLabel,
       total, count:rows.length, rows, srcIds, by:me?me.u:'', savedAt:new Date().toISOString()});
     // أرشِف قيود هذا الأسبوع: تظل محسوبة في رصيد الخزنة لكن تُزال من شاشة المرتبات وتُحفظ في الحافظة
-    for(const d of src){ try{ await db.collection('payroll').doc(d.id).update({archived:true}); }catch(e){} }
+    auditMute++;
+    try{ for(const d of src){ try{ await db.collection('payroll').doc(d.id).update({archived:true}); }catch(e){} } }finally{ auditMute--; }
     // جهّز الأسبوع الجديد: كل الأسماء جاهزة بمرتباتها الأساسية فقط (تُمسح إضافيات الأسبوع الماضي)
     salDraft={};
     payrollEmps().forEach(e=>{ salDraft[e.id]={b:e.data().basic||''}; });
@@ -2072,11 +2168,12 @@ async function delWeek(id){
     : payDocs.filter(p=>p.data().date===x.date&&p.data().archived).map(p=>p.id);
   if(!confirm('حذف «'+(x.label||'الأسبوع')+'» من الحافظة؟\n\nسيُحذف الأسبوع نهائياً وتُلغى مرتباته من الحسابات، ويُعاد مبلغ '+fmt(x.total)+' إلى رصيد الخزنة.')) return;
   try{
-    for(const pid of ids){
+    auditMute++;
+    try{ for(const pid of ids){
       try{ await db.collection('payroll').doc(pid).delete(); }catch(e){}
       const linked=advDocs.filter(a=>a.data().payrollId===pid);
       for(const a of linked){ try{ await db.collection('advances').doc(a.id).delete(); }catch(e){} }
-    }
+    } }finally{ auditMute--; }
     await db.collection('payweeks').doc(id).delete();
     toast('تم حذف «'+(x.label||'الأسبوع')+'» وإلغاء مرتباته من الحسابات');
   }catch(e){ toast('خطأ في الحذف: '+(e.message||e.code||'')); }
@@ -2340,6 +2437,7 @@ async function doCloseMonth(){
   const newLabel=$('new-month-label').value.trim();
   if(!newLabel){ $('close-err').textContent='اكتب اسم الشهر الجديد'; return; }
   const btn=$('close-go'); btn.disabled=true; btn.textContent='جارٍ الإغلاق…';
+  auditMute++;
   try{
     const bal=closingCash();
     const oldLabel=period?period.label:arMonth(new Date());
@@ -2383,10 +2481,12 @@ async function doCloseMonth(){
       await db.collection('advances').add({kind:'take',carry:true,empId:a.empId,empName:a.empName,date:td(),desc:'رصيد سلف مُرحّل من '+oldLabel,amount:a.amount,by:me.u,at:new Date().toISOString()});
     for(const [p,v] of Object.entries(depBy)) if(v>0.001)
       await db.collection('entries').add({category:'deposit',carry:true,party:p,date:td(),desc:'رصيد عربون مُرحّل من '+oldLabel,amount:v,by:me.u,at:new Date().toISOString()});
+    auditNote('إغلاق شهر '+oldLabel+' وأرشفته — وبدء شهر '+newLabel+' (رصيد مُرحّل)','حافظة الأشهر',bal);
     closeCloseModal();
     toast('تم إغلاق '+oldLabel+' وأرشفته ✓ — بدأ شهر '+newLabel,4500);
     go('dash');
   }catch(e){ $('close-err').textContent='خطأ: '+(e.message||e.code||''); }
+  auditMute--;
   btn.disabled=false; btn.textContent='تأكيد الإغلاق والأرشفة';
 }
 
@@ -2697,6 +2797,7 @@ async function doFinalReset(){
   const label=$('reset-month').value.trim()||arMonth(new Date());
   if(($('reset-confirm').value||'').trim()!=='تصفير'){ err('اكتب كلمة «تصفير» للتأكيد'); return; }
   const btn=$('reset-go'); btn.disabled=true; btn.textContent='جارٍ التصفير…';
+  auditMute++;
   try{
     const wipe=[
       ...Object.values(catDocs).flat().map(d=>['entries',d.id]),
@@ -2713,10 +2814,12 @@ async function doFinalReset(){
     sessSet('mb-dismiss','');
     if(amt>0)
       await db.collection('kassa').add({type:'in',date:td(),desc:'رصيد افتتاحي',amount:amt,opening:true,by:me.u,at:new Date().toISOString()});
+    auditNote('تصفير نهائي للمنظومة — بدء الخزنة بـ '+fmt(amt),'المنظومة كاملة',amt);
     closeFinalReset();
     toast('تم التصفير النهائي ✓ — بدأت الخزنة بـ '+fmt(amt),4500);
     go('dash');
   }catch(e){ err('خطأ: '+(e.message||e.code||'')); }
+  auditMute--;
   btn.disabled=false; btn.textContent='تأكيد التصفير النهائي';
 }
 
@@ -2755,14 +2858,17 @@ async function restoreData(ev){
   const summary=groups.map(([k,a])=>({entries:'المصروفات',kassa:'الخزنة',payroll:'المرتبات',advances:'السلف',employees:'الموظفين',payweeks:'الحوافظ',archives:'الأشهر'}[k]+': '+((a||[]).length))).join(' · ');
   if(!confirm('استرجاع النسخة سيكتب البيانات التالية فوق الحالية (يُدمج بحسب المُعرّف):\n\n'+summary+'\n\nمتأكد من المتابعة؟')) return;
   const st=$('backup-status'); if(st) st.textContent='جارٍ الاسترجاع…';
+  auditMute++;
   try{
     const write=async(coll,arr)=>{ for(const r of (arr||[])){ if(!r||!r.id) continue; const {id,...data}=r; try{ await db.collection(coll).doc(id).set(data); }catch(e){} } };
     for(const [coll,arr] of groups) await write(coll,arr);
     if(dump.archiveSnaps) for(const [aid,snap] of Object.entries(dump.archiveSnaps)){ try{ await db.doc('archives/'+aid+'/snap/data').set(snap); }catch(e){} }
     if(dump.period) { try{ await db.doc('config/period').set(dump.period); }catch(e){} }
+    auditNote('استرجاع نسخة احتياطية من ملف','المنظومة كاملة',0);
     if(st) st.textContent='تم الاسترجاع ✓';
     toast('تم استرجاع النسخة الاحتياطية بنجاح ✓',4500);
   }catch(e){ if(st) st.textContent=''; toast('خطأ في الاسترجاع: '+(e.message||e.code||'')); }
+  auditMute--;
 }
 
 // ═══ EXCEL IMPORT ═══
@@ -2846,6 +2952,7 @@ async function ensureEmp(name,cache){
 async function doImport(){
   if(!pendingImport) return;
   const btn=$('import-go'); btn.disabled=true; btn.textContent='جارٍ الإضافة…';
+  auditMute++;
   try{
     const cache={};
     for(const a of pendingImport.advances){
@@ -2856,10 +2963,12 @@ async function doImport(){
       await db.collection('entries').add({category:'deposit',carry:true,party:d.party,date:d.date,desc:d.desc,amount:d.amount,by:me.u,source:'import',at:new Date().toISOString()});
     }
     const na=pendingImport.advances.length, nd=pendingImport.deposits.length;
+    auditNote('استيراد '+na+' سلفة و'+nd+' عربون من Excel كأرصدة قائمة','السلف والعربون',0);
     pendingImport=null; closeImport();
     $('imp-preview').innerHTML='<div class="muted" style="color:var(--green)">✓ تم استيراد '+na+' سلفة و'+nd+' عربون بنجاح</div>';
     toast('تم الاستيراد ✓ — '+na+' سلفة و'+nd+' عربون',4000);
   }catch(e){ $('import-err').textContent='خطأ: '+(e.message||e.code||''); }
+  auditMute--;
   btn.disabled=false; btn.textContent='تأكيد وإضافة';
 }
 
@@ -2945,11 +3054,12 @@ function xlRender(){
   if(allSel && !allSel.dataset.filled){ allSel.innerHTML='<option value="">— اختر —</option>'+XL_DEST.map(d=>`<option value="${d.k}">${d.l}</option>`).join(''); allSel.dataset.filled='1'; }
   if(!xlRows.length){ wrap.hidden=true; return; }
   wrap.hidden=false;
+  xlMarkDups();
   const opts=r=>XL_DEST.map(d=>`<option value="${d.k}" ${r.dest===d.k?'selected':''}>${d.l}</option>`).join('');
   tb.innerHTML=xlRows.map((r,i)=>`<tr${r.dest==='skip'?' style="opacity:.45"':''}>
     <td class="muted" style="text-align:center">${i+1}</td>
     <td class="muted">${fmtd(r.date)}</td>
-    <td>${esc(r.desc||'—')}</td>
+    <td>${esc(r.desc||'—')}${r.dest!=='skip'&&r._ex?' <span class="dup-tag" title="فيه قيد بنفس المبلغ والبيان والتاريخ متسجّل قبل كده">⚠️ موجود مسبقاً</span>':''}${r.dest!=='skip'&&r._in?' <span class="dup-tag" title="الصف ده متكرر جوه الملف">⚠️ مكرر في الملف</span>':''}</td>
     <td class="num">${fmtN(r.amount)}</td>
     <td><select onchange="xlSetDest(${i},this.value)" style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 6px;font-size:.76rem;font-family:inherit">${opts(r)}</select></td>
     <td style="text-align:left"><button class="btn-del" onclick="xlRemove(${i})">✕</button></td>
@@ -2960,6 +3070,8 @@ function xlRender(){
   const skipped=xlRows.length-active.length;
   $('xl-cnt').textContent=xlRows.length+' صف';
   $('xl-summary').innerHTML='<b>سيُستورَد '+active.length+' صف</b>'+(skipped?(' · ملغي '+skipped+' صف'):'')+(parts.length?('<br>'+parts.join(' · ')):'');
+  const ndup=active.filter(r=>r._ex||r._in).length;
+  if(ndup) $('xl-summary').innerHTML+='<div style="margin-top:6px;color:var(--red);font-weight:700">⚠️ '+ndup+' صف مكرر (موجود قبل كده أو متكرر في الملف) <button class="btn btn-ghost" style="padding:4px 10px;font-size:.72rem;margin-right:6px" onclick="xlSkipDups()">⛔ إلغاء المكرر</button></div>';
 }
 function xlSetDest(i,v){ if(xlRows[i]){ xlRows[i].dest=v; xlRender(); } }
 function xlApplyAll(v){ if(!v)return; xlRows.forEach(r=>r.dest=v); const s=$('xl-all'); if(s)s.value=''; xlRender(); }
@@ -2969,8 +3081,9 @@ async function xlImport(){
   if(!db){ toast('لا يوجد اتصال'); return; }
   const rows=xlRows.filter(r=>r.dest!=='skip'&&(+r.amount||0)>0);
   if(!rows.length){ toast('لا يوجد صفوف للاستيراد — اختر وجهة للصفوف'); return; }
-  if(!confirm('استيراد '+rows.length+' صف إلى الأوراق المحددة؟')) return;
-  let n=0;
+  const ndup=rows.filter(r=>r._ex||r._in).length;
+  if(!confirm('استيراد '+rows.length+' صف إلى الأوراق المحددة؟'+(ndup?('\n\n⚠️ تنبيه: منهم '+ndup+' صف مكرر.'):''))) return;
+  let n=0; auditMute++;
   for(const r of rows){
     const at=new Date().toISOString(); const desc=r.desc||'مستورد من Excel'; const amount=+r.amount||0; const date=r.date||td(); const by=me?me.u:'';
     try{
@@ -2981,6 +3094,7 @@ async function xlImport(){
       n++;
     }catch(e){}
   }
+  auditMute--; auditNote('استيراد '+n+' صف مصروفات من Excel','استيراد Excel',rows.reduce((t,r)=>t+(+r.amount||0),0));
   toast('تم استيراد '+n+' صف بنجاح ✓ — اتوزعوا على الأوراق',5000);
   xlClear();
 }
@@ -3114,6 +3228,329 @@ document.addEventListener('input',e=>{
     $('reset-amount-preview').textContent='ستبدأ الخزنة بـ '+fmt(v);
   }
 });
+
+// ╔═══════════════════════════════════════════════════════════════╗
+// ║  سجل التغييرات (مين عمل إيه) + كشف القيود المكررة               ║
+// ╚═══════════════════════════════════════════════════════════════╝
+const AUDIT_SKIP=new Set(['audit','users','config','snap']);
+const AU_META=new Set(['dupOk','archived','order','editedBy','editedAt','mark']);
+const AU_F={amount:'المبلغ',desc:'البيان',date:'التاريخ',party:'الجهة',name:'الاسم',basic:'الأساسي',rate:'سعر اليوم',group:'الوردية',inPayroll:'بالمرتبات',pinLast:'دائماً بالآخر',archived:'نُقل للحافظة',dupOk:'تأكيد: ليس مكرراً',mark:'لون العلامة',total:'الصافي'};
+const AU_ACT={add:{l:'➕ إضافة',c:'in'},edit:{l:'✎ تعديل',c:'ed'},del:{l:'🗑 حذف',c:'out'},bulk:{l:'📦 عملية',c:'bk'}};
+let auditMute=0, auditInner=0, auditDocs=[], auditFirst=true;
+const auditBootAt=new Date(Date.now()-60000).toISOString();
+
+function fmtDT(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleString('ar-EG-u-nu-latn',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return iso; } }
+function byHtml(x){
+  let s=esc(x.by||'—');
+  if(x.editedBy) s+='<span class="by-ed" title="آخر تعديل: '+esc(fmtDT(x.editedAt))+'">✎ عدّله '+esc(x.editedBy)+'</span>';
+  return s;
+}
+function cacheGet(coll,id){
+  const pools={entries:Object.values(catDocs).flat(),kassa:kassaDocs,payroll:payDocs,advances:advDocs,employees:empDocs,payweeks:weekDocs,archives:arcDocs};
+  const d=(pools[coll]||[]).find(z=>z.id===id); return d?d.data():null;
+}
+function auditSheet(coll,x){
+  x=x||{};
+  if(coll==='entries'){ const c=CATS[x.category]; return (c?c.label:'قيد')+(x.category==='deposit'&&x.party?' — '+x.party:'')+(x.deduct?' (خصم/استرداد)':''); }
+  if(coll==='kassa') return 'الخزنة — '+(x.type==='in'?'وارد':'منصرف');
+  if(coll==='advances') return 'السلف — '+empNameOf(x.empId,x.empName);
+  if(coll==='payroll') return 'المرتبات — '+empNameOf(x.empId,x.empName);
+  if(coll==='employees') return 'بيانات الموظفين';
+  if(coll==='payweeks') return 'حافظة الأسابيع';
+  if(coll==='archives') return 'حافظة الأشهر';
+  return coll||'';
+}
+function auditDesc(coll,x){
+  x=x||{};
+  if(coll==='employees') return x.name||'';
+  if(coll==='payweeks'||coll==='archives') return x.label||'';
+  if(coll==='payroll') return 'صرف مرتب'+(x.date?' أسبوع '+fmtd(x.date):'')+(x.days?' ('+x.days+' يوم)':'');
+  return x.desc||'';
+}
+function auditVal(k,v){
+  if(v===true) return 'نعم'; if(v===false) return 'لا';
+  if(v==null||v==='') return '—';
+  if(k==='group') return v==='girls'?'بنات':'أولاد';
+  if(k==='mark'){ const m=MARKS.find(z=>z.c.toLowerCase()===String(v).toLowerCase()); return m?m.n:String(v); }
+  if(k==='date') return fmtd(v);
+  if(typeof v==='number') return fmtN(v);
+  return String(v);
+}
+function auditDiffs(prev,patch){
+  const out=[];
+  Object.keys(patch||{}).forEach(k=>{
+    if(k==='editedBy'||k==='editedAt') return;
+    const a=prev?prev[k]:undefined, b=patch[k];
+    if(typeof b==='object'&&b!==null) return;
+    if(String(a??'')===String(b??'')) return;
+    out.push((AU_F[k]||k)+': '+auditVal(k,a)+' ← '+auditVal(k,b));
+  });
+  return out;
+}
+function auditLog(action,coll,id,data,prev,ch){
+  if(auditMute||!db||!me) return;
+  const x=Object.assign({},prev||{},data||{});
+  const amt=x.amount!=null?x.amount:(x.total!=null?x.total:0);
+  const rec={action,coll,docId:id||'',sheet:auditSheet(coll,x),desc:String(auditDesc(coll,x)).slice(0,200),amount:+amt||0,by:me.u,at:new Date().toISOString()};
+  if(action==='edit'){ rec.changes=ch||auditDiffs(prev,data); if(!rec.changes.length) return; }
+  if(prev&&prev.by) rec.owner=prev.by;
+  db.collection('audit').add(rec).catch(()=>{});
+}
+function auditNote(desc,sheet,amount){
+  if(!db||!me) return;
+  db.collection('audit').add({action:'bulk',coll:'',docId:'',sheet:sheet||'',desc:desc||'',amount:+amount||0,by:me.u,at:new Date().toISOString()}).catch(()=>{});
+}
+// يلتقط كل إضافة/تعديل/حذف في المنظومة تلقائياً ويسجّلها باسم المستخدم
+function installAudit(){
+  try{
+    const CP=Object.getPrototypeOf(db.collection('entries'));
+    const DP=Object.getPrototypeOf(db.doc('entries/_probe'));
+    if(CP.__geAudit) return; CP.__geAudit=true;
+    const oAdd=CP.add, oSet=DP.set, oUpd=DP.update, oDel=DP.delete;
+    CP.add=function(data){
+      const coll=this.id;
+      auditInner++; let p; try{ p=oAdd.apply(this,arguments); }finally{ auditInner--; }
+      if(AUDIT_SKIP.has(coll)) return p;
+      return p.then(ref=>{ try{ auditLog('add',coll,ref.id,data,null); }catch(e){} return ref; });
+    };
+    DP.set=function(data){
+      const coll=this.parent&&this.parent.id, id=this.id;
+      if(auditInner||AUDIT_SKIP.has(coll)) return oSet.apply(this,arguments);
+      const prev=cacheGet(coll,id);
+      return oSet.apply(this,arguments).then(r=>{ try{ auditLog(prev?'edit':'add',coll,id,data,prev); }catch(e){} return r; });
+    };
+    DP.update=function(data){
+      const coll=this.parent&&this.parent.id, id=this.id;
+      if(AUDIT_SKIP.has(coll)||!data||typeof data!=='object'||arguments.length>1) return oUpd.apply(this,arguments);
+      const prev=cacheGet(coll,id);
+      const ch=auditDiffs(prev,data);
+      let d=data;
+      if(me&&!auditMute&&ch.length&&Object.keys(data).some(k=>!AU_META.has(k)))
+        d=Object.assign({},data,{editedBy:me.u,editedAt:new Date().toISOString()});
+      return oUpd.call(this,d).then(r=>{ try{ if(ch.length) auditLog('edit',coll,id,data,prev,ch); }catch(e){} return r; });
+    };
+    DP.delete=function(){
+      const coll=this.parent&&this.parent.id, id=this.id;
+      if(AUDIT_SKIP.has(coll)) return oDel.apply(this,arguments);
+      const prev=cacheGet(coll,id);
+      return oDel.apply(this,arguments).then(r=>{ try{ auditLog('del',coll,id,null,prev); }catch(e){} return r; });
+    };
+  }catch(e){ console.warn('audit install failed',e); }
+}
+function auditLine(x){
+  if(x.action==='bulk') return (x.by||'')+': '+(x.desc||'');
+  const v={add:'أضاف',edit:'عدّل',del:'حذف'}[x.action]||'';
+  return (x.by||'')+' '+v+(x.amount?' '+fmt(x.amount):'')+' في «'+(x.sheet||'')+'»'+(x.desc?' — '+x.desc:'');
+}
+function subscribeAudit(){
+  db.collection('audit').orderBy('at','desc').limit(500).onSnapshot(snap=>{
+    auditDocs=snap.docs;
+    if(!auditFirst){
+      snap.docChanges().forEach(ch=>{
+        if(ch.type!=='added'||ch.doc.metadata.hasPendingWrites) return;
+        const x=ch.doc.data();
+        if(!x||(me&&x.by===me.u)||(x.at||'')<auditBootAt) return;
+        toast('🔔 '+auditLine(x),6000);
+      });
+    }
+    auditFirst=false;
+    if(cur==='audit'){ markAuditSeen(); renderAudit(); } else updateAuditBadge();
+  },e=>{});
+}
+function markAuditSeen(){ try{ localStorage.setItem('ge-audit-seen',new Date().toISOString()); }catch(e){} updateAuditBadge(); }
+function updateAuditBadge(){
+  const el=$('st-audit'); if(!el) return;
+  let seen=''; try{ seen=localStorage.getItem('ge-audit-seen')||''; }catch(e){}
+  const n=auditDocs.filter(d=>{const x=d.data();return x.by!==(me&&me.u)&&(x.at||'')>seen;}).length;
+  el.textContent=n?('🔔 '+(n>99?'99+':n)):'';
+  el.classList.toggle('alert',n>0);
+}
+function renderAudit(){
+  const tb=$('tb-audit'); if(!tb) return;
+  const us=$('au-user'); const pv=us.value;
+  const users=[...new Set(auditDocs.map(d=>d.data().by).filter(Boolean))];
+  us.innerHTML='<option value="">كل المستخدمين</option>'+users.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join('');
+  if(pv&&users.includes(pv)) us.value=pv;
+  const fu=us.value, fa=$('au-act').value, q=normD($('au-q').value);
+  const rows=auditDocs.map(d=>d.data()).filter(x=>(!fu||x.by===fu)&&(!fa||x.action===fa)&&
+    (!q||normD([x.sheet,x.desc,x.by,x.owner,(x.changes||[]).join(' '),String(Math.round(x.amount||0))].join(' ')).includes(q)));
+  $('au-cnt').textContent=rows.length+' تغيير';
+  tb.innerHTML=rows.length===0
+    ?'<tr><td colspan="7"><div class="empty"><div class="empty-ico">🕓</div>لا توجد تغييرات مطابقة</div></td></tr>'
+    :rows.map(x=>{
+      const b=AU_ACT[x.action]||AU_ACT.bulk;
+      let det='';
+      if(x.changes&&x.changes.length) det+=x.changes.map(c=>esc(c)).join('<br>');
+      if(x.owner&&x.owner!==x.by&&x.action!=='add') det+=(det?'<br>':'')+'صاحب القيد الأصلي: <b>'+esc(x.owner)+'</b>';
+      return `<tr${x.action==='del'?' class="au-del"':''}>
+        <td class="muted">${esc(fmtDT(x.at))}</td>
+        <td style="font-weight:700">${esc(x.by||'—')}</td>
+        <td><span class="badge ${b.c}">${b.l}</span></td>
+        <td>${esc(x.sheet||'—')}</td>
+        <td>${esc(x.desc||'—')}</td>
+        <td class="num">${x.amount?fmtN(x.amount):'—'}</td>
+        <td class="au-det">${det||'—'}</td>
+      </tr>`;
+    }).join('');
+}
+
+// ═══ كشف التكرار: نفس المبلغ + نفس البيان + نفس التاريخ ═══
+let dupIndex={}, dupGroups=[], dupIds=new Set(), dupSig='', markMap={};
+const normD=s=>String(s==null?'':s).trim().replace(/\s+/g,' ').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase();
+function dupKeyOf(coll,x){
+  if(!x||x.carry||x.opening||x.fromPayroll) return null;
+  if(coll==='payroll') return (x.empId&&x.date)?('p|'+x.empId+'|'+x.date):null;
+  const a=Math.round((+x.amount||0)*100); if(!a||!x.date) return null;
+  if(coll==='advances') return ['a',x.kind||'take',x.empId||'',x.date,normD(x.desc),a].join('|');
+  if(coll!=='entries'&&coll!=='kassa') return null;
+  const dir=(coll==='kassa'?x.type==='in':!!x.deduct)?'in':'out';
+  return ['m',dir,x.date,normD(x.desc),a,normD(x.party||'')].join('|');
+}
+const dupTag=id=>dupIds.has(id)?' <span class="dup-tag" onclick="go(\'dups\')" title="مكرر: نفس المبلغ والبيان والتاريخ — اضغط للمراجعة">⚠️ مكرر</span>':'';
+const dupCls=id=>dupIds.has(id)?' class="dup-row"':'';
+function rebuildDups(){
+  const idx={}, mm={};
+  const push=(coll,d)=>{const x=d.data();if(x.mark&&/^#[0-9a-fA-F]{6}$/.test(x.mark))mm[d.id]=x.mark;const k=dupKeyOf(coll,x);if(k)(idx[k]=idx[k]||[]).push({coll,id:d.id,x});};
+  Object.values(catDocs).flat().forEach(d=>push('entries',d));
+  kassaDocs.forEach(d=>push('kassa',d));
+  advDocs.forEach(d=>push('advances',d));
+  payDocs.forEach(d=>push('payroll',d));
+  dupIndex=idx; markMap=mm;
+  const groups=[], ids=new Set();
+  Object.values(idx).forEach(arr=>{
+    if(arr.length<2) return;
+    const bad=arr.filter(i=>!i.x.dupOk); if(!bad.length) return;
+    arr.sort((a,b)=>(a.x.at||'').localeCompare(b.x.at||''));
+    groups.push(arr); bad.forEach(i=>ids.add(i.id));
+  });
+  groups.sort((a,b)=>(b[0].x.date||'').localeCompare(a[0].x.date||''));
+  dupGroups=groups;
+  const sig=[...ids].sort().join(','), changed=sig!==dupSig;
+  dupIds=ids; dupSig=sig;
+  const el=$('st-dups'); if(el){ el.textContent=String(groups.length); el.classList.toggle('alert',groups.length>0); }
+  if(cur==='dups') renderDups();
+  if(changed){ clearTimeout(rebuildDups._t); rebuildDups._t=setTimeout(rerenderTables,40); }
+}
+function rerenderTables(){
+  try{
+    Object.keys(CATS).forEach(c=>{ if(c==='deposit') renderDeposit(); else if(c==='master') renderMaster(); else renderCat(c); });
+    renderKassa(); renderAdvances(); renderRecent(); renderSalHist(); renderAdvStmt();
+  }catch(e){}
+}
+// تنبيه قبل حفظ قيد مكرر — يرجّع true لو مفيش تكرار أو المستخدم وافق
+function dupConfirm(coll,x,exceptId){
+  const k=dupKeyOf(coll,x); if(!k) return true;
+  const hits=(dupIndex[k]||[]).filter(i=>i.id!==exceptId);
+  if(!hits.length) return true;
+  const h=hits[0];
+  return confirm('⚠️ تنبيه تكرار!\n\nفيه '+hits.length+' قيد متسجّل بالفعل بنفس المبلغ ('+fmt(x.amount)+')\nونفس البيان «'+(x.desc||'')+'» ونفس التاريخ ('+fmtd(x.date)+')\n\nفي: '+auditSheet(h.coll,h.x)+'\nسجّله: '+(h.x.by||'—')+(h.x.at?' — '+fmtDT(h.x.at):'')+'\n\nهل تريد الحفظ مرة تانية رغم التكرار؟');
+}
+function renderDups(){
+  const w=$('dups-list'); if(!w) return;
+  if(!dupGroups.length){ w.innerHTML='<div class="empty"><div class="empty-ico">✅</div>لا توجد قيود مكررة — كله سليم</div>'; return; }
+  w.innerHTML=dupGroups.map((g,gi)=>{
+    const x=g[0].x, isPay=g[0].coll==='payroll';
+    const title=isPay
+      ?('مرتب '+esc(empNameOf(x.empId,x.empName))+' اتصرف '+g.length+' مرات بتاريخ '+fmtd(x.date))
+      :('تكرر '+g.length+' مرات: '+fmt(x.amount)+' — «'+esc(x.desc||'بدون بيان')+'» — '+fmtd(x.date));
+    const rows=g.map(it=>{
+      const y=it.x, canEdit=it.coll!=='payroll';
+      const del=it.coll==='payroll'?`delPayroll('${it.id}')`:`delDoc('${it.coll}','${it.id}')`;
+      return `<tr>
+        <td>${esc(auditSheet(it.coll,y))}</td>
+        <td class="muted">${fmtd(y.date)}</td>
+        <td>${esc(y.desc||'—')}${y.dupOk?' <span class="badge in">مؤكَّد</span>':''}</td>
+        <td class="num">${fmtN(isPay?y.total:y.amount)}</td>
+        <td class="muted">${byHtml(y)}<span class="by-sm">${esc(fmtDT(y.at))}</span></td>
+        <td style="text-align:left;white-space:nowrap">${canEdit?`<button class="btn-mini" onclick="openEdit('${it.coll}','${it.id}')" title="تعديل">✎</button> `:''}<button class="btn-del" onclick="delTwo(this,()=>${del})">✕ حذف</button></td>
+      </tr>`;
+    }).join('');
+    return `<div class="dup-card">
+      <div class="dh"><span class="t">⚠️ ${title}</span><button class="btn btn-ghost" style="padding:5px 12px;font-size:.74rem" onclick="dupIgnore(${gi})" title="القيود دي مقصودة ومش غلط">✓ مش مكرر</button></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>الورقة</th><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>بواسطة</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>`;
+  }).join('');
+}
+async function dupIgnore(gi){
+  const g=dupGroups[gi]; if(!g) return;
+  for(const it of g){ if(it.x.dupOk) continue; try{ await db.collection(it.coll).doc(it.id).update({dupOk:true}); }catch(e){} }
+  toast('تمام — اتعلّم إن القيود دي مقصودة ومش مكررة ✓');
+}
+// Excel: تعليم الصفوف المكررة
+function xlKey(r){
+  if(r.dest==='skip') return null;
+  const desc=r.desc||'مستورد من Excel';
+  if(r.dest==='kassa-in'||r.dest==='kassa-out') return dupKeyOf('kassa',{type:r.dest==='kassa-in'?'in':'out',date:r.date,desc,amount:r.amount});
+  return dupKeyOf('entries',{category:r.dest,date:r.date,desc,amount:r.amount,party:r.dest==='deposit'?desc:''});
+}
+function xlMarkDups(){
+  const cnt={};
+  xlRows.forEach(r=>{ r._k=xlKey(r); if(r._k) cnt[r._k]=(cnt[r._k]||0)+1; });
+  xlRows.forEach(r=>{ r._ex=!!(r._k&&dupIndex[r._k]); r._in=!!(r._k&&cnt[r._k]>1); });
+}
+function xlSkipDups(){
+  xlMarkDups();
+  const seen=new Set(); let n=0;
+  xlRows.forEach(r=>{ if(r.dest==='skip'||!r._k) return; if(r._ex||seen.has(r._k)){ r.dest='skip'; n++; } else seen.add(r._k); });
+  xlRender(); toast('أُلغي '+n+' صف مكرر');
+}
+
+
+// ═══ لوحة الألوان: تعليم أي صف بلون (يتحفظ ويتزامن) ═══
+const MARKS=[
+  {c:'#E05252',n:'أحمر'},{c:'#E8903A',n:'برتقالي'},{c:'#E8C93A',n:'أصفر'},{c:'#3AAA74',n:'أخضر'},
+  {c:'#4A8FD8',n:'أزرق'},{c:'#9A6FD0',n:'بنفسجي'},{c:'#D86FA8',n:'وردي'},{c:'#8A8A8A',n:'رمادي'}
+];
+function rowA(coll,id){
+  const cls=[]; let st='';
+  if(dupIds.has(id)) cls.push('dup-row');
+  const mk=markMap[id]; if(mk){ cls.push('marked'); st=' style="--mk:'+mk+'"'; }
+  return (cls.length?' class="'+cls.join(' ')+'"':'')+' data-c="'+coll+'" data-id="'+esc(id)+'"'+st;
+}
+let markTargets=[];
+function openMarkPop(targets,x,y){
+  markTargets=targets.filter(t=>t&&t.c&&t.id);
+  if(!markTargets.length) return;
+  const pop=$('mark-pop'), sw=$('mp-sw');
+  sw.innerHTML=MARKS.map(m=>`<button style="background:${m.c}" title="${m.n}" onclick="applyMark('${m.c}')"></button>`).join('');
+  $('mp-title').textContent=markTargets.length>1?('🎨 لوّن '+markTargets.length+' صف'):'🎨 لوّن الصف';
+  pop.hidden=false;
+  const w=pop.offsetWidth||240, h=pop.offsetHeight||170;
+  pop.style.left=Math.max(8,Math.min(x,window.innerWidth-w-8))+'px';
+  pop.style.top=Math.max(8,Math.min(y,window.innerHeight-h-8))+'px';
+}
+function closeMarkPop(){ const p=$('mark-pop'); if(p) p.hidden=true; }
+function openMarkFromSel(ev){
+  const seen=new Set(), t=[];
+  selCells.forEach(td=>{ const tr=td.closest('tr[data-id]'); if(tr&&!seen.has(tr.dataset.id)){ seen.add(tr.dataset.id); t.push({c:tr.dataset.c,id:tr.dataset.id}); } });
+  if(!t.length){ toast('الخلايا المحددة مش في صفوف قابلة للتلوين'); return; }
+  const r=ev.target.getBoundingClientRect();
+  openMarkPop(t,r.left,r.top-180);
+}
+async function applyMark(color){
+  if(color&&!/^#[0-9a-fA-F]{6}$/.test(color)) return;
+  const t=markTargets.slice(); closeMarkPop(); if(!t.length||!db) return;
+  const many=t.length>3; if(many) auditMute++;
+  let n=0;
+  try{ for(const it of t){ try{ await db.collection(it.c).doc(it.id).update({mark:color||''}); n++; }catch(e){} } }
+  finally{ if(many) auditMute--; }
+  if(many){ const m=MARKS.find(z=>z.c===color); auditNote((color?('تلوين '+n+' صف باللون '+(m?m.n:color)):('إزالة اللون من '+n+' صف')),'لوحة الألوان',0); }
+  toast(color?('تم تلوين '+n+' صف ✓'):('اتشال اللون من '+n+' صف'));
+}
+document.addEventListener('contextmenu',e=>{
+  const tr=e.target.closest&&e.target.closest('#content tr[data-id]');
+  if(!tr||e.target.closest('input,select,textarea')) return;
+  e.preventDefault();
+  const sel=[...selCells].some(td=>td.closest('tr')===tr);
+  if(sel&&selCells.size>1){ const seen=new Set(),t=[]; selCells.forEach(td=>{const r=td.closest('tr[data-id]'); if(r&&!seen.has(r.dataset.id)){seen.add(r.dataset.id);t.push({c:r.dataset.c,id:r.dataset.id});}}); openMarkPop(t,e.clientX,e.clientY); }
+  else openMarkPop([{c:tr.dataset.c,id:tr.dataset.id}],e.clientX,e.clientY);
+});
+document.addEventListener('mousedown',e=>{ const p=$('mark-pop'); if(p&&!p.hidden&&!p.contains(e.target)&&!(e.target.closest&&e.target.closest('#sel-bar'))) closeMarkPop(); },true);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMarkPop(); });
+window.addEventListener('scroll',()=>closeMarkPop(),{passive:true});
 
 // ═══ BOOT ═══
 initAuth().catch(e=>{$('auth-loading').hidden=true;$('auth-err').textContent='خطأ غير متوقع';console.error(e)});

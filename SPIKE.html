@@ -1011,6 +1011,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
         <div style="font-size:48px;margin-bottom:10px">📊</div>
         <div style="font-size:15px;font-weight:700;color:#1A1916;margin-bottom:5px">اسحب ملف Excel أو CSV هنا</div>
         <div style="font-size:13px;color:#9C9488">xlsx · xls · csv</div>
+        <div style="font-size:12px;color:#9C9488;margin-top:6px">بيقبل شيت السبايك بالعيارات أو شيت الأصناف (ربع جنيه / جرام ...)</div>
       </div>
       </div>
 
@@ -2936,10 +2937,95 @@ function scSetTab(n){
   document.getElementById('sc-tab2').style.border = n===2?'none':'1px solid #C8C4BC';
 }
 
+// ===== شكل "الأصناف" (البند / العدد / ع 21) — زي: ربع جنيه، ربع جرام، جرام =====
+function _xlTxt(v){return (v===null||v===undefined?'':v+'').replace(/ـ/g,'').replace(/\s+/g,' ').trim();}
+// عيار الصنف من اسمه: الجنيهات 21 (875) — الجرامات والسبايك والأونصات 24 (999.9)
+function xlItemKarat(name){
+  var s=_xlTxt(name);
+  if(/جني?ه|pound/i.test(s))return 875;
+  if(/جرام|اونص|أونص|اوقي|أوقي|سبيك|كيلو|gram|ounce|oz|bar/i.test(s))return 999.9;
+  return 875;
+}
+var _XL_MONTHS={january:1,jan:1,february:2,feb:2,march:3,mar:3,april:4,apr:4,may:5,june:6,jun:6,july:7,jul:7,august:8,aug:8,september:9,sep:9,sept:9,october:10,oct:10,november:11,nov:11,december:12,dec:12,
+  'يناير':1,'فبراير':2,'مارس':3,'ابريل':4,'أبريل':4,'إبريل':4,'مايو':5,'يونيو':6,'يوليو':7,'اغسطس':8,'أغسطس':8,'سبتمبر':9,'اكتوبر':10,'أكتوبر':10,'نوفمبر':11,'ديسمبر':12};
+// يلاقي تاريخ مكتوب في خانة نص (Thursday, October 15, 2026 / 15 أكتوبر 2026 / 15/10/2026 / 2026-10-15)
+function xlFindDateText(v){
+  if(v instanceof Date&&!isNaN(v))return v.getFullYear()+'-'+('0'+(v.getMonth()+1)).slice(-2)+'-'+('0'+v.getDate()).slice(-2);
+  var s=_xlTxt(v).replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;});
+  if(!s)return null;
+  var m=s.match(/([A-Za-z؀-ۿ]+)\.?\s+(\d{1,2}),?\s+(\d{4})/),mo;
+  if(m&&(mo=_XL_MONTHS[m[1].toLowerCase()]))return m[3]+'-'+('0'+mo).slice(-2)+'-'+('0'+m[2]).slice(-2);
+  m=s.match(/(\d{1,2})\s+([A-Za-z؀-ۿ]+)\.?,?\s+(\d{4})/);
+  if(m&&(mo=_XL_MONTHS[m[2].toLowerCase()]))return m[3]+'-'+('0'+mo).slice(-2)+'-'+('0'+m[1]).slice(-2);
+  if(/(\d{4})[\-\/\.](\d{1,2})[\-\/\.](\d{1,2})|(\d{1,2})[\-\/\.](\d{1,2})[\-\/\.](\d{4})/.test(s))return xlParseDate2(s);
+  return null;
+}
+function parseItemsSheet(data,fmt){
+  var hr=-1;
+  for(var i=0;i<Math.min(15,data.length);i++){
+    var cells=(data[i]||[]).map(_xlTxt),hasItem=false,hasCnt=false;
+    for(var j=0;j<cells.length;j++){
+      if(/^(ال)?(بند|صنف|أصناف|اصناف)$/.test(cells[j]))hasItem=true;
+      if(/^(ال)?عدد$|^(ال)?قطع$/.test(cells[j]))hasCnt=true;
+    }
+    if(hasItem&&hasCnt){hr=i;break;}
+  }
+  if(hr<0)return null; // مش شكل الأصناف
+  var hd=(data[hr]||[]).map(_xlTxt),c={item:-1,pcs:-1,w21:-1,total:-1,karat:-1,w995:-1,date:-1};
+  for(var j=0;j<hd.length;j++){
+    var h=hd[j],hl=h.toLowerCase();if(!h)continue;
+    if(c.item<0&&/^(ال)?(بند|صنف|أصناف|اصناف)$/.test(h))c.item=j;
+    else if(c.pcs<0&&/^(ال)?عدد$|^(ال)?قطع$/.test(h))c.pcs=j;
+    else if(c.total<0&&(/إجمال|اجمال/.test(h)||hl.indexOf('total')>=0))c.total=j;
+    else if(c.date<0&&(h.indexOf('تاريخ')>=0||hl.indexOf('date')>=0))c.date=j;
+    else if(c.w21<0&&(/(^|\D)21(\D|$)/.test(h)||h.indexOf('875')>=0))c.w21=j;
+    else if(c.w995<0&&(h.indexOf('995')>=0||h.indexOf('999')>=0||/(^|\D)24(\D|$)/.test(h)))c.w995=j;
+    else if(c.karat<0&&h.indexOf('عيار')>=0)c.karat=j;
+  }
+  // التاريخ من رأس الشيت (فوق صف العناوين)
+  var dHead=null,F=fmt||data;
+  for(var i=0;i<hr&&!dHead;i++){var fr=F[i]||[];for(var j=0;j<fr.length&&!dHead;j++)dHead=xlFindDateText(fr[j]);}
+  for(var i=0;i<hr&&!dHead;i++){var rr=data[i]||[];for(var j=0;j<rr.length&&!dHead;j++){var v=rr[j];if(typeof v==='number'&&v>=40000&&v<=60000&&Math.floor(v)===v)dHead=xlParseDate2(v);}}
+  var out=[],d0=dHead||today();
+  for(var i=hr+1;i<data.length;i++){
+    var row=data[i]||[];
+    var name=c.item>=0?_xlTxt(row[c.item]):'';
+    if(!row.join('').trim())continue;
+    if(/إجمال|اجمال|total/i.test(row.join(' ')))continue;
+    if(!name||name==='0')continue;
+    var w21=c.w21>=0?toNum(row[c.w21]):0;
+    if(!(w21>0)&&c.total>=0)w21=toNum(row[c.total]);
+    var k=c.karat>=0?toNum(row[c.karat]):0;
+    if(k<300||k>1000)k=xlItemKarat(name);
+    var w9=c.w995>=0?toNum(row[c.w995]):0;
+    if(!(w21>0)&&w9>0)w21=w9*999.5/875;
+    if(!(w21>0))continue;
+    var w=w21*875/k; // الوزن القائم الحقيقي بعياره
+    var d=d0;
+    if(c.date>=0&&row[c.date]!==''&&row[c.date]!==null&&row[c.date]!==undefined)d=xlParseDate2(row[c.date]);
+    out.push({date:d,client:name,weight:+w.toFixed(3),karat:k,w875:+w21.toFixed(3),w995:+(w9>0?w9:w21*875/999.5).toFixed(3),pcs:c.pcs>=0?toNum(row[c.pcs]):0});
+  }
+  return out;
+}
+// يشيل صف الإجمالي لو وزنه = مجموع باقي الصفوف (زي صف "بيـــان" في شيت السبايك)
+function xlDropTotalRow(rows){
+  if(rows.length<3)return rows;
+  var sum=0;for(var i=0;i<rows.length;i++)sum+=rows[i].weight;
+  for(var i=0;i<rows.length;i++){
+    if(!rows[i]._nd)continue; // صف الإجمالي من غير تاريخ
+    var rest=sum-rows[i].weight;
+    if(Math.abs(rows[i].weight-rest)<=Math.max(0.05,rest*0.0005)){rows.splice(i,1);break;}
+  }
+  for(var i=0;i<rows.length;i++)delete rows[i]._nd;
+  return rows;
+}
+
 // قراءة جدول Excel بشكل مرن (يستخدمها استيراد Excel وصفحة PDF→Excel)
-function parseSheetRows(data){
+function parseSheetRows(data,fmt){
   var out=[];
   if(!data||data.length<1)return out;
+  var items=parseItemsSheet(data,fmt);
+  if(items)return items;
   var headerRow=-1;
   for(var i=0;i<Math.min(15,data.length);i++){
     var r=(data[i]||[]).join(' ');
@@ -2966,6 +3052,7 @@ function parseSheetRows(data){
     var rowTxt=row.join(' ');
     if(!rowTxt.trim())continue;
     if(/إجمال|اجمال|total/i.test(rowTxt))continue; // تجاهل صفوف الإجمالي
+    if(cols.client>=0&&/^بي[اأإ]ن$/.test(_xlTxt(row[cols.client])))continue; // صف "بيـــان" = إجمالي
     var w=cols.weight>=0?toNum(row[cols.weight]):0;
     if(w<=0&&cols.weight<0){
       for(var j=0;j<row.length;j++){
@@ -2985,16 +3072,17 @@ function parseSheetRows(data){
     var d=rawDate!==''&&rawDate!==undefined&&rawDate!==null?xlParseDate2(rawDate):lastDate;
     lastDate=d;
     var cl=(cols.client>=0?(row[cols.client]||''):'').toString().trim()||'مستورد';
-    out.push({date:d,client:cl,weight:+w.toFixed(3),karat:k,w875:+w8.toFixed(3),w995:+w9.toFixed(3),pcs:cols.pcs>=0?toNum(row[cols.pcs]):0});
+    out.push({date:d,client:cl,weight:+w.toFixed(3),karat:k,w875:+w8.toFixed(3),w995:+w9.toFixed(3),pcs:cols.pcs>=0?toNum(row[cols.pcs]):0,_nd:cols.date>=0&&!(rawDate!==''&&rawDate!==undefined&&rawDate!==null)});
   }
-  return out;
+  return xlDropTotalRow(out);
 }
 function readWorkbookRows(buf){
   var wb=XLSX.read(buf,{type:'array'});
   for(var s=0;s<wb.SheetNames.length;s++){
     var ws=wb.Sheets[wb.SheetNames[s]];
     var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-    var rows=parseSheetRows(data);
+    var fmt=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+    var rows=parseSheetRows(data,fmt);
     if(rows.length)return rows;
   }
   return [];
@@ -3030,7 +3118,7 @@ function xlProcess2(file){
       _xlRows2=readWorkbookRows(e.target.result);
       if(!_xlRows2.length){
         var st=document.getElementById('xl-status2');
-        st.textContent='لم يتم العثور على بيانات — لازم يكون فيه عمود للوزن (مثلاً: الوزن / وزن قائم)';st.style.display='block';
+        st.textContent='لم يتم العثور على بيانات — الملف لازم يكون شيت سبايك (التاريخ / وزن قايم / عيار) أو شيت أصناف (البند / العدد / ع 21)';st.style.display='block';
         return;
       }
       xlShowPreview2();

@@ -1259,7 +1259,7 @@ function N(n,d){
 function W8(w,k){return w*k/875;}
 function W9(w,k){return w*k/999.9;}
 function W7(w,k){return w*k/750;}
-function today(){return new Date().toISOString().split('T')[0];}
+function today(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
 function el(id){return document.getElementById(id);}
 function txt(id,v){var e=el(id);if(e)e.textContent=v;}
 // تنسيق التاريخ مع كاش — كان أبطأ جزء في السيستم (كان بيتنفذ آلاف المرات مع كل فتح صفحة)
@@ -3078,6 +3078,7 @@ function parseSheetRows(data,fmt){
 }
 function readWorkbookRows(buf){
   var wb=XLSX.read(buf,{type:'array'});
+  _xl1904=!!(wb.Workbook&&wb.Workbook.WBProps&&wb.Workbook.WBProps.date1904);
   for(var s=0;s<wb.SheetNames.length;s++){
     var ws=wb.Sheets[wb.SheetNames[s]];
     var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
@@ -3131,19 +3132,58 @@ function xlProcess2(file){
 }
 function xlParseData2(data){_xlRows2=parseSheetRows(data);if(_xlRows2.length)xlShowPreview2();}
 
+var _xl1904=false;
+var _XL_MONTHS={'يناير':1,'ينار':1,'فبراير':2,'فبراى':2,'مارس':3,'ابريل':4,'أبريل':4,'إبريل':4,'مايو':5,'يونيو':6,'يونيه':6,'يوليو':7,'يوليه':7,'اغسطس':8,'أغسطس':8,'سبتمبر':9,'اكتوبر':10,'أكتوبر':10,'نوفمبر':11,'ديسمبر':12,
+  'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'jul':7,'aug':8,'sep':9,'sept':9,'oct':10,'nov':11,'dec':12};
+function _xlYMD(y,m,d){
+  y=+y;m=+m;d=+d;
+  if(y<100)y+=2000;
+  if(!(m>=1&&m<=12&&d>=1&&d<=31&&y>=1900&&y<=2200))return '';
+  return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+// يقرأ التاريخ زي ما هو مكتوب في خلية الإكسيل بالظبط (بدون فرق توقيت أو قلب يوم/شهر)
 function xlParseDate2(val){
   if(val===''||val===null||val===undefined)return today();
-  if(val instanceof Date&&!isNaN(val))return val.toISOString().split('T')[0];
-  if(typeof val==='number'&&val>20000&&val<80000){
-    var d=new Date(Math.round((val-25569)*86400*1000));
-    return d.toISOString().split('T')[0];
+  if(val instanceof Date&&!isNaN(val))return _xlYMD(val.getFullYear(),val.getMonth()+1,val.getDate())||today();
+  if(typeof val==='number'){
+    if(val>20000&&val<80000){
+      var pc=window.XLSX&&XLSX.SSF&&XLSX.SSF.parse_date_code?XLSX.SSF.parse_date_code(val,{date1904:_xl1904}):null;
+      if(pc)return _xlYMD(pc.y,pc.m,pc.d)||today();
+      var d=new Date(Math.round((Math.floor(val)-25569)*86400*1000));
+      return d.toISOString().split('T')[0];
+    }
+    val=String(val);
   }
-  var s=(val+'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).trim();
-  if(/^\d{5}(\.\d+)?$/.test(s)){var d2=new Date(Math.round((parseFloat(s)-25569)*86400*1000));return d2.toISOString().split('T')[0];}
-  var m=s.match(/(\d{4})[\-\/\.](\d{1,2})[\-\/\.](\d{1,2})/);
-  if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
-  m=s.match(/(\d{1,2})[\-\/\.](\d{1,2})[\-\/\.](\d{2,4})/);
-  if(m){var y=m[3].length===2?'20'+m[3]:m[3];return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');}
+  var s=(val+'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).replace(/[۰-۹]/g,function(c){return c.charCodeAt(0)-1776;})
+    .replace(/[‎‏؜]/g,'').replace(/،/g,',').replace(/ـ/g,'').trim();
+  if(/^\d{5}(\.\d+)?$/.test(s))return xlParseDate2(parseFloat(s));
+  var m=s.match(/(\d{4})\s*[\-\/\.\\]\s*(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})/);
+  if(m)return _xlYMD(m[1],m[2],m[3])||today();
+  m=s.match(/(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})\s*[\-\/\.\\]\s*(\d{2,4})/);
+  if(m){
+    var a1=+m[1],a2=+m[2];
+    // الأساس يوم/شهر/سنة، ولو الرقم التاني أكبر من 12 يبقى الملف شهر/يوم/سنة
+    if(a2>12&&a1<=12){var t=a1;a1=a2;a2=t;}
+    return _xlYMD(m[3],a2,a1)||today();
+  }
+  // تاريخ بأسماء الشهور: 22 أكتوبر 2026 / 22-Oct-26 / Oct 22, 2026
+  var low=s.toLowerCase(),mon=0,key='';
+  for(var k in _XL_MONTHS){if(low.indexOf(k)>=0&&k.length>key.length){key=k;mon=_XL_MONTHS[k];}}
+  if(mon){
+    var nums=low.replace(key,' ').match(/\d+/g)||[];
+    var dd=0,yy=0;
+    for(var i=0;i<nums.length;i++){
+      var n=+nums[i];
+      if(nums[i].length===4)yy=n;
+      else if(!dd&&n>=1&&n<=31)dd=n;
+      else if(!yy)yy=n;
+    }
+    if(!yy)yy=new Date().getFullYear();
+    return _xlYMD(yy,mon,dd||1)||today();
+  }
+  // يوم/شهر بدون سنة
+  m=s.match(/^(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})$/);
+  if(m){var b1=+m[1],b2=+m[2];if(b2>12&&b1<=12){var t2=b1;b1=b2;b2=t2;}return _xlYMD(new Date().getFullYear(),b2,b1)||today();}
   return today();
 }
 

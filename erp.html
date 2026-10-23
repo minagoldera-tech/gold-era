@@ -993,9 +993,9 @@ const PAGE_TITLE=Object.fromEntries(NAV.flatMap(g=>g[1]));
 const ACTIONS={
   to_prep:{label:"تسليم للتجهيز",from:["vault"],to:"prep",worker:true,work:true,badge:"prep",startJob:"prep"},
   prep_back:{label:"إرجاع للخزنة",from:["prep"],to:"vault",badge:"",closeJob:"prep",closeFrom:"prep"},
-  to_hallmark:{label:"تسليم دمغة",from:["prep","vault"],to:"hallmark",boxes:true,fee:true,badge:"recv",closeJob:"prep",closeFrom:"prep"},
-  from_hallmark:{label:"استلام دمغة",from:["hallmark"],to:"finish",boxes:true,badge:"dlv"},
-  back_hallmark:{label:"مرتجع للدمغة",from:["finish"],to:"hallmark",boxes:true,badge:"ret"},
+  to_hallmark:{label:"تسليم دمغة",from:["prep","vault"],to:"hallmark",boxes:true,fee:true,bags:true,badge:"recv",closeJob:"prep",closeFrom:"prep"},
+  from_hallmark:{label:"استلام دمغة",from:["hallmark"],to:"finish",boxes:true,bags:true,badge:"dlv"},
+  back_hallmark:{label:"مرتجع للدمغة",from:["finish"],to:"hallmark",boxes:true,bags:true,badge:"ret"},
   pack:{label:"تغليف",from:["finish"],to:"packed",boxes:true,worker:true,workerOpt:true,badge:"prep",closeJob:"pack",closeFrom:"finish",closeBy:"worker"},
   to_master:{label:"تسليم المعلم",from:["packed","finish"],to:"master",worker:true,badge:"done"}
 };
@@ -1200,7 +1200,7 @@ function fieldsOf(e,catalog,customers){const it=catalog[e.item]?.name;const F=[]
     case "bars":g("رقم السبيكة",e.serial);g("المكان",e.dest==="shop"?"وارد محل":"الخزنة");g("الوزن",fg(n(e.weight))+" جم");g("العيار",karatLabel(e.karat));g("الفاين",fg(n(e.weight)*n(e.karat)/1000)+" جم");if(e.source)g("المصدر",e.source);break;
     case "strips":g("النوع",e.kind==="return"?"رد للخزنة":"صرف للتصنيع");g("الوزن",fg(n(e.weight))+" جم");g("العيار",karatLabel(e.karat));if(e.serial)g("السبيكة",e.serial);if(it){g("الصنف المطلوب",it);g("العدد المطلوب",fi(n(e.count)));g("وزن المطلوب",fg(n(e.reqWeight))+" جم")}break;
     case "casting":g("الصانع",e.worker||"—");if(e.order)g("أمر التصنيع",e.orderNo?"#"+e.orderNo:"مرتبط");g("الوزنة المتسلمة",fg(n(e.received)));g("وزنة السبك",fg(n(e.castW)));g("وزنة التقطيع",fg(n(e.cutW)));g("خسية السبك",fg(n(e.castLoss)));g("خسية التقطيع",fg(n(e.cutLoss)));g("الصنف",it||"—");g("العدد",fi(n(e.count)));g("الوزن علي الميزان",fg(n(e.scale)));g("الوزن الفعلي",fg(n(e.actual)));g("الفرق",fg(n(e.diff)));g("الوزنة المتبقية",fg(n(e.remaining)));break;
-    case "moves":g("الحركة",ACTIONS[e.action]?.label||e.action);g("من ← إلى",LOC[e.from]+" ← "+LOC[e.to]);g("الصنف",it||"—");g("العدد",fi(n(e.count)));g("الوزن",fg(n(e.weight))+" جم");if(e.boxes)g("العلب",fi(n(e.boxes)));if(e.worker)g("المستلم",e.worker+(e.work?" · "+e.work:""));if(e.fee)g("رسوم الدمغة",fm(n(e.fee))+" ج.م");break;
+    case "moves":g("الحركة",ACTIONS[e.action]?.label||e.action);g("من ← إلى",LOC[e.from]+" ← "+LOC[e.to]);g("الصنف",it||"—");g("العدد",fi(n(e.count)));g(n(e.bagW)?"الوزن قبل الأكياس":"الوزن",fg(n(e.weight))+" جم");if(n(e.bagW)){g("الوزن بعد الأكياس",fg(n(e.bagW))+" جم");g("وزن الأكياس",fg(n(e.bagW)-n(e.weight))+" جم")}if(e.boxes)g("العلب",fi(n(e.boxes)));if(e.worker)g("المستلم",e.worker+(e.work?" · "+e.work:""));if(e.fee)g("رسوم الدمغة",fm(n(e.fee))+" ج.م");break;
     case "sales":g("رقم الفاتورة",e.no);g("العميل",customers[e.customer]?.name||"—");g("الإجمالي",fm(n(e.total))+" ج.م");g("المدفوع",fm(n(e.paid))+" ج.م");break;
     case "payments":g("العميل",customers[e.customer]?.name||"—");g("المبلغ",fm(n(e.amount))+" ج.م");g("الطريقة",e.method||"—");break;
     case "counts":g("المكان",(COUNT_LOCS.find(x=>x[0]===e.loc)||[0,""])[1]);(e.lines||[]).forEach(l=>g(l.item?(catalog[l.item]?.name||l.item):"الخام",(COUNT_POOL[e.loc]?"":fi(n(l.cntC))+" قطعة ("+(n(l.dc)>0?"+":"")+fi(n(l.dc))+") · ")+fg(n(l.cntW))+" جم ("+(n(l.dw)>0?"+":"")+fg(n(l.dw))+")"));break;
@@ -1571,6 +1571,7 @@ function StagePage({cfg,L,catalog,workers,can,toast,role,open}){
     {key:"weight",label:"الوزن",num:1,get:r=>n(r.weight),render:r=>fg(n(r.weight))},
     ...(cfg.loc!=="finish"?[{key:"boxes",label:"العلب",num:1,get:r=>n(r.boxes),render:r=>r.boxes?fi(n(r.boxes)):"—"}]:[]),
     {key:"worker",label:"المستلم",get:r=>(r.worker||"—")+(r.work?" · "+r.work:"")},
+    ...(cfg.loc==="hallmark"?[{key:"bagW",label:"بعد الأكياس",num:1,get:r=>n(r.bagW),render:r=>n(r.bagW)?html`${fg(n(r.bagW))}<span class="sub">أكياس ${fg(n(r.bagW)-n(r.weight))}</span>`:"—"}]:[]),
     ...(cfg.loc==="hallmark"?[{key:"fee",label:"الرسوم",num:1,get:r=>n(r.fee),render:r=>r.fee?fm(n(r.fee)):"—"}]:[]),stCol()];
   return html`<${React.Fragment}>
     <${PH} title=${cfg.title} desc=${cfg.sub}><${Range} value=${rg} set=${setRg}/>${can&&cfg.actions.map((a,i)=>html`<button key=${a} class=${"btn"+(i===0?" p":"")} onClick=${()=>setSheet(a)}>${i===0&&html`<${I} n="plus"/>`}${ACTIONS[a].label}</button>`)}</${PH}>
@@ -1592,27 +1593,33 @@ function StagePage({cfg,L,catalog,workers,can,toast,role,open}){
 }
 function MoveSheet({action,L,catalog,workers,toast,onClose}){
   const A=ACTIONS[action];
-  const [f,setF]=useState({from:A.from[0],item:"",count:"",weight:"",worker:"",work:WORKS[0],boxes:"",note:"",jobWorker:""});
+  const [f,setF]=useState({from:A.from[0],item:"",count:"",weight:"",worker:"",work:WORKS[0],boxes:"",note:"",jobWorker:"",bagW:""});
   const openJobs=A.closeJob?L.live.filter(e=>e._map==="sessions"&&e.job===A.closeJob&&!e.end):[];
   const jobWs=[...new Map(openJobs.map(e=>[e.worker,e.wname])).entries()];const [wEd,setWEd]=useState(false);const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
   const up=(k,v)=>setF(o=>({...o,[k]:v}));
   const avail=(L.stock[f.from]||{})[f.item]||{c:0,w:0};const it=catalog[f.item];
   const autoW=avail.c>0?avail.w/avail.c*n(f.count):(it?n(it.w)*n(f.count):0);const weight=wEd?n(f.weight):autoW;
   const fee=A.fee&&it?n(it.fee)*n(f.count):0;
+  /* bags: recorded for the hallmark only; balances always use the weight before bags */
+  const bagSent=L.live.filter(e=>e._map==="moves"&&e.to==="hallmark"&&e.item===f.item&&n(e.bagW)>0);
+  const bagPer=bagSent.reduce((a,e)=>a+n(e.count),0)?bagSent.reduce((a,e)=>a+n(e.bagW)-n(e.weight),0)/bagSent.reduce((a,e)=>a+n(e.count),0):0;
+  const expBag=action==="from_hallmark"&&bagPer>0?weight+bagPer*n(f.count):0;const bagW=n(f.bagW);
   const only=Object.keys(L.stock[f.from]||{}).filter(k=>L.stock[f.from][k].c>0);
   const save=async more=>{setErr("");if(!f.item)return setErr("اختر الصنف.");if(n(f.count)<=0)return setErr("اكتب العدد.");
     if(n(f.count)>avail.c+0.0001)return setErr("المتاح في "+LOC[f.from]+" "+fi(avail.c)+" قطعة فقط.");if(A.worker&&!A.workerOpt&&!f.worker)return setErr("اختر "+(action==="to_master"?"المعلم":"المستلم")+".");
-    setBusy(true);try{const mv=await addEntry("moves",{action,from:f.from,to:A.to,item:f.item,count:n(f.count),weight:r2(weight),worker:f.worker,work:A.work?f.work:"",boxes:A.boxes?n(f.boxes):0,fee:r2(fee),note:f.note.trim()});
+    if(A.bags&&f.bagW!==""&&bagW+0.001<weight)return setErr("الوزن بعد الأكياس أقل من الوزن قبلها.");
+    setBusy(true);try{const mv=await addEntry("moves",{action,from:f.from,to:A.to,item:f.item,count:n(f.count),weight:r2(weight),worker:f.worker,work:A.work?f.work:"",boxes:A.boxes?n(f.boxes):0,fee:r2(fee),bagW:A.bags&&bagW>0?r2(bagW):0,note:f.note.trim()});
       const wk=Object.values(workers).find(x=>x.name===f.worker);
       if(A.startJob&&wk)await startJob(A.startJob,wk,{task:A.work?f.work:JOBS[A.startJob].label,item:f.item,count:n(f.count),inW:0,moveId:mv.id});
       if(A.closeJob&&f.from===A.closeFrom){const who=A.closeBy==="worker"?(wk&&wk.id):f.jobWorker;if(who)for(const s of openJobs.filter(e=>e.worker===who))await closeTimer(s,{pcs:n(f.count),weight:r2(weight)})}
-      toast(A.label+": "+fi(n(f.count))+" "+(it?it.name:""));if(more){setF(o=>({...o,item:"",count:"",weight:"",boxes:"",note:""}));setWEd(false)}else onClose()}catch(er){setErr(errText(er))}setBusy(false)};
+      toast(A.label+": "+fi(n(f.count))+" "+(it?it.name:""));if(more){setF(o=>({...o,item:"",count:"",weight:"",boxes:"",note:"",bagW:""}));setWEd(false)}else onClose()}catch(er){setErr(errText(er))}setBusy(false)};
   return html`<${Sheet} title=${A.label} sub=${LOC[f.from]+" ← "+LOC[A.to]} onClose=${onClose} footer=${html`<span class="msg">${err}</span><button class="btn" disabled=${busy} onClick=${()=>save(true)}>حفظ وإضافة أخرى</button><button class="btn p" disabled=${busy} onClick=${()=>save(false)}><${I} n="check"/>${A.label}</button>`}>
     <div class="fg">
       ${A.from.length>1&&html`<${F} full label="من"><${Sel} id="mv-from" value=${f.from} set=${v=>{up("from",v);up("item","")}}>${A.from.map(l=>html`<option key=${l} value=${l}>${LOC[l]} — ${fi(locTotal(L.stock,l).c)} قطعة</option>`)}</${Sel}></${F}>`}
       <${F} full label="الصنف" hint=${only.length?"":"لا توجد أصناف متاحة في "+LOC[f.from]}><${ItemSel} id="mv-item" value=${f.item} set=${v=>up("item",v)} catalog=${catalog} only=${only} avail=${L.stock[f.from]}/></${F}>
       <${F} label="العدد"><${Num} id="mv-c" ph="0" value=${f.count} set=${v=>up("count",v)}/></${F}>
-      <${F} label="الوزن (جم)" hint=${wEd?"وزن مُدخل يدوياً":"محسوب من متوسط الرصيد"}><${Num} id="mv-w" value=${wEd?f.weight:(autoW?String(r2(autoW)):"")} set=${v=>{setWEd(true);up("weight",v)}}/></${F}>
+      <${F} label=${A.bags?"الوزن قبل الأكياس (جم)":"الوزن (جم)"} hint=${wEd?"وزن مُدخل يدوياً":"محسوب من متوسط الرصيد"}><${Num} id="mv-w" value=${wEd?f.weight:(autoW?String(r2(autoW)):"")} set=${v=>{setWEd(true);up("weight",v)}}/></${F}>
+      ${A.bags&&html`<${F} label="الوزن بعد الأكياس (جم)" hint=${expBag?"المتوقع "+fg(expBag)+" حسب ما اتسلّم للدمغة":"اختياري — للمراجعة مع الدمغة فقط، مش بيدخل في الحسابات"}><${Num} id="mv-bag" value=${f.bagW} ph=${expBag?fg(expBag):"0.00"} set=${v=>up("bagW",v)}/></${F}>`}
       ${A.boxes&&html`<${F} label="عدد العلب"><${Num} id="mv-b" ph="0" value=${f.boxes} set=${v=>up("boxes",v)}/></${F}>`}
       ${A.worker&&html`<${F} label=${action==="to_master"?"المعلم":"اسم المستلم"}><${Sel} id="mv-wk" value=${f.worker} set=${v=>up("worker",v)}><option value="">—</option>${workerList(workers,true).map(w=>html`<option key=${w.name} value=${w.name}>${w.name}${deptsOf(w).length?" — "+wDept(w):""}</option>`)}</${Sel}></${F}>`}
       ${A.closeJob&&A.closeBy!=="worker"&&f.from===A.closeFrom&&jobWs.length>0&&html`<${F} label="استلام من العامل" hint="يوقف وقته تلقائياً"><${Sel} id="mv-jw" value=${f.jobWorker} set=${v=>up("jobWorker",v)}><option value="">—</option>${jobWs.map(([id,nm])=>html`<option key=${id} value=${id}>${nm}</option>`)}</${Sel}></${F}>`}
@@ -1620,7 +1627,9 @@ function MoveSheet({action,L,catalog,workers,toast,onClose}){
       ${A.work&&html`<${F} label="نوع الشغل"><${Sel} id="mv-work" value=${f.work} set=${v=>up("work",v)}>${WORKS.map(w=>html`<option key=${w}>${w}</option>`)}</${Sel}></${F}>`}
       <${F} full label="ملاحظة"><input id="mv-note" class="in" value=${f.note} onInput=${e=>up("note",e.target.value)}/></${F}>
     </div>
-    <${Calc} items=${[["المتاح",f.item?fi(avail.c)+" قطعة":"—"],["بعد الحركة",f.item?fi(avail.c-n(f.count))+" قطعة":"—",avail.c-n(f.count)<0?"neg":""],A.fee?["رسوم الدمغة",fm(fee)+" ج.م","hl"]:["الوزن",fg(weight)+" جم","hl"]]}/>
+    <${Calc} items=${[["المتاح",f.item?fi(avail.c)+" قطعة":"—"],["بعد الحركة",f.item?fi(avail.c-n(f.count))+" قطعة":"—",avail.c-n(f.count)<0?"neg":""],A.fee?["رسوم الدمغة",fm(fee)+" ج.م","hl"]:["الوزن",fg(weight)+" جم","hl"],
+      ...(A.bags?[["قبل الأكياس",fg(weight)+" جم"],["بعد الأكياس",bagW?fg(bagW)+" جم":"—"],["وزن الأكياس",bagW?fg(bagW-weight)+" جم":"—"],...(expBag&&bagW?[["الفرق عن المسلّم",fg(bagW-expBag)+" جم",Math.abs(bagW-expBag)>0.05?"neg":""]]:[])]:[])]}/>
+    ${A.bags&&html`<div class="sub">وزن الأكياس للمراجعة مع الدمغة عند الاستلام بس — كل الأرصدة والحسابات بالوزن قبل الأكياس.</div>`}
   </${Sheet}>`;
 }
 

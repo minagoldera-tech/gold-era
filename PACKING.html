@@ -285,6 +285,10 @@ tbody tr:hover{background:var(--bg)}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
         الموردون
       </button>
+      <button class="tni" onclick="goto('ab',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="8" height="16" rx="1.5"/><rect x="13" y="4" width="8" height="16" rx="1.5"/></svg>
+        الفرعية A / B
+      </button>
       <button class="tni" id="nav-users" onclick="goto('users',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
         المستخدمون
@@ -340,7 +344,7 @@ tbody tr:hover{background:var(--bg)}
       </div>
       <div class="tbl-wrap" style="margin-top:20px">
         <div class="tbl-hd"><span class="tbl-title">إجمالي كل صنف — رئيسية + فرعية</span></div>
-        <table><thead><tr><th>الصنف</th><th>الرئيسية</th><th>الفرعية</th><th>الإجمالي الكلي</th><th>الحالة</th></tr></thead><tbody id="dash-total-tbody"></tbody></table>
+        <table><thead><tr><th>الصنف</th><th>الرئيسية</th><th>الفرعية</th><th>منها الأساسية</th><th>منها A</th><th>منها B</th><th>الإجمالي الكلي</th><th>الحالة</th></tr></thead><tbody id="dash-total-tbody"></tbody></table>
       </div>
     </div>
 
@@ -408,7 +412,7 @@ tbody tr:hover{background:var(--bg)}
             <option value="">كل الأنواع</option>
             <option>وارد</option><option>منصرف للفرعية</option><option>منصرف</option>
             <option>تالف يدوي</option><option>تالف مصنع الهند</option>
-            <option>إعادة التغليف</option>
+            <option>إعادة التغليف</option><option>تحويل داخلي</option>
           </select>
           <select class="inp inp-sm" style="width:110px" id="iv" onchange="renderInv()">
             <option value="">كل الخزائن</option>
@@ -484,6 +488,42 @@ tbody tr:hover{background:var(--bg)}
       </div>
     </div>
 
+<div id="page-ab" class="page">
+      <div class="sec-hd">
+        <div><div class="sec-title">الفرعية A و B</div><div class="sec-sub">إجمالي الفرعية = الأساسية (غير موزع) + A (T.U.D) + B (T.U.P)</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="exportCSV('ab')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> CSV</button>
+          <button class="btn btn-gold btn-sm ab-add-btn" onclick="openTransfer()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+            تحويل بين الأجزاء
+          </button>
+        </div>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:var(--bg2)">🗃️</div><span class="kpi-chg b-grey" id="ab-p-g">—</span></div><div class="kpi-val" id="ab-k-g">—</div><div class="kpi-lbl">الفرعية الأساسية (غير موزع)</div></div>
+        <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:var(--goldbg)">🅰️</div><span class="kpi-chg b-gold" id="ab-p-a">—</span></div><div class="kpi-val" id="ab-k-a">—</div><div class="kpi-lbl">فرعية A (T.U.D)</div></div>
+        <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:var(--bluebg)">🅱️</div><span class="kpi-chg b-blue" id="ab-p-b">—</span></div><div class="kpi-val" id="ab-k-b">—</div><div class="kpi-lbl">فرعية B (T.U.P)</div></div>
+        <div class="kpi"><div class="kpi-top"><div class="kpi-icon" style="background:var(--greenbg)">∑</div><span class="kpi-chg b-green">الإجمالي</span></div><div class="kpi-val" id="ab-k-t">—</div><div class="kpi-lbl">إجمالي الفرعية</div></div>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-hd"><span class="tbl-title">أرصدة كل صنف</span></div>
+        <table><thead><tr><th>الصنف</th><th>الأساسية (غير موزع)</th><th>A (T.U.D)</th><th>B (T.U.P)</th><th>إجمالي الفرعية</th><th></th></tr></thead><tbody id="ab-bal-tbody"></tbody></table>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-hd">
+          <span class="tbl-title">حركات كل جزء</span>
+          <div class="vtoggle">
+            <button class="vbtn on" onclick="switchAB('a',this)">A (T.U.D)</button>
+            <button class="vbtn" onclick="switchAB('b',this)">B (T.U.P)</button>
+            <button class="vbtn" onclick="switchAB('g',this)">الأساسية</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+        <table><thead><tr><th>الصنف</th><th>وارد</th><th>محوّل إليها</th><th>محوّل منها</th><th>منصرف</th><th>إعادة تغليف</th><th>تالف يدوي</th><th>تالف مصنع</th><th>الرصيد</th></tr></thead><tbody id="ab-mv-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
 <div id="page-users" class="page">
       <div class="sec-hd">
         <div><div class="sec-title">إدارة المستخدمين</div><div class="sec-sub">صلاحيات وحسابات النظام</div></div>
@@ -519,6 +559,11 @@ tbody tr:hover{background:var(--bg)}
           <div class="fg" style="margin:0" id="f-sup-wrap"><label>المورد</label>
             <select class="inp inp-sm" id="f-sup"><option>مستورد</option><option>محلي عادل</option><option>محلي كريم</option></select>
           </div>
+        </div>
+        <div class="fg-r3" id="f-part-row" style="gap:12px;margin-top:12px">
+          <div class="fg" style="margin:0" id="f-part-wrap"><label id="f-part-lbl">جزء الفرعية</label><select class="inp inp-sm" id="f-part" onchange="updTypeHint()"></select></div>
+          <div class="fg" style="margin:0" id="f-from-wrap"><label>تحويل من</label><select class="inp inp-sm" id="f-from" onchange="updTypeHint()"></select></div>
+          <div class="fg" style="margin:0" id="f-to-wrap"><label>تحويل إلى</label><select class="inp inp-sm" id="f-to" onchange="updTypeHint()"></select></div>
         </div>
         <div class="type-hint" id="type-hint"></div>
       </div>
@@ -618,7 +663,7 @@ tbody tr:hover{background:var(--bg)}
       </div>
       <div class="fg-r2">
         <div class="fg"><label>ملاحظات</label><input class="inp inp-sm" type="text" id="sup-notes" placeholder="اختياري..."></div>
-        <div style="display:flex;align-items:center;gap:8px;padding-top:18px"><input type="checkbox" id="sup-add-stock" style="width:16px;height:16px"><label style="font-size:13px;cursor:pointer" for="sup-add-stock">أضف الكروت الصافي للمخزون الفرعي (عمود المورد)</label></div>
+        <div style="display:flex;align-items:center;gap:8px;padding-top:18px"><input type="checkbox" id="sup-add-stock" style="width:16px;height:16px"><label style="font-size:13px;cursor:pointer" for="sup-add-stock">أضف الكروت الصافي للمخزون الفرعي — إلى</label><select class="inp inp-sm" id="sup-part" style="width:150px"></select></div>
       </div>
     </div>
     <div class="modal-ft">
@@ -684,8 +729,15 @@ const byItem = (a,b)=>(IORD[a.s]??99)-(IORD[b.s]??99);
 /* أنواع الحركات حسب الخزنة */
 const TYPES = {
   main: [{v:'وارد',l:'وارد'},{v:'منصرف للفرعية',l:'منصرف للفرعية'}],
-  sub:  [{v:'وارد',l:'وارد'},{v:'منصرف',l:'منصرف'},{v:'تالف يدوي',l:'تالف يدوي'},{v:'تالف مصنع الهند',l:'تالف مصنع الهند'},{v:'إعادة التغليف',l:'إعادة التغليف'}],
+  sub:  [{v:'وارد',l:'وارد'},{v:'منصرف',l:'منصرف'},{v:'تالف يدوي',l:'تالف يدوي'},{v:'تالف مصنع الهند',l:'تالف مصنع الهند'},{v:'إعادة التغليف',l:'إعادة التغليف'},{v:'تحويل داخلي',l:'تحويل داخلي (أساسية / A / B)'}],
 };
+
+/* أجزاء الفرعية: g = الأساسية (غير موزع، أعمدة imp/adl/kr) ، a = A (T.U.D) ، b = B (T.U.P) */
+const PARTS={g:'الفرعية الأساسية',a:'A (T.U.D)',b:'B (T.U.P)'};
+const partShort={g:'الأساسية',a:'A',b:'B'};
+const PART_OPTS=()=>Object.entries(PARTS).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+const isAB=p=>p==='a'||p==='b';
+const partBal=(s,p)=>isAB(p)?(s[p]||0):(s.imp||0)+(s.adl||0)+(s.kr||0);
 
 /* ═══ REST API HELPERS ═══ */
 async function fbGet(path) { const r = await fetch(DB + path + '.json'); return r.json(); }
@@ -735,9 +787,24 @@ function derive(){
   (DATA.suppliers||[]).forEach(e=>{ if(!e.addToStock) return;
     (e.items?arr(e.items):[{item:e.item,net:e.net}]).forEach(i=>addIn(i.item,i.net)); });
   DATA.stock.sub.forEach(d=>{ const a=agg[d.s]||{out:0,d:0,mfg:0,re:0}; d.out=a.out; d.d=a.d; d.mfg=a.mfg; d.re=a.re; d.inn=inn[d.s]||0; });
+  // إحصائيات كل جزء (الأساسية / A / B)
+  const ps={g:{},a:{},b:{}};
+  const P=(p,item)=>{ const o=ps[p]||ps.g; return o[item]=o[item]||{inn:0,tin:0,tout:0,out:0,re:0,d:0,mfg:0}; };
+  const KM={'منصرف':'out','تالف يدوي':'d','تالف مصنع الهند':'mfg','تالف مصنع':'mfg','إعادة التغليف':'re'};
+  DATA.invoices.forEach(inv=>{
+    const isIn=(inv.vault==='sub'&&inv.type==='وارد')||(inv.vault==='main'&&inv.type==='منصرف للفرعية');
+    (inv.items||[]).forEach(({item,qty})=>{
+      if(isIn) P(inv.part,item).inn+=qty||0;
+      else if(inv.vault==='sub'&&inv.type==='تحويل داخلي'){ P(inv.from,item).tout+=qty||0; P(inv.to,item).tin+=qty||0; }
+      else if(inv.vault==='sub'&&KM[inv.type]) P(inv.part,item)[KM[inv.type]]+=qty||0;
+    });
+  });
+  (DATA.suppliers||[]).forEach(e=>{ if(!e.addToStock) return;
+    (e.items?arr(e.items):[{item:e.item,net:e.net}]).forEach(i=>{ P(e.part,i.item).inn+=i.net||0; }); });
+  DATA.partStats=ps;
 }
 function renderAll() {
-  renderDash(); renderStock(); renderInv(); renderReport(); renderSuppliers(); renderUsers();
+  renderDash(); renderStock(); renderInv(); renderReport(); renderSuppliers(); renderAB(); renderUsers();
 }
 
 /* ═══ POLLING ═══ */
@@ -788,7 +855,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // تنظيف nulls وتكرار في الفرعية
     {
       const raw = DATA.stock.sub.filter(d=>d&&d.s); const merged={};
-      raw.forEach(d=>{ if(merged[d.s]){['imp','adl','kr','out','d','mfg','re'].forEach(k=>merged[d.s][k]=(merged[d.s][k]||0)+(d[k]||0));} else merged[d.s]={...d}; });
+      raw.forEach(d=>{ if(merged[d.s]){['imp','adl','kr','a','b','out','d','mfg','re'].forEach(k=>merged[d.s][k]=(merged[d.s][k]||0)+(d[k]||0));} else merged[d.s]={...d}; });
       const clean=Object.values(merged);
       if(clean.length !== raw.length){
         await fbDelete('/stock/sub');
@@ -827,7 +894,7 @@ async function seedDefaults() {
     {s:'0.5 ك',w:2591,o:17,r:2574},{s:'0.25 ك',w:2308,o:97,r:2209},
   ];
   for(let i=0;i<main.length;i++) await fbSet('/stock/main/'+i, main[i]);
-  const sub = ITEMS.map(s=>({s,imp:0,adl:0,kr:0,out:0,d:0,mfg:0,re:0}));
+  const sub = ITEMS.map(s=>({s,imp:0,adl:0,kr:0,a:0,b:0,out:0,d:0,mfg:0,re:0}));
   for(let i=0;i<sub.length;i++) await fbSet('/stock/sub/'+i, sub[i]);
 }
 
@@ -865,7 +932,7 @@ function login() {
   document.getElementById('nav-users').style.display = rec.role==='admin' ? '' : 'none';
   document.getElementById('reset-btn').style.display = rec.role==='admin' ? '' : 'none';
   document.getElementById('new-inv-btn').style.display = can('add') ? '' : 'none';
-  document.querySelectorAll('.sup-add-btn').forEach(b=>b.style.display = can('add') ? '' : 'none');
+  document.querySelectorAll('.sup-add-btn,.ab-add-btn').forEach(b=>b.style.display = can('add') ? '' : 'none');
   startPolling();
   renderAll();
 }
@@ -891,7 +958,7 @@ const M=v=>(Number(v)||0).toLocaleString('en',{maximumFractionDigits:2});
 const PCT=(a,b)=>b?Math.round(a/b*100):0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function status(r,w){if(!w||r<=0)return'zero';const p=r/w;if(p>.45)return'good';if(p>.2)return'warn';return'low';}
-const subBal = d => (d.imp||0)+(d.adl||0)+(d.kr||0);
+const subBal = d => (d.imp||0)+(d.adl||0)+(d.kr||0)+(d.a||0)+(d.b||0);
 const subStatus = t => t<=0?'zero':t>2000?'good':t>500?'warn':'low';
 const ST={
   good:{b:'<span class="badge b-green">جيد</span>',c:'var(--green)',label:'رصيد جيد'},
@@ -907,7 +974,12 @@ const TYPE_B={
   'تالف مصنع الهند':'<span class="badge b-orange">تالف مصنع</span>',
   'تالف مصنع':'<span class="badge b-orange">تالف مصنع</span>',
   'إعادة التغليف':'<span class="badge b-purple">إعادة تغليف</span>',
+  'تحويل داخلي':'<span class="badge b-purple">تحويل داخلي</span>',
 };
+function partTag(r){
+  if(r.type==='تحويل داخلي') return ` <span class="badge b-purple">من ${partShort[r.from||'g']} إلى ${partShort[r.to||'g']}</span>`;
+  return r.part ? ` <span class="badge b-gold">${partShort[r.part]}</span>` : '';
+}
 function srow(k,v,strong){return`<div class="stat-row"><span class="stat-key">${k}</span><span class="stat-val"${strong?' style="color:var(--gold);font-size:15px"':''}>${v}</span></div>`;}
 function empty(c){return`<tr><td colspan="${c}" style="text-align:center;padding:24px;color:var(--t3)">لا توجد نتائج</td></tr>`;}
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3000);}
@@ -967,9 +1039,9 @@ function renderDash() {
   document.getElementById('dash-total-tbody').innerHTML=sortedMain.map(d=>{
     const sub=DATA.stock.sub.find(s=>s.s===d.s)||{};
     const subTot=subBal(sub); const grand=(d.r||0)+subTot; const st=subStatus(grand);
-    return`<tr><td class="td-p">${d.s}</td><td class="td-m">${N(d.r)}</td><td class="td-m">${N(subTot)}</td>
+    return`<tr><td class="td-p">${d.s}</td><td class="td-m">${N(d.r)}</td><td class="td-m">${N(subTot)}</td><td class="td-m" style="color:var(--t3)">${N(partBal(sub,'g'))}</td><td class="td-m" style="color:var(--t3)">${N(sub.a)}</td><td class="td-m" style="color:var(--t3)">${N(sub.b)}</td>
       <td class="td-m" style="font-weight:700;color:var(--gold)">${N(grand)}</td><td>${ST[st].b}</td></tr>`;
-  }).join('')||empty(5);
+  }).join('')||empty(8);
   const all=[...DATA.stock.main].filter(d=>d.w>0).sort((a,b)=>b.r-a.r);
   const mxa=all[0]?.r||1;
   document.getElementById('all-prog').innerHTML=all.map(d=>`<div class="prog-row"><div class="prog-lbl">${d.s}</div><div class="prog-track"><div class="prog-fill" style="width:${Math.max(d.r/mxa*100,.3)}%;background:${ST[status(d.r,d.w)].c}"></div></div><div class="prog-val">${N(d.r)}</div></div>`).join('');
@@ -986,7 +1058,7 @@ function switchView(v,el) {
 }
 function switchVault(v,el) {
   CV=v;
-  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
+  el.parentElement.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   renderStock();
 }
@@ -1071,13 +1143,16 @@ function effect(inv, dir, W) {
       for(const c in al) s[c]=(s[c]||0)+al[c];
     }
   };
+  const PT=inv.part||'g';
+  const addP=(s,p,v,poolCol)=>{ if(isAB(p)) add(s,p,v); else add(s,poolCol,v); };
+  const take=(s,p,it,v)=>{ if(isAB(p)) add(s,p,-v); else deduct(s,it); };
   (inv.items||[]).forEach((it)=>{
     const {item,qty}=it;
     const q = dir*qty;
     if((inv.vault||'main')==='main'){
       const m=getM(item); if(!m) return;
       if(inv.type==='وارد'){ add(m,'w',q); add(m,'r',q); }
-      else if(inv.type==='منصرف للفرعية'){ add(m,'o',q); add(m,'r',-q); add(getS(item),'imp',q); }
+      else if(inv.type==='منصرف للفرعية'){ add(m,'o',q); add(m,'r',-q); addP(getS(item),PT,q,'imp'); }
       // أنواع قديمة كانت تُسجل على الرئيسية (لعكسها عند الحذف)
       else if(inv.type==='منصرف'){ add(m,'o',q); add(m,'r',-q); }
       else if(inv.type==='إعادة التغليف'){ add(m,'re',q); add(m,'r',-q); }
@@ -1085,11 +1160,12 @@ function effect(inv, dir, W) {
       else { add(m,'mfg',q); add(m,'r',-q); }
     } else {
       const s=getS(item);
-      if(inv.type==='وارد'){ add(s,col,q); const m=getM(item); if(m){ add(m,'o',q); add(m,'r',-q); } }
-      else if(inv.type==='منصرف'){ deduct(s,it); add(s,'out',q); }
-      else if(inv.type==='إعادة التغليف'){ deduct(s,it); add(s,'re',q); }
-      else if(inv.type==='تالف يدوي'){ deduct(s,it); add(s,'d',q); }
-      else { deduct(s,it); add(s,'mfg',q); } // تالف مصنع الهند
+      if(inv.type==='وارد'){ addP(s,PT,q,col); const m=getM(item); if(m){ add(m,'o',q); add(m,'r',-q); } }
+      else if(inv.type==='تحويل داخلي'){ take(s,inv.from||'g',it,q); addP(s,inv.to||'g',q,'imp'); }
+      else if(inv.type==='منصرف'){ take(s,PT,it,q); add(s,'out',q); }
+      else if(inv.type==='إعادة التغليف'){ take(s,PT,it,q); add(s,'re',q); }
+      else if(inv.type==='تالف يدوي'){ take(s,PT,it,q); add(s,'d',q); }
+      else { take(s,PT,it,q); add(s,'mfg',q); } // تالف مصنع الهند
     }
   });
 }
@@ -1108,8 +1184,9 @@ function shortages(inv, W){
       if(!m) out.push(`${item}: غير موجود في الرئيسية`);
       else if((m.r||0)<qty) out.push(`${item} — الرئيسية متاح ${N(m.r)} / مطلوب ${N(qty)}`);
     } else if(inv.vault==='sub' && inv.type!=='وارد'){
-      const s=W.sub.find(d=>d.s===item)||{};
-      if(subBal(s)<qty) out.push(`${item} — الفرعية متاح ${N(subBal(s))} / مطلوب ${N(qty)}`);
+      const p=inv.type==='تحويل داخلي'?(inv.from||'g'):(inv.part||'g');
+      const s=W.sub.find(d=>d.s===item)||{}; const av=partBal(s,p);
+      if(av<qty) out.push(`${item} — ${PARTS[p]} متاح ${N(av)} / مطلوب ${N(qty)}`);
     }
   });
   return out;
@@ -1155,7 +1232,7 @@ function renderInv() {
         <svg id="inv-arrow-${rid}" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition:transform .2s;flex-shrink:0;color:var(--t3)"><polyline points="6 9 12 15 18 9"/></svg>
         <span style="font-family:monospace;font-size:12px;color:var(--gold);font-weight:700">${esc(r.id)}</span></div></td>
       <td class="td-s"><div>${r.date||'—'}</div><div style="font-size:11px;color:var(--t3)">${r.time||''}</div></td>
-      <td><span class="badge b-grey">${r.vault==='main'?'الرئيسية':'الفرعية'}</span></td>
+      <td><span class="badge b-grey">${r.vault==='main'?'الرئيسية':'الفرعية'}</span>${partTag(r)}</td>
       <td>${TYPE_B[r.type]||r.type}</td>
       <td class="td-s">${r.supplier||'—'}</td>
       <td><span class="badge b-grey">${items.length} صنف</span></td>
@@ -1184,9 +1261,20 @@ function setTypeOptions(keep) {
   if(list.some(t=>t.v===cur)) sel.value=cur;
   updTypeHint();
 }
-function updSupVis(){
+function partMode(){
   const vault=document.getElementById('f-vault').value, type=document.getElementById('f-type').value;
+  const isTr = vault==='sub' && type==='تحويل داخلي';
+  const needPart = !isTr && (vault==='sub' || type==='منصرف للفرعية');
+  return {vault,type,isTr,needPart};
+}
+function updSupVis(){
+  const {vault,type,isTr,needPart}=partMode();
   document.getElementById('f-sup-wrap').style.visibility = (vault==='sub' && type!=='وارد') ? 'hidden' : '';
+  document.getElementById('f-part-row').style.display = (needPart||isTr) ? '' : 'none';
+  document.getElementById('f-part-wrap').style.display = needPart ? '' : 'none';
+  document.getElementById('f-from-wrap').style.display = isTr ? '' : 'none';
+  document.getElementById('f-to-wrap').style.display = isTr ? '' : 'none';
+  document.getElementById('f-part-lbl').textContent = (type==='وارد'||type==='منصرف للفرعية') ? 'يُضاف إلى جزء' : 'يُخصم من جزء';
 }
 function updTypeHint(){
   updSupVis();
@@ -1199,6 +1287,7 @@ function updTypeHint(){
     'sub|تالف يدوي':'يُخصم من رصيد الفرعية فقط ويُسجل تالف يدوي',
     'sub|تالف مصنع الهند':'يُخصم من رصيد الفرعية فقط ويُسجل تالف مصنع',
     'sub|إعادة التغليف':'يُخصم من رصيد الفرعية فقط ويُسجل إعادة تغليف',
+    'sub|تحويل داخلي':'ينقل الكمية بين الأساسية و A و B — إجمالي الفرعية لا يتغير',
   }[vault+'|'+type]||'';
   document.getElementById('type-hint').textContent=h;
 }
@@ -1215,11 +1304,23 @@ function openInv() {
   document.getElementById('f-dt').value=todayIso();
   document.getElementById('f-vault').value='sub';
   setTypeOptions();
+  document.getElementById('f-part').value='a';
+  document.getElementById('f-from').value='g';
+  document.getElementById('f-to').value='a';
   document.getElementById('f-notes').value='';
   document.getElementById('inv-err').textContent='';
   document.getElementById('inv-rows').innerHTML='';
   RID=0; addRow(); addRow(); updSum();
   modal.classList.add('on');
+}
+function openTransfer(item) {
+  openInv();
+  if(!document.getElementById('inv-modal').classList.contains('on')) return;
+  document.getElementById('f-vault').value='sub';
+  setTypeOptions('تحويل داخلي');
+  document.getElementById('f-from').value='g';
+  document.getElementById('f-to').value='a';
+  if(item){ document.getElementById('inv-rows').innerHTML=''; RID=0; addRow(item); updSum(); }
 }
 function addRow(item, qty, note) {
   RID++; const id=RID;
@@ -1239,6 +1340,8 @@ function updSum() {
   document.getElementById('s-ref').textContent=document.getElementById('f-ser').value||'—';
 }
 document.addEventListener('DOMContentLoaded',()=>{
+  ['f-part','f-from','f-to','sup-part'].forEach(id=>document.getElementById(id).innerHTML=PART_OPTS());
+  document.getElementById('sup-part').value='a';
   document.getElementById('f-ser').addEventListener('input',updSum);
   document.getElementById('f-type').addEventListener('change',updTypeHint);
 });
@@ -1267,9 +1370,14 @@ async function saveInv() {
     if(item&&qty>0) items.push({item,qty,note});
   });
   if(!items.length){errEl.textContent='أضف صنفاً واحداً على الأقل';return;}
+  const {isTr,needPart}=partMode();
+  const part=document.getElementById('f-part').value, from=document.getElementById('f-from').value, to=document.getElementById('f-to').value;
+  if(isTr && from===to){errEl.textContent='اختر جزئين مختلفين للتحويل';return;}
 
   const inv={id:serial,isoDate,date:formatArabicDate(isoDate),time:old?.time||formatTime(),vault,type,supplier:sup,items,notes,
     by:old?.by||CU.user,byName:old?.byName||CU.name,ts:old?.ts||Date.now()};
+  if(needPart) inv.part=part;
+  if(isTr){ inv.from=from; inv.to=to; }
   if(old){ inv.editedBy=CU.name; inv.editedAt=Date.now(); }
 
   const W=cloneStock();
@@ -1304,6 +1412,9 @@ function openEditInv(id) {
   document.getElementById('f-dt').value=inv.isoDate||todayIso();
   document.getElementById('f-vault').value=inv.vault||'main';
   setTypeOptions(inv.type);
+  document.getElementById('f-part').value=inv.part||'g';
+  document.getElementById('f-from').value=inv.from||'g';
+  document.getElementById('f-to').value=inv.to||'a';
   document.getElementById('f-sup').value=inv.supplier||'مستورد';
   document.getElementById('f-notes').value=inv.notes||'';
   document.getElementById('inv-err').textContent='';
@@ -1361,6 +1472,7 @@ function openSupplierEntry(supName) {
   document.getElementById('sup-paid').value='';
   document.getElementById('sup-notes').value='';
   document.getElementById('sup-add-stock').checked=false;
+  document.getElementById('sup-part').value='a';
   document.getElementById('sup-err').textContent='';
   document.getElementById('sup-rows').innerHTML='';
   SRID=0; addSupRow();
@@ -1422,6 +1534,7 @@ async function saveSupEntry() {
   const paid=parseFloat(document.getElementById('sup-paid').value)||0;
   const addToStock=document.getElementById('sup-add-stock').checked;
   const notes=document.getElementById('sup-notes').value.trim();
+  const part=document.getElementById('sup-part').value;
   const rows=readSupRows().filter(r=>r.received>0);
   if(rows.some(r=>r.rejected>r.received)){errEl.textContent='المرفوض أكبر من الوارد في أحد الأصناف';return;}
   if(!rows.length && paid<=0){errEl.textContent='أدخل صنفاً واحداً على الأقل أو مبلغاً مدفوعاً';return;}
@@ -1433,13 +1546,13 @@ async function saveSupEntry() {
   const prevBalance=balanceBefore(sup,ts);
   const entry={ts,isoDate,date:formatArabicDate(isoDate),time:fmtHM(hm),sup,items,totalNet,invTotal,
     prevBalance,totalDue:prevBalance+invTotal,paid,remaining:prevBalance+invTotal-paid,
-    addToStock:addToStock&&totalNet>0,notes,by:CU.user,byName:CU.name,createdAt:Date.now()};
+    addToStock:addToStock&&totalNet>0,part,notes,by:CU.user,byName:CU.name,createdAt:Date.now()};
   errEl.textContent='حفظ...'; setSync('sync'); SUP_SAVING=true;
   try {
     const key='sup_'+Date.now();
     await fbSet('/suppliers/'+key, entry);
     if(entry.addToStock){
-      const W=cloneStock(); const col=sup==='عادل'?'adl':'kr';
+      const W=cloneStock(); const col=isAB(part)?part:(sup==='عادل'?'adl':'kr');
       items.forEach(({item,net})=>{
         if(net<=0) return;
         let i=W.sub.findIndex(d=>d.s===item);
@@ -1462,7 +1575,7 @@ async function deleteSupEntry(key){
   setSync('sync');
   try{
     if(n.addToStock){
-      const W=cloneStock(); const col=e.sup==='عادل'?'adl':'kr';
+      const W=cloneStock(); const col=isAB(e.part)?e.part:(e.sup==='عادل'?'adl':'kr');
       n.items.forEach(({item,net})=>{ const i=W.sub.findIndex(d=>d.s===item); if(i>=0&&net>0){ W.sub[i][col]=(W.sub[i][col]||0)-net; W.ts.add(i);} });
       await writeStock(W);
     }
@@ -1517,7 +1630,7 @@ function renderSuppliers() {
       <td class="td-m td-p">${M(e.due)}</td>
       <td class="td-m" style="color:var(--green)">${e.paid?M(e.paid):'—'}</td>
       <td class="td-m" style="font-weight:700;color:var(--gold)">${M(e.rem)}</td>
-      <td>${e.addToStock?'<span class="badge b-green">✓ أضيف</span>':'—'}</td>
+      <td>${e.addToStock?`<span class="badge b-green">✓ ${partShort[e.part||'g']}</span>`:'—'}</td>
       <td class="td-s">${esc(e.notes)||'—'}</td>
       <td>${isAdmin()?`<button class="btn btn-sm" style="background:var(--red);color:#fff" onclick="event.stopPropagation();deleteSupEntry('${k}')">حذف</button>`:'—'}</td>
     </tr>
@@ -1526,6 +1639,44 @@ function renderSuppliers() {
       <tr style="background:var(--bg2)"><td></td><td class="td-p">الإجمالي</td><td></td><td class="td-m">${N(e.items.reduce((a,i)=>a+i.received,0))}</td><td class="td-m">${N(e.items.reduce((a,i)=>a+i.rejected,0))}</td><td class="td-m td-p">${N(e.totalNet)}</td><td class="td-m" style="color:var(--gold);font-weight:700">${M(e.invTotal)}</td></tr>
       </tbody></table></td></tr>`:''}`;
   }).join('')||'<tr><td colspan="12" style="text-align:center;color:var(--t3);padding:20px">لا توجد حركات</td></tr>';
+}
+
+/* ═══ الفرعية A / B ═══ */
+let ABP='a';
+function switchAB(p,el){ ABP=p; el.parentElement.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); renderAB(); }
+function abRows(){ return ITEMS.map(s=>{ const d=DATA.stock.sub.find(x=>x.s===s)||{}; return {s,g:partBal(d,'g'),a:d.a||0,b:d.b||0,t:subBal(d)}; }); }
+function renderAB(){
+  const rows=abRows(); const sum=k=>rows.reduce((a,r)=>a+r[k],0);
+  const T=sum('t');
+  ['g','a','b'].forEach(k=>{ document.getElementById('ab-k-'+k).textContent=N(sum(k)); document.getElementById('ab-p-'+k).textContent=PCT(sum(k),T)+'%'; });
+  document.getElementById('ab-k-t').textContent=N(T);
+  const tb=can('add');
+  document.getElementById('ab-bal-tbody').innerHTML=rows.map(r=>`<tr>
+    <td class="td-p">${r.s}</td>
+    <td class="td-m" style="color:var(--t3)">${N(r.g)}</td>
+    <td class="td-m" style="color:var(--gold);font-weight:700">${N(r.a)}</td>
+    <td class="td-m" style="color:var(--blue);font-weight:700">${N(r.b)}</td>
+    <td class="td-m td-p">${N(r.t)}</td>
+    <td>${tb?`<button class="btn btn-outline btn-sm" onclick="openTransfer('${r.s}')">تحويل</button>`:''}</td></tr>`).join('')+
+    `<tr style="background:var(--bg2)"><td class="td-p">الإجمالي</td><td class="td-m td-p">${N(sum('g'))}</td><td class="td-m td-p">${N(sum('a'))}</td><td class="td-m td-p">${N(sum('b'))}</td><td class="td-m td-p" style="color:var(--gold)">${N(T)}</td><td></td></tr>`;
+  const ps=(DATA.partStats||{})[ABP]||{};
+  const z={inn:0,tin:0,tout:0,out:0,re:0,d:0,mfg:0}; const tot={...z}; let tbal=0;
+  const v=x=>x?N(x):'—';
+  document.getElementById('ab-mv-tbody').innerHTML=rows.map(r=>{
+    const x={...z,...(ps[r.s]||{})}; Object.keys(z).forEach(k=>tot[k]+=x[k]); tbal+=r[ABP];
+    return`<tr><td class="td-p">${r.s}</td>
+      <td class="td-m" style="color:var(--gold)">${v(x.inn)}</td>
+      <td class="td-m" style="color:var(--green)">${v(x.tin)}</td>
+      <td class="td-m" style="color:var(--t3)">${v(x.tout)}</td>
+      <td class="td-m" style="color:var(--blue)">${v(x.out)}</td>
+      <td class="td-m" style="color:var(--purple)">${v(x.re)}</td>
+      <td class="td-m" style="color:var(--red)">${v(x.d)}</td>
+      <td class="td-m" style="color:var(--orange)">${v(x.mfg)}</td>
+      <td class="td-m td-p" style="font-weight:700">${N(r[ABP])}</td></tr>`;
+  }).join('')+`<tr style="background:var(--bg2)"><td class="td-p">الإجمالي — ${PARTS[ABP]}</td>
+    <td class="td-m td-p">${N(tot.inn)}</td><td class="td-m td-p">${N(tot.tin)}</td><td class="td-m td-p">${N(tot.tout)}</td>
+    <td class="td-m td-p">${N(tot.out)}</td><td class="td-m td-p">${N(tot.re)}</td><td class="td-m td-p">${N(tot.d)}</td>
+    <td class="td-m td-p">${N(tot.mfg)}</td><td class="td-m td-p" style="color:var(--gold)">${N(tbal)}</td></tr>`;
 }
 
 /* ═══ CUSTOM ALERT ═══ */
@@ -1558,7 +1709,7 @@ async function doReset() {
     const zeroMain = DATA.stock.main.map(d=>({s:d.s,w:0,o:0,r:0}));
     await fbDelete('/stock/main');
     for(let i=0;i<zeroMain.length;i++) await fbSet('/stock/main/'+i, strip(zeroMain[i]));
-    const zeroSub = DATA.stock.sub.map(d=>({s:d.s,imp:0,adl:0,kr:0,out:0,d:0,mfg:0,re:0}));
+    const zeroSub = DATA.stock.sub.map(d=>({s:d.s,imp:0,adl:0,kr:0,a:0,b:0,out:0,d:0,mfg:0,re:0}));
     await fbDelete('/stock/sub');
     for(let i=0;i<zeroSub.length;i++) await fbSet('/stock/sub/'+i, strip(zeroSub[i]));
     closeM('reset-modal'); setSync('ok');
@@ -1589,7 +1740,9 @@ function renderReport() {
     srow('الإجمالي الكلي المتبقي',N(t.totBal),true)+
     srow('نسبة الصرف',PCT(t.totOut,t.totIn)+'%');
   document.getElementById('rpt-sub').innerHTML=
-    srow('مستورد',N(subImp))+
+    srow('الأساسية (غير موزع)',N(subImp+subAdl+subKr))+
+    srow('A (T.U.D)',N(DATA.stock.sub.reduce((a,d)=>a+(d.a||0),0)))+
+    srow('B (T.U.P)',N(DATA.stock.sub.reduce((a,d)=>a+(d.b||0),0)))+
     srow('رصيد الفرعية',N(t.subTotAll),true)+
     srow('منصرف',N(t.subOut))+srow('إعادة تغليف',N(t.subRe))+
     srow('تالف يدوي',N(t.subD))+srow('تالف مصنع',N(t.subMfg));
@@ -1667,6 +1820,14 @@ function exportCSV(type) {
         idx===0?e.invTotal:'',idx===0?e.prev:'',idx===0?e.due:'',idx===0?e.paid:'',idx===0?e.rem:'',idx===0?e.notes:''])));
     });
     dl(out,'suppliers-'+(f||'all')+'.csv');
+  }
+  else if(type==='ab'){
+    const ps=DATA.partStats||{}; const cols=['inn','tin','tout','out','re','d','mfg'];
+    const lbl=['وارد','محول إليها','محول منها','منصرف','إعادة تغليف','تالف يدوي','تالف مصنع'];
+    const hd=['الصنف','الأساسية (غير موزع)','A (T.U.D)','B (T.U.P)','إجمالي الفرعية'];
+    ['a','b'].forEach(p=>lbl.forEach(l=>hd.push(partShort[p]+' '+l)));
+    dl([line(hd),...abRows().map(r=>{ const row=[r.s,r.g,r.a,r.b,r.t];
+      ['a','b'].forEach(p=>{ const x=(ps[p]||{})[r.s]||{}; cols.forEach(c=>row.push(x[c]||0)); }); return line(row); })],'sub-A-B.csv');
   }
   else dl([line(['الصنف','وارد','منصرف للفرعية','متبقي رئيسية','متبقي فرعية','منصرف فرعية','إعادة تغليف','تالف يدوي','تالف مصنع','الإجمالي الكلي']),...reportRows().map(d=>line([d.s,d.w,d.o,d.r,d.subTot,d.out,d.re,d.d,d.mfg,d.grand]))],'report.csv');
   showToast('✓ تم تصدير الملف');

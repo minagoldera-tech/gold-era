@@ -961,10 +961,10 @@ const LOGO="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHB
 const {useState,useEffect,useMemo,useRef,useCallback}=React;
 const html=htm.bind(React.createElement);
 /* ---------- domain ---------- */
-const LOC={vault:"الخزنة",prep:"التجهيز",hallmark:"الدمغة",finish:"التشطيب",packed:"التغليف",master:"المعلم",sold:"مباع"};
-const LOC_ORDER=["vault","prep","hallmark","finish","packed","master","sold"];
-const LOC_COLOR={vault:"var(--gold-500)",prep:"var(--gold-300)",hallmark:"var(--danger-strong)",finish:"var(--tab-green)",packed:"var(--info)",master:"var(--logo-gold)",sold:"var(--slate)"};
-const LOC_PAGE={vault:"stock",prep:"prep",hallmark:"hallmark",finish:"finish",packed:"finish",master:"stock",sold:"sales"};
+const LOC={vault:"الخزنة",prep:"التجهيز",hallmark:"الدمغة",qc:"مراجعة الجودة",finish:"التشطيب",packed:"التغليف",master:"المعلم",sold:"مباع"};
+const LOC_ORDER=["vault","prep","hallmark","qc","finish","packed","master","sold"];
+const LOC_COLOR={vault:"var(--gold-500)",prep:"var(--gold-300)",hallmark:"var(--danger-strong)",qc:"var(--ok)",finish:"var(--tab-green)",packed:"var(--info)",master:"var(--logo-gold)",sold:"var(--slate)"};
+const LOC_PAGE={vault:"stock",prep:"prep",hallmark:"hallmark",qc:"qc",finish:"finish",packed:"finish",master:"stock",sold:"sales"};
 const KARATS=[[1000,"24 — 1000"],[999.9,"24 — 999.9"],[995,"24 — 995"],[875,"21 — 875"],[750,"18 — 750"]];
 const karatLabel=k=>{const f=KARATS.find(x=>+x[0]===+k);return f?f[1]:String(k)};
 const priceKey=k=>(+k>=990?"g24":+k>=870?"g21":"g18");
@@ -972,7 +972,7 @@ const ROLES={manager:{label:"مدير",pages:"*"},production:{label:"تصنيع 
 const NAV=[
   ["الرئيسية",[["dash","لوحة التحكم"],["review","المراجعة"]]],
   ["الذهب",[["stock","الخزنة"],["bars","وارد محل"],["refine","الحل"],["strips","الشرايط"],["casting","التصنيع"],["orders","أوامر التصنيع"]]],
-  ["المراحل",[["prep","التجهيز"],["hallmark","الدمغة"],["finish","التشطيب"]]],
+  ["المراحل",[["prep","التجهيز"],["hallmark","الدمغة"],["qc","مراجعة الجودة"],["finish","التشطيب"]]],
   ["المخزون",[["count","الجرد والتسويات"],["labels","ملصقات QR"]]],
   ["التجارة",[["sales","المبيعات"],["customers","العملاء والحسابات"]]],
   ["العمال",[["workers","العمال والأقسام"],["presence","الحضور والانصراف"],["attendance","وقت العمل"],["daily","التقرير اليومي"]]],
@@ -982,7 +982,7 @@ const JOBS={
   refine:{label:"الحل",title:"الحل",desc:"تحويل دهب وارد محل لعيار 1000 — الناتج يتوزن ويدخل الخزنة، والخسية تتحسب تلقائياً",dept:"الحل",src:["shop"],icon:"drop",verb:"تسليم للحل",outL:"وزن الدهب بعد الحل (عيار 1000)"},
   strip:{label:"الشرايط",title:"الشرايط",desc:"الدهب المستلم من الخزنة ويتعمل شرايط جاهزة للتصنيع",dept:"الشرايط",src:["vault"],icon:"strips",verb:"تسليم وزنة للشرايط",outL:"وزن الشرايط المستلمة"},
   mfg:{label:"التصنيع",title:"التصنيع",desc:"تسليم العامل وزنة من الخام أو الشرايط — الوقت يتحسب تلقائياً من الاستلام لحد ما يسلّم الأصناف",dept:"التصنيع",src:["vault","strips"],icon:"flame",verb:"تسليم وزنة للتصنيع"},
-  prep:{label:"التجهيز",dept:"تجهيز"},pack:{label:"التشطيب والتغليف",dept:"تغليف"}
+  prep:{label:"التجهيز",dept:"تجهيز"},qc:{label:"مراجعة الجودة",dept:"جودة"},pack:{label:"التشطيب والتغليف",dept:"تغليف"}
 };
 const GOLD_JOBS=["refine","strip","mfg"];
 const POOL={shop:"وارد محل",vault:"خام الخزنة",strips:"الشرايط الجاهزة"};
@@ -994,7 +994,10 @@ const ACTIONS={
   to_prep:{label:"تسليم للتجهيز",from:["vault"],to:"prep",worker:true,work:true,badge:"prep",startJob:"prep"},
   prep_back:{label:"إرجاع للخزنة",from:["prep"],to:"vault",badge:"",closeJob:"prep",closeFrom:"prep"},
   to_hallmark:{label:"تسليم دمغة",from:["prep","vault"],to:"hallmark",boxes:true,fee:true,bags:true,badge:"recv",closeJob:"prep",closeFrom:"prep"},
-  from_hallmark:{label:"استلام دمغة",from:["hallmark"],to:"finish",boxes:true,bags:true,badge:"dlv"},
+  from_hallmark:{label:"استلام دمغة",from:["hallmark"],to:"qc",boxes:true,bags:true,badge:"dlv"},
+  qc_pass:{label:"اعتماد الجودة",from:["qc"],to:"finish",badge:"done",closeJob:"qc",closeFrom:"qc"},
+  qc_rework:{label:"رفض — إعادة تشغيل",from:["qc"],to:"prep",reason:true,badge:"ret",closeJob:"qc",closeFrom:"qc"},
+  qc_rehall:{label:"رفض — إعادة دمغة",from:["qc"],to:"hallmark",boxes:true,bags:true,reason:true,badge:"ret",closeJob:"qc",closeFrom:"qc"},
   back_hallmark:{label:"مرتجع للدمغة",from:["finish"],to:"hallmark",boxes:true,bags:true,badge:"ret"},
   pack:{label:"تغليف",from:["finish"],to:"packed",boxes:true,worker:true,workerOpt:true,badge:"prep",closeJob:"pack",closeFrom:"finish",closeBy:"worker"},
   to_master:{label:"تسليم المعلم",from:["packed","finish"],to:"master",worker:true,badge:"done"}
@@ -1002,9 +1005,11 @@ const ACTIONS={
 const STAGES={
   prep:{loc:"prep",job:"prep",title:"التجهيز",sub:"تجهيز ( هزاز + ماتور + بلص ) — من الخزنة، والوقت يبدأ تلقائياً عند التسليم للعامل",actions:["to_prep","prep_back"]},
   hallmark:{loc:"hallmark",title:"الدمغة",sub:"تسليم دمغة، استلام دمغة، مرتجع للدمغة — والمتواجد حالياً في الدمغة",actions:["to_hallmark","from_hallmark","back_hallmark"]},
-  finish:{loc:"finish",also:"packed",job:"pack",title:"التشطيب والتغليف",sub:"ما استُلم من الدمغة، ثم التغليف وتسليم المعلم",actions:["pack","to_master"]}
+  qc:{loc:"qc",job:"qc",title:"مراجعة الجودة",sub:"بعد التصنيع والبلص والدمغة: كل قطعة تتراجع — المعتمد يروح للتشطيب، والمرفوض يرجع للتجهيز أو للدمغة بالسبب",actions:["qc_pass","qc_rework","qc_rehall"]},
+  finish:{loc:"finish",also:"packed",job:"pack",title:"التشطيب والتغليف",sub:"ما اعتمدته مراجعة الجودة، ثم التغليف وتسليم المعلم",actions:["pack","to_master"]}
 };
 const WORKS=["هزاز","ماتور","بلص"];
+const QC_REASONS=["خدش / عيب سطح","وزن غير مطابق","دمغة غير واضحة","تشطيب ضعيف","مقاس / شكل","أخرى"];
 
 /* ---------- utils ---------- */
 const n=v=>{const x=parseFloat(String(v??"").replace(/,/g,""));return isFinite(x)?x:0};
@@ -1108,7 +1113,7 @@ const errText=e=>{const c=e&&e.code;
 /* ---------- icons ---------- */
 const IP={
   dash:"M4 4h6v8H4zM14 4h6v5h-6zM14 13h6v7h-6zM4 16h6v4H4z",
-  door:"M5 21V4h9v17M14 5l5 2v14M3 21h18M11 12v1.5",bar:"M3 19h18l-3.5-9h-11zM8.5 10l1.5-4h4l1.5 4",drop:"M12 3c3 4.5 6 7.8 6 11a6 6 0 0 1-12 0c0-3.2 3-6.5 6-11z",
+  shield:"M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6zM8.5 12l2.5 2.5 4.5-5",door:"M5 21V4h9v17M14 5l5 2v14M3 21h18M11 12v1.5",bar:"M3 19h18l-3.5-9h-11zM8.5 10l1.5-4h4l1.5 4",drop:"M12 3c3 4.5 6 7.8 6 11a6 6 0 0 1-12 0c0-3.2 3-6.5 6-11z",
   strips:"M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5",
   flame:"M12 3c.6 3 4.5 5 4.5 10a4.5 4.5 0 0 1-9 0c0-2.4 1.4-3.7 2.2-5.6.8 1.1 1.4 2.3 1.5 3.6 1.4-2 1.6-5 .8-8z",
   prep:"M20 12a8 8 0 1 1-2.4-5.7L20 8.5M20 3.5v5h-5",
@@ -1133,7 +1138,7 @@ const IP={
   arrow:"M5 12h14M13 6l6 6-6 6",clip:"M9 4h6v3H9zM7 5.5H5.5V21h13V5.5H17M8.5 12l2 2 4-4M8.5 17h7",info:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5.5M12 7.6v.1"
 };
 const I=({n,s})=>html`<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style=${s?{width:s+"px",height:s+"px"}:null}><path d=${IP[n]}/></svg>`;
-const NAV_ICON={presence:"door",dash:"dash",review:"eye",refine:"drop",bars:"bar",strips:"strips",casting:"flame",prep:"prep",hallmark:"stamp",finish:"finish",stock:"box",sales:"receipt",customers:"users",reports:"chart",settings:"gear",orders:"clip",count:"check",labels:"qr",workers:"users",attendance:"clock",daily:"clip"};
+const NAV_ICON={qc:"shield",presence:"door",dash:"dash",review:"eye",refine:"drop",bars:"bar",strips:"strips",casting:"flame",prep:"prep",hallmark:"stamp",finish:"finish",stock:"box",sales:"receipt",customers:"users",reports:"chart",settings:"gear",orders:"clip",count:"check",labels:"qr",workers:"users",attendance:"clock",daily:"clip"};
 const MAP_ICON={attend:"door",pen:"alert",bars:"bar",strips:"strips",casting:"flame",moves:"arrow",sales:"receipt",payments:"wallet",counts:"check",labels:"qr",sessions:"clock",evals:"check"};
 const PAGE_GROUP=Object.fromEntries(NAV.flatMap(([g,items])=>items.map(([k])=>[k,g])));
 const BADGE_TONE={prep:"gold",recv:"warn",dlv:"ok",done:"ok",ret:"bad","":"plain"};
@@ -1201,10 +1206,10 @@ function fieldsOf(e,catalog,customers){const it=catalog[e.item]?.name;const F=[]
     case "bars":g("رقم السبيكة",e.serial);g("المكان",e.dest==="shop"?"وارد محل":"الخزنة");g("الوزن",fg(n(e.weight))+" جم");g("العيار",karatLabel(e.karat));g("الفاين",fg(n(e.weight)*n(e.karat)/1000)+" جم");if(e.source)g("المصدر",e.source);break;
     case "strips":g("النوع",e.kind==="return"?"رد للخزنة":"صرف للتصنيع");g("الوزن",fg(n(e.weight))+" جم");g("العيار",karatLabel(e.karat));if(e.serial)g("السبيكة",e.serial);if(it){g("الصنف المطلوب",it);g("العدد المطلوب",fi(n(e.count)));g("وزن المطلوب",fg(n(e.reqWeight))+" جم")}break;
     case "casting":g("الصانع",e.worker||"—");if(e.order)g("أمر التصنيع",e.orderNo?"#"+e.orderNo:"مرتبط");g("الوزنة المتسلمة",fg(n(e.received)));g("وزنة السبك",fg(n(e.castW)));g("وزنة التقطيع",fg(n(e.cutW)));g("خسية السبك",fg(n(e.castLoss)));g("خسية التقطيع",fg(n(e.cutLoss)));g("الصنف",it||"—");g("العدد",fi(n(e.count)));g("الوزن علي الميزان",fg(n(e.scale)));g("الوزن الفعلي",fg(n(e.actual)));g("الفرق",fg(n(e.diff)));g("الوزنة المتبقية",fg(n(e.remaining)));break;
-    case "moves":g("الحركة",ACTIONS[e.action]?.label||e.action);g("من ← إلى",LOC[e.from]+" ← "+LOC[e.to]);g("الصنف",it||"—");g("العدد",fi(n(e.count)));g(n(e.bagW)?"الوزن قبل الأكياس":"الوزن",fg(n(e.weight))+" جم");if(n(e.bagW)){g("الوزن بعد الأكياس",fg(n(e.bagW))+" جم");g("وزن الأكياس",fg(n(e.bagW)-n(e.weight))+" جم")}if(e.boxes)g("العلب",fi(n(e.boxes)));if(e.worker)g("المستلم",e.worker+(e.work?" · "+e.work:""));if(e.fee)g("رسوم الدمغة",fm(n(e.fee))+" ج.م");break;
+    case "moves":g("الحركة",ACTIONS[e.action]?.label||e.action);g("من ← إلى",LOC[e.from]+" ← "+LOC[e.to]);g("الصنف",it||"—");g("العدد",fi(n(e.count)));g(n(e.bagW)?"الوزن قبل الأكياس":"الوزن",fg(n(e.weight))+" جم");if(n(e.bagW)){g("الوزن بعد الأكياس",fg(n(e.bagW))+" جم");g("وزن الأكياس",fg(n(e.bagW)-n(e.weight))+" جم")}if(e.boxes)g("العلب",fi(n(e.boxes)));if(e.worker)g("المستلم",e.worker+(e.work?" · "+e.work:""));if(e.reason)g("سبب الرفض",e.reason);if(e.fee)g("رسوم الدمغة",fm(n(e.fee))+" ج.م");break;
     case "sales":g("رقم الفاتورة",e.no);g("العميل",customers[e.customer]?.name||"—");g("الإجمالي",fm(n(e.total))+" ج.م");g("المدفوع",fm(n(e.paid))+" ج.م");break;
     case "payments":g("العميل",customers[e.customer]?.name||"—");g("المبلغ",fm(n(e.amount))+" ج.م");g("الطريقة",e.method||"—");break;
-    case "counts":g("المكان",(COUNT_LOCS.find(x=>x[0]===e.loc)||[0,""])[1]);(e.lines||[]).forEach(l=>g(l.item?(catalog[l.item]?.name||l.item):"الخام",(COUNT_POOL[e.loc]?"":fi(n(l.cntC))+" قطعة ("+(n(l.dc)>0?"+":"")+fi(n(l.dc))+") · ")+fg(n(l.cntW))+" جم ("+(n(l.dw)>0?"+":"")+fg(n(l.dw))+")"));break;
+    case "counts":g("المكان",(COUNT_LOCS.find(x=>x[0]===e.loc)||[0,""])[1]);if(e.owner)g("بواسطة","تعديل المالك");(e.lines||[]).forEach(l=>g(l.item?(catalog[l.item]?.name||l.item):"الخام",(COUNT_POOL[e.loc]?"":fi(n(l.cntC))+" قطعة ("+(n(l.dc)>0?"+":"")+fi(n(l.dc))+") · ")+fg(n(l.cntW))+" جم ("+(n(l.dw)>0?"+":"")+fg(n(l.dw))+")"));break;
     case "sessions":g("العامل",e.wname||"—");g("القسم",e.dept||"—");g("الشغل",e.task||"—");
       if(GOLD_JOBS.includes(e.job)){g("من",POOL[e.src||JOBS[e.job].src[0]]);g("الوزنة المستلمة",fg(n(e.inW))+" جم عيار "+fi(n(e.inK)||1000));if(e.serial)g("السبيكة",e.serial);
         if(e.end){if(e.job==="mfg"){g("الأصناف",jobItems(e,catalog)||"—");g("وزن الأصناف",fg(jobOut(e))+" جم");if(n(e.castW))g("وزنة السبك",fg(n(e.castW)));if(n(e.cutW))g("وزنة التقطيع",fg(n(e.cutW)));if(n(e.added))g("إضافة للعيار",fg(n(e.added)))}else g("الناتج",fg(n(e.outW))+" جم");
@@ -1536,7 +1541,7 @@ function JobCloseSheet({e,L,catalog,config,toast,onClose}){
 
 /* timers for the item stages (التجهيز / التغليف) */
 function TimerStartSheet({job,catalog,workers,toast,onClose}){
-  const J=JOBS[job];const tasks=job==="prep"?WORKS:["تشطيب","تغليف","تكويد"];
+  const J=JOBS[job];const tasks=job==="prep"?WORKS:job==="qc"?["فحص","وزن","مراجعة دمغة"]:["تشطيب","تغليف","تكويد"];
   const [wid,setW]=useState("");const [task,setTask]=useState(tasks[0]);const [item,setItem]=useState("");const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
   const save=async()=>{setErr("");const w=workers[wid];if(!w)return setErr("اختر العامل.");setBusy(true);try{await startJob(job,w,{task,item,inW:0});toast("بدأ وقت "+w.name);onClose()}catch(e){setErr(errText(e))}setBusy(false)};
   return html`<${Sheet} title=${"بدء شغل — "+J.label} sub="الوقت يبدأ لحظة الحفظ" onClose=${onClose} footer=${html`<span class="msg">${err}</span><button class="btn" onClick=${onClose}>إلغاء</button><button class="btn p" disabled=${busy} onClick=${save}><${I} n="clock"/>بدء</button>`}>
@@ -1574,7 +1579,8 @@ function StagePage({cfg,L,catalog,workers,can,toast,role,open}){
     {key:"item",label:"الصنف",get:r=>catalog[r.item]?.name||"—"},
     {key:"count",label:"العدد",num:1,get:r=>n(r.count),render:r=>fi(n(r.count))},
     {key:"weight",label:"الوزن",num:1,get:r=>n(r.weight),render:r=>fg(n(r.weight))},
-    ...(cfg.loc!=="finish"?[{key:"boxes",label:"العلب",num:1,get:r=>n(r.boxes),render:r=>r.boxes?fi(n(r.boxes)):"—"}]:[]),
+    ...(cfg.loc==="qc"?[{key:"reason",label:"سبب الرفض",get:r=>r.reason||"",render:r=>r.reason?html`<${Badge} tone="bad">${r.reason}</${Badge}>`:"—",cls:"keep"}]:[]),
+    ...(cfg.loc!=="finish"&&cfg.loc!=="qc"?[{key:"boxes",label:"العلب",num:1,get:r=>n(r.boxes),render:r=>r.boxes?fi(n(r.boxes)):"—"}]:[]),
     {key:"worker",label:"المستلم",get:r=>(r.worker||"—")+(r.work?" · "+r.work:"")},
     ...(cfg.loc==="hallmark"?[{key:"bagW",label:"بعد الأكياس",num:1,get:r=>n(r.bagW),render:r=>n(r.bagW)?html`${fg(n(r.bagW))}<span class="sub">أكياس ${fg(n(r.bagW)-n(r.weight))}</span>`:"—"}]:[]),
     ...(cfg.loc==="hallmark"?[{key:"fee",label:"الرسوم",num:1,get:r=>n(r.fee),render:r=>r.fee?fm(n(r.fee)):"—"}]:[]),stCol()];
@@ -1586,6 +1592,7 @@ function StagePage({cfg,L,catalog,workers,can,toast,role,open}){
       ${cfg.also&&html`<${Kpi} icon="box" label=${"جاهز في "+LOC[cfg.also]} value=${fi(locTotal(L.stock,cfg.also).c)} unit="قطعة" sub=${fg(locTotal(L.stock,cfg.also).w)+" جم"}/>`}
       <${Kpi} icon="arrow" label="وارد الفترة" value=${fi(inP)} unit="قطعة"/>
       <${Kpi} icon="arrow" label="صادر الفترة" value=${fi(outP)} unit="قطعة"/>
+      ${cfg.loc==="qc"&&(()=>{const ok=live.filter(e=>e.action==="qc_pass").reduce((a,e)=>a+n(e.count),0),bad=live.filter(e=>e.action==="qc_rework"||e.action==="qc_rehall").reduce((a,e)=>a+n(e.count),0);return html`<${Kpi} icon="shield" label="نسبة القبول" value=${ok+bad?(ok/(ok+bad)*100).toFixed(1):"—"} unit=${ok+bad?"%":""} sub=${fi(ok)+" معتمد · "+fi(bad)+" مرفوض"} alert=${ok+bad>0&&bad/(ok+bad)>0.05}/>`})()}
       ${cfg.loc==="hallmark"&&html`<${Kpi} icon="receipt" label="رسوم الدمغة" value=${fm(fees)} unit="ج.م" sub="في الفترة"/>`}
     </div>
     <${Card} title=${tab==="log"?"سجل الحركة":"المتواجد حالياً"} actions=${html`<div class="seg" role="tablist"><button role="tab" aria-pressed=${tab==="log"?"true":"false"} onClick=${()=>setTab("log")}>السجل</button><button role="tab" aria-pressed=${tab==="stock"?"true":"false"} onClick=${()=>setTab("stock")}>المتواجد <span class="num">(${fi(here.c)})</span></button></div>`}>
@@ -1598,7 +1605,7 @@ function StagePage({cfg,L,catalog,workers,can,toast,role,open}){
 }
 function MoveSheet({action,L,catalog,workers,toast,onClose}){
   const A=ACTIONS[action];
-  const [f,setF]=useState({from:A.from[0],item:"",count:"",weight:"",worker:"",work:WORKS[0],boxes:"",note:"",jobWorker:"",bagW:""});
+  const [f,setF]=useState({from:A.from[0],item:"",count:"",weight:"",worker:"",work:WORKS[0],boxes:"",note:"",jobWorker:"",bagW:"",reason:""});
   const openJobs=A.closeJob?L.live.filter(e=>e._map==="sessions"&&e.job===A.closeJob&&!e.end):[];
   const jobWs=[...new Map(openJobs.map(e=>[e.worker,e.wname])).entries()];const [wEd,setWEd]=useState(false);const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
   const up=(k,v)=>setF(o=>({...o,[k]:v}));
@@ -1613,7 +1620,8 @@ function MoveSheet({action,L,catalog,workers,toast,onClose}){
   const save=async more=>{setErr("");if(!f.item)return setErr("اختر الصنف.");if(n(f.count)<=0)return setErr("اكتب العدد.");
     if(n(f.count)>avail.c+0.0001)return setErr("المتاح في "+LOC[f.from]+" "+fi(avail.c)+" قطعة فقط.");if(A.worker&&!A.workerOpt&&!f.worker)return setErr("اختر "+(action==="to_master"?"المعلم":"المستلم")+".");
     if(A.bags&&f.bagW!==""&&bagW+0.001<weight)return setErr("الوزن بعد الأكياس أقل من الوزن قبلها.");
-    setBusy(true);try{const mv=await addEntry("moves",{action,from:f.from,to:A.to,item:f.item,count:n(f.count),weight:r2(weight),worker:f.worker,work:A.work?f.work:"",boxes:A.boxes?n(f.boxes):0,fee:r2(fee),bagW:A.bags&&bagW>0?r2(bagW):0,note:f.note.trim()});
+    if(A.reason&&!f.reason)return setErr("اختر سبب الرفض.");
+    setBusy(true);try{const mv=await addEntry("moves",{action,from:f.from,to:A.to,item:f.item,count:n(f.count),weight:r2(weight),worker:f.worker,work:A.work?f.work:"",boxes:A.boxes?n(f.boxes):0,fee:r2(fee),bagW:A.bags&&bagW>0?r2(bagW):0,reason:A.reason?f.reason:"",note:f.note.trim()});
       const wk=Object.values(workers).find(x=>x.name===f.worker);
       if(A.startJob&&wk)await startJob(A.startJob,wk,{task:A.work?f.work:JOBS[A.startJob].label,item:f.item,count:n(f.count),inW:0,moveId:mv.id});
       if(A.closeJob&&f.from===A.closeFrom){const who=A.closeBy==="worker"?(wk&&wk.id):f.jobWorker;if(who)for(const s of openJobs.filter(e=>e.worker===who))await closeTimer(s,{pcs:n(f.count),weight:r2(weight)})}
@@ -1630,6 +1638,7 @@ function MoveSheet({action,L,catalog,workers,toast,onClose}){
       ${A.closeJob&&A.closeBy!=="worker"&&f.from===A.closeFrom&&jobWs.length>0&&html`<${F} label="استلام من العامل" hint="يوقف وقته تلقائياً"><${Sel} id="mv-jw" value=${f.jobWorker} set=${v=>up("jobWorker",v)}><option value="">—</option>${jobWs.map(([id,nm])=>html`<option key=${id} value=${id}>${nm}</option>`)}</${Sel}></${F}>`}
       ${A.startJob&&html`<div class="full sub" style=${{gridColumn:"1/-1"}}>الوقت يبدأ تلقائياً للمستلم لحظة الحفظ.</div>`}
       ${A.work&&html`<${F} label="نوع الشغل"><${Sel} id="mv-work" value=${f.work} set=${v=>up("work",v)}>${WORKS.map(w=>html`<option key=${w}>${w}</option>`)}</${Sel}></${F}>`}
+      ${A.reason&&html`<${F} full label="سبب الرفض"><div class="chips">${QC_REASONS.map(x=>html`<button type="button" key=${x} class="chip" aria-pressed=${f.reason===x?"true":"false"} onClick=${()=>up("reason",x)}>${x}</button>`)}</div></${F}>`}
       <${F} full label="ملاحظة"><input id="mv-note" class="in" value=${f.note} onInput=${e=>up("note",e.target.value)}/></${F}>
     </div>
     <${Calc} items=${[["المتاح",f.item?fi(avail.c)+" قطعة":"—"],["بعد الحركة",f.item?fi(avail.c-n(f.count))+" قطعة":"—",avail.c-n(f.count)<0?"neg":""],A.fee?["رسوم الدمغة",fm(fee)+" ج.م","hl"]:["الوزن",fg(weight)+" جم","hl"],
@@ -1641,8 +1650,8 @@ function MoveSheet({action,L,catalog,workers,toast,onClose}){
 /* ---------- الخزنة: every weight, raw and items, and where each item stands ---------- */
 const itemsFine=(X,catalog,locs)=>(locs||LOC_ORDER.filter(l=>l!=="sold")).reduce((a,l)=>a+Object.entries(X.stock[l]||{}).reduce((b,[k,s])=>b+s.w*n(catalog[k]?.karat||999.9)/1000,0),0);
 const totalFine=(X,catalog)=>X.P.shop.f+X.P.vault.f+X.P.strips.f+X.W.refine.f+X.W.strip.f+X.W.mfg.f+itemsFine(X,catalog);
-function StockPage({L,catalog,can,toast,go}){
-  const [sheet,setSheet]=useState(false);
+function StockPage({L,catalog,can,toast,go,perm}){
+  const [sheet,setSheet]=useState(false);const [adj,setAdj]=useState(false);const isOwn=!!(perm&&perm.owner);
   const locs=LOC_ORDER.filter(l=>l!=="sold");
   const rows=Object.entries(catalog).sort((a,b)=>n(a[1].order)-n(b[1].order)).filter(([k])=>LOC_ORDER.some(l=>L.stock[l][k]&&(Math.abs(L.stock[l][k].c)>0||Math.abs(L.stock[l][k].w)>0.004))).map(([k,it])=>{
     const r={id:k,name:it.name,karat:it.karat};let c=0,w=0;locs.forEach(l=>{const s=L.stock[l][k]||{c:0,w:0};r[l]=s;c+=s.c;w+=s.w});r.tc=c;r.tw=w;r.sold=L.stock.sold[k]||{c:0,w:0};r.fine=w*n(it.karat)/1000;
@@ -1664,7 +1673,7 @@ function StockPage({L,catalog,can,toast,go}){
     ...locs.map(l=>{const t=locTotal(L.stock,l);const f=itemsFine(L,catalog,[l]);return {id:"i-"+l,name:"أصناف — "+LOC[l],sub:fi(t.c)+" قطعة",p:{w:t.w,f},pg:LOC_PAGE[l]}})];
   const tot=pools.reduce((a,r)=>({w:a.w+r.p.w,f:a.f+r.p.f}),{w:0,f:0});
   return html`<${React.Fragment}>
-    <${PH} title="الخزنة" desc="كل الأوزان في مكان واحد: الخام، اللي مع العمال، والأصناف وكل صنف واقف على أي مرحلة">${can&&html`<button class="btn" onClick=${()=>setSheet(true)}><${I} n="plus"/>استلام خام مباشر للخزنة</button>`}</${PH}>
+    <${PH} title="الخزنة" desc="كل الأوزان في مكان واحد: الخام، اللي مع العمال، والأصناف وكل صنف واقف على أي مرحلة">${isOwn&&html`<button class="btn" onClick=${()=>setAdj(true)}><${I} n="gear"/>تعديل / تصفير الأرصدة</button>`}${can&&html`<button class="btn" onClick=${()=>setSheet(true)}><${I} n="plus"/>استلام خام مباشر للخزنة</button>`}</${PH}>
     <div class="kpis six">
       <${Kpi} icon="bar" label="خام الخزنة" value=${fg(L.P.vault.w)} unit="جم" sub=${"فاين "+fg(L.P.vault.f)} onClick=${()=>go("refine")}/>
       <${Kpi} icon="bar" label="وارد محل" value=${fg(L.P.shop.w)} unit="جم" sub=${"فاين "+fg(L.P.shop.f)} onClick=${()=>go("bars")}/>
@@ -1688,7 +1697,59 @@ function StockPage({L,catalog,can,toast,go}){
         empty=${html`<${Empty} icon="box" t="لا توجد أصناف بعد" s="الأصناف تدخل الخزنة لما تستلم من عامل التصنيع."/>`}/>
     </${Card}>
     ${sheet&&html`<${BarSheet} L=${L} dest="vault" toast=${toast} onClose=${()=>setSheet(false)}/>`}
+    ${adj&&html`<${OwnerAdjustSheet} L=${L} catalog=${catalog} toast=${toast} onClose=${()=>setAdj(false)}/>`}
   </${React.Fragment}>`;
+}
+
+/* owner only: set any balance to a new value, or zero everything (recorded as adjustments, history kept) */
+function OwnerAdjustSheet({L,catalog,toast,onClose}){
+  const running=L.live.filter(e=>e._map==="sessions"&&GOLD_JOBS.includes(e.job)&&!e.end);
+  const back={shop:0,vault:0,strips:0};running.forEach(e=>{const s=e.src||JOBS[e.job].src[0];back[s]=(back[s]||0)+n(e.inW)});
+  const base=()=>{const R=[];
+    [["raw","vault"],["shop","shop"],["strips","strips"]].forEach(([loc,p])=>R.push({k:loc,loc,item:"",name:POOL[p],c:null,w:r2(L.P[p].w),karat:r2(pk(L.P[p])),nc:"",nw:""}));
+    LOC_ORDER.filter(l=>l!=="sold").forEach(l=>Object.entries(L.stock[l]||{}).filter(([,s])=>Math.abs(s.c)>0.0001||Math.abs(s.w)>0.004).forEach(([it,s])=>R.push({k:l+"|"+it,loc:l,item:it,name:(catalog[it]?.name||it),c:s.c,w:r2(s.w),karat:n(catalog[it]?.karat||999.9),nc:"",nw:""})));return R};
+  const [rows,setRows]=useState(base);const [zero,setZero]=useState(false);const [reason,setReason]=useState("");const [add,setAdd]=useState({loc:"vault",item:""});
+  const [err,setErr]=useState("");const [busy,setBusy]=useState(false);const [ask,setAsk]=useState(false);
+  const up=(k,f,v)=>setRows(rs=>rs.map(r=>r.k===k?{...r,[f]:v}:r));
+  const zeroAll=()=>{setZero(true);setRows(rs=>rs.map(r=>({...r,nc:r.c===null?"":"0",nw:"0"})))};
+  const sysW=r=>r.c===null&&zero?r2(r.w+(back[COUNT_POOL[r.loc]]||0)):r.w;
+  const ch=rows.map(r=>{const hasC=r.nc!=="",hasW=r.nw!=="";if(!hasC&&!hasW)return null;const cc=hasC?n(r.nc):r.c,cw=hasW?n(r.nw):r.w;const sw=sysW(r);
+    return {...r,cc,cw,dc:r.c===null?0:r2(cc-r.c),dw:r2(cw-sw),sw}}).filter(x=>x&&(Math.abs(x.dc)>0.0001||Math.abs(x.dw)>0.004));
+  const addRow=()=>{if(!add.item)return;const k=add.loc+"|"+add.item;if(rows.some(r=>r.k===k))return;const it=catalog[add.item];setRows(rs=>[...rs,{k,loc:add.loc,item:add.item,name:it.name,c:0,w:0,karat:n(it.karat),nc:"",nw:""}])};
+  const save=async()=>{setErr("");if(!ch.length&&!(zero&&running.length))return setErr("مفيش تغيير.");if(reason.trim().length<3)return setErr("اكتب سبب التعديل.");
+    setBusy(true);try{
+      if(zero)for(const e of running)await voidEntry(e,"تصفير الأرصدة: "+reason.trim());
+      const by={};ch.forEach(l=>{(by[l.loc]=by[l.loc]||[]).push({item:l.item,karat:r2(l.karat),sysC:l.c===null?0:l.c,sysW:l.sw,cntC:l.c===null?0:l.cc,cntW:r2(l.cw),dc:l.dc,dw:l.dw})});
+      for(const [loc,lines] of Object.entries(by))await addEntry("counts",{loc,owner:true,note:(zero?"تصفير الأرصدة — ":"تعديل المالك — ")+reason.trim(),lines});
+      toast(zero?"اتصفرت كل الأرصدة":"اتعدلت الأرصدة");onClose()}catch(e){setErr(errText(e))}setBusy(false)};
+  const locName=l=>(COUNT_LOCS.find(x=>x[0]===l)||[0,LOC[l]||l])[1];
+  return html`<${Sheet} title="تعديل وتصفير الأرصدة" sub="للمالك فقط — كل تعديل بيتسجل كتسوية في سجل الجرد بالسبب، والتاريخ القديم مبيتمسحش" onClose=${onClose} footer=${ask?html`<span class="msg">${err}</span><button class="btn" onClick=${()=>setAsk(false)}>رجوع</button><button class="btn d" disabled=${busy} onClick=${save}><${I} n="check"/>تأكيد</button>`:html`<span class="msg">${err}</span><button class="btn d" onClick=${zeroAll}>تصفير الكل</button><button class="btn p" onClick=${()=>{setErr("");if(!ch.length&&!(zero&&running.length))return setErr("اكتب الرصيد الجديد لأي سطر، أو دوس «تصفير الكل».");setAsk(true)}}><${I} n="check"/>حفظ التعديل</button>`}>
+    ${zero&&html`<div class="note warn"><${I} n="alert"/><span>تصفير الكل: كل الأرصدة هتبقى صفر${running.length?"، و"+fi(running.length)+" شغل جاري مع العمال هيتلغي ووقته يقف":""}.</span></div>`}
+    ${ask&&html`<div class="note warn"><${I} n="alert"/><span>هيتسجل <b class="num">${fi(ch.length)}</b> تعديل${zero&&running.length?" ويتلغي "+fi(running.length)+" شغل جاري":""}. متأكد؟</span></div>`}
+    <div class="tw"><table class="t lines"><thead><tr><th>المكان</th><th>البيان</th><th class="n">العدد الحالي</th><th class="n">العدد الجديد</th><th class="n">الوزن الحالي</th><th class="n">الوزن الجديد</th></tr></thead><tbody>
+      ${rows.map(r=>html`<tr key=${r.k}><td>${locName(r.loc)}</td><td class="strong">${r.name}</td>
+        <td class="n">${r.c===null?"—":fi(r.c)}</td><td style=${{width:"100px"}}>${r.c===null?"":html`<${Num} id=${"oa-c-"+r.k} ph=${fi(r.c)} value=${r.nc} set=${v=>up(r.k,"nc",v)}/>`}</td>
+        <td class="n">${fg(sysW(r))}</td><td style=${{width:"120px"}}><${Num} id=${"oa-w-"+r.k} ph=${fg(sysW(r))} value=${r.nw} set=${v=>up(r.k,"nw",v)}/></td></tr>`)}
+    </tbody></table></div>
+    <div class="fg" style=${{gridTemplateColumns:"minmax(0,1fr) minmax(0,1.4fr) auto",alignItems:"end"}}>
+      <${F} label="إضافة رصيد صنف في"><${Sel} id="oa-loc" value=${add.loc} set=${v=>setAdd(o=>({...o,loc:v}))}>${LOC_ORDER.filter(l=>l!=="sold").map(l=>html`<option key=${l} value=${l}>${LOC[l]}</option>`)}</${Sel}></${F}>
+      <${F} label="الصنف"><${ItemSel} id="oa-item" value=${add.item} set=${v=>setAdd(o=>({...o,item:v}))} catalog=${catalog}/></${F}>
+      <button class="btn" onClick=${addRow}><${I} n="plus"/>إضافة</button></div>
+    <${F} full label="سبب التعديل" hint="يظهر في سجل الجرد والتدقيق"><input id="oa-reason" class="in" value=${reason} onInput=${e=>setReason(e.target.value)} placeholder="مثال: بداية تشغيل فعلي / تصحيح وزن"/></${F}>
+    <${Calc} items=${[["سطور متعدلة",fi(ch.length),"hl"],["فرق الوزن",fg(ch.reduce((a,l)=>a+l.dw,0))+" جم"],["فرق العدد",fi(ch.reduce((a,l)=>a+l.dc,0))+" قطعة"]]}/>
+  </${Sheet}>`;
+}
+/* owner only: wipe all movements and start fresh (settings, workers, customers and users stay) */
+function WipeData({toast}){
+  const [txt,setTxt]=useState("");const [busy,setBusy]=useState(false);const [err,setErr]=useState("");const [cnt,setCnt]=useState(null);
+  const C=[...ALL_LEDGER,"dailies","orders"];
+  const run=async()=>{setErr("");if(txt.trim()!=="مسح")return setErr("اكتب كلمة «مسح» للتأكيد.");setBusy(true);let k=0;
+    try{for(const c of C){const q=await S.db.collection(c).get();for(const d of q.docs){await S.db.doc(c+"/"+d.id).delete();k++;setCnt(k)}}toast("اتمسحت كل الحركات — "+fi(k)+" مستند");setTxt("")}catch(e){setErr(errText(e))}setBusy(false)};
+  return html`<${Card} title="البدء من جديد" sub="للمالك فقط — يمسح كل الحركات والأوزان والأوقات والحضور والتقارير، ويسيب الإعدادات والعمال والعملاء والمستخدمين" body=${true}>
+    <div class="note warn"><${I} n="alert"/><span>المسح نهائي ومينفعش يرجع. نزّل نسخة احتياطية الأول من فوق.</span></div>
+    <div class="fg" style=${{gridTemplateColumns:"minmax(0,280px) auto",alignItems:"end",marginTop:"12px"}}><${F} label="اكتب «مسح» للتأكيد"><input id="wipe-txt" class="in" value=${txt} onInput=${e=>setTxt(e.target.value)}/></${F}>
+      <button class="btn d" disabled=${busy} onClick=${run}><${I} n="ban"/>${busy?"جاري المسح… "+fi(cnt||0):"مسح كل الحركات"}</button></div>${err&&html`<p class="msg">${err}</p>`}
+  </${Card}>`;
 }
 
 /* ---------- المراجعة: the whole day, live ---------- */
@@ -2122,6 +2183,7 @@ function SettingsPage({catalog,workers,prices,names,toast,perm,isOwner,config}){
     ${tab==="prices"&&html`<${PricesEdit} prices=${prices} can=${mgr} toast=${toast}/>`}
     ${tab==="ops"&&html`<${OpsEdit} config=${config} can=${mgr} toast=${toast}/>`}
     ${tab==="backup"&&html`<${BackupEdit} isOwner=${isOwner} mgr=${mgr} toast=${toast}/>`}
+    ${tab==="backup"&&isOwner&&html`<${WipeData} toast=${toast}/>`}
     ${tab==="users"&&isOwner&&html`<${UsersAdmin} names=${names} toast=${toast}/>`}
   </${React.Fragment}>`;
 }
@@ -2276,7 +2338,7 @@ function OrderView({o,L,catalog,customers,can,toast,onClose}){
 }
 
 /* ---------- stocktake ---------- */
-const COUNT_LOCS=[["raw","خام الخزنة"],["shop","وارد محل"],["strips","الشرايط الجاهزة"],["vault","أصناف الخزنة"],["prep","التجهيز"],["hallmark","الدمغة"],["finish","التشطيب"],["packed","التغليف"],["master","المعلم"]];
+const COUNT_LOCS=[["raw","خام الخزنة"],["shop","وارد محل"],["strips","الشرايط الجاهزة"],["vault","أصناف الخزنة"],["prep","التجهيز"],["hallmark","الدمغة"],["qc","مراجعة الجودة"],["finish","التشطيب"],["packed","التغليف"],["master","المعلم"]];
 function CountPage({L,catalog,can,toast,role,open}){
   const [loc,setLoc]=useState("vault");const [all,setAll]=useState(false);const [vals,setVals]=useState({});const [note,setNote]=useState("");const [err,setErr]=useState("");const [busy,setBusy]=useState(false);const [ask,setAsk]=useState(false);
   useEffect(()=>{setVals({});setAsk(false);setErr("")},[loc]);
@@ -2472,10 +2534,10 @@ async function seedDefaults(){try{const d=window.__DEFAULTS;const s=await S.db.d
 function BackupEdit({isOwner,mgr,toast}){
   const [err,setErr]=useState("");const [busy,setBusy]=useState(false);const [pending,setPending]=useState(null);
   const exportAll=async()=>{setErr("");setBusy(true);try{const out={app:"gold-era-erp",version:1,exportedAt:new Date().toISOString(),docs:{}};
-      for(const c of ["settings","customers","orders","months",...ALL_LEDGER]){const q=await S.db.collection(c).get();q.docs.forEach(d=>{out.docs[c+"/"+d.id]=d.data()})}
+      for(const c of ["settings","customers","orders","months","staff","dailies",...ALL_LEDGER]){const q=await S.db.collection(c).get();q.docs.forEach(d=>{out.docs[c+"/"+d.id]=d.data()})}
       const dl=await platform.use("downloads");await dl.save({filename:"gold-era-backup-"+today()+".json",data:JSON.stringify(out,null,1)});toast("تم تنزيل النسخة الاحتياطية")}catch(e){setErr(errText(e))}setBusy(false)};
   const pick=async ev=>{setErr("");const f=ev.target.files&&ev.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||d.app!=="gold-era-erp"||!d.docs)throw 0;setPending(d)}catch(e){setErr("الملف ليس نسخة احتياطية من هذا النظام.")}ev.target.value=""};
-  const restore=async()=>{setBusy(true);setErr("");try{for(const [p,v] of Object.entries(pending.docs)){if(!/^(settings|customers|orders|months|bars|strips|casting|moves|sales|payments|counts|labels)\/[A-Za-z0-9_.~:@+-]+$/.test(p))continue;await S.db.doc(p).set(v)}toast("تمت الاستعادة");setPending(null)}catch(e){setErr(errText(e))}setBusy(false)};
+  const restore=async()=>{setBusy(true);setErr("");try{for(const [p,v] of Object.entries(pending.docs)){if(!/^(settings|customers|orders|months|staff|dailies|bars|strips|casting|moves|sales|payments|counts|labels|sessions|evals)\/[A-Za-z0-9_.~:@+-]+$/.test(p))continue;await S.db.doc(p).set(v)}toast("تمت الاستعادة");setPending(null)}catch(e){setErr(errText(e))}setBusy(false)};
   return html`<${Card} title="النسخ الاحتياطي" sub="تنزيل كل البيانات في ملف واحد، واستعادتها عند الحاجة" body=${true}>
     <div style=${{display:"grid",gap:"14px"}}>
       <div class="ph__a"><button class="btn p" disabled=${busy||!mgr} onClick=${exportAll}><${I} n="dl"/>تنزيل نسخة احتياطية</button>
@@ -2485,8 +2547,8 @@ function BackupEdit({isOwner,mgr,toast}){
       ${err&&html`<span class="msg">${err}</span>`}
     </div></${Card}>`}
 /* ---------- workers, departments ---------- */
-const DEFAULT_DEPTS=["وارد محل","الحل","الشرايط","التصنيع","سبك","تقطيع","تجهيز","دمغة","تشطيب","تغليف","تكويد","معلم"];
-const CORE_DEPTS=["الحل","الشرايط","التصنيع","تجهيز","تغليف"];
+const DEFAULT_DEPTS=["وارد محل","الحل","الشرايط","التصنيع","سبك","تقطيع","تجهيز","دمغة","جودة","تشطيب","تغليف","تكويد","معلم"];
+const CORE_DEPTS=["الحل","الشرايط","التصنيع","تجهيز","جودة","تغليف"];
 const deptsOf=w=>w?(Array.isArray(w.depts)&&w.depts.length?w.depts:(w.dept?[w.dept]:[])):[];
 const wDept=w=>deptsOf(w).join("، ");
 const TASKS=["حل","شرايط","تصنيع","سبك","تقطيع","هزاز","ماتور","بلص","تشطيب","تغليف","تكويد","دمغة","أخرى"];
@@ -2641,6 +2703,7 @@ function dayData(L,catalog,d){
     prep:{c:sum(mv("to_prep"),e=>n(e.count)),w:sum(mv("to_prep"),e=>n(e.weight))},
     hmOut:{c:sum(mv("to_hallmark"),e=>n(e.count)),w:sum(mv("to_hallmark"),e=>n(e.weight)),b:sum(mv("to_hallmark"),e=>n(e.boxes)),fee:sum(mv("to_hallmark"),e=>n(e.fee))},
     hmIn:{c:sum(mv("from_hallmark"),e=>n(e.count)),w:sum(mv("from_hallmark"),e=>n(e.weight)),b:sum(mv("from_hallmark"),e=>n(e.boxes))},
+    qcOk:{c:sum(mv("qc_pass"),e=>n(e.count))},qcBad:{c:sum(mv("qc_rework"),e=>n(e.count))+sum(mv("qc_rehall"),e=>n(e.count))},
     hmRet:{c:sum(mv("back_hallmark"),e=>n(e.count)),w:sum(mv("back_hallmark"),e=>n(e.weight))},
     pack:{c:sum(mv("pack"),e=>n(e.count)),w:sum(mv("pack"),e=>n(e.weight)),b:sum(mv("pack"),e=>n(e.boxes))},
     master:{c:sum(mv("to_master"),e=>n(e.count)),w:sum(mv("to_master"),e=>n(e.weight))},
@@ -2681,6 +2744,7 @@ function DailyReport({L,catalog,workers,config,can,toast,open,dailies}){
     ["التصنيع","flame",[["المتسلم",fg(D.mfgIn||D.received)+" جم"],["المُنتج",fi(D.made)+" قطعة · "+fg(D.madeW)+" جم"],["الخسية",fg(D.kh)+" جم",D.kh>limit]]],
     ["التجهيز","prep",[["سُلم للتجهيز",fi(D.prep.c)+" قطعة · "+fg(D.prep.w)+" جم"]]],
     ["الدمغة","stamp",[["سُلم للدمغة",fi(D.hmOut.c)+" قطعة · "+fi(D.hmOut.b)+" علبة"],["استُلم من الدمغة",fi(D.hmIn.c)+" قطعة · "+fg(D.hmIn.w)+" جم"],["مرتجع",fi(D.hmRet.c)+" قطعة",D.hmRet.c>0],["رسوم",fm(D.hmOut.fee)+" ج.م"]]],
+    ["مراجعة الجودة","shield",[["اعتُمد",fi(D.qcOk.c)+" قطعة"],["رُفض",fi(D.qcBad.c)+" قطعة",D.qcBad.c>0]]],
     ["التغليف","box",[["غُلِّف",fi(D.pack.c)+" قطعة · "+fi(D.pack.b)+" علبة"],["سُلم للمعلم",fi(D.master.c)+" قطعة · "+fg(D.master.w)+" جم"]]],
     ["التكويد","qr",[["ملصقات",fi(D.labels.c)+" ملصق · "+fi(D.labels.b)+" دفعة"]]],
     ["المبيعات","receipt",[["مُباع",fi(D.sales.c)+" قطعة · "+fm(D.sales.t)+" ج.م"]]]];
@@ -2773,15 +2837,15 @@ const ALL_LEDGER=["bars","strips","casting","moves","sales","payments","counts",
 /* collections a page has to read to show correct balances */
 const GOLD_READ=[...ALL_LEDGER,"staff","orders"];
 const READ_NEEDS={dash:[...ALL_LEDGER,"customers","orders"],review:GOLD_READ,stock:GOLD_READ,bars:GOLD_READ,refine:GOLD_READ,strips:GOLD_READ,casting:GOLD_READ,orders:GOLD_READ,
-  prep:GOLD_READ,hallmark:GOLD_READ,finish:GOLD_READ,workers:["staff","sessions"],presence:GOLD_READ,attendance:GOLD_READ,daily:[...GOLD_READ,"dailies"],
+  prep:GOLD_READ,hallmark:GOLD_READ,qc:GOLD_READ,finish:GOLD_READ,workers:["staff","sessions"],presence:GOLD_READ,attendance:GOLD_READ,daily:[...GOLD_READ,"dailies"],
   count:GOLD_READ,labels:["labels","orders"],sales:["sales","moves","casting","counts","customers","payments"],
   customers:["customers","sales","payments"],reports:[...GOLD_READ,"customers","months","dailies"],settings:[]};
 /* collections a page writes to when its access is "edit" */
-const WRITE_OF={orders:["orders"],stock:["bars"],bars:["bars"],refine:["sessions"],strips:["sessions"],casting:["sessions"],prep:["moves","sessions"],hallmark:["moves","sessions"],finish:["moves","sessions"],count:["counts"],labels:["labels"],sales:["sales"],customers:["customers","payments"],workers:["staff"],attendance:["sessions"],presence:["evals"],daily:["evals","dailies"]};
+const WRITE_OF={orders:["orders"],stock:["bars"],bars:["bars"],refine:["sessions"],strips:["sessions"],casting:["sessions"],prep:["moves","sessions"],hallmark:["moves","sessions"],qc:["moves","sessions"],finish:["moves","sessions"],count:["counts"],labels:["labels"],sales:["sales"],customers:["customers","payments"],workers:["staff"],attendance:["sessions"],presence:["evals"],daily:["evals","dailies"]};
 const PRESETS={
   manager:{label:"مدير",pages:Object.fromEntries(PAGE_LIST.map(p=>[p.k,"edit"])),void:true,settings:true},
   production:{label:"تصنيع وخزنة",pages:{review:"view",stock:"edit",orders:"edit",bars:"edit",refine:"edit",strips:"edit",casting:"edit",labels:"edit",attendance:"edit"}},
-  stages:{label:"المراحل",pages:{prep:"edit",hallmark:"edit",finish:"edit",labels:"edit",attendance:"edit"}},
+  stages:{label:"المراحل",pages:{prep:"edit",hallmark:"edit",qc:"edit",finish:"edit",labels:"edit",attendance:"edit"}},
   supervisor:{label:"مشرف عمال",pages:{review:"view",presence:"edit",workers:"edit",attendance:"edit",daily:"edit"}},
   sales:{label:"مبيعات وحسابات",pages:{sales:"edit",customers:"edit"}},
   viewer:{label:"مشاهد",pages:Object.fromEntries(PAGE_LIST.filter(p=>p.k!=="settings").map(p=>[p.k,"view"]))}
@@ -2941,7 +3005,7 @@ function App(){
   const can=p=>!!perm.owner||perm.pages?.[p]==="edit";
   const role=perm.owner?"manager":"user";
   const go=(p,it)=>{if(!visible.includes(p))return;setPage(p);setIntent(it?{...it,t:Date.now()}:null)};
-  const counts={hallmark:locTotal(L.stock,"hallmark").c,prep:locTotal(L.stock,"prep").c,finish:locTotal(L.stock,"finish").c,orders:openOrders(orders).length,refine:runningOf(L,"refine").length,strips:runningOf(L,"strip").length,casting:runningOf(L,"mfg").length};
+  const counts={qc:locTotal(L.stock,"qc").c,hallmark:locTotal(L.stock,"hallmark").c,prep:locTotal(L.stock,"prep").c,finish:locTotal(L.stock,"finish").c,orders:openOrders(orders).length,refine:runningOf(L,"refine").length,strips:runningOf(L,"strip").length,casting:runningOf(L,"mfg").length};
   const props={L,days,catalog,workers,prices,customers,names,toast,role,perm,go,open:setEntry,intent,config,orders,months,dailies};
   const cur=visible.includes(page)?page:visible[0];
   let body;

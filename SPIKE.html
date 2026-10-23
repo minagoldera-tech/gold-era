@@ -1185,7 +1185,17 @@ tbody tr.row-sel td{background:#FFF8E7;}
         <button onclick="destClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9C9488">✕</button>
       </div>
       <div style="font-size:12px;color:#9C9488;margin-top:2px">راجع الصفوف — تقدر تعدّل أي خانة أو تشيل علامة ✓ من صف مش عايزه — وبعدين اختار تضيفهم فين واضغط موافقة</div>
-      <div style="font-size:13px;font-weight:700;color:#1A1916;margin:12px 0 7px">١. تضيف البيانات دي فين؟</div>
+      <div id="pv-date-box" style="background:#FFF8E7;border:1.5px solid #E8C77A;border-radius:10px;padding:10px 12px;margin-top:12px">
+        <div style="font-size:13px;font-weight:700;color:#1A1916;margin-bottom:7px">١. 📅 عايزهم بتاريخ كام؟ <span style="font-weight:400;color:#9C9488;font-size:12px">— التاريخ اللي تختاره هيتطبق على كل صفوف الملف</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <input type="date" id="pv-date" onchange="pvSetDate(this.value)" style="border:1.5px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:14px;font-family:Cairo,sans-serif;background:#fff;outline:none">
+          <button class="pv-t" id="pv-d-today" style="flex:0 0 auto;min-width:0;padding:7px 14px;font-size:13px" onclick="pvSetDate(today())">النهارده</button>
+          <button class="pv-t" id="pv-d-yest" style="flex:0 0 auto;min-width:0;padding:7px 14px;font-size:13px" onclick="var d=new Date();d.setDate(d.getDate()-1);pvSetDate(d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2))">امبارح</button>
+          <button class="pv-t" id="pv-d-file" style="flex:0 0 auto;min-width:0;padding:7px 14px;font-size:13px" onclick="pvFileDates()">📄 زي تواريخ الملف</button>
+          <span id="pv-d-hint" style="font-size:12px;color:#9C9488"></span>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:#1A1916;margin:12px 0 7px">٢. تضيف البيانات دي فين؟</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="pv-t" id="pv-t-in" onclick="pvSetType('مستلم')">📥 وارد (مستلم)</button>
         <button class="pv-t" id="pv-t-out" onclick="pvSetType('منصرف')">📤 منصرف</button>
@@ -1259,7 +1269,7 @@ function N(n,d){
 function W8(w,k){return w*k/875;}
 function W9(w,k){return w*k/999.9;}
 function W7(w,k){return w*k/750;}
-function today(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
+function today(){return new Date().toISOString().split('T')[0];}
 function el(id){return document.getElementById(id);}
 function txt(id,v){var e=el(id);if(e)e.textContent=v;}
 // تنسيق التاريخ مع كاش — كان أبطأ جزء في السيستم (كان بيتنفذ آلاف المرات مع كل فتح صفحة)
@@ -2605,7 +2615,12 @@ function askDest(rows,source,onDone){
       w875:toNum(r.w875!==undefined?r.w875:r.w21)||W8(w,k),w995:toNum(r.w995)||w*k/999.5,pcs:toNum(r.pcs)||0,inc:true};
   });
   if(!rows.length){toast('⚠️ لا توجد بيانات للإضافة','err');return;}
-  _pv={rows:rows,source:source,onDone:onDone,type:null,show:300};
+  for(var i=0;i<rows.length;i++)rows[i].date0=rows[i].date;
+  _pv={rows:rows,source:source,onDone:onDone,type:null,show:300,dateSet:false,dateMode:null};
+  el('pv-date').value='';
+  var ud={};for(var i=0;i<rows.length;i++)ud[rows[i].date]=1;var udk=Object.keys(ud).sort();
+  txt('pv-d-hint',udk.length===1?('تاريخ الملف: '+udk[0]):('الملف فيه '+udk.length+' تواريخ ('+udk[0]+' → '+udk[udk.length-1]+')'));
+  pvDateUI();
   txt('pv-title','📋 معاينة البيانات قبل الإضافة — من '+source);
   el('pv-all').checked=true;
   pvSetType(null);
@@ -2646,6 +2661,27 @@ function pvSet(i,f,v){
   }
   pvTotals();
 }
+// اختيار تاريخ واحد لكل صفوف الملف المرفوع
+function pvDateUI(){
+  var m=_pv?_pv.dateMode:null,tdy=today(),y=new Date();y.setDate(y.getDate()-1);
+  var yst=y.getFullYear()+'-'+('0'+(y.getMonth()+1)).slice(-2)+'-'+('0'+y.getDate()).slice(-2);
+  el('pv-d-today').className='pv-t'+(m===tdy?' on-in':'');
+  el('pv-d-yest').className='pv-t'+(m===yst?' on-in':'');
+  el('pv-d-file').className='pv-t'+(m==='file'?' on-in':'');
+  var b=el('pv-date-box');if(b){b.style.borderColor=_pv&&_pv.dateSet?'#2D7A4F':'#E8C77A';b.style.background=_pv&&_pv.dateSet?'#EBF5EF':'#FFF8E7';}
+}
+function pvSetDate(v){
+  if(!_pv||!v)return;
+  for(var i=0;i<_pv.rows.length;i++)_pv.rows[i].date=v;
+  _pv.dateSet=true;_pv.dateMode=v;el('pv-date').value=v;
+  pvDateUI();pvRender();
+}
+function pvFileDates(){
+  if(!_pv)return;
+  for(var i=0;i<_pv.rows.length;i++)_pv.rows[i].date=_pv.rows[i].date0||today();
+  _pv.dateSet=true;_pv.dateMode='file';el('pv-date').value='';
+  pvDateUI();pvRender();
+}
 function pvInc(i,c){_pv.rows[i].inc=c;var tr=el('pv-r'+i);if(tr)tr.className=c?'':'pv-off';pvTotals();}
 function pvAll(c){for(var i=0;i<_pv.rows.length;i++)_pv.rows[i].inc=c;pvRender();}
 function pvDel(i){_pv.rows.splice(i,1);pvRender();}
@@ -2665,13 +2701,15 @@ function pvTotals(){
     +'<span>وزن 875: <b style="color:#C8860A">'+N(t8)+'</b> جم</span>'
     +'<span>وزن 995: <b>'+N(t9)+'</b> جم</span>';
   var b=el('pv-ok'),t=_pv.type;
-  if(!t){b.disabled=true;b.textContent='اختار وارد أو منصرف الأول';}
+  if(!_pv.dateSet&&!t){b.disabled=true;b.textContent='اختار التاريخ ووارد أو منصرف الأول';}
+  else if(!_pv.dateSet){b.disabled=true;b.textContent='اختار التاريخ الأول 📅';}
+  else if(!t){b.disabled=true;b.textContent='اختار وارد أو منصرف الأول';}
   else if(!n){b.disabled=true;b.textContent='مفيش صفوف محددة';}
   else{b.disabled=false;b.textContent='✅ موافقة وإضافة '+N(n,0)+' سجل إلى '+(t==='منصرف'?'المنصرف':t==='مرتجع'?'المرتجع':'الوارد');}
 }
 function destClose(){el('dest-modal').style.display='none';_pv=null;}
 function pvApprove(){
-  var P=_pv;if(!P||!P.type)return;
+  var P=_pv;if(!P||!P.type||!P.dateSet)return;
   var type=P.type,isOut=type==='منصرف',now=Date.now(),added=0,base=now*10;
   for(var i=0;i<P.rows.length;i++){
     var r=P.rows[i];
@@ -3078,7 +3116,6 @@ function parseSheetRows(data,fmt){
 }
 function readWorkbookRows(buf){
   var wb=XLSX.read(buf,{type:'array'});
-  _xl1904=!!(wb.Workbook&&wb.Workbook.WBProps&&wb.Workbook.WBProps.date1904);
   for(var s=0;s<wb.SheetNames.length;s++){
     var ws=wb.Sheets[wb.SheetNames[s]];
     var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
@@ -3132,58 +3169,19 @@ function xlProcess2(file){
 }
 function xlParseData2(data){_xlRows2=parseSheetRows(data);if(_xlRows2.length)xlShowPreview2();}
 
-var _xl1904=false;
-var _XL_MONTHS={'يناير':1,'ينار':1,'فبراير':2,'فبراى':2,'مارس':3,'ابريل':4,'أبريل':4,'إبريل':4,'مايو':5,'يونيو':6,'يونيه':6,'يوليو':7,'يوليه':7,'اغسطس':8,'أغسطس':8,'سبتمبر':9,'اكتوبر':10,'أكتوبر':10,'نوفمبر':11,'ديسمبر':12,
-  'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'jul':7,'aug':8,'sep':9,'sept':9,'oct':10,'nov':11,'dec':12};
-function _xlYMD(y,m,d){
-  y=+y;m=+m;d=+d;
-  if(y<100)y+=2000;
-  if(!(m>=1&&m<=12&&d>=1&&d<=31&&y>=1900&&y<=2200))return '';
-  return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-}
-// يقرأ التاريخ زي ما هو مكتوب في خلية الإكسيل بالظبط (بدون فرق توقيت أو قلب يوم/شهر)
 function xlParseDate2(val){
   if(val===''||val===null||val===undefined)return today();
-  if(val instanceof Date&&!isNaN(val))return _xlYMD(val.getFullYear(),val.getMonth()+1,val.getDate())||today();
-  if(typeof val==='number'){
-    if(val>20000&&val<80000){
-      var pc=window.XLSX&&XLSX.SSF&&XLSX.SSF.parse_date_code?XLSX.SSF.parse_date_code(val,{date1904:_xl1904}):null;
-      if(pc)return _xlYMD(pc.y,pc.m,pc.d)||today();
-      var d=new Date(Math.round((Math.floor(val)-25569)*86400*1000));
-      return d.toISOString().split('T')[0];
-    }
-    val=String(val);
+  if(val instanceof Date&&!isNaN(val))return val.toISOString().split('T')[0];
+  if(typeof val==='number'&&val>20000&&val<80000){
+    var d=new Date(Math.round((val-25569)*86400*1000));
+    return d.toISOString().split('T')[0];
   }
-  var s=(val+'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).replace(/[۰-۹]/g,function(c){return c.charCodeAt(0)-1776;})
-    .replace(/[‎‏؜]/g,'').replace(/،/g,',').replace(/ـ/g,'').trim();
-  if(/^\d{5}(\.\d+)?$/.test(s))return xlParseDate2(parseFloat(s));
-  var m=s.match(/(\d{4})\s*[\-\/\.\\]\s*(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})/);
-  if(m)return _xlYMD(m[1],m[2],m[3])||today();
-  m=s.match(/(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})\s*[\-\/\.\\]\s*(\d{2,4})/);
-  if(m){
-    var a1=+m[1],a2=+m[2];
-    // الأساس يوم/شهر/سنة، ولو الرقم التاني أكبر من 12 يبقى الملف شهر/يوم/سنة
-    if(a2>12&&a1<=12){var t=a1;a1=a2;a2=t;}
-    return _xlYMD(m[3],a2,a1)||today();
-  }
-  // تاريخ بأسماء الشهور: 22 أكتوبر 2026 / 22-Oct-26 / Oct 22, 2026
-  var low=s.toLowerCase(),mon=0,key='';
-  for(var k in _XL_MONTHS){if(low.indexOf(k)>=0&&k.length>key.length){key=k;mon=_XL_MONTHS[k];}}
-  if(mon){
-    var nums=low.replace(key,' ').match(/\d+/g)||[];
-    var dd=0,yy=0;
-    for(var i=0;i<nums.length;i++){
-      var n=+nums[i];
-      if(nums[i].length===4)yy=n;
-      else if(!dd&&n>=1&&n<=31)dd=n;
-      else if(!yy)yy=n;
-    }
-    if(!yy)yy=new Date().getFullYear();
-    return _xlYMD(yy,mon,dd||1)||today();
-  }
-  // يوم/شهر بدون سنة
-  m=s.match(/^(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})$/);
-  if(m){var b1=+m[1],b2=+m[2];if(b2>12&&b1<=12){var t2=b1;b1=b2;b2=t2;}return _xlYMD(new Date().getFullYear(),b2,b1)||today();}
+  var s=(val+'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).trim();
+  if(/^\d{5}(\.\d+)?$/.test(s)){var d2=new Date(Math.round((parseFloat(s)-25569)*86400*1000));return d2.toISOString().split('T')[0];}
+  var m=s.match(/(\d{4})[\-\/\.](\d{1,2})[\-\/\.](\d{1,2})/);
+  if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  m=s.match(/(\d{1,2})[\-\/\.](\d{1,2})[\-\/\.](\d{2,4})/);
+  if(m){var y=m[3].length===2?'20'+m[3]:m[3];return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');}
   return today();
 }
 

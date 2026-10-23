@@ -975,7 +975,7 @@ const NAV=[
   ["المراحل",[["prep","التجهيز"],["hallmark","الدمغة"],["finish","التشطيب"]]],
   ["المخزون",[["count","الجرد والتسويات"],["labels","ملصقات QR"]]],
   ["التجارة",[["sales","المبيعات"],["customers","العملاء والحسابات"]]],
-  ["العمال",[["workers","العمال والأقسام"],["attendance","وقت العمل"],["daily","التقرير اليومي"]]],
+  ["العمال",[["workers","العمال والأقسام"],["presence","الحضور والانصراف"],["attendance","وقت العمل"],["daily","التقرير اليومي"]]],
   ["الإدارة",[["reports","التقارير"],["settings","الإعدادات"]]]
 ];
 const JOBS={
@@ -1019,7 +1019,8 @@ const addDays=(k,i)=>{const [y,m,d]=k.split("-").map(Number);return dkey(new Dat
 const tme=iso=>{try{const d=new Date(iso);return pad(d.getHours())+":"+pad(d.getMinutes())}catch(e){return""}};
 const newId=()=>(crypto.randomUUID?crypto.randomUUID().replace(/-/g,"").slice(0,16):Math.random().toString(36).slice(2,12)+Date.now().toString(36));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const MAPS=["bars","strips","casting","moves","sales","payments","counts","labels","sessions","evals"];
+const MAPS=["bars","strips","casting","moves","sales","payments","counts","labels","sessions","evals","attend","pen"];
+const MAP_COLL={attend:"evals",pen:"evals"};
 
 function buildLedger(days,catalog,until){
   const all=[];
@@ -1094,7 +1095,7 @@ async function addEntry(map,body,k=today()){
 }
 async function voidEntry(e,reason){
   if(!S.db)throw {code:"no_db"};
-  await S.db.doc(e._map+"/"+e._date).update({[e._map]:{[e.id]:{void:true,voidReason:reason||"",voidBy:S.uid||null,voidAt:new Date().toISOString()}}});
+  await S.db.doc((MAP_COLL[e._map]||e._map)+"/"+e._date).update({[e._map]:{[e.id]:{void:true,voidReason:reason||"",voidBy:S.uid||null,voidAt:new Date().toISOString()}}});
 }
 const errText=e=>{const c=e&&e.code;
   if(c==="no_db")return "قاعدة البيانات غير متاحة. تحقق من إعداد config.js.";
@@ -1107,7 +1108,7 @@ const errText=e=>{const c=e&&e.code;
 /* ---------- icons ---------- */
 const IP={
   dash:"M4 4h6v8H4zM14 4h6v5h-6zM14 13h6v7h-6zM4 16h6v4H4z",
-  bar:"M3 19h18l-3.5-9h-11zM8.5 10l1.5-4h4l1.5 4",drop:"M12 3c3 4.5 6 7.8 6 11a6 6 0 0 1-12 0c0-3.2 3-6.5 6-11z",
+  door:"M5 21V4h9v17M14 5l5 2v14M3 21h18M11 12v1.5",bar:"M3 19h18l-3.5-9h-11zM8.5 10l1.5-4h4l1.5 4",drop:"M12 3c3 4.5 6 7.8 6 11a6 6 0 0 1-12 0c0-3.2 3-6.5 6-11z",
   strips:"M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5",
   flame:"M12 3c.6 3 4.5 5 4.5 10a4.5 4.5 0 0 1-9 0c0-2.4 1.4-3.7 2.2-5.6.8 1.1 1.4 2.3 1.5 3.6 1.4-2 1.6-5 .8-8z",
   prep:"M20 12a8 8 0 1 1-2.4-5.7L20 8.5M20 3.5v5h-5",
@@ -1132,8 +1133,8 @@ const IP={
   arrow:"M5 12h14M13 6l6 6-6 6",clip:"M9 4h6v3H9zM7 5.5H5.5V21h13V5.5H17M8.5 12l2 2 4-4M8.5 17h7",info:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5.5M12 7.6v.1"
 };
 const I=({n,s})=>html`<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style=${s?{width:s+"px",height:s+"px"}:null}><path d=${IP[n]}/></svg>`;
-const NAV_ICON={dash:"dash",review:"eye",refine:"drop",bars:"bar",strips:"strips",casting:"flame",prep:"prep",hallmark:"stamp",finish:"finish",stock:"box",sales:"receipt",customers:"users",reports:"chart",settings:"gear",orders:"clip",count:"check",labels:"qr",workers:"users",attendance:"clock",daily:"clip"};
-const MAP_ICON={bars:"bar",strips:"strips",casting:"flame",moves:"arrow",sales:"receipt",payments:"wallet",counts:"check",labels:"qr",sessions:"clock",evals:"check"};
+const NAV_ICON={presence:"door",dash:"dash",review:"eye",refine:"drop",bars:"bar",strips:"strips",casting:"flame",prep:"prep",hallmark:"stamp",finish:"finish",stock:"box",sales:"receipt",customers:"users",reports:"chart",settings:"gear",orders:"clip",count:"check",labels:"qr",workers:"users",attendance:"clock",daily:"clip"};
+const MAP_ICON={attend:"door",pen:"alert",bars:"bar",strips:"strips",casting:"flame",moves:"arrow",sales:"receipt",payments:"wallet",counts:"check",labels:"qr",sessions:"clock",evals:"check"};
 const PAGE_GROUP=Object.fromEntries(NAV.flatMap(([g,items])=>items.map(([k])=>[k,g])));
 const BADGE_TONE={prep:"gold",recv:"warn",dlv:"ok",done:"ok",ret:"bad","":"plain"};
 
@@ -1208,6 +1209,8 @@ function fieldsOf(e,catalog,customers){const it=catalog[e.item]?.name;const F=[]
       if(GOLD_JOBS.includes(e.job)){g("من",POOL[e.src||JOBS[e.job].src[0]]);g("الوزنة المستلمة",fg(n(e.inW))+" جم عيار "+fi(n(e.inK)||1000));if(e.serial)g("السبيكة",e.serial);
         if(e.end){if(e.job==="mfg"){g("الأصناف",jobItems(e,catalog)||"—");g("وزن الأصناف",fg(jobOut(e))+" جم");if(n(e.castW))g("وزنة السبك",fg(n(e.castW)));if(n(e.cutW))g("وزنة التقطيع",fg(n(e.cutW)));if(n(e.added))g("إضافة للعيار",fg(n(e.added)))}else g("الناتج",fg(n(e.outW))+" جم");
           g("المرتجع",fg(n(e.retW))+" جم");g("الخسية",fg(n(e.loss))+" جم")}}if(it)g("الصنف",it);g("البداية",String(e.start||"").slice(0,16).replace("T"," "));g("النهاية",e.end?String(e.end).slice(0,16).replace("T"," "):"جارية");g("المدة",fh(sesHours(e)));if(e.end&&!GOLD_JOBS.includes(e.job)){g("القطع",fi(n(e.pcs)));g("الوزن",fg(n(e.weight))+" جم")}break;
+    case "attend":g("العامل",e.wname||"—");g("الحالة",(ATT[e.status]||ATT.present)[0]);if(e.in)g("الحضور",hhmm(e.in));if(e.out)g("الانصراف",hhmm(e.out));break;
+    case "pen":g("العامل",e.wname||"—");g("النوع",e.kind||"—");if(n(e.days))g("خصم",fg(n(e.days))+" يوم");if(n(e.amount))g("مبلغ",fm(n(e.amount))+" ج.م");if(e.reason)g("السبب",e.reason);break;
     case "evals":g("العامل",e.wname||"—");g("التقييم",RATING[e.rating]?.[0]||"—");break;
     case "labels":g("الكود",e.prefix+"-001 … -"+String(n(e.count)).padStart(3,"0"));g("النوع",e.kind==="box"?"علب":"قطع");g("الصنف",it||"—");g("عدد الملصقات",fi(n(e.count)));if(e.perBox)g("قطع في العلبة",fi(n(e.perBox)));g("الوزن لكل ملصق",fg(n(e.weightEach))+" جم");break;
   }if(e.note)g("ملاحظة",e.note);return F}
@@ -1233,7 +1236,7 @@ function EntrySheet({e,L,catalog,customers,names,role,perm,onClose,toast}){
     ${ask&&html`<${F} label="سبب الإلغاء" hint="يظهر في سجل التدقيق ولا يمكن التراجع عنه"><textarea id="void-reason" class="in" value=${reason} onInput=${x=>setReason(x.target.value)}></textarea></${F}>`}
   </${Sheet}>`;
 }
-const MAP_TITLE={bars:"سبيكة",strips:"قيد شرايط (قديم)",casting:"صف سبك وتقطيع",moves:"حركة مرحلة",sales:"فاتورة بيع",payments:"تحصيل",counts:"جرد وتسوية",labels:"دفعة ملصقات",sessions:"جلسة عمل",evals:"تقييم يومي"};
+const MAP_TITLE={bars:"سبيكة",strips:"قيد شرايط (قديم)",casting:"صف سبك وتقطيع",moves:"حركة مرحلة",sales:"فاتورة بيع",payments:"تحصيل",counts:"جرد وتسوية",labels:"دفعة ملصقات",sessions:"جلسة عمل",evals:"تقييم يومي",attend:"حضور وانصراف",pen:"جزاء"};
 const voidCls=r=>r.void?"void":"";
 const stCol=()=>({key:"st",label:"",sort:false,cls:"keep",render:r=>r.void?html`<${Badge} tone="bad">ملغى</${Badge}>`:null});
 
@@ -1333,6 +1336,8 @@ function describe(e,catalog,customers){
     case "counts":{const ls=e.lines||[];const dw=ls.reduce((a,l)=>a+n(l.dw),0);return "جرد "+((COUNT_LOCS.find(x=>x[0]===e.loc)||[0,""])[1])+" — "+ls.length+" صنف، فرق "+fg(dw)+" جم"}
     case "labels":return "ملصقات "+e.prefix+" — "+fi(n(e.count))+" × "+it;
     case "sessions":if(GOLD_JOBS.includes(e.job))return (e.end?"استلام من ":"تسليم ")+(e.wname||"")+" — "+JOBS[e.job].label+" "+fg(n(e.inW))+" جم"+(e.end?" · خسية "+fg(n(e.loss)):"");return (e.end?"جلسة ":"بدء وقت ")+(e.wname||"")+" — "+(e.task||"")+(e.end?" · "+fh(sesHours(e))+" · "+fi(n(e.pcs))+" قطعة":"");
+    case "attend":return (e.in?"حضور ":"")+(e.wname||"")+(e.in?" "+hhmm(e.in):" — "+((ATT[e.status]||[""])[0]))+(e.out?" · انصراف "+hhmm(e.out):"");
+    case "pen":return "جزاء "+(e.wname||"")+": "+(e.kind||"")+(n(e.days)?" "+fg(n(e.days))+" يوم":"")+(n(e.amount)?" "+fm(n(e.amount))+" ج.م":"");
     case "evals":return "تقييم "+(e.wname||"")+": "+(RATING[e.rating]?.[0]||"")+(e.note?" — "+e.note:"");
   }return "";
 }
@@ -1687,7 +1692,7 @@ function StockPage({L,catalog,can,toast,go}){
 }
 
 /* ---------- المراجعة: the whole day, live ---------- */
-function ReviewPage({L,days,catalog,workers,config,go}){
+function ReviewPage({L,days,catalog,workers,config,go,dailies}){
   useTick(1000);const [d,setD]=useState(today());const limit=n(config.khisyaLimit)||0.5;const isT=d===today();
   const O=useMemo(()=>buildLedger(days,catalog,addDays(d,-1)),[days,catalog,d]);
   const C=useMemo(()=>isT?L:buildLedger(days,catalog,d),[days,catalog,d,L,isT]);
@@ -1754,12 +1759,184 @@ function ReviewPage({L,days,catalog,workers,config,go}){
         <${DataTable} cols=${[{key:"wname",label:"العامل",render:r=>html`<span class="strong">${r.wname}</span><span class="sub">${JOBS[r.job]?.label||r.task||""}</span>`},{key:"inW",label:"الوزنة",num:1,get:r=>n(r.inW),render:r=>n(r.inW)?fg(n(r.inW)):(r.count?fi(n(r.count))+" قطعة":"—")},{key:"t",label:"الوقت",num:1,get:r=>Date.now()-new Date(r.start),render:r=>html`<span class="strong timer">${fhs(Date.now()-new Date(r.start))}</span>`}]} rows=${running} pageSize=${12} empty=${html`<${Empty} icon="clock" t="لا يوجد عمال شغالين" s=""/>`}/>
       </${Card}>
     </div>
+    <${DaysArchive} L=${L} days=${days} dailies=${dailies} catalog=${catalog} onOpen=${x=>{setD(x);window.scrollTo(0,0)}}/>
   </${React.Fragment}>`;
+}
+
+/* ---------- الحضور والانصراف والجزاءات ---------- */
+const DAYS_AR=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const schedOf=c=>({start:c.workStart||"09:00",end:c.workEnd||"17:00",grace:c.grace!=null&&c.grace!==""?n(c.grace):15,off:Array.isArray(c.offDays)?c.offDays.map(Number):[5],
+  absPen:c.absPen!=null&&c.absPen!==""?n(c.absPen):1,latePen:c.latePen!=null&&c.latePen!==""?n(c.latePen):0.25,lateFree:c.lateFree!=null&&c.lateFree!==""?n(c.lateFree):0});
+const dowOf=d=>{const [y,m,x]=d.split("-").map(Number);return new Date(y,m-1,x).getDay()};
+const minsOf=t=>{const [h,m]=String(t||"0:0").split(":").map(Number);return (h||0)*60+(m||0)};
+const isoMins=iso=>{const d=new Date(iso);return d.getHours()*60+d.getMinutes()};
+const ATT={present:["حاضر","ok"],late:["متأخر","warn"],absent:["غائب","bad"],leave:["إجازة / إذن","info"],sick:["مرضي","info"],off:["راحة","plain"],pending:["لم يحضر بعد","plain"],none:["لا يوجد تسجيل","plain"]};
+const PEN_KINDS=["تأخير","غياب","تخلف عن العمل","انصراف مبكر","مخالفة","أخرى"];
+const attendOf=(L,d)=>Object.fromEntries(L.live.filter(e=>e._map==="attend"&&e._date===d).map(e=>[e.worker,e]));
+const takenDays=L=>new Set(L.live.filter(e=>e._map==="attend").map(e=>e._date));
+function dayStatus(w,a,d,S,taken){
+  if(w.joined&&d<w.joined)return null;
+  const off=S.off.includes(dowOf(d));
+  if(a&&["absent","leave","sick"].includes(a.status))return {st:a.status,late:0,h:0,early:0,a};
+  if(a&&a.in){const raw=Math.max(0,isoMins(a.in)-minsOf(S.start));const late=raw>S.grace?raw:0;
+    const end=a.out?new Date(a.out):(d===today()?new Date():null);const h=end?Math.max(0,hrs(end-new Date(a.in))):0;
+    const early=a.out?Math.max(0,minsOf(S.end)-isoMins(a.out)):0;
+    return {st:late?"late":"present",late,h,early,a,off,open:!a.out}}
+  if(off)return {st:"off",late:0,h:0,early:0};
+  if(d>=today())return {st:"pending",late:0,h:0,early:0};
+  if(!taken||!taken.has(d))return {st:"none",late:0,h:0,early:0};
+  return {st:"absent",auto:true,late:0,h:0,early:0};
+}
+async function saveAttend(d,w,patch){const ref=await ensureDay("evals",d);await ref.update({attend:{[w.id]:{id:w.id,worker:w.id,wname:w.name,...patch,ts:new Date().toISOString(),by:S.uid}}})}
+async function savePen(d,body){const ref=await ensureDay("evals",d);const id=body.id||newId();await ref.update({pen:{[id]:{...body,id,ts:new Date().toISOString(),by:S.uid}}})}
+const nowHM=()=>{const x=new Date();return pad(x.getHours())+":"+pad(x.getMinutes())};
+
+function PresencePage({L,workers,config,can,toast,go,open}){
+  useTick(30000);const Sd=schedOf(config);const [d,setD]=useState(today());const [ed,setEd]=useState(null);const [pen,setPen]=useState(null);const [busy,setBusy]=useState(false);
+  const att=attendOf(L,d);const taken=takenDays(L);const isT=d===today();
+  const rows=workerList(workers,true).map(w=>({id:w.id,w,s:dayStatus(w,att[w.id],d,Sd,taken)})).filter(r=>r.s);
+  const cnt=k=>rows.filter(r=>r.s.st===k).length;const inNow=rows.filter(r=>r.s.open&&isT).length;
+  const pens=L.all.filter(e=>e._map==="pen"&&e._date===d);
+  const act=async(w,patch,msg)=>{setBusy(true);try{await saveAttend(d,w,patch);toast(msg)}catch(e){toast(errText(e))}setBusy(false)};
+  const allIn=async()=>{setBusy(true);try{const t=new Date().toISOString();for(const r of rows.filter(r=>r.s.st==="pending"))await saveAttend(d,r.w,{status:"present",in:t,out:null});toast("سُجل حضور الكل")}catch(e){toast(errText(e))}setBusy(false)};
+  const cols=[{key:"name",label:"العامل",get:r=>r.w.name,render:r=>html`<span class="strong">${r.w.name}</span><span class="sub">${wDept(r.w)}</span>`},
+    {key:"st",label:"الحالة",get:r=>r.s.st,cls:"keep",render:r=>html`<${Badge} tone=${ATT[r.s.st][1]}>${ATT[r.s.st][0]}${r.s.auto?" (بدون إذن)":""}</${Badge}>${r.s.a&&r.s.a.note?html`<span class="sub">${r.s.a.note}</span>`:""}`},
+    {key:"in",label:"الحضور",get:r=>r.s.a&&r.s.a.in||"",render:r=>r.s.a&&r.s.a.in?html`<span class="num">${hhmm(r.s.a.in)}</span>`:"—"},
+    {key:"out",label:"الانصراف",get:r=>r.s.a&&r.s.a.out||"",render:r=>r.s.a&&r.s.a.out?html`<span class="num">${hhmm(r.s.a.out)}</span>${r.s.early?html`<span class="sub" style=${{color:"var(--warn)"}}>مبكر ${fi(r.s.early)} د</span>`:""}`:(r.s.open?html`<${Badge} tone="ok">موجود</${Badge}>`:"—")},
+    {key:"late",label:"تأخير",num:1,get:r=>r.s.late,render:r=>r.s.late?html`<span class="neg">${fi(r.s.late)} د</span>`:"—"},
+    {key:"h",label:"ساعات",num:1,get:r=>r.s.h,render:r=>r.s.h?fh(r.s.h):"—"},
+    {key:"act",label:"",sort:false,cls:"keep",render:r=>can?html`<span style=${{display:"inline-flex",gap:"4px"}} onClick=${e=>e.stopPropagation()}>
+      ${!(r.s.a&&r.s.a.in)&&!["absent","leave","sick"].includes(r.s.a&&r.s.a.status)&&html`<button class="btn sm p" disabled=${busy} onClick=${()=>act(r.w,{status:"present",in:isT?new Date().toISOString():atTime(d,Sd.start),out:null},"حضور "+r.w.name)}>حضور</button>`}
+      ${r.s.open&&html`<button class="btn sm" disabled=${busy} onClick=${()=>act(r.w,{out:isT?new Date().toISOString():atTime(d,Sd.end)},"انصراف "+r.w.name)}>انصراف</button>`}
+      <button class="btn sm ghost" onClick=${()=>setEd(r)}>تعديل</button>
+      <button class="btn sm ghost" onClick=${()=>setPen({worker:r.w.id,kind:r.s.st==="absent"?"غياب":r.s.st==="late"?"تأخير":"مخالفة"})}>جزاء</button></span>`:null}];
+  return html`<${React.Fragment}>
+    <${PH} title="الحضور والانصراف" desc=${"مواعيد العمل "+Sd.start+" ← "+Sd.end+" · سماح "+Sd.grace+" دقيقة · راحة "+Sd.off.map(x=>DAYS_AR[x]).join("، ")}>
+      <button class="btn sm" onClick=${()=>setD(addDays(d,-1))}>اليوم السابق</button><input id="pr-d" type="date" class="in" style=${{width:"auto",height:"36px"}} value=${d} max=${today()} onChange=${e=>setD(e.target.value||today())} aria-label="اليوم"/><button class="btn sm" disabled=${isT} onClick=${()=>setD(addDays(d,1))}>التالي</button>
+      ${can&&cnt("pending")>0&&html`<button class="btn p" disabled=${busy} onClick=${allIn}><${I} n="check"/>حضور الكل (${fi(cnt("pending"))})</button>`}</${PH}>
+    ${!can&&html`<${ReadOnly}/>`}
+    <div class="kpis six">
+      <${Kpi} icon="users" label="حاضر" value=${fi(cnt("present")+cnt("late"))} sub=${DAYS_AR[dowOf(d)]+" "+d}/>
+      <${Kpi} icon="clock" label="متأخر" value=${fi(cnt("late"))} alert=${cnt("late")>0}/>
+      <${Kpi} icon="ban" label="غائب" value=${fi(cnt("absent"))} alert=${cnt("absent")>0}/>
+      <${Kpi} icon="info" label="إجازة / إذن / مرضي" value=${fi(cnt("leave")+cnt("sick"))}/>
+      <${Kpi} icon="check" label=${isT?"موجودين الآن":"لم يُسجل انصرافهم"} value=${fi(rows.filter(r=>r.s.open).length)}/>
+      <${Kpi} icon="alert" label="جزاءات اليوم" value=${fi(pens.filter(p=>!p.void).length)} sub=${fg(pens.filter(p=>!p.void).reduce((a,p)=>a+n(p.days),0))+" يوم خصم"}/>
+    </div>
+    <${Card} title=${"حضور يوم "+d} sub=${isT?"«حضور» و«انصراف» بيتسجلوا بالوقت الحالي — «تعديل» لكتابة الوقت يدوياً":"يوم سابق — «حضور» بيكتب ميعاد بداية العمل، وتقدر تعدّل"}>
+      <${DataTable} cols=${cols} rows=${rows} sort=${["st","asc"]} pageSize=${60} searchPh="اسم العامل" empty=${html`<${Empty} icon="users" t="لا يوجد عمال نشطون" s="أضف العمال من «العمال والأقسام»."/>`}/>
+    </${Card}>
+    <${Card} title="الجزاءات" sub=${"يوم "+d} actions=${can&&html`<button class="btn sm" onClick=${()=>setPen({})}><${I} n="plus"/>جزاء جديد</button>`}>
+      <${DataTable} cols=${[{key:"wname",label:"العامل"},{key:"kind",label:"النوع",render:r=>html`<${Badge} tone="bad">${r.kind}</${Badge}>`,cls:"keep"},{key:"days",label:"خصم (يوم)",num:1,get:r=>n(r.days),render:r=>n(r.days)?fg(n(r.days)):"—"},{key:"amount",label:"مبلغ (ج.م)",num:1,get:r=>n(r.amount),render:r=>n(r.amount)?fm(n(r.amount)):"—"},{key:"reason",label:"السبب",cls:"wrap"},stCol()]} rows=${pens} rowCls=${voidCls} onRow=${open} empty=${html`<${Empty} icon="check" t="لا توجد جزاءات في هذا اليوم" s=""/>`}/>
+    </${Card}>
+    ${ed&&html`<${AttendSheet} r=${ed} d=${d} S=${Sd} toast=${toast} onClose=${()=>setEd(null)}/>`}
+    ${pen&&html`<${PenSheet} init=${pen} d=${d} workers=${workers} toast=${toast} onClose=${()=>setPen(null)}/>`}
+  </${React.Fragment}>`;
+}
+function AttendSheet({r,d,S:Sd,toast,onClose}){
+  const a=r.s.a||{};const [st,setSt]=useState(["absent","leave","sick"].includes(a.status)?a.status:"present");
+  const [tin,setTin]=useState(a.in?hhmm(a.in):(d===today()?nowHM():Sd.start));const [tout,setTout]=useState(a.out?hhmm(a.out):"");const [note,setNote]=useState(a.note||"");
+  const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
+  const save=async()=>{setErr("");const patch={status:st,note:note.trim()};
+    if(st==="present"){if(!tin)return setErr("اكتب وقت الحضور.");patch.in=atTime(d,tin);patch.out=tout?atTime(d,tout):null;if(patch.out&&patch.out<=patch.in)return setErr("الانصراف قبل الحضور.")}else{patch.in=null;patch.out=null}
+    setBusy(true);try{await saveAttend(d,r.w,patch);toast("حُفظ حضور "+r.w.name);onClose()}catch(e){setErr(errText(e))}setBusy(false)};
+  return html`<${Sheet} title=${"حضور "+r.w.name} sub=${DAYS_AR[dowOf(d)]+" "+d} onClose=${onClose} footer=${html`<span class="msg">${err}</span><button class="btn" onClick=${onClose}>إلغاء</button><button class="btn p" disabled=${busy} onClick=${save}><${I} n="check"/>حفظ</button>`}>
+    <${F} full label="الحالة"><${Seg} opts=${[["present","حاضر"],["absent","غائب"],["leave","إجازة / إذن"],["sick","مرضي"]]} value=${st} set=${setSt}/></${F}>
+    ${st==="present"&&html`<div class="fg"><${F} label="وقت الحضور"><input id="at-in" type="time" class="in nm" value=${tin} onChange=${e=>setTin(e.target.value)}/></${F}><${F} label="وقت الانصراف" hint="فاضي = لسه موجود"><input id="at-out" type="time" class="in nm" value=${tout} onChange=${e=>setTout(e.target.value)}/></${F}></div>`}
+    <${F} full label="ملاحظة"><input id="at-note" class="in" value=${note} onInput=${e=>setNote(e.target.value)} placeholder=${st==="leave"?"سبب الإذن":""}/></${F}>
+    ${st==="present"&&tin&&html`<${Calc} items=${[["التأخير",Math.max(0,minsOf(tin)-minsOf(Sd.start))>Sd.grace?fi(minsOf(tin)-minsOf(Sd.start))+" دقيقة":"—",minsOf(tin)-minsOf(Sd.start)>Sd.grace?"neg":""],["الساعات",tout?fh((minsOf(tout)-minsOf(tin))/60):"—","hl"],["انصراف مبكر",tout&&minsOf(Sd.end)>minsOf(tout)?fi(minsOf(Sd.end)-minsOf(tout))+" دقيقة":"—"]]}/>`}
+  </${Sheet}>`;
+}
+function PenSheet({init,d,workers,toast,onClose}){
+  const [f,setF]=useState({worker:init.worker||"",kind:init.kind||PEN_KINDS[0],days:init.kind==="غياب"?"1":init.kind==="تأخير"?"0.25":"",amount:"",reason:""});
+  const [err,setErr]=useState("");const [busy,setBusy]=useState(false);const up=(k,v)=>setF(o=>({...o,[k]:v}));
+  const save=async()=>{setErr("");const w=workers[f.worker];if(!w)return setErr("اختر العامل.");if(n(f.days)<=0&&n(f.amount)<=0)return setErr("اكتب الخصم بالأيام أو بالمبلغ.");
+    setBusy(true);try{await savePen(d,{worker:w.id,wname:w.name,kind:f.kind,days:n(f.days),amount:n(f.amount),reason:f.reason.trim()});toast("سُجل جزاء "+w.name);onClose()}catch(e){setErr(errText(e))}setBusy(false)};
+  return html`<${Sheet} title="جزاء" sub=${d} onClose=${onClose} footer=${html`<span class="msg">${err}</span><button class="btn" onClick=${onClose}>إلغاء</button><button class="btn p" disabled=${busy} onClick=${save}><${I} n="check"/>حفظ الجزاء</button>`}>
+    <div class="fg">
+      <${F} full label="العامل"><${WorkerSel} id="pn-w" workers=${workers} value=${f.worker} set=${v=>up("worker",v)}/></${F}>
+      <${F} full label="النوع"><div class="chips">${PEN_KINDS.map(k=>html`<button type="button" key=${k} class="chip" aria-pressed=${f.kind===k?"true":"false"} onClick=${()=>up("kind",k)}>${k}</button>`)}</div></${F}>
+      <${F} label="خصم بالأيام" hint="مثال: 0.25 ربع يوم · 1 يوم"><${Num} id="pn-d" ph="0" value=${f.days} set=${v=>up("days",v)}/></${F}>
+      <${F} label="أو مبلغ (ج.م)"><${Num} id="pn-a" ph="0" value=${f.amount} set=${v=>up("amount",v)}/></${F}>
+      <${F} full label="السبب"><input id="pn-r" class="in" value=${f.reason} onInput=${e=>up("reason",e.target.value)}/></${F}>
+    </div>
+  </${Sheet}>`;
+}
+
+/* monthly: attendance, absence, lateness, penalties, and work done in that time */
+function monthDays(ym){const [y,m]=ym.split("-").map(Number);const n2=new Date(y,m,0).getDate();const t=today();return [...Array(n2)].map((_,i)=>ym+"-"+pad(i+1)).filter(d=>d<=t)}
+function workerMonth(L,w,ym,Sd,taken){
+  const D=monthDays(ym);const att={};L.live.filter(e=>e._map==="attend"&&e.worker===w.id&&ymOf(e._date)===ym).forEach(e=>att[e._date]=e);
+  const ses=L.live.filter(e=>e._map==="sessions"&&e.worker===w.id&&ymOf(e._date)===ym);
+  const pens=L.live.filter(e=>e._map==="pen"&&e.worker===w.id&&ymOf(e._date)===ym);
+  const rows=D.map(d=>{const s=dayStatus(w,att[d],d,Sd,taken);if(!s)return null;const sd=ses.filter(e=>e._date===d);
+    return {d,s,wh:sd.reduce((a,e)=>a+sesHours(e),0),pcs:sd.reduce((a,e)=>a+n(e.pcs),0),wt:sd.reduce((a,e)=>a+n(e.weight),0),loss:sd.reduce((a,e)=>a+(e.end?n(e.loss):0),0),pen:pens.filter(p=>p._date===d)}}).filter(Boolean);
+  const c=k=>rows.filter(r=>r.s.st===k).length;
+  const present=c("present")+c("late"),absent=c("absent"),leave=c("leave")+c("sick"),lateN=c("late"),lateM=rows.reduce((a,r)=>a+r.s.late,0);
+  const workDays=rows.filter(r=>!["off","none","pending"].includes(r.s.st)).length;
+  const ah=rows.reduce((a,r)=>a+r.s.h,0),wh=rows.reduce((a,r)=>a+r.wh,0),pcs=rows.reduce((a,r)=>a+r.pcs,0),wt=rows.reduce((a,r)=>a+r.wt,0),loss=rows.reduce((a,r)=>a+r.loss,0);
+  /* automatic deductions, unless a manual penalty of the same kind was already recorded for that day */
+  const hasPen=(r,ks)=>r.pen.some(p=>ks.includes(p.kind));let lateSeen=0,autoDays=0;
+  rows.forEach(r=>{if(r.s.st==="absent"&&!hasPen(r,["غياب","تخلف عن العمل"])){r.auto=Sd.absPen;autoDays+=Sd.absPen}
+    else if(r.s.st==="late"){lateSeen++;if(lateSeen>Sd.lateFree&&!hasPen(r,["تأخير"])){r.auto=Sd.latePen;autoDays+=Sd.latePen}}});
+  const manDays=pens.reduce((a,p)=>a+n(p.days),0),manAmt=pens.reduce((a,p)=>a+n(p.amount),0);
+  const totDays=autoDays+manDays;const wage=n(w.wage);
+  return {id:w.id,w,rows,workDays,present,absent,leave,lateN,lateM,ah,wh,pcs,wt,loss,util:ah?wh/ah*100:0,autoDays,manDays,manAmt,totDays,amount:wage?totDays*wage+manAmt:manAmt,pens}
+}
+function AttendMonth({L,workers,config,toast}){
+  const Sd=schedOf(config);const [ym,setYm]=useState(ymOf(today()));const [view,setView]=useState(null);const taken=takenDays(L);
+  const rows=workerList(workers).filter(w=>w.active!==false||L.live.some(e=>(e._map==="attend"||e._map==="sessions")&&e.worker===w.id&&ymOf(e._date)===ym)).map(w=>workerMonth(L,w,ym,Sd,taken));
+  const cols=[{key:"name",label:"العامل",get:r=>r.w.name,render:r=>html`<span class="strong">${r.w.name}</span><span class="sub">${wDept(r.w)}</span>`},
+    {key:"present",label:"حضور",num:1,render:r=>html`${fi(r.present)}<span class="sub">من ${fi(r.workDays)} يوم</span>`},
+    {key:"absent",label:"غياب",num:1,render:r=>r.absent?html`<span class="neg strong">${fi(r.absent)}</span>`:"—"},
+    {key:"leave",label:"إجازة/إذن",num:1,render:r=>r.leave?fi(r.leave):"—"},
+    {key:"lateN",label:"تأخير",num:1,render:r=>r.lateN?html`${fi(r.lateN)} مرة<span class="sub">${fi(r.lateM)} دقيقة</span>`:"—"},
+    {key:"ah",label:"ساعات حضور",num:1,render:r=>r.ah?fh(r.ah):"—"},
+    {key:"wh",label:"ساعات شغل",num:1,render:r=>r.wh?html`${fh(r.wh)}${r.ah>=0.25?html`<span class="sub">${Math.min(100,r.util).toFixed(0)}% من الحضور</span>`:""}`:"—"},
+    {key:"pcs",label:"أنتج",num:1,render:r=>r.pcs||r.wt?html`${fi(r.pcs)} قطعة<span class="sub">${fg(r.wt)} جم</span>`:"—"},
+    {key:"loss",label:"خسية",num:1,render:r=>r.loss?fg(r.loss):"—"},
+    {key:"totDays",label:"الجزاءات",num:1,render:r=>r.totDays||r.manAmt?html`<span class="neg strong">${fg(r.totDays)} يوم</span>${r.amount?html`<span class="sub">${fm(r.amount)} ج.م</span>`:""}`:"—"}];
+  const exportCsv=async()=>{const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';const out=[["الحضور والجزاءات",monthName(ym)],["العامل","الأقسام","أيام العمل","حضور","غياب","إجازة/إذن","مرات التأخير","دقائق التأخير","ساعات الحضور","ساعات الشغل","القطع","الوزن","الخسية","جزاء تلقائي (يوم)","جزاء يدوي (يوم)","إجمالي الخصم (يوم)","المبلغ (ج.م)"]];
+    rows.forEach(r=>out.push([r.w.name,wDept(r.w),r.workDays,r.present,r.absent,r.leave,r.lateN,r.lateM,fh(r.ah),fh(r.wh),r.pcs,r2(r.wt),r2(r.loss),r2(r.autoDays),r2(r.manDays),r2(r.totDays),r2(r.amount)]));
+    out.push([],["العامل","اليوم","الحالة","الحضور","الانصراف","تأخير (د)","ساعات الحضور","ساعات الشغل","القطع","الجزاء"]);
+    rows.forEach(r=>r.rows.forEach(x=>out.push([r.w.name,x.d,ATT[x.s.st][0],x.s.a&&x.s.a.in?hhmm(x.s.a.in):"",x.s.a&&x.s.a.out?hhmm(x.s.a.out):"",x.s.late||"",x.s.h?fh(x.s.h):"",x.wh?fh(x.wh):"",x.pcs||"",x.pen.map(p=>p.kind+" "+(n(p.days)?p.days+" يوم":"")+(n(p.amount)?" "+p.amount+" ج.م":"")).join(" / ")])));
+    try{const dl=await platform.use("downloads");await dl.save({filename:"gold-era-attendance-"+ym+".csv",data:"﻿"+out.map(r=>r.map(q).join(",")).join("\r\n")})}catch(e){if(e&&e.code!=="declined")toast("تعذر التصدير.")}};
+  const T=rows.reduce((a,r)=>({p:a.p+r.present,ab:a.ab+r.absent,l:a.l+r.lateN,d:a.d+r.totDays,wh:a.wh+r.wh,ah:a.ah+r.ah}),{p:0,ab:0,l:0,d:0,wh:0,ah:0});
+  return html`<${React.Fragment}>
+    <div class="ph__a" style=${{justifyContent:"space-between"}}><div class="ph__a"><button class="btn sm" onClick=${()=>setYm(addMonths(ym,-1))}>الشهر السابق</button><b style=${{minWidth:"120px",textAlign:"center"}}>${monthName(ym)}</b><button class="btn sm" disabled=${ym>=ymOf(today())} onClick=${()=>setYm(addMonths(ym,1))}>التالي</button></div>
+      <button class="btn sm" onClick=${exportCsv}><${I} n="dl"/>تصدير الشهر</button></div>
+    <div class="kpis"><${Kpi} icon="users" label="أيام حضور (كل العمال)" value=${fi(T.p)}/><${Kpi} icon="ban" label="أيام غياب" value=${fi(T.ab)} alert=${T.ab>0}/><${Kpi} icon="clock" label="مرات تأخير" value=${fi(T.l)}/><${Kpi} icon="alert" label="إجمالي الخصم" value=${fg(T.d)} unit="يوم" sub=${"ساعات شغل "+fh(T.wh)+" من "+fh(T.ah)+" حضور"}/></div>
+    <${Card} title=${"الحضور والإنتاج — "+monthName(ym)} sub=${"الغياب بدون إذن = "+Sd.absPen+" يوم خصم · كل تأخير بعد "+Sd.lateFree+" مرة = "+Sd.latePen+" يوم — من الإعدادات ← حدود التشغيل"}>
+      <${DataTable} cols=${cols} rows=${rows} sort=${["name","asc"]} onRow=${setView} pageSize=${40} empty=${html`<${Empty} icon="users" t="لا يوجد عمال" s=""/>`}/>
+    </${Card}>
+    ${view&&html`<${Sheet} title=${view.w.name} sub=${wDept(view.w)+" · "+monthName(ym)} onClose=${()=>setView(null)}>
+      <${Calc} items=${[["حضور",fi(view.present)+" من "+fi(view.workDays)],["غياب",fi(view.absent),view.absent?"neg":""],["تأخير",fi(view.lateN)+" مرة · "+fi(view.lateM)+" د"],["ساعات حضور",fh(view.ah)],["ساعات شغل",fh(view.wh),"hl"],["أنتج",fi(view.pcs)+" قطعة · "+fg(view.wt)+" جم"],["الخسية",fg(view.loss)+" جم"],["الخصم",fg(view.totDays)+" يوم"+(view.amount?" · "+fm(view.amount)+" ج.م":""),view.totDays?"neg":""]]}/>
+      <div class="tw"><table class="t"><thead><tr><th>اليوم</th><th>الحالة</th><th class="n">حضور</th><th class="n">انصراف</th><th class="n">تأخير</th><th class="n">حضور (س)</th><th class="n">شغل (س)</th><th class="n">إنتاج</th><th>جزاء</th></tr></thead><tbody>
+        ${view.rows.slice().reverse().map(x=>html`<tr key=${x.d}><td><span class="num">${x.d.slice(8)}</span> <span class="sub" style=${{display:"inline"}}>${DAYS_AR[dowOf(x.d)]}</span></td><td><${Badge} tone=${ATT[x.s.st][1]}>${ATT[x.s.st][0]}</${Badge}></td>
+          <td class="n">${x.s.a&&x.s.a.in?hhmm(x.s.a.in):"—"}</td><td class="n">${x.s.a&&x.s.a.out?hhmm(x.s.a.out):"—"}</td><td class=${"n"+(x.s.late?" neg":"")}>${x.s.late?fi(x.s.late):"—"}</td>
+          <td class="n">${x.s.h?fh(x.s.h):"—"}</td><td class="n">${x.wh?fh(x.wh):"—"}</td><td class="n">${x.pcs?fi(x.pcs):(x.wt?fg(x.wt):"—")}</td><td>${[...(x.auto?["تلقائي "+fg(x.auto)+" يوم"]:[]),...x.pen.map(p=>p.kind+(n(p.days)?" "+fg(n(p.days))+" يوم":"")+(n(p.amount)?" "+fm(n(p.amount))+" ج.م":""))].join("، ")||"—"}</td></tr>`)}
+      </tbody></table></div>
+    </${Sheet}>`}
+  </${React.Fragment}>`;
+}
+
+/* every day, kept: open any past day */
+function DaysArchive({L,days,dailies,catalog,onOpen}){
+  const ks=[...new Set([...Object.keys(days),...Object.keys(dailies||{})])].filter(d=>/^\d{4}-\d\d-\d\d$/.test(d)).sort().reverse();
+  const rows=ks.map(d=>{const s=(dailies||{})[d];const prod=L.prod.filter(e=>e._date===d).concat(L.live.filter(e=>e._map==="casting"&&!e._virtual&&e._date===d));
+    const att=L.live.filter(e=>e._map==="attend"&&e._date===d);
+    return {id:d,d,dn:DAYS_AR[dowOf(d)],pcs:prod.reduce((a,e)=>a+n(e.count),0),pw:prod.reduce((a,e)=>a+n(e.scale),0),loss:L.losses.filter(x=>x._date===d).reduce((a,x)=>a+x.w,0),
+      refine:L.live.filter(e=>e._map==="sessions"&&e.job==="refine"&&endDay(e)===d).reduce((a,e)=>a+n(e.outW),0),pres:att.filter(e=>e.in).length,abs:att.filter(e=>e.status==="absent").length,saved:s&&s.savedAt}});
+  return html`<${Card} title="سجل الأيام" sub="كل يوم محفوظ — اضغط على أي يوم لفتح مراجعته كاملة">
+    <${DataTable} cols=${[{key:"d",label:"اليوم",render:r=>html`<span class="num strong">${r.d}</span><span class="sub">${r.dn}</span>`},{key:"refine",label:"من الحل",num:1,render:r=>r.refine?fg(r.refine):"—"},{key:"pcs",label:"اتصنع",num:1,render:r=>r.pcs?html`${fi(r.pcs)}<span class="sub">${fg(r.pw)} جم</span>`:"—"},{key:"loss",label:"الخسية",num:1,render:r=>r.loss?fg(r.loss):"—"},{key:"pres",label:"حضور",num:1,render:r=>r.pres?fi(r.pres):"—"},{key:"abs",label:"غياب",num:1,render:r=>r.abs?fi(r.abs):"—"},{key:"saved",label:"التقرير",cls:"keep",render:r=>r.saved?html`<${Badge} tone="ok">محفوظ</${Badge}>`:html`<${Badge} tone="plain">يُحفظ تلقائياً</${Badge}>`}]} rows=${rows} sort=${["d","desc"]} pageSize=${15} onRow=${r=>onOpen(r.d)} empty=${html`<${Empty} icon="clip" t="لا توجد أيام مسجلة بعد" s=""/>`}/>
+  </${Card}>`;
 }
 
 /* ---------- daily snapshots (saved automatically) ---------- */
 function dailySnap(L,catalog,workers,d,limit){const D=dayData(L,catalog,d);const wd=workerList(workers).map(w=>workerDay(w,D,limit)).filter(r=>r.active);
-  return {date:d,made:D.made,madeW:r2(D.madeW),received:r2(D.received),kh:r2(D.kh),refineOut:r2(D.refineOut),stripOut:r2(D.stripOut),
+  const Sd=schedOf(window.__CONFIG||{}),taken=takenDays(L),att=attendOf(L,d);const st=workerList(workers,true).map(w=>dayStatus(w,att[w.id],d,Sd,taken)).filter(Boolean);
+  const pens=L.live.filter(e=>e._map==="pen"&&e._date===d);
+  return {date:d,present:st.filter(x=>x.st==="present"||x.st==="late").length,late:st.filter(x=>x.st==="late").length,absent:st.filter(x=>x.st==="absent").length,leave:st.filter(x=>x.st==="leave"||x.st==="sick").length,penDays:r2(pens.reduce((a,p)=>a+n(p.days),0)),made:D.made,madeW:r2(D.madeW),received:r2(D.received),kh:r2(D.kh),refineOut:r2(D.refineOut),stripOut:r2(D.stripOut),
     workers:wd.map(r=>({id:r.id,name:r.w.name,depts:wDept(r.w),h:r2(r.h),pcs:r.pcs,wt:r2(r.wt),rec:r2(r.rec),kh:r2(r.kh),status:r.auto[1],rating:(D.evals[r.id]&&D.evals[r.id].rating)||"",note:(D.evals[r.id]&&D.evals[r.id].note)||"",jobs:r.jobs.length}))}}
 
 /* ---------- sales ---------- */
@@ -1911,7 +2088,8 @@ function ReportsPage({L,catalog,customers,names,toast,open,prices,months,role,pe
     const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';const rows=[["التاريخ","الوقت","القسم","البيان","الصنف","العدد","الوزن","المبلغ","بواسطة","الحالة"]];
     ALL.forEach(e=>rows.push([e._date,tme(e.ts),M[e._map],describe(e,catalog,customers),catalog[e.item]?.name||"",e.count??"",e.weight??e.scale??"",e.total??e.amount??e.fee??"",(e.by&&names[e.by]?.name)||"",e.void?"ملغى: "+(e.voidReason||""):""]));
     try{await dl.save({filename:"gold-era-"+from+"_"+to+".csv",data:"﻿"+rows.map(r=>r.map(q).join(",")).join("\r\n")})}catch(er){if(er&&er.code!=="declined")toast("تعذر التصدير.")}};
-  const tabsEl=html`<div class="tabs" role="tablist">${[["monthly","الشهر والأرباح"],["wprod","إنتاجية العمال"],["khisya","الخسية اليومية"],["items","الإنتاج حسب الصنف"],["workers","خسية الصناع"],["audit","سجل التدقيق"]].map(([k,l])=>html`<button key=${k} role="tab" aria-selected=${tab===k?"true":"false"} onClick=${()=>setTab(k)}>${l}</button>`)}</div>`;
+  const tabsEl=html`<div class="tabs" role="tablist">${[["monthly","الشهر والأرباح"],["attm","الحضور والجزاءات"],["wprod","إنتاجية العمال"],["khisya","الخسية اليومية"],["items","الإنتاج حسب الصنف"],["workers","خسية الصناع"],["audit","سجل التدقيق"]].map(([k,l])=>html`<button key=${k} role="tab" aria-selected=${tab===k?"true":"false"} onClick=${()=>setTab(k)}>${l}</button>`)}</div>`;
+  if(tab==="attm")return html`<${React.Fragment}><${PH} title="التقارير" desc="حضور وغياب وتأخير وجزاءات كل عامل في الشهر، وشغله وإنتاجه في نفس الوقت"/>${tabsEl}<${AttendMonth} L=${L} workers=${workers||{}} config=${config||{}} toast=${toast}/></${React.Fragment}>`;
   if(tab==="wprod")return html`<${React.Fragment}><${PH} title="التقارير" desc="إنتاجية كل عامل لشهر أو عدة شهور أو سنة"/>${tabsEl}<${WorkerReport} L=${L} workers=${workers||{}} config=${config||{}} toast=${toast}/></${React.Fragment}>`;
   if(tab==="monthly")return html`<${React.Fragment}><${PH} title="التقارير" desc="الملخص الشهري والربح التقديري، والخسية والإنتاج، وسجل التدقيق"/>${tabsEl}<${MonthlyReport} L=${L} catalog=${catalog} prices=${prices} months=${months} perm=${perm} toast=${toast}/></${React.Fragment}>`;
   return html`<${React.Fragment}>
@@ -1924,7 +2102,7 @@ function ReportsPage({L,catalog,customers,names,toast,open,prices,months,role,pe
       <${Kpi} icon="stamp" label="رسوم الدمغة" value=${fm(fees)} unit="ج.م"/>
       <${Kpi} icon="receipt" label="المبيعات" value=${fm(sales)} unit="ج.م" sub=${"التحصيل "+fm(coll)}/>
     </div>
-    <div class="tabs" role="tablist">${[["monthly","الشهر والأرباح"],["wprod","إنتاجية العمال"],["khisya","الخسية اليومية"],["items","الإنتاج حسب الصنف"],["workers","خسية الصناع"],["audit","سجل التدقيق"]].map(([k,l])=>html`<button key=${k} role="tab" aria-selected=${tab===k?"true":"false"} onClick=${()=>setTab(k)}>${l}</button>`)}</div>
+    <div class="tabs" role="tablist">${[["monthly","الشهر والأرباح"],["attm","الحضور والجزاءات"],["wprod","إنتاجية العمال"],["khisya","الخسية اليومية"],["items","الإنتاج حسب الصنف"],["workers","خسية الصناع"],["audit","سجل التدقيق"]].map(([k,l])=>html`<button key=${k} role="tab" aria-selected=${tab===k?"true":"false"} onClick=${()=>setTab(k)}>${l}</button>`)}</div>
     <${Card} title=${{khisya:"الخسية يوماً بيوم",items:"الإنتاج حسب الصنف",workers:"الخسية حسب الصانع",audit:"كل القيود في الفترة"}[tab]} sub=${from+" ← "+to}>
       ${tab==="khisya"&&html`<${DataTable} key="k" cols=${[{key:"id",label:"اليوم",render:r=>html`<span class="num">${r.id}</span>`},{key:"cast",label:"سبك",num:1,render:r=>fg(r.cast)},{key:"cut",label:"تقطيع",num:1,render:r=>fg(r.cut)},{key:"kh",label:"الخسية",num:1,get:r=>r.cast+r.cut,render:r=>html`<span class="strong">${fg(r.cast+r.cut)}</span>`},{key:"c",label:"القطع",num:1,render:r=>fi(r.c)},{key:"s",label:"وزن الميزان",num:1,render:r=>fg(r.s)}]} rows=${Object.values(byDay)} sort=${["id","desc"]} foot=${{kh:fg(khT)}}/>`}
       ${tab==="items"&&html`<${DataTable} key="i" cols=${[{key:"id",label:"الصنف",get:r=>catalog[r.id]?.name||r.id},{key:"c",label:"العدد",num:1,render:r=>fi(r.c)},{key:"s",label:"الميزان",num:1,render:r=>fg(r.s)},{key:"a",label:"الفعلي",num:1,render:r=>fg(r.a)},{key:"d",label:"الفرق",num:1,get:r=>r.a-r.s,render:r=>html`<span class=${r.a-r.s<0?"neg":""}>${fg(r.a-r.s)}</span>`}]} rows=${Object.values(byItem)} sort=${["s","desc"]}/>`}
@@ -1987,10 +2165,22 @@ function PricesEdit({prices,can,toast}){
   </${Card}>`;
 }
 function OpsEdit({config,can,toast}){
-  const [lim,setLim]=useState(String(config.khisyaLimit||0.5));const [err,setErr]=useState("");
-  return html`<${Card} title="حدود التشغيل" sub="تُستخدم في التنبيهات ولوحة التحكم" body=${true}>
-    <div class="fg" style=${{gridTemplateColumns:"minmax(0,280px) auto",alignItems:"end"}}><${F} label="الحد المسموح للخسية اليومية (جم)" hint="يظهر تنبيه عند تجاوزه"><${Num} id="ops-lim" value=${lim} set=${setLim} ro=${!can}/></${F}>
-      ${can&&html`<button class="btn p" onClick=${async()=>{setErr("");if(n(lim)<=0)return setErr("اكتب قيمة أكبر من صفر.");if(await saveDoc("settings/config",{khisyaLimit:n(lim)},setErr))toast("حُفظ الحد")}}>حفظ</button>`}</div>${err&&html`<p class="msg">${err}</p>`}
+  const Sd=schedOf(config);const [f,setF]=useState({lim:String(config.khisyaLimit||0.5),start:Sd.start,end:Sd.end,grace:String(Sd.grace),off:Sd.off,absPen:String(Sd.absPen),latePen:String(Sd.latePen),lateFree:String(Sd.lateFree)});const [err,setErr]=useState("");
+  const up=(k,v)=>setF(o=>({...o,[k]:v}));
+  const save=async()=>{setErr("");if(n(f.lim)<=0)return setErr("حد الخسية لازم يكون أكبر من صفر.");if(!f.start||!f.end||minsOf(f.end)<=minsOf(f.start))return setErr("راجع مواعيد العمل.");
+    if(await saveDoc("settings/config",{...config,khisyaLimit:n(f.lim),workStart:f.start,workEnd:f.end,grace:n(f.grace),offDays:f.off,absPen:n(f.absPen),latePen:n(f.latePen),lateFree:n(f.lateFree)},setErr))toast("حُفظت الإعدادات")};
+  return html`<${Card} title="حدود التشغيل ومواعيد العمل" sub="الخسية، مواعيد الحضور والانصراف، أيام الراحة، وقواعد الجزاءات التلقائية" body=${true}>
+    <div class="fg">
+      <${F} label="الحد المسموح للخسية اليومية (جم)"><${Num} id="ops-lim" value=${f.lim} set=${v=>up("lim",v)} ro=${!can}/></${F}>
+      <${F} label="سماح التأخير (دقيقة)"><${Num} id="ops-grace" ph="15" value=${f.grace} set=${v=>up("grace",v)} ro=${!can}/></${F}>
+      <${F} label="بداية العمل"><input id="ops-start" type="time" class="in nm" disabled=${!can} value=${f.start} onChange=${e=>up("start",e.target.value)}/></${F}>
+      <${F} label="نهاية العمل"><input id="ops-end" type="time" class="in nm" disabled=${!can} value=${f.end} onChange=${e=>up("end",e.target.value)}/></${F}>
+      <${F} full label="أيام الراحة"><div class="chips">${DAYS_AR.map((x,i)=>html`<button type="button" key=${i} class="chip" disabled=${!can} aria-pressed=${f.off.includes(i)?"true":"false"} onClick=${()=>up("off",f.off.includes(i)?f.off.filter(y=>y!==i):[...f.off,i])}>${x}</button>`)}</div></${F}>
+      <${F} label="خصم الغياب بدون إذن (يوم)"><${Num} id="ops-abs" value=${f.absPen} set=${v=>up("absPen",v)} ro=${!can}/></${F}>
+      <${F} label="خصم كل تأخير (يوم)" hint="مثال 0.25 = ربع يوم"><${Num} id="ops-late" value=${f.latePen} set=${v=>up("latePen",v)} ro=${!can}/></${F}>
+      <${F} label="مرات تأخير مسموحة في الشهر" hint="بدون خصم"><${Num} id="ops-free" ph="0" value=${f.lateFree} set=${v=>up("lateFree",v)} ro=${!can}/></${F}>
+    </div>
+    ${can&&html`<div class="ph__a" style=${{justifyContent:"flex-end",marginTop:"12px"}}>${err&&html`<span class="msg">${err}</span>`}<button class="btn p" onClick=${save}>حفظ</button></div>`}
   </${Card}>`;
 }
 /* ---------- command palette ---------- */
@@ -2350,10 +2540,10 @@ function WorkersPage({L,workers,depts,can,toast,go}){
   </${React.Fragment}>`;
 }
 function WorkerSheet({w,depts,workers,toast,onClose}){
-  const [f,setF]=useState(()=>w?{name:w.name||"",depts:deptsOf(w),code:w.code||"",phone:w.phone||"",joined:w.joined||"",active:w.active!==false,note:w.note||""}:{name:"",depts:[],code:"",phone:"",joined:today(),active:true,note:""});
+  const [f,setF]=useState(()=>w?{name:w.name||"",depts:deptsOf(w),code:w.code||"",phone:w.phone||"",joined:w.joined||"",active:w.active!==false,note:w.note||"",wage:w.wage?String(w.wage):""}:{name:"",depts:[],wage:"",code:"",phone:"",joined:today(),active:true,note:""});
   const [err,setErr]=useState("");const [busy,setBusy]=useState(false);const up=(k,v)=>setF(o=>({...o,[k]:v}));
   const save=async()=>{setErr("");const name=f.name.trim();if(!name)return setErr("اكتب اسم العامل.");if(!f.depts.length)return setErr("اختر قسماً واحداً على الأقل.");if(Object.values(workers).some(x=>x.name===name&&(!w||x.id!==w.id)))return setErr("يوجد عامل بنفس الاسم.");
-    setBusy(true);try{const id=w?w.id:"w"+newId().slice(0,10);await saveWorker(id,{id,name,dept:f.depts[0],depts:f.depts,code:f.code.trim(),phone:f.phone.trim(),joined:f.joined,active:f.active,note:f.note.trim()});toast(w?"حُفظت بيانات "+name:"أُضيف "+name);onClose()}catch(e){setErr(errText(e))}setBusy(false)};
+    setBusy(true);try{const id=w?w.id:"w"+newId().slice(0,10);await saveWorker(id,{id,name,dept:f.depts[0],depts:f.depts,code:f.code.trim(),phone:f.phone.trim(),joined:f.joined,active:f.active,note:f.note.trim(),wage:n(f.wage)});toast(w?"حُفظت بيانات "+name:"أُضيف "+name);onClose()}catch(e){setErr(errText(e))}setBusy(false)};
   return html`<${Sheet} title=${w?w.name:"عامل جديد"} onClose=${onClose} footer=${html`<span class="msg">${err}</span><button class="btn" onClick=${onClose}>إلغاء</button><button class="btn p" disabled=${busy} onClick=${save}><${I} n="check"/>حفظ</button>`}>
     <div class="fg">
       <${F} full label="الاسم"><input id="wk-n" class="in" autoFocus value=${f.name} onInput=${e=>up("name",e.target.value)}/></${F}>
@@ -2362,6 +2552,7 @@ function WorkerSheet({w,depts,workers,toast,onClose}){
       <${F} label="الهاتف"><input id="wk-p" class="in nm" inputmode="tel" value=${f.phone} onInput=${e=>up("phone",e.target.value)}/></${F}>
       <${F} label="تاريخ الالتحاق"><input id="wk-j" type="date" class="in" value=${f.joined} onChange=${e=>up("joined",e.target.value)}/></${F}>
       <${F} full label="الحالة"><${Seg} opts=${[["on","نشط"],["off","موقوف"]]} value=${f.active?"on":"off"} set=${v=>up("active",v==="on")}/></${F}>
+      <${F} label="اليومية (ج.م)" hint="اختياري — لحساب مبلغ الخصم"><${Num} id="wk-wage" ph="0" value=${f.wage} set=${v=>up("wage",v)}/></${F}>
       <${F} full label="ملاحظة"><input id="wk-note" class="in" value=${f.note} onInput=${e=>up("note",e.target.value)}/></${F}>
     </div>
   </${Sheet}>`;
@@ -2482,7 +2673,7 @@ function EvalCell({d,w,ev,can,toast}){const [note,setNote]=useState(ev?.note||""
     <input class="in" style=${{height:"30px",width:"170px",fontSize:"12.5px"}} placeholder="ملاحظة" value=${note} onInput=${e=>setNote(e.target.value)} onBlur=${()=>{if(ev&&note!==(ev.note||""))set(ev.rating,note)}} aria-label=${"ملاحظة "+w.name}/></span>`}
 function DailyReport({L,catalog,workers,config,can,toast,open,dailies}){
   const [d,setD]=useState(today());const [wv,setWv]=useState(null);const limit=n(config.khisyaLimit)||0.5;
-  const D=dayData(L,catalog,d);const wd=workerList(workers).map(w=>workerDay(w,D,limit)).filter(r=>r.active||r.w.active!==false);
+  const Sd=schedOf(config),takenD=takenDays(L),attD=attendOf(L,d);const D=dayData(L,catalog,d);const wd=workerList(workers).map(w=>workerDay(w,D,limit)).filter(r=>r.active||r.w.active!==false);
   const evd=D.evals;const good=wd.filter(r=>(evd[r.id]?.rating||(r.auto[0]==="ok"?"good":r.auto[0]==="bad"?"bad":null))==="good").length;
   const bad=wd.filter(r=>evd[r.id]?.rating==="bad"||(!evd[r.id]&&r.auto[0]==="bad")).length;
   const stage=[["الحل","drop",[["اتسلّم للحل",fg(D.refineIn)+" جم"],["خرج عيار 1000",fg(D.refineOut)+" جم"]]],
@@ -2494,6 +2685,7 @@ function DailyReport({L,catalog,workers,config,can,toast,open,dailies}){
     ["التكويد","qr",[["ملصقات",fi(D.labels.c)+" ملصق · "+fi(D.labels.b)+" دفعة"]]],
     ["المبيعات","receipt",[["مُباع",fi(D.sales.c)+" قطعة · "+fm(D.sales.t)+" ج.م"]]]];
   const cols=[{key:"name",label:"العامل",get:r=>r.w.name,render:r=>html`<span class="strong">${r.w.name}</span><span class="sub">${wDept(r.w)}</span>`},
+    {key:"att",label:"الحضور",cls:"keep",get:r=>{const x=dayStatus(r.w,attD[r.id],d,Sd,takenD);return x?x.st:""},render:r=>{const x=dayStatus(r.w,attD[r.id],d,Sd,takenD);if(!x)return "—";return html`<${Badge} tone=${ATT[x.st][1]}>${ATT[x.st][0]}</${Badge}>${x.a&&x.a.in?html`<span class="sub num">${hhmm(x.a.in)} ← ${x.a.out?hhmm(x.a.out):"…"}</span>`:""}`}},
     {key:"h",label:"اشتغل",num:1,render:r=>r.h?fh(r.h):"—"},{key:"rec",label:"استلم (جم)",num:1,render:r=>r.rec?fg(r.rec):"—"},{key:"pcs",label:"أنتج قطع",num:1,render:r=>r.pcs?fi(r.pcs):"—"},{key:"wt",label:"الوزن",num:1,render:r=>r.wt?fg(r.wt):"—"},
     {key:"rate",label:"قطعة/ساعة",num:1,render:r=>r.rate?r.rate.toFixed(1):"—"},{key:"kh",label:"الخسية",num:1,render:r=>r.kh?html`<span class=${r.kh>limit?"neg":""}>${fg(r.kh)}</span>`:"—"},
     {key:"auto",label:"الحالة التلقائية",get:r=>r.auto[1],cls:"keep wrap",render:r=>html`<${Badge} tone=${r.auto[0]}>${r.auto[1]}</${Badge}>${r.flags.length>0&&html`<span class="sub">${r.flags.map(f=>f[1]).join(" · ")}</span>`}`},
@@ -2581,16 +2773,16 @@ const ALL_LEDGER=["bars","strips","casting","moves","sales","payments","counts",
 /* collections a page has to read to show correct balances */
 const GOLD_READ=[...ALL_LEDGER,"staff","orders"];
 const READ_NEEDS={dash:[...ALL_LEDGER,"customers","orders"],review:GOLD_READ,stock:GOLD_READ,bars:GOLD_READ,refine:GOLD_READ,strips:GOLD_READ,casting:GOLD_READ,orders:GOLD_READ,
-  prep:GOLD_READ,hallmark:GOLD_READ,finish:GOLD_READ,workers:["staff","sessions"],attendance:GOLD_READ,daily:[...GOLD_READ,"dailies"],
+  prep:GOLD_READ,hallmark:GOLD_READ,finish:GOLD_READ,workers:["staff","sessions"],presence:GOLD_READ,attendance:GOLD_READ,daily:[...GOLD_READ,"dailies"],
   count:GOLD_READ,labels:["labels","orders"],sales:["sales","moves","casting","counts","customers","payments"],
   customers:["customers","sales","payments"],reports:[...GOLD_READ,"customers","months","dailies"],settings:[]};
 /* collections a page writes to when its access is "edit" */
-const WRITE_OF={orders:["orders"],stock:["bars"],bars:["bars"],refine:["sessions"],strips:["sessions"],casting:["sessions"],prep:["moves","sessions"],hallmark:["moves","sessions"],finish:["moves","sessions"],count:["counts"],labels:["labels"],sales:["sales"],customers:["customers","payments"],workers:["staff"],attendance:["sessions"],daily:["evals","dailies"]};
+const WRITE_OF={orders:["orders"],stock:["bars"],bars:["bars"],refine:["sessions"],strips:["sessions"],casting:["sessions"],prep:["moves","sessions"],hallmark:["moves","sessions"],finish:["moves","sessions"],count:["counts"],labels:["labels"],sales:["sales"],customers:["customers","payments"],workers:["staff"],attendance:["sessions"],presence:["evals"],daily:["evals","dailies"]};
 const PRESETS={
   manager:{label:"مدير",pages:Object.fromEntries(PAGE_LIST.map(p=>[p.k,"edit"])),void:true,settings:true},
   production:{label:"تصنيع وخزنة",pages:{review:"view",stock:"edit",orders:"edit",bars:"edit",refine:"edit",strips:"edit",casting:"edit",labels:"edit",attendance:"edit"}},
   stages:{label:"المراحل",pages:{prep:"edit",hallmark:"edit",finish:"edit",labels:"edit",attendance:"edit"}},
-  supervisor:{label:"مشرف عمال",pages:{review:"view",workers:"edit",attendance:"edit",daily:"edit"}},
+  supervisor:{label:"مشرف عمال",pages:{review:"view",presence:"edit",workers:"edit",attendance:"edit",daily:"edit"}},
   sales:{label:"مبيعات وحسابات",pages:{sales:"edit",customers:"edit"}},
   viewer:{label:"مشاهد",pages:Object.fromEntries(PAGE_LIST.filter(p=>p.k!=="settings").map(p=>[p.k,"view"]))}
 };
@@ -2716,7 +2908,7 @@ function App(){
     if(!m.isOwner)un.push(db.doc("access/"+m.id).onSnapshot(s=>{if(s.exists){const x=s.data();if(x.active!==true)location.reload();else setAccess(x)}},()=>{}));
     d("settings/catalog",(x,ex)=>{setCatalog(x.items||{});if((!ex||!Object.keys(x.items||{}).length)&&m.isOwner)seedDefaults()});
     if(m.isOwner)recompileAccess();
-    if(R.has("dailies"))un.push(db.collection("dailies").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]={...x.data(),date:x.id});setDailies(o)},()=>{}));d("settings/prices",setPrices);d("settings/config",setConfig);
+    if(R.has("dailies"))un.push(db.collection("dailies").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]={...x.data(),date:x.id});setDailies(o)},()=>{}));d("settings/prices",setPrices);d("settings/config",x=>{window.__CONFIG=x;setConfig(x)});
     d("settings/people",x=>setNames(Object.fromEntries(Object.entries(x.map||{}).map(([k,v])=>[k,{id:k,name:v.name,avatarUrl:null}]))));
     if(R.has("staff")||m.isOwner)un.push(db.collection("staff").onSnapshot(qs=>{const o={};let dp=null;qs.docs.forEach(x=>{if(x.id==="__departments")dp=x.data().list;else{const v=x.data();o[x.id]={...v,id:x.id,kind:v.dept}}});window.__WORKERS=o;setWorkers(o);setDepts([...new Set([...(dp&&dp.length?dp:DEFAULT_DEPTS),...CORE_DEPTS])]);
       if(m.isOwner&&!qs.docs.length)migrateWorkers()},fail));
@@ -2724,7 +2916,7 @@ function App(){
     if(R.has("months"))un.push(db.collection("months").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]=x.data());setMonths(o)},fail));
     if(R.has("customers"))un.push(db.collection("customers").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]=x.data());setCustomers(o)},fail));
     const parts={};let pending=ALL_LEDGER.filter(c=>R.has(c)).length;if(!pending)setReady(true);
-    const rebuild=()=>{const o={};for(const [c,docs] of Object.entries(parts))for(const [id,v] of Object.entries(docs)){const t=o[id]||(o[id]={date:id});t[c]=v[c]}setDays(o)};
+    const rebuild=()=>{const o={};for(const [c,docs] of Object.entries(parts))for(const [id,v] of Object.entries(docs)){const t=o[id]||(o[id]={date:id});t[c]=v[c];if(c==="evals"){t.attend=v.attend;t.pen=v.pen}}setDays(o)};
     ALL_LEDGER.filter(c=>R.has(c)).forEach(c=>{let first=true;un.push(db.collection(c).onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]=x.data());parts[c]=o;rebuild();if(first){first=false;if(--pending<=0)setReady(true)}},fail))});
     setTimeout(()=>setReady(true),4000);
   })();return()=>un.forEach(f=>{try{f()}catch(e){}})},[]);
@@ -2732,7 +2924,8 @@ function App(){
   const L=useMemo(()=>buildLedger(days,catalog),[days,catalog]);
   /* the daily report is saved by itself: today and yesterday, whenever their numbers change */
   useEffect(()=>{if(gate!=="app"||!ready||!access||!S.db)return;if(!(access.owner||(access.write||[]).includes("dailies")))return;
-    const tm=setTimeout(async()=>{for(const d of [addDays(today(),-1),today()]){const s=dailySnap(L,catalog,workers,d,n(config.khisyaLimit)||0.5);
+    const back=Object.keys(days).filter(d=>d<addDays(today(),-1)&&d>=addDays(today(),-62)&&!dailies[d]&&!snapRef.current[d]).slice(-10);
+    const tm=setTimeout(async()=>{for(const d of [...back,addDays(today(),-1),today()]){const s=dailySnap(L,catalog,workers,d,n(config.khisyaLimit)||0.5);
       if(!s.workers.length&&!s.made&&!s.received&&!s.refineOut)continue;const key=JSON.stringify(s);if(snapRef.current[d]===key)continue;
       try{await S.db.doc("dailies/"+d).set({...s,savedAt:new Date().toISOString(),by:S.uid});snapRef.current[d]=key}catch(e){console.warn("daily save",e)}}},8000);
     return()=>clearTimeout(tm)},[L,workers,gate,ready,access]);
@@ -2767,6 +2960,7 @@ function App(){
     case "customers":body=html`<${CustomersPage} ...${props} can=${can("customers")}/>`;break;
     case "reports":body=html`<${ReportsPage} ...${props}/>`;break;
     case "workers":body=html`<${WorkersPage} ...${props} depts=${depts} can=${can("workers")}/>`;break;
+    case "presence":body=html`<${PresencePage} ...${props} can=${can("presence")}/>`;break;
     case "attendance":body=html`<${AttendancePage} ...${props} can=${can("attendance")}/>`;break;
     case "daily":body=html`<${DailyReport} ...${props} can=${can("daily")}/>`;break;
     case "settings":body=html`<${SettingsPage} ...${props} isOwner=${!!me?.isOwner}/>`;break;

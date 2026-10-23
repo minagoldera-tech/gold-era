@@ -462,7 +462,8 @@ tbody tr.row-sel td{background:#FFF8E7;}
     <div class="card">
       <div class="sh"><div><div class="st">📋 سجل الوارد والمرتجع</div><div class="ss" id="in-sub"></div></div><span class="tag" id="in-cnt">0 سجل</span></div>
       <div class="srow">
-        <input type="text" id="in-srch" placeholder="🔍 بحث..." oninput="filterIn()" style="flex:1;min-width:150px">
+        <input type="text" id="in-srch" placeholder="🔍 بحث بالبيان / السبيكة / الملاحظات..." oninput="filterIn()" style="flex:1;min-width:150px">
+        <input type="text" inputmode="decimal" id="in-wsrch" placeholder="⚖️ بحث بالوزن — مثال: 12.5 أو 10-20" oninput="filterIn()" style="width:210px" title="رقم صحيح (12) = كل الأوزان 12.xxx | رقم بعلامة عشرية (12.5) = 12.5xx | مدى (10-20) = من 10 لـ 20 — بيدور في الوزن القائم و875 و999.9">
         <input type="date" id="in-from" oninput="filterIn()">
         <span style="color:#9C9488;font-size:12px">إلى</span>
         <input type="date" id="in-to" oninput="filterIn()">
@@ -480,7 +481,8 @@ tbody tr.row-sel td{background:#FFF8E7;}
           <div class="sel-item"><div class="sel-lbl">مجموع الوزن القائم</div><div class="sel-val" id="in-sum-w">0.000 جم</div></div>
           <div class="sel-item"><div class="sel-lbl">مجموع وزن 875</div><div class="sel-val" id="in-sum-875">0.000 جم</div></div>
           <div class="sel-item"><div class="sel-lbl">مجموع وزن 999.9</div><div class="sel-val" id="in-sum-999">0.000 جم</div></div>
-          <button class="btn bsm" onclick="clearSelIn()" style="margin-right:auto;background:rgba(255,255,255,0.1);color:#fff;border:none">✕ إلغاء التحديد</button>
+          <button class="btn bsm" onclick="printSel('in')" style="margin-right:auto;background:#C8860A;color:#fff;border:none">🖨️ طباعة / PDF</button>
+          <button class="btn bsm" onclick="clearSelIn()" style="background:rgba(255,255,255,0.1);color:#fff;border:none">✕ إلغاء التحديد</button>
         </div>
       </div>
     </div>
@@ -576,7 +578,8 @@ tbody tr.row-sel td{background:#FFF8E7;}
     <div class="card">
       <div class="sh"><div><div class="st">📋 سجل المنصرف من المصنع</div><div class="ss" id="out-sub"></div></div><span class="tag" id="out-cnt">0 سجل</span></div>
       <div class="srow">
-        <input type="text" id="out-srch" placeholder="🔍 بحث..." oninput="filterOut()" style="flex:1;min-width:150px">
+        <input type="text" id="out-srch" placeholder="🔍 بحث بالبيان / السبيكة / الملاحظات..." oninput="filterOut()" style="flex:1;min-width:150px">
+        <input type="text" inputmode="decimal" id="out-wsrch" placeholder="⚖️ بحث بالوزن — مثال: 12.5 أو 10-20" oninput="filterOut()" style="width:210px" title="رقم صحيح (12) = كل الأوزان 12.xxx | رقم بعلامة عشرية (12.5) = 12.5xx | مدى (10-20) = من 10 لـ 20 — بيدور في الوزن القائم و875 و999.9">
         <input type="date" id="out-from" oninput="filterOut()">
         <span style="color:#9C9488;font-size:12px">إلى</span>
         <input type="date" id="out-to" oninput="filterOut()">
@@ -592,7 +595,8 @@ tbody tr.row-sel td{background:#FFF8E7;}
           <div class="sel-item"><div class="sel-lbl">مجموع وزن 875</div><div class="sel-val" id="out-sum-875">0.000 جم</div></div>
           <div class="sel-item"><div class="sel-lbl">مجموع وزن 999.9</div><div class="sel-val" id="out-sum-999">0.000 جم</div></div>
           <div class="sel-item"><div class="sel-lbl">إجمالي القطع</div><div class="sel-val" id="out-sum-pcs">0</div></div>
-          <button class="btn bsm" onclick="clearSelOut()" style="margin-right:auto;background:rgba(255,255,255,0.1);color:#fff;border:none">✕ إلغاء</button>
+          <button class="btn bsm" onclick="printSel('out')" style="margin-right:auto;background:#C8860A;color:#fff;border:none">🖨️ طباعة / PDF</button>
+          <button class="btn bsm" onclick="clearSelOut()" style="background:rgba(255,255,255,0.1);color:#fff;border:none">✕ إلغاء</button>
         </div>
       </div>
     </div>
@@ -1185,17 +1189,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
         <button onclick="destClose()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#9C9488">✕</button>
       </div>
       <div style="font-size:12px;color:#9C9488;margin-top:2px">راجع الصفوف — تقدر تعدّل أي خانة أو تشيل علامة ✓ من صف مش عايزه — وبعدين اختار تضيفهم فين واضغط موافقة</div>
-      <div id="pv-date-box" style="background:#FFF8E7;border:1.5px solid #E8C77A;border-radius:10px;padding:10px 12px;margin-top:12px">
-        <div style="font-size:13px;font-weight:700;color:#1A1916;margin-bottom:7px">١. 📅 عايزهم بتاريخ كام؟ <span style="font-weight:400;color:#9C9488;font-size:12px">— التاريخ اللي تختاره هيتطبق على كل صفوف الملف</span></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-          <input type="date" id="pv-date" onchange="pvSetDate(this.value)" style="border:1.5px solid #C8C4BC;border-radius:8px;padding:7px 10px;font-size:14px;font-family:Cairo,sans-serif;background:#fff;outline:none">
-          <button class="pv-t" id="pv-d-today" style="flex:0 0 auto;min-width:0;padding:7px 14px;font-size:13px" onclick="pvSetDate(today())">النهارده</button>
-          <button class="pv-t" id="pv-d-yest" style="flex:0 0 auto;min-width:0;padding:7px 14px;font-size:13px" onclick="var d=new Date();d.setDate(d.getDate()-1);pvSetDate(d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2))">امبارح</button>
-          <button class="pv-t" id="pv-d-file" style="flex:0 0 auto;min-width:0;padding:7px 14px;font-size:13px" onclick="pvFileDates()">📄 زي تواريخ الملف</button>
-          <span id="pv-d-hint" style="font-size:12px;color:#9C9488"></span>
-        </div>
-      </div>
-      <div style="font-size:13px;font-weight:700;color:#1A1916;margin:12px 0 7px">٢. تضيف البيانات دي فين؟</div>
+      <div style="font-size:13px;font-weight:700;color:#1A1916;margin:12px 0 7px">١. تضيف البيانات دي فين؟</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="pv-t" id="pv-t-in" onclick="pvSetType('مستلم')">📥 وارد (مستلم)</button>
         <button class="pv-t" id="pv-t-out" onclick="pvSetType('منصرف')">📤 منصرف</button>
@@ -1269,7 +1263,7 @@ function N(n,d){
 function W8(w,k){return w*k/875;}
 function W9(w,k){return w*k/999.9;}
 function W7(w,k){return w*k/750;}
-function today(){return new Date().toISOString().split('T')[0];}
+function today(){var n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
 function el(id){return document.getElementById(id);}
 function txt(id,v){var e=el(id);if(e)e.textContent=v;}
 // تنسيق التاريخ مع كاش — كان أبطأ جزء في السيستم (كان بيتنفذ آلاف المرات مع كل فتح صفحة)
@@ -1631,6 +1625,45 @@ function moreRow(shown,total,fnMore,fnAll){
 function clearSelIn(){inSelIds={};document.querySelectorAll('#in-tb .row-chk').forEach(function(cb){cb.checked=false;});document.querySelectorAll('#in-tb tr').forEach(function(tr){tr.classList.remove('row-sel');});el('in-sel-bar').classList.add('hide');var ca=el('in-chk-all');if(ca)ca.checked=false;}
 function clearSelOut(){outSelIds={};document.querySelectorAll('#out-tb .row-chk').forEach(function(cb){cb.checked=false;});document.querySelectorAll('#out-tb tr').forEach(function(tr){tr.classList.remove('row-sel');});el('out-sel-bar').classList.add('hide');var ca=el('out-chk-all');if(ca)ca.checked=false;}
 
+// ===================== البحث بالنص والوزن =====================
+// بيوحّد الحروف عشان "بلدى" و"بلدي" و"العباسيه" و"العباسية" يطلعوا مع بعض
+function normAr(t){
+  return (t===undefined||t===null?'':String(t)).toLowerCase()
+    .replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;})
+    .replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/\s+/g,' ').trim();
+}
+function txtMatch(r,q){
+  var hay=normAr([r.desc,r.detail,r.notes,r.type,r.date,r.k].join(' '));
+  var parts=q.split(' ');
+  for(var i=0;i<parts.length;i++)if(parts[i]&&hay.indexOf(parts[i])<0)return false;
+  return true;
+}
+// صيغ البحث بالوزن: 12 ← كل 12.xxx | 12.5 ← 12.5xx | 12.500 ← بالظبط | 10-20 ← من 10 لـ 20 | >100 أو <5
+function parseWQ(v){
+  var t=(v||'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).replace(/[٫,]/g,'.').replace(/\s+/g,'').replace(/جم|جرام/g,'');
+  if(!t)return null;
+  var m=t.match(/^(\d+(?:\.\d+)?)[\-–:~](\d+(?:\.\d+)?)$/);
+  if(m){var a=+m[1],b=+m[2];return {lo:Math.min(a,b),hi:Math.max(a,b)};}
+  m=t.match(/^([<>])=?(\d+(?:\.\d+)?)$/);
+  if(m)return m[1]==='>'?{lo:+m[2],hi:Infinity}:{lo:-Infinity,hi:+m[2]};
+  m=t.match(/^\d+(?:\.(\d*))?$/);
+  if(!m)return null;
+  var dec=(m[1]||'').length;
+  if(t.indexOf('.')<0)return {lo:+t,hi:+t+1,ex:true};
+  if(dec>=3)return {lo:+t-0.0005,hi:+t+0.0005};
+  var step=Math.pow(10,-dec);
+  return {lo:+t,hi:+t+step,ex:true};
+}
+function wMatch(r,q){
+  var vs=[r.w,r.w8,r.w9];
+  for(var i=0;i<vs.length;i++){
+    var v=+vs[i];if(!isFinite(v))continue;
+    v=Math.round(v*1000)/1000;
+    if(q.ex?(v>=q.lo-1e-9&&v<q.hi-1e-9):(v>=q.lo&&v<=q.hi))return true;
+  }
+  return false;
+}
+
 // ===================== RENDER IN =====================
 function renderIn(){
   if(typeof xsClear==="function")xsClear();
@@ -1639,8 +1672,11 @@ function renderIn(){
   var from=el('in-from')&&el('in-from').value||'';
   var to=el('in-to')&&el('in-to').value||'';
   var ftype=el('in-ftype')&&el('in-ftype').value||'';
+  var wq=parseWQ(el('in-wsrch')&&el('in-wsrch').value);
+  srch=normAr(srch);
   var arr=INC.filter(function(r){
-    if(srch&&(r.desc||'').toLowerCase().indexOf(srch)<0&&(r.date||'').indexOf(srch)<0)return false;
+    if(srch&&!txtMatch(r,srch))return false;
+    if(wq&&!wMatch(r,wq))return false;
     if(from&&r.date<from)return false;if(to&&r.date>to)return false;
     if(ftype&&r.type!==ftype)return false;return true;
   }).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.id-a.id;});
@@ -1685,8 +1721,11 @@ function renderOut(){
   var srch=(el('out-srch')&&el('out-srch').value||'').trim().toLowerCase();
   var from=el('out-from')&&el('out-from').value||'';
   var to=el('out-to')&&el('out-to').value||'';
+  var wq=parseWQ(el('out-wsrch')&&el('out-wsrch').value);
+  srch=normAr(srch);
   var arr=OUT.filter(function(r){
-    if(srch&&(r.desc||'').toLowerCase().indexOf(srch)<0&&(r.date||'').indexOf(srch)<0)return false;
+    if(srch&&!txtMatch(r,srch))return false;
+    if(wq&&!wMatch(r,wq))return false;
     if(from&&r.date<from)return false;if(to&&r.date>to)return false;return true;
   }).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.id-a.id;});
   _outFiltered=arr;
@@ -2154,7 +2193,7 @@ function xsPaint(){
       +'<span><span class="xl">أكبر</span><b>'+N(mx)+'</b></span>'
       +'<span><span class="xl">أرقام</span><b>'+N(n,0)+'</b></span>';
   }else h+='<span class="xl">مفيش أرقام في التحديد</span>';
-  h+='<button onclick="xsCopySum()" title="نسخ المجموع">📋 نسخ المجموع</button><button onclick="xsClear()">✕</button>';
+  h+='<button onclick="xsCopySum()" title="نسخ المجموع">📋 نسخ المجموع</button><button onclick="xsPrint()" title="طباعة الخلايا المظللة أو حفظها PDF" style="background:#C8860A">🖨️ طباعة / PDF</button><button onclick="xsClear()">✕</button>';
   bar.innerHTML=h;bar.style.display='flex';
   XS.sum=sum;
 }
@@ -2199,6 +2238,98 @@ document.addEventListener('keydown',function(e){
     xsCopy(out);e.preventDefault();
   }
 });
+
+// ===================== طباعة المظلل / حفظ PDF =====================
+// بيفتح صفحة طباعة نضيفة فيها الصفوف المحددة بس + الإجمالي ← اختار "حفظ كـ PDF" من نافذة الطباعة
+function printReport(title,heads,rows,foot,sub){
+  var e=function(x){return esc(x===undefined||x===null?'':x);};
+  var h='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>'+e(title)+'</title>'
+    +'<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">'
+    +'<style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{font-family:Cairo,Tahoma,sans-serif;color:#1C1A16;margin:0;font-size:12px}'
+    +'.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #C8860A;padding-bottom:8px;margin-bottom:12px}'
+    +'.hd h1{margin:0;font-size:19px}.hd .s{color:#6B6559;font-size:11px}'
+    +'table{width:100%;border-collapse:collapse}th{background:#F5EBD3;color:#5C3F02;font-weight:700;padding:6px 7px;border:1px solid #D9CBA5;text-align:right;font-size:11.5px}'
+    +'td{padding:5px 7px;border:1px solid #E2DED6;text-align:right}tr:nth-child(even) td{background:#FBFAF7}'
+    +'tfoot td{background:#FFF3D6!important;font-weight:700;border-top:2px solid #C8860A}'
+    +'td.n,th.n{text-align:left;white-space:nowrap}thead{display:table-header-group}tr{page-break-inside:avoid}'
+    +'.ft{margin-top:10px;color:#9C9488;font-size:10px;text-align:center}</style></head><body>'
+    +'<div class="hd"><div><h1>'+e(title)+'</h1><div class="s">'+e(sub||'')+'</div></div>'
+    +'<div class="s">تاريخ الطباعة: '+e(fmtDate(today()))+'<br>عدد الصفوف: '+N(rows.length,0)+'</div></div>'
+    +'<table><thead><tr>';
+  for(var i=0;i<heads.length;i++)h+='<th class="'+(heads[i].n?'n':'')+'">'+e(heads[i].t)+'</th>';
+  h+='</tr></thead><tbody>';
+  for(var r=0;r<rows.length;r++){
+    h+='<tr>';
+    for(var c=0;c<heads.length;c++)h+='<td class="'+(heads[c].n?'n':'')+'">'+e(rows[r][c])+'</td>';
+    h+='</tr>';
+  }
+  h+='</tbody>';
+  if(foot){h+='<tfoot><tr>';for(var c=0;c<heads.length;c++)h+='<td class="'+(heads[c].n?'n':'')+'">'+e(foot[c])+'</td>';h+='</tr></tfoot>';}
+  h+='</table><div class="ft">سبايك</div></body></html>';
+  var old=document.getElementById('print-frame');if(old)old.parentNode.removeChild(old);
+  var fr=document.createElement('iframe');fr.id='print-frame';
+  fr.style.cssText='position:fixed;left:-10000px;top:0;width:900px;height:600px;border:0;visibility:hidden';
+  document.body.appendChild(fr);
+  var d=fr.contentWindow.document;d.open();d.write(h);d.close();
+  var go=function(){try{fr.contentWindow.focus();fr.contentWindow.print();}catch(x){toast('تعذرت الطباعة','err');}};
+  var done=false,run=function(){if(done)return;done=true;setTimeout(go,150);};
+  try{if(d.fonts&&d.fonts.ready)d.fonts.ready.then(run);}catch(x){}
+  setTimeout(run,1200);
+}
+function printSel(kind){
+  var isIn=kind==='in',src=isIn?INC:OUT,ids=isIn?inSelIds:outSelIds;
+  var list=src.filter(function(r){return ids[r.id];}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id;});
+  if(!list.length){toast('⚠️ حدد صفوف الأول','err');return;}
+  var heads=[{t:'#'},{t:'التاريخ'},{t:'البيان'},{t:isIn?'النوع':'القطع'},{t:'الوزن القائم',n:1},{t:'العيار',n:1},{t:'وزن 875',n:1},{t:'وزن 999.9',n:1},{t:'ملاحظات'}];
+  var sw=0,s8=0,s9=0,sp=0,rows=list.map(function(r,i){
+    sw+=+r.w||0;s8+=+r.w8||0;s9+=+r.w9||0;sp+=+r.pcs||0;
+    return [i+1,fmtDate(r.date),r.desc+(r.detail?' — '+r.detail:''),isIn?r.type:N(r.pcs||0,0),N(r.w)+' جم',r.k,N(r.w8)+' جم',N(r.w9)+' جم',r.notes||''];
+  });
+  var foot=['','الإجمالي','',isIn?'':N(sp,0),N(sw)+' جم','',N(s8)+' جم',N(s9)+' جم',''];
+  var ds=list.map(function(r){return r.date;}).filter(Boolean);
+  printReport(isIn?'سجل الوارد والمرتجع — الصفوف المحددة':'سجل المنصرف — الصفوف المحددة',heads,rows,foot,
+    ds.length?('الفترة: '+fmtDate(ds[0])+(ds[ds.length-1]!==ds[0]?' إلى '+fmtDate(ds[ds.length-1]):'')):'');
+}
+function xsPrint(){
+  if(!XS.cells.length||!XS.table){toast('⚠️ ظلل خلايا الأول','err');return;}
+  var tbl=XS.table,hr=tbl.tHead&&tbl.tHead.rows.length?tbl.tHead.rows[tbl.tHead.rows.length-1]:null;
+  var byRow={},rk=[],cols=[];
+  XS.cells.forEach(function(td){
+    var r=td.parentNode.rowIndex,c=td.cellIndex;
+    if(td.querySelector('button,input[type=checkbox]'))return;
+    var ht=hr&&hr.cells[c]?(hr.cells[c].textContent||'').trim():'';
+    if(/^(تعديل|حذف|إجراء)$/.test(ht))return;
+    if(!byRow[r]){byRow[r]={};rk.push(r);}
+    byRow[r][c]=(td.textContent||'').trim();
+    if(cols.indexOf(c)<0)cols.push(c);
+  });
+  if(!rk.length){toast('⚠️ مفيش بيانات في التظليل','err');return;}
+  rk.sort(function(a,b){return a-b;});cols.sort(function(a,b){return a-b;});
+  var sums=cols.map(function(){return {n:0,s:0,txt:0,unit:''};});
+  var rows=rk.map(function(r){
+    return cols.map(function(c,j){
+      var v=byRow[r][c];if(v===undefined)return '';
+      var tr=tbl.rows[r],num=tr&&tr.cells[c]?xsNum(tr.cells[c]):null;
+      if(num===null){if(v)sums[j].txt++;}else{sums[j].n++;sums[j].s+=num;if(/جم/.test(v))sums[j].unit=' جم';}
+      return v;
+    });
+  });
+  var heads=cols.map(function(c,j){return {t:hr&&hr.cells[c]?(hr.cells[c].textContent||'').trim():'',n:sums[j].n>0&&sums[j].txt===0};});
+  var anyNum=sums.some(function(x){return x.n>1&&x.txt===0;});
+  var foot=null;
+  if(anyNum){
+    var lbl=false;
+    foot=sums.map(function(x,j){
+      if(x.n>0&&x.txt===0&&!/^#$|العيار/.test(heads[j].t))return N(x.s)+x.unit;
+      if(!lbl&&!(x.n>0&&x.txt===0)){lbl=true;return 'الإجمالي';}
+      return '';
+    });
+  }
+  var pg=document.querySelector('.pg.on'),ttl='';
+  var card=tbl.closest('.card');
+  if(card){var st=card.querySelector('.st');if(st)ttl=(st.textContent||'').replace(/^[^؀-ۿa-zA-Z0-9]+/,'').trim();}
+  printReport((ttl||'تقرير')+' — الجزء المظلل',heads,rows,foot,'');
+}
 
 // ===================== TOAST =====================
 function toast(msg,type){
@@ -2615,12 +2746,7 @@ function askDest(rows,source,onDone){
       w875:toNum(r.w875!==undefined?r.w875:r.w21)||W8(w,k),w995:toNum(r.w995)||w*k/999.5,pcs:toNum(r.pcs)||0,inc:true};
   });
   if(!rows.length){toast('⚠️ لا توجد بيانات للإضافة','err');return;}
-  for(var i=0;i<rows.length;i++)rows[i].date0=rows[i].date;
-  _pv={rows:rows,source:source,onDone:onDone,type:null,show:300,dateSet:false,dateMode:null};
-  el('pv-date').value='';
-  var ud={};for(var i=0;i<rows.length;i++)ud[rows[i].date]=1;var udk=Object.keys(ud).sort();
-  txt('pv-d-hint',udk.length===1?('تاريخ الملف: '+udk[0]):('الملف فيه '+udk.length+' تواريخ ('+udk[0]+' → '+udk[udk.length-1]+')'));
-  pvDateUI();
+  _pv={rows:rows,source:source,onDone:onDone,type:null,show:300};
   txt('pv-title','📋 معاينة البيانات قبل الإضافة — من '+source);
   el('pv-all').checked=true;
   pvSetType(null);
@@ -2661,27 +2787,6 @@ function pvSet(i,f,v){
   }
   pvTotals();
 }
-// اختيار تاريخ واحد لكل صفوف الملف المرفوع
-function pvDateUI(){
-  var m=_pv?_pv.dateMode:null,tdy=today(),y=new Date();y.setDate(y.getDate()-1);
-  var yst=y.getFullYear()+'-'+('0'+(y.getMonth()+1)).slice(-2)+'-'+('0'+y.getDate()).slice(-2);
-  el('pv-d-today').className='pv-t'+(m===tdy?' on-in':'');
-  el('pv-d-yest').className='pv-t'+(m===yst?' on-in':'');
-  el('pv-d-file').className='pv-t'+(m==='file'?' on-in':'');
-  var b=el('pv-date-box');if(b){b.style.borderColor=_pv&&_pv.dateSet?'#2D7A4F':'#E8C77A';b.style.background=_pv&&_pv.dateSet?'#EBF5EF':'#FFF8E7';}
-}
-function pvSetDate(v){
-  if(!_pv||!v)return;
-  for(var i=0;i<_pv.rows.length;i++)_pv.rows[i].date=v;
-  _pv.dateSet=true;_pv.dateMode=v;el('pv-date').value=v;
-  pvDateUI();pvRender();
-}
-function pvFileDates(){
-  if(!_pv)return;
-  for(var i=0;i<_pv.rows.length;i++)_pv.rows[i].date=_pv.rows[i].date0||today();
-  _pv.dateSet=true;_pv.dateMode='file';el('pv-date').value='';
-  pvDateUI();pvRender();
-}
 function pvInc(i,c){_pv.rows[i].inc=c;var tr=el('pv-r'+i);if(tr)tr.className=c?'':'pv-off';pvTotals();}
 function pvAll(c){for(var i=0;i<_pv.rows.length;i++)_pv.rows[i].inc=c;pvRender();}
 function pvDel(i){_pv.rows.splice(i,1);pvRender();}
@@ -2701,15 +2806,13 @@ function pvTotals(){
     +'<span>وزن 875: <b style="color:#C8860A">'+N(t8)+'</b> جم</span>'
     +'<span>وزن 995: <b>'+N(t9)+'</b> جم</span>';
   var b=el('pv-ok'),t=_pv.type;
-  if(!_pv.dateSet&&!t){b.disabled=true;b.textContent='اختار التاريخ ووارد أو منصرف الأول';}
-  else if(!_pv.dateSet){b.disabled=true;b.textContent='اختار التاريخ الأول 📅';}
-  else if(!t){b.disabled=true;b.textContent='اختار وارد أو منصرف الأول';}
+  if(!t){b.disabled=true;b.textContent='اختار وارد أو منصرف الأول';}
   else if(!n){b.disabled=true;b.textContent='مفيش صفوف محددة';}
   else{b.disabled=false;b.textContent='✅ موافقة وإضافة '+N(n,0)+' سجل إلى '+(t==='منصرف'?'المنصرف':t==='مرتجع'?'المرتجع':'الوارد');}
 }
 function destClose(){el('dest-modal').style.display='none';_pv=null;}
 function pvApprove(){
-  var P=_pv;if(!P||!P.type||!P.dateSet)return;
+  var P=_pv;if(!P||!P.type)return;
   var type=P.type,isOut=type==='منصرف',now=Date.now(),added=0,base=now*10;
   for(var i=0;i<P.rows.length;i++){
     var r=P.rows[i];
@@ -3116,6 +3219,7 @@ function parseSheetRows(data,fmt){
 }
 function readWorkbookRows(buf){
   var wb=XLSX.read(buf,{type:'array'});
+  _xl1904=!!(wb.Workbook&&wb.Workbook.WBProps&&wb.Workbook.WBProps.date1904);
   for(var s=0;s<wb.SheetNames.length;s++){
     var ws=wb.Sheets[wb.SheetNames[s]];
     var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
@@ -3169,19 +3273,58 @@ function xlProcess2(file){
 }
 function xlParseData2(data){_xlRows2=parseSheetRows(data);if(_xlRows2.length)xlShowPreview2();}
 
+var _xl1904=false;
+var _XL_MONTHS={'يناير':1,'ينار':1,'فبراير':2,'فبراى':2,'مارس':3,'ابريل':4,'أبريل':4,'إبريل':4,'مايو':5,'يونيو':6,'يونيه':6,'يوليو':7,'يوليه':7,'اغسطس':8,'أغسطس':8,'سبتمبر':9,'اكتوبر':10,'أكتوبر':10,'نوفمبر':11,'ديسمبر':12,
+  'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'jul':7,'aug':8,'sep':9,'sept':9,'oct':10,'nov':11,'dec':12};
+function _xlYMD(y,m,d){
+  y=+y;m=+m;d=+d;
+  if(y<100)y+=2000;
+  if(!(m>=1&&m<=12&&d>=1&&d<=31&&y>=1900&&y<=2200))return '';
+  return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+}
+// يقرأ التاريخ زي ما هو مكتوب في خلية الإكسيل بالظبط (بدون فرق توقيت أو قلب يوم/شهر)
 function xlParseDate2(val){
   if(val===''||val===null||val===undefined)return today();
-  if(val instanceof Date&&!isNaN(val))return val.toISOString().split('T')[0];
-  if(typeof val==='number'&&val>20000&&val<80000){
-    var d=new Date(Math.round((val-25569)*86400*1000));
-    return d.toISOString().split('T')[0];
+  if(val instanceof Date&&!isNaN(val))return _xlYMD(val.getFullYear(),val.getMonth()+1,val.getDate())||today();
+  if(typeof val==='number'){
+    if(val>20000&&val<80000){
+      var pc=window.XLSX&&XLSX.SSF&&XLSX.SSF.parse_date_code?XLSX.SSF.parse_date_code(val,{date1904:_xl1904}):null;
+      if(pc)return _xlYMD(pc.y,pc.m,pc.d)||today();
+      var d=new Date(Math.round((Math.floor(val)-25569)*86400*1000));
+      return d.toISOString().split('T')[0];
+    }
+    val=String(val);
   }
-  var s=(val+'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).trim();
-  if(/^\d{5}(\.\d+)?$/.test(s)){var d2=new Date(Math.round((parseFloat(s)-25569)*86400*1000));return d2.toISOString().split('T')[0];}
-  var m=s.match(/(\d{4})[\-\/\.](\d{1,2})[\-\/\.](\d{1,2})/);
-  if(m)return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
-  m=s.match(/(\d{1,2})[\-\/\.](\d{1,2})[\-\/\.](\d{2,4})/);
-  if(m){var y=m[3].length===2?'20'+m[3]:m[3];return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');}
+  var s=(val+'').replace(/[٠-٩]/g,function(c){return c.charCodeAt(0)-1632;}).replace(/[۰-۹]/g,function(c){return c.charCodeAt(0)-1776;})
+    .replace(/[‎‏؜]/g,'').replace(/،/g,',').replace(/ـ/g,'').trim();
+  if(/^\d{5}(\.\d+)?$/.test(s))return xlParseDate2(parseFloat(s));
+  var m=s.match(/(\d{4})\s*[\-\/\.\\]\s*(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})/);
+  if(m)return _xlYMD(m[1],m[2],m[3])||today();
+  m=s.match(/(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})\s*[\-\/\.\\]\s*(\d{2,4})/);
+  if(m){
+    var a1=+m[1],a2=+m[2];
+    // الأساس يوم/شهر/سنة، ولو الرقم التاني أكبر من 12 يبقى الملف شهر/يوم/سنة
+    if(a2>12&&a1<=12){var t=a1;a1=a2;a2=t;}
+    return _xlYMD(m[3],a2,a1)||today();
+  }
+  // تاريخ بأسماء الشهور: 22 أكتوبر 2026 / 22-Oct-26 / Oct 22, 2026
+  var low=s.toLowerCase(),mon=0,key='';
+  for(var k in _XL_MONTHS){if(low.indexOf(k)>=0&&k.length>key.length){key=k;mon=_XL_MONTHS[k];}}
+  if(mon){
+    var nums=low.replace(key,' ').match(/\d+/g)||[];
+    var dd=0,yy=0;
+    for(var i=0;i<nums.length;i++){
+      var n=+nums[i];
+      if(nums[i].length===4)yy=n;
+      else if(!dd&&n>=1&&n<=31)dd=n;
+      else if(!yy)yy=n;
+    }
+    if(!yy)yy=new Date().getFullYear();
+    return _xlYMD(yy,mon,dd||1)||today();
+  }
+  // يوم/شهر بدون سنة
+  m=s.match(/^(\d{1,2})\s*[\-\/\.\\]\s*(\d{1,2})$/);
+  if(m){var b1=+m[1],b2=+m[2];if(b2>12&&b1<=12){var t2=b1;b1=b2;b2=t2;}return _xlYMD(new Date().getFullYear(),b2,b1)||today();}
   return today();
 }
 

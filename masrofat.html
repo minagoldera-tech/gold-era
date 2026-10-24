@@ -1467,8 +1467,36 @@ function renderKassa(){
       <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('kassa','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('kassa','${d.id}'))">✕</button></td>
     </tr>`}).join('');
 }
+// أثر الحذف على الرصيد: +1 يرجع للرصيد · −1 يتخصم من الرصيد · 0 لا أثر
+function delBalEffect(col,x){
+  if(!x) return 0;
+  if(col==='kassa') return x.type==='in'?-1:1;
+  if(col==='advances'){ if(x.kind==='repay') return (x.carry||x.fromPayroll)?0:-1; return 1; }
+  if(col==='entries'){ if(x.deduct) return x.category==='deposit'?0:-1; return 1; }
+  return 0;
+}
 async function delDoc(col,id){
-  try{ await db.collection(col).doc(id).delete(); toast('تم الحذف'); }
+  const x=findDocData(col,id);
+  const amt=+(x&&x.amount)||0;
+  const eff=delBalEffect(col,x);
+  // القيود المُرحّلة/المستوردة (عربون أو سلف) غير محسوبة في رصيد هذا الشهر،
+  // فحذفها وحده لا يغيّر الرصيد — لذلك نضيف قيد «وارد» بنفس المبلغ لإرجاعه للرصيد
+  const needRefund=!!x&&!!x.carry&&amt>0&&(
+    (col==='entries'&&x.category==='deposit'&&!x.deduct)||
+    (col==='advances'&&x.kind!=='repay'));
+  try{
+    await db.collection(col).doc(id).delete();
+    if(needRefund){
+      const what=col==='advances'?('سلفة '+empNameOf(x.empId,x.empName)):('عربون '+(x.party||x.desc||''));
+      auditMute++;
+      try{
+        await db.collection('kassa').add({type:'in',refund:true,date:td(),desc:'إرجاع للرصيد — حذف '+what,amount:amt,by:me?me.u:'',at:new Date().toISOString()});
+      }finally{ auditMute--; }
+    }
+    if(eff>0&&amt>0) toast('تم الحذف ✓ — ورجع '+fmt(amt)+' للرصيد',4000);
+    else if(eff<0&&amt>0) toast('تم الحذف ✓ — واتخصم '+fmt(amt)+' من الرصيد',4000);
+    else toast('تم الحذف');
+  }
   catch(e){ toast('خطأ في الحذف'); }
 }
 // ═══ تعديل قيد (مصروف / خزنة / عربون / معلم) ═══
@@ -1516,11 +1544,12 @@ async function saveEdit(){
 }
 // حذف صرف مرتب مع إلغاء قيد خصم السلفة المرتبط به (يرجّع رصيد السلفة)
 async function delPayroll(id){
+  const pd=payDocs.find(d=>d.id===id); const pAmt=pd?(+pd.data().total||0):0;
   try{
     await db.collection('payroll').doc(id).delete();
     const linked=advDocs.filter(d=>d.data().payrollId===id);
     for(const d of linked){ try{ await db.collection('advances').doc(d.id).delete(); }catch(e){} }
-    toast('تم الحذف — واسترجاع خصم السلفة');
+    toast('تم الحذف ✓ — ورجع '+fmt(pAmt)+' للرصيد واسترجاع خصم السلفة',4000);
   }catch(e){ toast('خطأ في الحذف'); }
 }
 
@@ -2444,7 +2473,7 @@ async function doCloseMonth(){
     const oldId=period?period.id:'p'+Date.now();
     const advCarry=Object.entries(advBalMap).filter(([id,v])=>v>0.001)
       .map(([id,v])=>{const e=empDocs.find(d=>d.id===id);return{empId:id,empName:e?e.data().name:(advDocs.find(d=>d.data().empId===id)?.data().empName||'—'),amount:v};});
-    const depBy={}; (catDocs['deposit']||[]).forEach(d=>{const x=d.data();const p=x.party||x.desc||'غير محدد';depBy[p]=(depBy[p]||0)+(+x.amount||0);});
+    const depBy={}; (catDocs['deposit']||[]).forEach(d=>{const x=d.data();const p=x.party||x.desc||'غير محدد';depBy[p]=(depBy[p]||0)+(x.deduct?-1:1)*(+x.amount||0);});
     const expByCat={}; Object.keys(CATS).forEach(c=>expByCat[c]=totals[c]||0);
     const empTotals={};
     payDocs.forEach(d=>{const x=d.data();if(!x.empId)return;const t=empTotals[x.empId]||(empTotals[x.empId]={name:x.empName,basic:0,extra:0,advance:0,total:0});t.basic+=+x.basic||0;t.extra+=+x.extra||0;t.advance+=+x.advance||0;t.total+=+x.total||0;});

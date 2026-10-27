@@ -1,0 +1,4976 @@
+{
+ "syncedAt": "2026-10-26 20:31",
+ "machines": [
+  {
+   "brand": "ZC COPP",
+   "calRequired": true,
+   "catalogs": [],
+   "category": "أفران معملية",
+   "code": "GE-LAB-001",
+   "dept": "المعمل",
+   "descAr": "فرن معملي (مافل) 4 كيلووات حتى 1100°م.",
+   "descEn": "4 kW laboratory muffle furnace up to 1100°C.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "المعمل",
+   "model": "",
+   "nameAr": "فرن معملي (مافل)",
+   "nameEn": "Laboratory Muffle Furnace",
+   "no": 33,
+   "notes": "",
+   "origin": "",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-LAB-001.jpg",
+   "photoId": "c8f893a577e3d144e9f4acfc4d49f846",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "القدرة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "4 كيلووات"
+    },
+    {
+     "k": "أقصى حرارة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "1100°م"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "غير معروف (صناعة إيطالية)",
+   "calRequired": true,
+   "catalogs": [],
+   "category": "أفران معملية",
+   "code": "GE-LAB-002",
+   "dept": "المعمل",
+   "descAr": "فرن معملي ميتالورجي (مافل) 4 كيلووات.",
+   "descEn": "4 kW metallurgical laboratory muffle furnace.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "المعمل",
+   "model": "",
+   "nameAr": "فرن معملي (مافل)",
+   "nameEn": "Laboratory Muffle Furnace",
+   "no": 34,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-LAB-002.jpg",
+   "photoId": "41a474ec41c9adcbd6f2372368152c03",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "القدرة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "4 كيلووات"
+    },
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تحاليل ميتالورجية"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "F.lli CAVALLIN",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "صفحة درافيل Cavallin الصناعية",
+     "url": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/"
+    },
+    {
+     "kind": "WEB",
+     "title": "درفيل ألواح F.lli Cavallin – مواصفات من الموزع",
+     "url": "https://www.matteogold.com/en/rolling-mill-for-plate-f-lli-cavallin-522.html"
+    }
+   ],
+   "category": "درفلة",
+   "code": "GE-PRD-001",
+   "dept": "الإنتاج",
+   "descAr": "مطحنة درفلة بقطعتين (رأسين) لتخفيف سُمك ألواح وأسلاك الذهب والفضة.",
+   "descEn": "Double-head rolling mill for reducing the thickness of gold/silver sheet and wire.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "015",
+   "nameAr": "ماكينة درفلة مزدوجة الرأس",
+   "nameEn": "Double-Head Rolling Mill",
+   "no": 1,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-001.jpg",
+   "photoId": "6fabb43df40e39cd71eae61037271512",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تخفيف سُمك ألواح وأسلاك الذهب والفضة"
+    },
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "درفيل مزدوج الرأس (رأسين)"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "F.lli CAVALLIN",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "صفحة درافيل Cavallin الصناعية",
+     "url": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/"
+    },
+    {
+     "kind": "WEB",
+     "title": "درفيل ألواح F.lli Cavallin – مواصفات من الموزع",
+     "url": "https://www.matteogold.com/en/rolling-mill-for-plate-f-lli-cavallin-522.html"
+    }
+   ],
+   "category": "درفلة",
+   "code": "GE-PRD-002",
+   "dept": "الإنتاج",
+   "descAr": "مطحنة درفلة بقطعتين (رأسين) لتخفيف سُمك ألواح وأسلاك الذهب والفضة.",
+   "descEn": "Double-head rolling mill for reducing the thickness of gold/silver sheet and wire.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "015",
+   "nameAr": "ماكينة درفلة مزدوجة الرأس",
+   "nameEn": "Double-Head Rolling Mill",
+   "no": 2,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-002.jpg",
+   "photoId": "878240e593d8c1b6e5ea28db83c12f1b",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تخفيف سُمك ألواح وأسلاك الذهب والفضة"
+    },
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "درفيل مزدوج الرأس (رأسين)"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "صفحة درافيل Cavallin الصناعية",
+     "url": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/"
+    },
+    {
+     "kind": "WEB",
+     "title": "درفيل ألواح F.lli Cavallin – مواصفات من الموزع",
+     "url": "https://www.matteogold.com/en/rolling-mill-for-plate-f-lli-cavallin-522.html"
+    }
+   ],
+   "category": "درفلة",
+   "code": "GE-PRD-003",
+   "dept": "الإنتاج",
+   "descAr": "مطحنة درفلة بقطعتين (رأسين) لتخفيف سُمك ألواح وأسلاك الذهب والفضة.",
+   "descEn": "Double-head rolling mill for reducing the thickness of gold/silver sheet and wire.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "ماكينة درفلة مزدوجة الرأس",
+   "nameEn": "Double-Head Rolling Mill",
+   "no": 3,
+   "notes": "الماركة غير ظاهرة",
+   "origin": "",
+   "pageUrl": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-003.jpg",
+   "photoId": "71bf2d3e4368d8a836017ca74ffe8341",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تخفيف سُمك ألواح وأسلاك الذهب والفضة"
+    },
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "درفيل مزدوج الرأس (رأسين)"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "صفحة درافيل Cavallin الصناعية",
+     "url": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/"
+    },
+    {
+     "kind": "WEB",
+     "title": "درفيل ألواح F.lli Cavallin – مواصفات من الموزع",
+     "url": "https://www.matteogold.com/en/rolling-mill-for-plate-f-lli-cavallin-522.html"
+    }
+   ],
+   "category": "درفلة",
+   "code": "GE-PRD-004",
+   "dept": "الإنتاج",
+   "descAr": "مطحنة درفلة بقطعتين (رأسين) لتخفيف سُمك ألواح وأسلاك الذهب والفضة.",
+   "descEn": "Double-head rolling mill for reducing the thickness of gold/silver sheet and wire.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "ماكينة درفلة مزدوجة الرأس",
+   "nameEn": "Double-Head Rolling Mill",
+   "no": 4,
+   "notes": "الماركة غير ظاهرة",
+   "origin": "",
+   "pageUrl": "https://www.cavallinsrl.com/laminatoi-industriali-industrial-rolling-mills/",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-004.jpg",
+   "photoId": "ba747583d6f4b7cbcce8474cee6df35c",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تخفيف سُمك ألواح وأسلاك الذهب والفضة"
+    },
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "درفيل مزدوج الرأس (رأسين)"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "Yihui Casting",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "كتالوج Yihui الرسمي 2026",
+     "url": "https://www.yihuicasting.com/static/upload/file/20260807/1786093986902308.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "صفحة فرن 5 كجم",
+     "url": "https://www.yihuicasting.com/melting/melting-furnace-digital-melting-furnace-big-capacity-for-jewelry-yihui-casting-furnace-16-13.html"
+    }
+   ],
+   "category": "أفران حث",
+   "code": "GE-PRD-005",
+   "dept": "الإنتاج",
+   "descAr": "فرن صهر بالحث سعة 5 كجم بتحكم رقمي DSP/PID لصهر الذهب والفضة.",
+   "descEn": "5 kg induction melting furnace with DSP/PID digital control for gold and silver.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "Z.M.MF.00G05A",
+   "nameAr": "فرن صهر بالحث 5 كجم",
+   "nameEn": "Induction Melting Furnace 5 kg",
+   "no": 5,
+   "notes": "",
+   "origin": "الصين",
+   "pageUrl": "https://www.yihuicasting.com/melting/melting-furnace-digital-melting-furnace-big-capacity-for-jewelry-yihui-casting-furnace-16-13.html",
+   "pdfUrl": "https://www.yihuicasting.com/static/upload/file/20260807/1786093986902308.pdf",
+   "photo": "photos/GE-PRD-005.jpg",
+   "photoId": "c47595a947431b6ea53ad4b9d2fa4af6",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "السعة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "5 كجم"
+    },
+    {
+     "k": "التحكم",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "رقمي DSP/PID"
+    },
+    {
+     "k": "المعادن",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "ذهب وفضة"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "IKOI",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور IKOI لماكينات إنتاج السبائك",
+     "url": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "فرن الصهر والصب – IKOI",
+     "url": "https://ikoi.it/products/melting-and-casting-furnace-37"
+    },
+    {
+     "kind": "WEB",
+     "title": "كل منتجات IKOI",
+     "url": "https://ikoi.it/products"
+    }
+   ],
+   "category": "أفران حث",
+   "code": "GE-PRD-006",
+   "dept": "الإنتاج",
+   "descAr": "فرن صهر بالحث سعة 10 كجم لصهر وصب المعادن الثمينة.",
+   "descEn": "10 kg induction melting and casting furnace for precious metals.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "فرن صهر بالحث 10 كجم",
+   "nameEn": "Induction Melting Furnace 10 kg",
+   "no": 6,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://ikoi.it/products/melting-and-casting-furnace-37",
+   "pdfUrl": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf",
+   "photo": "photos/GE-PRD-006.jpg",
+   "photoId": "ce18b92132c0ef8ae8115d78f5006143",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "IKOI – Melting and Casting Furnace",
+     "url": "https://ikoi.it/products/melting-and-casting-furnace-37"
+    }
+   ],
+   "specs": [
+    {
+     "k": "السعة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "10 كجم"
+    },
+    {
+     "k": "نوع الصهر",
+     "src": "IKOI – Melting and Casting Furnace",
+     "url": "https://ikoi.it/products/melting-and-casting-furnace-37",
+     "v": "حث بتردد متوسط مع تقليب للمعدن"
+    },
+    {
+     "k": "قياس الحرارة",
+     "src": "IKOI – Melting and Casting Furnace",
+     "url": "https://ikoi.it/products/melting-and-casting-furnace-37",
+     "v": "ثرموكبل داخل المعدن المنصهر"
+    },
+    {
+     "k": "مولد القدرة",
+     "src": "IKOI – Melting and Casting Furnace",
+     "url": "https://ikoi.it/products/melting-and-casting-furnace-37",
+     "v": "IGBT مع لوحة إشراف للحماية من الأعطال الإلكترونية"
+    },
+    {
+     "k": "التحكم",
+     "src": "IKOI – Melting and Casting Furnace",
+     "url": "https://ikoi.it/products/melting-and-casting-furnace-37",
+     "v": "شاشة لمس HMI تحفظ الوصفات والإنذارات"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "Yihui Casting",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "كتالوج Yihui الرسمي 2026",
+     "url": "https://www.yihuicasting.com/static/upload/file/20260807/1786093986902308.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "أفران الصهر – Yihui",
+     "url": "https://www.yihuicasting.com/melting/"
+    }
+   ],
+   "category": "أفران حث",
+   "code": "GE-PRD-007",
+   "dept": "الإنتاج",
+   "descAr": "فرن صهر بالحث بتحريك كهرومغناطيسي حتى 1400°م.",
+   "descEn": "Induction melting furnace with electromagnetic stirring, up to 1400°C.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "فرن صهر بالحث",
+   "nameEn": "Induction Melting Furnace",
+   "no": 7,
+   "notes": "",
+   "origin": "الصين",
+   "pageUrl": "https://www.yihuicasting.com/melting/",
+   "pdfUrl": "https://www.yihuicasting.com/static/upload/file/20260807/1786093986902308.pdf",
+   "photo": "photos/GE-PRD-007.jpg",
+   "photoId": "72a603774c24fe7f77e47ae5a5941dd3",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "أقصى حرارة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "1400°م"
+    },
+    {
+     "k": "التقليب",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "كهرومغناطيسي"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "IKOI",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور IKOI لماكينات إنتاج السبائك",
+     "url": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "أفران التحبيب – IKOI",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4"
+    }
+   ],
+   "category": "أفران حث",
+   "code": "GE-PRD-008",
+   "dept": "الإنتاج",
+   "descAr": "فرن حثّي لتحويل الذهب المصهور إلى حبيبات (تحبيب) بالصب في الماء.",
+   "descEn": "Induction graining furnace – pours molten gold into water to form grains.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "05500013",
+   "nameAr": "ماكينة تحبيب الذهب (فرن صهر بالحث)",
+   "nameEn": "Graining Induction Furnace",
+   "no": 8,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4",
+   "pdfUrl": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf",
+   "photo": "photos/GE-PRD-008.jpg",
+   "photoId": "663ea68bf005417cd08a3b556bc77432",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7"
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "05500013"
+    },
+    {
+     "k": "الوظيفة",
+     "src": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7",
+     "v": "صهر ساكن بالحث لإنتاج حبيبات السبائك الثمينة"
+    },
+    {
+     "k": "البوتقة",
+     "src": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7",
+     "v": "جرافيت"
+    },
+    {
+     "k": "التحكم",
+     "src": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7",
+     "v": "تحكم آلي في الحرارة"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "IKOI",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور IKOI لماكينات إنتاج السبائك",
+     "url": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "أفران التحبيب – IKOI",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4"
+    }
+   ],
+   "category": "أفران حث",
+   "code": "GE-PRD-009",
+   "dept": "الإنتاج",
+   "descAr": "فرن حثّي لصهر وتحبيب/صب الذهب، موديل 05500013.",
+   "descEn": "Induction graining / casting furnace, model 05500013.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "05500013",
+   "nameAr": "ماكينة تحبيب الذهب (فرن صهر وصب بالحث)",
+   "nameEn": "Graining / Casting Induction Furnace",
+   "no": 9,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4",
+   "pdfUrl": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf",
+   "photo": "photos/GE-PRD-009.jpg",
+   "photoId": "9c0d205a385ef5b5d933e3b2b331f17c",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7"
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "05500013"
+    },
+    {
+     "k": "الوظيفة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "صهر وتحبيب / صب الذهب"
+    },
+    {
+     "k": "الوظيفة",
+     "src": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7",
+     "v": "صهر ساكن بالحث لإنتاج حبيبات السبائك الثمينة"
+    },
+    {
+     "k": "البوتقة",
+     "src": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7",
+     "v": "جرافيت"
+    },
+    {
+     "k": "التحكم",
+     "src": "IKOI – Induction furnaces for casting grains",
+     "url": "https://ikoi.it/products/induction-furnaces-for-casting-grains-eamp;-powder-4/tilting-crucicle-casting-furnace-33/induction-furnaces-for-casting-grains-eamp;-powder-p-7",
+     "v": "تحكم آلي في الحرارة"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "Mario Di Maio",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "الكتالوج العام لـ Mario Di Maio",
+     "url": "https://mariodimaio.com/wp-content/uploads/2023/03/Catalogo-generale.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "ماكينات التلميع – Mario Di Maio",
+     "url": "https://shop.mariodimaio.com/en/578-polishing-machines"
+    }
+   ],
+   "category": "تلميع",
+   "code": "GE-PRD-010",
+   "dept": "الإنتاج",
+   "descAr": "بنك تلميع (بوليش) بموتور مزدوج ونظام شفط للغبار واسترجاع الذهب.",
+   "descEn": "Polishing bench with twin spindles and dust/gold-recovery extraction.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "PI 140 R1",
+   "nameAr": "ماكينة تلميع (بوليش) بشفط",
+   "nameEn": "Polishing Machine with Dust Extraction",
+   "no": 10,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://shop.mariodimaio.com/en/578-polishing-machines",
+   "pdfUrl": "https://mariodimaio.com/wp-content/uploads/2023/03/Catalogo-generale.pdf",
+   "photo": "photos/GE-PRD-010.jpg",
+   "photoId": "c6c1bdeff9b33fddb93de68a78ca81c3",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "Mario Di Maio – Banco aspirante industriale",
+     "url": "https://mariodimaio.com/prodotto/banco-aspirante-industriale/"
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "PI 140 R1"
+    },
+    {
+     "k": "السرعة",
+     "src": "Mario Di Maio – Banco aspirante industriale",
+     "url": "https://mariodimaio.com/prodotto/banco-aspirante-industriale/",
+     "v": "متغيرة بإنفرتر رقمي (مواصفات سلسلة بنوك الشفط)"
+    },
+    {
+     "k": "الشفط",
+     "src": "Mario Di Maio – Banco aspirante industriale",
+     "url": "https://mariodimaio.com/prodotto/banco-aspirante-industriale/",
+     "v": "فلاتر أكياس في غرفة عازلة للصوت + درج لاسترجاع الأتربة"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "",
+   "calRequired": true,
+   "catalogs": [],
+   "category": "مكابس هيدروليكية",
+   "code": "GE-PRD-011",
+   "dept": "الإنتاج",
+   "descAr": "مكبس هيدروليكي بهيكل H لكبس وتشكيل المعادن.",
+   "descEn": "H-frame hydraulic press for pressing and forming metals.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "مكبس هيدروليكي (H-Frame)",
+   "nameEn": "Hydraulic Press (H-Frame)",
+   "no": 11,
+   "notes": "الماركة غير ظاهرة",
+   "origin": "مصر (تصنيع محلي)",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-011.jpg",
+   "photoId": "aa7b1586d92ca36357ccef1813082030",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الهيكل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "H-Frame"
+    },
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "كبس وتشكيل المعادن"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "",
+   "calRequired": true,
+   "catalogs": [],
+   "category": "مكابس هيدروليكية",
+   "code": "GE-PRD-012",
+   "dept": "الإنتاج",
+   "descAr": "مكبس هيدروليكي كهربائي لكبس وتشكيل المعادن.",
+   "descEn": "Electric hydraulic press for pressing and forming metals.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "مكبس هيدروليكي",
+   "nameEn": "Hydraulic Press",
+   "no": 12,
+   "notes": "الماركة غير ظاهرة",
+   "origin": "مصر (تصنيع محلي)",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-012.jpg",
+   "photoId": "edb7a4ebbe90a7a95adf6308bdbcf2d8",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "مكبس هيدروليكي كهربائي"
+    },
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "كبس وتشكيل المعادن"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "MASAR / PEMUS",
+   "calRequired": true,
+   "catalogs": [],
+   "category": "مكابس هيدروليكية",
+   "code": "GE-PRD-013",
+   "dept": "الإنتاج",
+   "descAr": "مكبس هيدروليكي بمحرك تشيكي 7.5 كيلووات لسك ودمغ السبائك.",
+   "descEn": "Hydraulic press with 7.5 kW Czech motor for bar/coin stamping.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "مكبس هيدروليكي",
+   "nameEn": "Hydraulic Press",
+   "no": 13,
+   "notes": "",
+   "origin": "موتور تشيكي",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-013.jpg",
+   "photoId": "b62e506b70ab66e8533ce575f0cf2f5a",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموتور",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "7.5 كيلووات (تشيكي)"
+    },
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "سك ودمغ السبائك"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "TERA Automation",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "خطوط السك – Tera Automation",
+     "url": "https://www.tera-automation.com/en/precious-metals-automation/minting"
+    },
+    {
+     "kind": "WEB",
+     "title": "خط T-Minting لسك العملات ودمغ السبائك",
+     "url": "https://www.tera-automation.com/en/precious-metals-automation/minting/t-minting-line"
+    },
+    {
+     "kind": "PDF",
+     "title": "كتالوج منتجات Tera 2021 (عام)",
+     "url": "https://www.tera-automation.com/images/brochure/LINE-UP-2021.pdf"
+    }
+   ],
+   "category": "مكابس سك",
+   "code": "GE-PRD-014",
+   "dept": "الإنتاج",
+   "descAr": "مكبس آلي لسك العملات ودمغ السبائك من خطوط Tera الإيطالية.",
+   "descEn": "Automatic coining / bar-stamping press by Tera Automation (Italy).",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "مكبس سك وضغط آلي",
+   "nameEn": "T-PRESS Coining Press",
+   "no": 14,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.tera-automation.com/en/precious-metals-automation/minting",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-014.jpg",
+   "photoId": "6382815057e611286c345a87051f65f1",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "سك العملات ودمغ السبائك (آلي)"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "GÜNER",
+   "calRequired": true,
+   "catalogs": [],
+   "category": "مكابس هيدروليكية",
+   "code": "GE-PRD-015",
+   "dept": "الإنتاج",
+   "descAr": "مكبس هيدروليكي تركي لكبس ودمغ المشغولات.",
+   "descEn": "Turkish hydraulic press for pressing and stamping.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "مكبس هيدروليكي",
+   "nameEn": "Hydraulic Press",
+   "no": 15,
+   "notes": "",
+   "origin": "تركيا",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-015.jpg",
+   "photoId": "513738d4384008d676288b5587e22fcc",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "كبس ودمغ المشغولات"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "",
+   "calRequired": true,
+   "catalogs": [],
+   "category": "مكابس هيدروليكية",
+   "code": "GE-PRD-016",
+   "dept": "الإنتاج",
+   "descAr": "مكبس هيدروليكي كهربائي لكبس وتشكيل المعادن.",
+   "descEn": "Electric hydraulic press for pressing and forming metals.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "مكبس هيدروليكي",
+   "nameEn": "Hydraulic Press",
+   "no": 16,
+   "notes": "الماركة غير ظاهرة",
+   "origin": "مصر (تصنيع محلي)",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-016.jpg",
+   "photoId": "60028d84e95bbccd72a3d2f2cfeb143c",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "مكبس هيدروليكي كهربائي"
+    },
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "كبس وتشكيل المعادن"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "تصنيع محلي",
+   "calRequired": false,
+   "catalogs": [],
+   "category": "تنظيف",
+   "code": "GE-PRD-017",
+   "dept": "الإنتاج",
+   "descAr": "حوض تنظيف بالموجات فوق الصوتية 40 كيلوهرتز مع تسخين.",
+   "descEn": "Heated 40 kHz ultrasonic cleaning tank.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "ماكينة تنظيف بالموجات فوق الصوتية",
+   "nameEn": "Ultrasonic Cleaning Machine",
+   "no": 17,
+   "notes": "",
+   "origin": "مصر (تصنيع محلي)",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-017.jpg",
+   "photoId": "b5483543aa05e2fddb6d4d9393d79a64",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "التردد",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "40 كيلوهرتز"
+    },
+    {
+     "k": "التسخين",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "مزود بسخان"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "Colusso Luigi",
+   "calRequired": false,
+   "catalogs": [],
+   "category": "تجفيف",
+   "code": "GE-PRD-018",
+   "dept": "الإنتاج",
+   "descAr": "مجفف بالهواء الساخن من الاستانلس لتجفيف المشغولات بعد الغسيل.",
+   "descEn": "Stainless-steel hot-air dryer for jewelry after washing/plating.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "مجفف هواء ساخن",
+   "nameEn": "Hot Air Dryer",
+   "no": 18,
+   "notes": "",
+   "origin": "",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-018.jpg",
+   "photoId": "36746b028c04eccf9fda4da8dc54635e",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الخامة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "ستانلس ستيل"
+    },
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تجفيف المشغولات بعد الغسيل"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "تصنيع مصري",
+   "calRequired": false,
+   "catalogs": [],
+   "category": "تلميع اهتزازي",
+   "code": "GE-PRD-019",
+   "dept": "الإنتاج",
+   "descAr": "ماكينة اهتزازية لتلميع وجلي المشغولات بالوسائط.",
+   "descEn": "Vibratory tumbler for polishing/deburring with media.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "ماكينة تلميع اهتزازية (فيبراتور)",
+   "nameEn": "Vibratory Polishing Machine",
+   "no": 19,
+   "notes": "",
+   "origin": "مصر",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-019.jpg",
+   "photoId": "fe015f41181286ad670f33137dfb8c8c",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تلميع وجلي المشغولات بالوسائط"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "",
+   "calRequired": false,
+   "catalogs": [],
+   "category": "تغليف",
+   "code": "GE-PRD-020",
+   "dept": "الإنتاج",
+   "descAr": "نفق شرنك حراري لتغليف السبائك والعملات.",
+   "descEn": "Heat-shrink tunnel for packaging bars and coins.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "MU207 V2",
+   "nameAr": "ماكينة تغليف السبائك بالشرنك الحراري",
+   "nameEn": "Shrink Tunnel Packaging Machine",
+   "no": 20,
+   "notes": "",
+   "origin": "الهند",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-020.jpg",
+   "photoId": "8f7fc0505d2077d1b2733798ce47374e",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "MU207 V2"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "MASAR",
+   "calRequired": false,
+   "catalogs": [],
+   "category": "تغليف",
+   "code": "GE-PRD-021",
+   "dept": "الإنتاج",
+   "descAr": "ماكينة تغليف (بليستر) للعملات والسبائك.",
+   "descEn": "Blister packaging machine for coins and bars.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "ماكينة تغليف العملات والسبائك",
+   "nameEn": "Coin & Bar Packaging Machine",
+   "no": 21,
+   "notes": "",
+   "origin": "",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-021.jpg",
+   "photoId": "b7eb433bac115f099b9db0b3011c4943",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تغليف بليستر للعملات والسبائك"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "B.T.T. ITALIA",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "أنظمة التكرير الكيميائي – BTT",
+     "url": "https://www.bttimpianti.com/product-category/chemical-refining-plant-en/?lang=en"
+    },
+    {
+     "kind": "WEB",
+     "title": "محطات تكرير الذهب بالماء الملكي AFF.CHI.Au",
+     "url": "https://www.bttimpianti.com/prodotto/aff-chi-au-impianti-di-diverse-dimensioni-e-portate/?lang=en"
+    },
+    {
+     "kind": "WEB",
+     "title": "محطة تكرير ذهب 20+5 كجم (أقرب موديل منشور)",
+     "url": "https://www.bttimpianti.com/prodotto/aff-chi-au-205-impianto-affinazione-chimica-oro-acqua-regia/?lang=en"
+    }
+   ],
+   "category": "تكرير",
+   "code": "GE-PRD-022",
+   "dept": "الإنتاج",
+   "descAr": "وحدة تكرير/ترشيح كيميائي للمعادن الثمينة R.P. 20.",
+   "descEn": "Chemical refining / filtration unit R.P. 20 for precious metals.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "R.P. 20",
+   "nameAr": "ماكينة تكرير",
+   "nameEn": "Refining Unit",
+   "no": 22,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.bttimpianti.com/chemical-refining/?lang=en",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-022.jpg",
+   "photoId": "2cecc1a6393e50433fc206ac4231bc35",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "R.P. 20"
+    },
+    {
+     "k": "الوظيفة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تكرير / ترشيح كيميائي للمعادن الثمينة"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "B.T.T. ITALIA",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "أنظمة التكرير الكيميائي – BTT",
+     "url": "https://www.bttimpianti.com/product-category/chemical-refining-plant-en/?lang=en"
+    },
+    {
+     "kind": "WEB",
+     "title": "محطات تكرير الذهب بالماء الملكي AFF.CHI.Au",
+     "url": "https://www.bttimpianti.com/prodotto/aff-chi-au-impianti-di-diverse-dimensioni-e-portate/?lang=en"
+    },
+    {
+     "kind": "WEB",
+     "title": "محطة تكرير ذهب 20+5 كجم (أقرب موديل منشور)",
+     "url": "https://www.bttimpianti.com/prodotto/aff-chi-au-205-impianto-affinazione-chimica-oro-acqua-regia/?lang=en"
+    }
+   ],
+   "category": "تكرير",
+   "code": "GE-PRD-023",
+   "dept": "الإنتاج",
+   "descAr": "محطة تكرير ذهب دوّارة 20+20 كجم بالماء الملكي.",
+   "descEn": "Rotary gold refinery plant 20+20 kg (aqua regia).",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "",
+   "nameAr": "محطة تكرير الذهب دوّارة 20+20 كجم",
+   "nameEn": "Gold Refinery Plant (Rotary)",
+   "no": 23,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.bttimpianti.com/?product_cat=chemical-refining-plant-en&lang=en",
+   "pdfUrl": "",
+   "photo": "photos/GE-PRD-023.jpg",
+   "photoId": "8e036b3edeae291155288ae20a6a76cd",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "السعة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "20+20 كجم"
+    },
+    {
+     "k": "الطريقة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "الماء الملكي (Aqua Regia)"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "IKOI",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور IKOI لماكينات إنتاج السبائك",
+     "url": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "خط إنتاج السبائك الآلي COMPACT – IKOI",
+     "url": "https://ikoi.it/products/compact-automated-gold-bars-production-plant-30"
+    },
+    {
+     "kind": "فيديو",
+     "title": "فيديو تشغيل IKOI COMPACT",
+     "url": "https://www.youtube.com/watch?v=Zbks1MYTUjo"
+    }
+   ],
+   "category": "خطوط صب آلية",
+   "code": "GE-PRD-024",
+   "dept": "الإنتاج",
+   "descAr": "خط آلي من IKOI موديل Z8106015 (125 كيلووات).",
+   "descEn": "IKOI automated line, model Z8106015 (125 kW).",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "Z8106015",
+   "nameAr": "ماكينة حل الذهب",
+   "nameEn": "Gold Processing Machine",
+   "no": 30,
+   "notes": "مسماة في الشيت الثاني \"ماكينة بارات\" – يُرجى التأكيد",
+   "origin": "إيطاليا",
+   "pageUrl": "https://ikoi.it/products/compact-automated-gold-bars-production-plant-30",
+   "pdfUrl": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf",
+   "photo": "photos/GE-PRD-024.jpg",
+   "photoId": "2f7a6d9e4bcb370298a85e3794ad789d",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "Z8106015"
+    },
+    {
+     "k": "القدرة",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "125 كيلووات"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "IKOI",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور IKOI لماكينات إنتاج السبائك",
+     "url": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "Flameless Tunnel – IKOI",
+     "url": "https://ikoi.it/products/flameless-tunnel%C2%AE----(patented-technology)-28"
+    },
+    {
+     "kind": "WEB",
+     "title": "خطوط السبائك المصبوبة – IKOI",
+     "url": "https://ikoi.it/sectors/machinery-and-plants-for-melting-and-casting-2/cast-bars-1"
+    }
+   ],
+   "category": "خطوط صب آلية",
+   "code": "GE-PRD-025",
+   "dept": "الإنتاج",
+   "descAr": "نفق صهر حثّي مستمر بدون لهب لإنتاج سبائك الذهب والفضة المصبوبة.",
+   "descEn": "Flameless Tunnel® continuous induction system for cast gold/silver bars.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "صالة الإنتاج",
+   "model": "Z4101206",
+   "nameAr": "خط صب السبائك (فرن النفق عديم اللهب)",
+   "nameEn": "Flameless Tunnel – Cast Bar Line",
+   "no": 32,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://ikoi.it/products/flameless-tunnel%C2%AE----(patented-technology)-28",
+   "pdfUrl": "https://goldbarsworldwide.com/PDF/RT_10_IKOI_Gold_Bar_Manufacturing_Machines.pdf",
+   "photo": "photos/GE-PRD-025.jpg",
+   "photoId": "c6d2e5c6e193ea1a50a0b8c1ca333598",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "Gold International Machinery – IKOI Flameless Tunnel",
+     "url": "https://www.goldmachinery.com/listings/6643922-new-ikoi-flameless-tunnel-continuous-induction-system-for-production-of-gold-silver-cast-bars"
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "Z4101206"
+    },
+    {
+     "k": "أحجام السبائك",
+     "src": "Gold International Machinery – IKOI Flameless Tunnel",
+     "url": "https://www.goldmachinery.com/listings/6643922-new-ikoi-flameless-tunnel-continuous-induction-system-for-production-of-gold-silver-cast-bars",
+     "v": "من 1 أونصة حتى 100 أونصة"
+    },
+    {
+     "k": "التقنية",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "صهر حثي مستمر بدون لهب"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "OMI",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "كتالوج شيلرات OMI",
+     "url": "https://pdf.directindustry.com/pdf/omi-italy/chiller-catalogue/68777-698572.html"
+    },
+    {
+     "kind": "دليل",
+     "title": "دليل التشغيل والصيانة لسلسلة CHW (76 صفحة)",
+     "url": "https://www.manualslib.com/manual/1810763/Omi-Chw-Series.html"
+    },
+    {
+     "kind": "دليل",
+     "title": "دليل التشغيل والصيانة لسلسلة CHW (82 صفحة)",
+     "url": "https://www.manualslib.com/manual/1810764/Omi-Chw-Series.html"
+    },
+    {
+     "kind": "WEB",
+     "title": "صفحة موديل CHW 26",
+     "url": "https://www.manualslib.com/products/Omi-Chw-26-10958765.html"
+    }
+   ],
+   "category": "تبريد (شيلر)",
+   "code": "GE-UTL-001",
+   "dept": "المرافق",
+   "descAr": "مبرد مياه صناعي (شيلر) CHW 26.",
+   "descEn": "Industrial water chiller CHW 26.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "CHW 26",
+   "nameAr": "مبرد مياه صناعي (شيلر)",
+   "nameEn": "Water Chiller",
+   "no": 24,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.omi-italy.it/en/liquid-refrigeration/liquid-chillers/water-chillers/",
+   "pdfUrl": "https://pdf.directindustry.com/pdf/omi-italy/chiller-catalogue/68777-698572.html",
+   "photo": "photos/GE-UTL-001.jpg",
+   "photoId": "137599f59234a82e12576f09defb15c4",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf"
+    }
+   ],
+   "specs": [
+    {
+     "k": "السعة التبريدية",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "2.60 كيلووات (2240 ك.كالوري/س)"
+    },
+    {
+     "k": "القدرة المستهلكة",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "1.38 كيلووات"
+    },
+    {
+     "k": "الخزان",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "10 لتر"
+    },
+    {
+     "k": "الكهرباء",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "230 فولت / 1 فاز / 50 هرتز – 9.10 أمبير"
+    },
+    {
+     "k": "التوصيلات",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "1/2 بوصة BSP"
+    },
+    {
+     "k": "الأبعاد",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "445 × 575 × 540"
+    },
+    {
+     "k": "الوزن",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "58 كجم"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "OMI",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "كتالوج شيلرات OMI",
+     "url": "https://pdf.directindustry.com/pdf/omi-italy/chiller-catalogue/68777-698572.html"
+    },
+    {
+     "kind": "دليل",
+     "title": "دليل التشغيل والصيانة لسلسلة CHW (76 صفحة)",
+     "url": "https://www.manualslib.com/manual/1810763/Omi-Chw-Series.html"
+    },
+    {
+     "kind": "دليل",
+     "title": "دليل التشغيل والصيانة لسلسلة CHW (82 صفحة)",
+     "url": "https://www.manualslib.com/manual/1810764/Omi-Chw-Series.html"
+    },
+    {
+     "kind": "WEB",
+     "title": "صفحة موديل CHW 29",
+     "url": "https://www.manualslib.com/products/Omi-Chw-29-10958768.html"
+    }
+   ],
+   "category": "تبريد (شيلر)",
+   "code": "GE-UTL-002",
+   "dept": "المرافق",
+   "descAr": "مبرد مياه صناعي (شيلر) CHW 29، سعة تبريد 2.9 كيلووات.",
+   "descEn": "Industrial water chiller CHW 29, 2.9 kW cooling.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "CHW 29",
+   "nameAr": "مبرد مياه صناعي (شيلر)",
+   "nameEn": "Water Chiller",
+   "no": 25,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.omi-italy.it/en/liquid-refrigeration/liquid-chillers/water-chillers/",
+   "pdfUrl": "https://pdf.directindustry.com/pdf/omi-italy/chiller-catalogue/68777-698572.html",
+   "photo": "photos/GE-UTL-002.jpg",
+   "photoId": "776181574cc439aa3016dfbe9a80a34a",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf"
+    }
+   ],
+   "specs": [
+    {
+     "k": "السعة التبريدية",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "2.90 كيلووات (2490 ك.كالوري/س)"
+    },
+    {
+     "k": "القدرة المستهلكة",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "1.37 كيلووات (1 فاز) / 1.35 كيلووات (3 فاز)"
+    },
+    {
+     "k": "الخزان",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "30 لتر"
+    },
+    {
+     "k": "الكهرباء",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "230/1/50 أو 400/3/50 حسب الطراز"
+    },
+    {
+     "k": "التوصيلات",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "3/4 بوصة BSP"
+    },
+    {
+     "k": "الأبعاد",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "580 × 650 × 920"
+    },
+    {
+     "k": "الوزن",
+     "src": "كتالوج OMI لمبردات السوائل (PCA EST)",
+     "url": "https://pcaest.it/files/doc/20131115103949Refrigerazione%20di%20liquidi%20omi.pdf",
+     "v": "99 كجم"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "CIND / IKOI",
+   "calRequired": false,
+   "catalogs": [],
+   "category": "تبريد (شيلر)",
+   "code": "GE-UTL-003",
+   "dept": "المرافق",
+   "descAr": "شيلر صناعي لتبريد أفران IKOI، موديل AD0301.",
+   "descEn": "Industrial chiller for IKOI furnaces, model AD0301.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "AD0301",
+   "nameAr": "مبرد مياه صناعي (شيلر)",
+   "nameEn": "Industrial Chiller",
+   "no": 26,
+   "notes": "",
+   "origin": "",
+   "pageUrl": "",
+   "pdfUrl": "",
+   "photo": "photos/GE-UTL-003.jpg",
+   "photoId": "e827ee41eb9a49cc4e7c12b909c696de",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "AD0301"
+    },
+    {
+     "k": "الاستخدام",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "تبريد أفران IKOI"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "COLDSOAR",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "كتالوج Yihui الرسمي 2026",
+     "url": "https://www.yihuicasting.com/static/upload/file/20260807/1786093986902308.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "صفحة شيلر CLW – Yihui",
+     "url": "https://www.yihuicasting.com/water-chiller/industrial-intelligent-chiller-3-13.html"
+    }
+   ],
+   "category": "تبريد (شيلر)",
+   "code": "GE-UTL-004",
+   "dept": "المرافق",
+   "descAr": "شيلر صناعي CLW-5000 لتبريد ماكينات الصب.",
+   "descEn": "CLW-5000 industrial chiller for casting machines.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "CLW-5000",
+   "nameAr": "مبرد مياه صناعي (شيلر)",
+   "nameEn": "Industrial Water Chiller",
+   "no": 27,
+   "notes": "",
+   "origin": "الصين",
+   "pageUrl": "https://www.yihuicasting.com/water-chiller/industrial-intelligent-chiller-3-13.html",
+   "pdfUrl": "https://www.yihuicasting.com/static/upload/file/20260807/1786093986902308.pdf",
+   "photo": "photos/GE-UTL-004.jpg",
+   "photoId": "c533d5531f29fe3c6155b52190ba42d9",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "COLDSOAR – CLW-5000",
+     "url": "https://www.coldsoar.cn/products/145.html"
+    }
+   ],
+   "specs": [
+    {
+     "k": "دائرة المياه",
+     "src": "COLDSOAR – CLW-5000",
+     "url": "https://www.coldsoar.cn/products/145.html",
+     "v": "ستانلس ستيل بالكامل"
+    },
+    {
+     "k": "الحماية",
+     "src": "COLDSOAR – CLW-5000",
+     "url": "https://www.coldsoar.cn/products/145.html",
+     "v": "تأخير الكمبروسر، زيادة التيار، إنذار تدفق المياه، إنذار ارتفاع وانخفاض الحرارة"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "KAESER",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور KAESER سلسلة ASK",
+     "url": "https://d15gaovuyz6h3b.cloudfront.net/asset/204664918567/document_2dh82u90lh2tt23iil5f9f7j18"
+    },
+    {
+     "kind": "WEB",
+     "title": "كمبروسرات ASK – الموقع الرسمي",
+     "url": "https://www.kaeser.com/int-en/products/rotary-screw-compressors/rotary-screw-compressors-with-fluid-cooling/compact-rotary-screw-compressors-up-to-22-kw/with-belt-drive"
+    },
+    {
+     "kind": "PDF",
+     "title": "كل كتالوجات KAESER",
+     "url": "https://pdf.directindustry.com/pdf/kaeser-kompressoren-4742.html"
+    }
+   ],
+   "category": "هواء مضغوط",
+   "code": "GE-UTL-005",
+   "dept": "المرافق",
+   "descAr": "كمبروسر هواء حلزوني 15 كيلووات بسير.",
+   "descEn": "15 kW belt-driven rotary screw air compressor.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "ASK 28",
+   "nameAr": "كمبروسر هواء حلزوني",
+   "nameEn": "Rotary Screw Air Compressor",
+   "no": 28,
+   "notes": "",
+   "origin": "ألمانيا",
+   "pageUrl": "https://www.kaeser.com/int-en/products/rotary-screw-compressors/rotary-screw-compressors-with-fluid-cooling/compact-rotary-screw-compressors-up-to-22-kw/with-belt-drive",
+   "pdfUrl": "https://d15gaovuyz6h3b.cloudfront.net/asset/204664918567/document_2dh82u90lh2tt23iil5f9f7j18",
+   "photo": "photos/GE-UTL-005.jpg",
+   "photoId": "082e5d5f76ca3f63bb45bbc800aa5fad",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "بروشور KAESER سلسلة ASK (Kerr Compressors)",
+     "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-ASK-Series-P651-23ED-15-20.pdf"
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "دليل تشغيل KAESER ASK 28 – ManualsLib",
+     "url": "https://www.manualslib.com/manual/1775922/Kaeser-Ask-28.html"
+    }
+   ],
+   "specs": [
+    {
+     "k": "قدرة الموتور",
+     "src": "بروشور KAESER سلسلة ASK (Kerr Compressors)",
+     "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-ASK-Series-P651-23ED-15-20.pdf",
+     "v": "15 كيلووات"
+    },
+    {
+     "k": "أقصى ضغط",
+     "src": "بروشور KAESER سلسلة ASK (Kerr Compressors)",
+     "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-ASK-Series-P651-23ED-15-20.pdf",
+     "v": "15 بار"
+    },
+    {
+     "k": "كمية الهواء",
+     "src": "بروشور KAESER سلسلة ASK (Kerr Compressors)",
+     "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-ASK-Series-P651-23ED-15-20.pdf",
+     "v": "3.17 م³/دقيقة عند 6 بار – 1.93 م³/دقيقة عند 13 بار"
+    },
+    {
+     "k": "الأبعاد",
+     "src": "بروشور KAESER سلسلة ASK (Kerr Compressors)",
+     "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-ASK-Series-P651-23ED-15-20.pdf",
+     "v": "800 × 1110 × 1530 مم"
+    },
+    {
+     "k": "الوزن",
+     "src": "بروشور KAESER سلسلة ASK (Kerr Compressors)",
+     "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-ASK-Series-P651-23ED-15-20.pdf",
+     "v": "485 كجم"
+    },
+    {
+     "k": "مستوى الضوضاء",
+     "src": "بروشور KAESER سلسلة ASK (Kerr Compressors)",
+     "url": "https://www.kerrcompressors.co.uk/wp-content/uploads/2024/11/KERR-KAESER-ASK-Series-P651-23ED-15-20.pdf",
+     "v": "65 ديسيبل"
+    },
+    {
+     "k": "صمام الأمان",
+     "src": "دليل تشغيل KAESER ASK 28 – ManualsLib",
+     "url": "https://www.manualslib.com/manual/1775922/Kaeser-Ask-28.html",
+     "v": "يفتح عند 16 بار"
+    },
+    {
+     "k": "تغيير الزيت",
+     "src": "دليل تشغيل KAESER ASK 28 – ManualsLib",
+     "url": "https://www.manualslib.com/manual/1775922/Kaeser-Ask-28.html",
+     "v": "كل 3000 ساعة أو سنة (زيت MOL) / كل 6000 ساعة أو سنتين (S-460)"
+    },
+    {
+     "k": "تغيير السير",
+     "src": "دليل تشغيل KAESER ASK 28 – ManualsLib",
+     "url": "https://www.manualslib.com/manual/1775922/Kaeser-Ask-28.html",
+     "v": "كل 12000 ساعة"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "Isolcell / IKOI",
+   "calRequired": true,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور Isolcell",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/brochure/31463-778561.html"
+    },
+    {
+     "kind": "PDF",
+     "title": "مولدات NIMOS NM1",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/nimos-nm1/31463-957366.html"
+    },
+    {
+     "kind": "PDF",
+     "title": "مولدات NIMOS NM2",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/nimos-nm2/31463-957367.html"
+    },
+    {
+     "kind": "WEB",
+     "title": "مولدات PSA سلسلة NM",
+     "url": "https://www.n2generators.com/en/psa-nitrogen-generators-series-nm/"
+    }
+   ],
+   "category": "غازات",
+   "code": "GE-UTL-006",
+   "dept": "المرافق",
+   "descAr": "مولد نيتروجين بتقنية PSA لحماية المعدن من الأكسدة أثناء الصب.",
+   "descEn": "PSA nitrogen generator to protect metal from oxidation during casting.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "",
+   "nameAr": "مولد نيتروجين PSA",
+   "nameEn": "PSA Nitrogen Generator",
+   "no": 29,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.n2generators.com/en/psa-nitrogen-generators-series-nm/",
+   "pdfUrl": "https://pdf.directindustry.com/pdf/isolcell/brochure/31463-778561.html",
+   "photo": "photos/GE-UTL-006.jpg",
+   "photoId": "066f73910a937ffd1fcd9d0dcc6efa77",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "Isolcell NIMOS NM – DirectIndustry",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/nimos-nm1/31463-957366.html"
+    }
+   ],
+   "specs": [
+    {
+     "k": "نقاء النيتروجين",
+     "src": "Isolcell NIMOS NM – DirectIndustry",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/nimos-nm1/31463-957366.html",
+     "v": "95% حتى 99.999%"
+    },
+    {
+     "k": "ضغط التشغيل",
+     "src": "Isolcell NIMOS NM – DirectIndustry",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/nimos-nm1/31463-957366.html",
+     "v": "6 – 10 بار"
+    },
+    {
+     "k": "الكهرباء",
+     "src": "Isolcell NIMOS NM – DirectIndustry",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/nimos-nm1/31463-957366.html",
+     "v": "230 فولت – 0.5 كيلووات كحد أقصى"
+    },
+    {
+     "k": "هواء التغذية",
+     "src": "Isolcell NIMOS NM – DirectIndustry",
+     "url": "https://pdf.directindustry.com/pdf/isolcell/nimos-nm1/31463-957366.html",
+     "v": "ISO 8573.1 فئة 1-4-1"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "MTA",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "PDF",
+     "title": "بروشور TAEevo Tech",
+     "url": "https://mta-usa.com/wp-content/uploads/2020/03/TAEevoTECH-015-802-Brochure-Optimized.pdf"
+    },
+    {
+     "kind": "WEB",
+     "title": "صفحة TAEevo Tech – MTA",
+     "url": "https://www.mta-it.com/eng/products/process-cooling/air-cooled-chillers-1/taeevo-tech.php"
+    }
+   ],
+   "category": "تبريد (شيلر)",
+   "code": "GE-UTL-007",
+   "dept": "المرافق",
+   "descAr": "شيلر صناعي مبرد بالهواء سلسلة TAEevo Tech.",
+   "descEn": "Air-cooled process chiller, TAEevo Tech series.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "TAEevo Tech",
+   "nameAr": "مبرد مياه صناعي (شيلر)",
+   "nameEn": "Air-Cooled Water Chiller",
+   "no": 31,
+   "notes": "",
+   "origin": "إيطاليا",
+   "pageUrl": "https://www.mta-it.com/eng/products/process-cooling/air-cooled-chillers-1/taeevo-tech.php",
+   "pdfUrl": "https://mta-usa.com/wp-content/uploads/2020/03/TAEevoTECH-015-802-Brochure-Optimized.pdf",
+   "photo": "photos/GE-UTL-007.jpg",
+   "photoId": "4db3280bd0584f3345aca1d9a8a31e4b",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    }
+   ],
+   "specs": [
+    {
+     "k": "النوع",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "شيلر عمليات مبرد بالهواء"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  },
+  {
+   "brand": "DRIC",
+   "calRequired": false,
+   "catalogs": [
+    {
+     "kind": "WEB",
+     "title": "شيلرات DRIC – الموقع الرسمي",
+     "url": "https://www.driceg.com/en/product/details/hermetic-chiller"
+    }
+   ],
+   "category": "تبريد (شيلر)",
+   "code": "GE-UTL-008",
+   "dept": "المرافق",
+   "descAr": "شيلر مياه مبرد بالهواء DWAC 450 بكمبروسر Scroll.",
+   "descEn": "Air-cooled scroll water chiller DWAC 450.",
+   "files": [],
+   "inServiceAt": "",
+   "location": "غرفة المرافق",
+   "model": "DWAC 450",
+   "nameAr": "مبرد مياه صناعي (شيلر)",
+   "nameEn": "Water Chiller",
+   "no": 35,
+   "notes": "",
+   "origin": "مصر",
+   "pageUrl": "https://www.driceg.com/en/product/details/hermetic-chiller",
+   "pdfUrl": "",
+   "photo": "photos/GE-UTL-008.jpg",
+   "photoId": "e24224138aad7aeef96f69e507209d55",
+   "receivedAt": "",
+   "serial": "",
+   "sources": [
+    {
+     "note": "الاسم، الماركة، الموديل، الوصف، الصورة",
+     "title": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": ""
+    },
+    {
+     "note": "المواصفات الفنية",
+     "title": "DRIC – Hermetic Chiller",
+     "url": "https://driceg.com/en/product/details/hermetic-chiller"
+    }
+   ],
+   "specs": [
+    {
+     "k": "الموديل",
+     "src": "ملف «كتالوج الماكينات» المقدم من الشركة",
+     "url": "",
+     "v": "DWAC 450"
+    },
+    {
+     "k": "الكمبروسر",
+     "src": "DRIC – Hermetic Chiller",
+     "url": "https://driceg.com/en/product/details/hermetic-chiller",
+     "v": "Scroll محكم (Hermetic)"
+    },
+    {
+     "k": "المكثف",
+     "src": "DRIC – Hermetic Chiller",
+     "url": "https://driceg.com/en/product/details/hermetic-chiller",
+     "v": "مواسير نحاس وزعانف ألومنيوم بمراوح محورية"
+    },
+    {
+     "k": "المبخر",
+     "src": "DRIC – Hermetic Chiller",
+     "url": "https://driceg.com/en/product/details/hermetic-chiller",
+     "v": "Shell & Tube"
+    },
+    {
+     "k": "الفريون",
+     "src": "DRIC – Hermetic Chiller",
+     "url": "https://driceg.com/en/product/details/hermetic-chiller",
+     "v": "R-22 / R-134A / R-407C / R-410A حسب الطراز"
+    },
+    {
+     "k": "سعات السلسلة",
+     "src": "DRIC – Hermetic Chiller",
+     "url": "https://driceg.com/en/product/details/hermetic-chiller",
+     "v": "5 – 100 طن تبريد"
+    }
+   ],
+   "status": "في الخدمة",
+   "supplier": "",
+   "year": ""
+  }
+ ],
+ "pm": [
+  {
+   "activity": "تنظيف الحجرة، وفحص العزل والباب والجوان",
+   "code": "GE-LAB-001",
+   "freq": "شهري",
+   "id": "GE-LAB-001-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ قفازات حرارية",
+   "status": {}
+  },
+  {
+   "activity": "فحص العناصر الحرارية والتوصيلات",
+   "code": "GE-LAB-001",
+   "freq": "ربع سنوي",
+   "id": "GE-LAB-001-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "معايرة الثرموكبل وجهاز التحكم في الحرارة",
+   "code": "GE-LAB-001",
+   "freq": "سنوي",
+   "id": "GE-LAB-001-3",
+   "months": [
+    4
+   ],
+   "responsible": "جهة معايرة خارجية",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف الحجرة، وفحص العزل والباب والجوان",
+   "code": "GE-LAB-002",
+   "freq": "شهري",
+   "id": "GE-LAB-002-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ قفازات حرارية",
+   "status": {}
+  },
+  {
+   "activity": "فحص العناصر الحرارية والتوصيلات",
+   "code": "GE-LAB-002",
+   "freq": "ربع سنوي",
+   "id": "GE-LAB-002-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "معايرة الثرموكبل وجهاز التحكم في الحرارة",
+   "code": "GE-LAB-002",
+   "freq": "سنوي",
+   "id": "GE-LAB-002-3",
+   "months": [
+    9
+   ],
+   "responsible": "جهة معايرة خارجية",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف الدرافيل وفحص سطحها من الخدوش والتآكل، وتشحيم المسننات وعمود الضبط",
+   "code": "GE-PRD-001",
+   "freq": "شهري",
+   "id": "GE-PRD-001-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ عدم لمس الدرافيل أثناء الدوران؛ قفازات",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى زيت صندوق التروس، وفحص السيور والكوبلنج والرولمان",
+   "code": "GE-PRD-001",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-001-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تغيير زيت صندوق التروس، وفحص الموتور ولوحة التحكم ومفتاح الطوارئ، وضبط توازي الدرافيل",
+   "code": "GE-PRD-001",
+   "freq": "سنوي",
+   "id": "GE-PRD-001-3",
+   "months": [
+    0
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف الدرافيل وفحص سطحها من الخدوش والتآكل، وتشحيم المسننات وعمود الضبط",
+   "code": "GE-PRD-002",
+   "freq": "شهري",
+   "id": "GE-PRD-002-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ عدم لمس الدرافيل أثناء الدوران؛ قفازات",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى زيت صندوق التروس، وفحص السيور والكوبلنج والرولمان",
+   "code": "GE-PRD-002",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-002-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تغيير زيت صندوق التروس، وفحص الموتور ولوحة التحكم ومفتاح الطوارئ، وضبط توازي الدرافيل",
+   "code": "GE-PRD-002",
+   "freq": "سنوي",
+   "id": "GE-PRD-002-3",
+   "months": [
+    5
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف الدرافيل وفحص سطحها من الخدوش والتآكل، وتشحيم المسننات وعمود الضبط",
+   "code": "GE-PRD-003",
+   "freq": "شهري",
+   "id": "GE-PRD-003-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ عدم لمس الدرافيل أثناء الدوران؛ قفازات",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى زيت صندوق التروس، وفحص السيور والكوبلنج والرولمان",
+   "code": "GE-PRD-003",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-003-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تغيير زيت صندوق التروس، وفحص الموتور ولوحة التحكم ومفتاح الطوارئ، وضبط توازي الدرافيل",
+   "code": "GE-PRD-003",
+   "freq": "سنوي",
+   "id": "GE-PRD-003-3",
+   "months": [
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف الدرافيل وفحص سطحها من الخدوش والتآكل، وتشحيم المسننات وعمود الضبط",
+   "code": "GE-PRD-004",
+   "freq": "شهري",
+   "id": "GE-PRD-004-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ عدم لمس الدرافيل أثناء الدوران؛ قفازات",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى زيت صندوق التروس، وفحص السيور والكوبلنج والرولمان",
+   "code": "GE-PRD-004",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-004-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تغيير زيت صندوق التروس، وفحص الموتور ولوحة التحكم ومفتاح الطوارئ، وضبط توازي الدرافيل",
+   "code": "GE-PRD-004",
+   "freq": "سنوي",
+   "id": "GE-PRD-004-3",
+   "months": [
+    3
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص دائرة مياه التبريد (التدفق – الخراطيم – التسريب) وتنظيف الفلتر، وفحص البوتقة والغطاء",
+   "code": "GE-PRD-005",
+   "freq": "شهري",
+   "id": "GE-PRD-005-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ قفازات حرارية ونظارة واقية",
+   "status": {}
+  },
+  {
+   "activity": "فحص ملف الحث وعزله، وشد التوصيلات الكهربائية، وتنظيف لوحة التحكم من الأتربة",
+   "code": "GE-PRD-005",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-005-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ التأكد من تفريغ المكثفات",
+   "status": {}
+  },
+  {
+   "activity": "التحقق من قراءة الحرارة، وفحص الحمايات ومفتاح الطوارئ، وصيانة شاملة حسب دليل المصنع",
+   "code": "GE-PRD-005",
+   "freq": "سنوي",
+   "id": "GE-PRD-005-3",
+   "months": [
+    8
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ قفازات حرارية",
+   "status": {}
+  },
+  {
+   "activity": "فحص دائرة مياه التبريد (التدفق – الخراطيم – التسريب) وتنظيف الفلتر، وفحص البوتقة والغطاء",
+   "code": "GE-PRD-006",
+   "freq": "شهري",
+   "id": "GE-PRD-006-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ قفازات حرارية ونظارة واقية",
+   "status": {}
+  },
+  {
+   "activity": "فحص ملف الحث وعزله، وشد التوصيلات الكهربائية، وتنظيف لوحة التحكم من الأتربة",
+   "code": "GE-PRD-006",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-006-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ التأكد من تفريغ المكثفات",
+   "status": {}
+  },
+  {
+   "activity": "التحقق من قراءة الحرارة، وفحص الحمايات ومفتاح الطوارئ، وصيانة شاملة حسب دليل المصنع",
+   "code": "GE-PRD-006",
+   "freq": "سنوي",
+   "id": "GE-PRD-006-3",
+   "months": [
+    1
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ قفازات حرارية",
+   "status": {}
+  },
+  {
+   "activity": "فحص دائرة مياه التبريد (التدفق – الخراطيم – التسريب) وتنظيف الفلتر، وفحص البوتقة والغطاء",
+   "code": "GE-PRD-007",
+   "freq": "شهري",
+   "id": "GE-PRD-007-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ قفازات حرارية ونظارة واقية",
+   "status": {}
+  },
+  {
+   "activity": "فحص ملف الحث وعزله، وشد التوصيلات الكهربائية، وتنظيف لوحة التحكم من الأتربة",
+   "code": "GE-PRD-007",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-007-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ التأكد من تفريغ المكثفات",
+   "status": {}
+  },
+  {
+   "activity": "التحقق من قراءة الحرارة، وفحص الحمايات ومفتاح الطوارئ، وصيانة شاملة حسب دليل المصنع",
+   "code": "GE-PRD-007",
+   "freq": "سنوي",
+   "id": "GE-PRD-007-3",
+   "months": [
+    6
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ قفازات حرارية",
+   "status": {}
+  },
+  {
+   "activity": "فحص دائرة مياه التبريد (التدفق – الخراطيم – التسريب) وتنظيف الفلتر، وفحص البوتقة والغطاء",
+   "code": "GE-PRD-008",
+   "freq": "شهري",
+   "id": "GE-PRD-008-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ قفازات حرارية ونظارة واقية",
+   "status": {}
+  },
+  {
+   "activity": "فحص ملف الحث وعزله، وشد التوصيلات الكهربائية، وتنظيف لوحة التحكم من الأتربة",
+   "code": "GE-PRD-008",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-008-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ التأكد من تفريغ المكثفات",
+   "status": {}
+  },
+  {
+   "activity": "التحقق من قراءة الحرارة، وفحص الحمايات ومفتاح الطوارئ، وصيانة شاملة حسب دليل المصنع",
+   "code": "GE-PRD-008",
+   "freq": "سنوي",
+   "id": "GE-PRD-008-3",
+   "months": [
+    11
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ قفازات حرارية",
+   "status": {}
+  },
+  {
+   "activity": "فحص دائرة مياه التبريد (التدفق – الخراطيم – التسريب) وتنظيف الفلتر، وفحص البوتقة والغطاء",
+   "code": "GE-PRD-009",
+   "freq": "شهري",
+   "id": "GE-PRD-009-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ قفازات حرارية ونظارة واقية",
+   "status": {}
+  },
+  {
+   "activity": "فحص ملف الحث وعزله، وشد التوصيلات الكهربائية، وتنظيف لوحة التحكم من الأتربة",
+   "code": "GE-PRD-009",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-009-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ التأكد من تفريغ المكثفات",
+   "status": {}
+  },
+  {
+   "activity": "التحقق من قراءة الحرارة، وفحص الحمايات ومفتاح الطوارئ، وصيانة شاملة حسب دليل المصنع",
+   "code": "GE-PRD-009",
+   "freq": "سنوي",
+   "id": "GE-PRD-009-3",
+   "months": [
+    4
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ قفازات حرارية",
+   "status": {}
+  },
+  {
+   "activity": "تفريغ وتنظيف فلاتر وصناديق الشفط، وتجميع الأتربة وتسليمها لاسترجاع الذهب",
+   "code": "GE-PRD-010",
+   "freq": "أسبوعي",
+   "id": "GE-PRD-010-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ كمامة؛ عدم لبس ملابس فضفاضة",
+   "status": {}
+  },
+  {
+   "activity": "فحص الموتور والرولمان والاهتزاز، وفحص التوصيلات الكهربائية",
+   "code": "GE-PRD-010",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-010-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تغيير فلاتر الشفط حسب الحالة، والتحقق من قوة الشفط",
+   "code": "GE-PRD-010",
+   "freq": "سنوي",
+   "id": "GE-PRD-010-3",
+   "months": [
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ كمامة",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى الزيت الهيدروليكي والتسريبات والخراطيم، وفحص مفتاح الطوارئ وحماية اليد",
+   "code": "GE-PRD-011",
+   "freq": "شهري",
+   "id": "GE-PRD-011-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط قبل الفك؛ عدم وضع اليد بين الفورم",
+   "status": {}
+  },
+  {
+   "activity": "تغيير فلتر الزيت، وفحص الصمامات والسلندر والجوانات",
+   "code": "GE-PRD-011",
+   "freq": "نصف سنوي",
+   "id": "GE-PRD-011-2",
+   "months": [
+    4,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط",
+   "status": {}
+  },
+  {
+   "activity": "تغيير الزيت الهيدروليكي، والتحقق من مانومتر الضغط",
+   "code": "GE-PRD-011",
+   "freq": "سنوي",
+   "id": "GE-PRD-011-3",
+   "months": [
+    2
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تجميع الزيت المستعمل في الحاوية المخصصة",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى الزيت الهيدروليكي والتسريبات والخراطيم، وفحص مفتاح الطوارئ وحماية اليد",
+   "code": "GE-PRD-012",
+   "freq": "شهري",
+   "id": "GE-PRD-012-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط قبل الفك؛ عدم وضع اليد بين الفورم",
+   "status": {}
+  },
+  {
+   "activity": "تغيير فلتر الزيت، وفحص الصمامات والسلندر والجوانات",
+   "code": "GE-PRD-012",
+   "freq": "نصف سنوي",
+   "id": "GE-PRD-012-2",
+   "months": [
+    5,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط",
+   "status": {}
+  },
+  {
+   "activity": "تغيير الزيت الهيدروليكي، والتحقق من مانومتر الضغط",
+   "code": "GE-PRD-012",
+   "freq": "سنوي",
+   "id": "GE-PRD-012-3",
+   "months": [
+    7
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تجميع الزيت المستعمل في الحاوية المخصصة",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى الزيت الهيدروليكي والتسريبات والخراطيم، وفحص مفتاح الطوارئ وحماية اليد",
+   "code": "GE-PRD-013",
+   "freq": "شهري",
+   "id": "GE-PRD-013-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط قبل الفك؛ عدم وضع اليد بين الفورم",
+   "status": {}
+  },
+  {
+   "activity": "تغيير فلتر الزيت، وفحص الصمامات والسلندر والجوانات",
+   "code": "GE-PRD-013",
+   "freq": "نصف سنوي",
+   "id": "GE-PRD-013-2",
+   "months": [
+    0,
+    6
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط",
+   "status": {}
+  },
+  {
+   "activity": "تغيير الزيت الهيدروليكي، والتحقق من مانومتر الضغط",
+   "code": "GE-PRD-013",
+   "freq": "سنوي",
+   "id": "GE-PRD-013-3",
+   "months": [
+    0
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تجميع الزيت المستعمل في الحاوية المخصصة",
+   "status": {}
+  },
+  {
+   "activity": "فحص الزيت الهيدروليكي والتسريبات، وتنظيف الفورم ووحدة التغذية، وفحص حساسات الأمان",
+   "code": "GE-PRD-014",
+   "freq": "شهري",
+   "id": "GE-PRD-014-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط؛ عدم تجاوز الحواجز الواقية",
+   "status": {}
+  },
+  {
+   "activity": "تشحيم الأجزاء المتحركة، وفحص الصمامات والحساسات ولوحة التحكم (PLC)",
+   "code": "GE-PRD-014",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-014-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تغيير الزيت والفلاتر، والتحقق من مانومتر/حساس الضغط، وصيانة شاملة بمعرفة الوكيل",
+   "code": "GE-PRD-014",
+   "freq": "سنوي",
+   "id": "GE-PRD-014-3",
+   "months": [
+    5
+   ],
+   "responsible": "الوكيل (TERA)",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى الزيت الهيدروليكي والتسريبات والخراطيم، وفحص مفتاح الطوارئ وحماية اليد",
+   "code": "GE-PRD-015",
+   "freq": "شهري",
+   "id": "GE-PRD-015-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط قبل الفك؛ عدم وضع اليد بين الفورم",
+   "status": {}
+  },
+  {
+   "activity": "تغيير فلتر الزيت، وفحص الصمامات والسلندر والجوانات",
+   "code": "GE-PRD-015",
+   "freq": "نصف سنوي",
+   "id": "GE-PRD-015-2",
+   "months": [
+    2,
+    8
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط",
+   "status": {}
+  },
+  {
+   "activity": "تغيير الزيت الهيدروليكي، والتحقق من مانومتر الضغط",
+   "code": "GE-PRD-015",
+   "freq": "سنوي",
+   "id": "GE-PRD-015-3",
+   "months": [
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تجميع الزيت المستعمل في الحاوية المخصصة",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى الزيت الهيدروليكي والتسريبات والخراطيم، وفحص مفتاح الطوارئ وحماية اليد",
+   "code": "GE-PRD-016",
+   "freq": "شهري",
+   "id": "GE-PRD-016-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط قبل الفك؛ عدم وضع اليد بين الفورم",
+   "status": {}
+  },
+  {
+   "activity": "تغيير فلتر الزيت، وفحص الصمامات والسلندر والجوانات",
+   "code": "GE-PRD-016",
+   "freq": "نصف سنوي",
+   "id": "GE-PRD-016-2",
+   "months": [
+    3,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط",
+   "status": {}
+  },
+  {
+   "activity": "تغيير الزيت الهيدروليكي، والتحقق من مانومتر الضغط",
+   "code": "GE-PRD-016",
+   "freq": "سنوي",
+   "id": "GE-PRD-016-3",
+   "months": [
+    3
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تجميع الزيت المستعمل في الحاوية المخصصة",
+   "status": {}
+  },
+  {
+   "activity": "تفريغ الحوض وتنظيفه، وفحص السخان والثرموستات",
+   "code": "GE-PRD-017",
+   "freq": "شهري",
+   "id": "GE-PRD-017-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء قبل التفريغ؛ قفازات للمحاليل؛ التخلص من المحلول المستعمل وفق الإجراء البيئي",
+   "status": {}
+  },
+  {
+   "activity": "فحص التوصيلات الكهربائية ومحولات الموجات (Transducers)",
+   "code": "GE-PRD-017",
+   "freq": "نصف سنوي",
+   "id": "GE-PRD-017-2",
+   "months": [
+    4,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف فلتر الهواء والحجرة، وفحص السخان والمروحة",
+   "code": "GE-PRD-018",
+   "freq": "شهري",
+   "id": "GE-PRD-018-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد",
+   "status": {}
+  },
+  {
+   "activity": "فحص التوصيلات الكهربائية والثرموستات",
+   "code": "GE-PRD-018",
+   "freq": "سنوي",
+   "id": "GE-PRD-018-2",
+   "months": [
+    1
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص وتنظيف الوسائط (Media) والحوض والبطانة",
+   "code": "GE-PRD-019",
+   "freq": "شهري",
+   "id": "GE-PRD-019-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ قفازات",
+   "status": {}
+  },
+  {
+   "activity": "فحص الموتور والأوزان والقواعد المطاطية وشد المسامير",
+   "code": "GE-PRD-019",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-019-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف النفق والسير الناقل، وفحص السخانات والمراوح",
+   "code": "GE-PRD-020",
+   "freq": "شهري",
+   "id": "GE-PRD-020-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد",
+   "status": {}
+  },
+  {
+   "activity": "فحص ضابط الحرارة، وشد السير وتشحيم الجنازير",
+   "code": "GE-PRD-020",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-020-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف القوالب ووحدة اللحام الحراري، وفحص ضغط الهواء",
+   "code": "GE-PRD-021",
+   "freq": "شهري",
+   "id": "GE-PRD-021-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد",
+   "status": {}
+  },
+  {
+   "activity": "فحص السخانات والحساسات، وتشحيم الأجزاء المتحركة",
+   "code": "GE-PRD-021",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-021-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص التسريبات في الخراطيم والمحابس والأوعية، وفحص منظومة غسيل الأبخرة (Scrubber) ومستوى محلول المعادلة",
+   "code": "GE-PRD-022",
+   "freq": "أسبوعي",
+   "id": "GE-PRD-022-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "قناع غازات؛ قفازات وبدلة مقاومة للأحماض؛ التأكد من جاهزية دش الطوارئ وغسيل العيون",
+   "status": {}
+  },
+  {
+   "activity": "فحص المضخات والمقلبات والجوانات والفلاتر",
+   "code": "GE-PRD-022",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-022-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ وغسيل الخط قبل الفك؛ مهمات وقاية من الأحماض",
+   "status": {}
+  },
+  {
+   "activity": "فحص شامل لسلامة الأوعية والمواسير، والتحقق من حساسات الحرارة والمستوى",
+   "code": "GE-PRD-022",
+   "freq": "سنوي",
+   "id": "GE-PRD-022-3",
+   "months": [
+    9
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "مهمات وقاية من الأحماض؛ التخلص من النفايات الحمضية وفق الإجراء البيئي",
+   "status": {}
+  },
+  {
+   "activity": "فحص التسريبات في الخراطيم والمحابس والأوعية، وفحص منظومة غسيل الأبخرة (Scrubber) ومستوى محلول المعادلة",
+   "code": "GE-PRD-023",
+   "freq": "أسبوعي",
+   "id": "GE-PRD-023-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "قناع غازات؛ قفازات وبدلة مقاومة للأحماض؛ التأكد من جاهزية دش الطوارئ وغسيل العيون",
+   "status": {}
+  },
+  {
+   "activity": "فحص المضخات والمقلبات والجوانات والفلاتر",
+   "code": "GE-PRD-023",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-023-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ وغسيل الخط قبل الفك؛ مهمات وقاية من الأحماض",
+   "status": {}
+  },
+  {
+   "activity": "فحص شامل لسلامة الأوعية والمواسير، والتحقق من حساسات الحرارة والمستوى",
+   "code": "GE-PRD-023",
+   "freq": "سنوي",
+   "id": "GE-PRD-023-3",
+   "months": [
+    2
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "مهمات وقاية من الأحماض؛ التخلص من النفايات الحمضية وفق الإجراء البيئي",
+   "status": {}
+  },
+  {
+   "activity": "فحص مياه التبريد والفلاتر، وفحص خطوط النيتروجين والغاز الواقي من التسريب، وتنظيف القوالب والسير الناقل",
+   "code": "GE-PRD-024",
+   "freq": "شهري",
+   "id": "GE-PRD-024-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ تهوية جيدة",
+   "status": {}
+  },
+  {
+   "activity": "فحص ملفات الحث والتوصيلات، وتشحيم الأجزاء المتحركة والسير الناقل، وفحص الحساسات",
+   "code": "GE-PRD-024",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-024-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "التحقق من حساسات الحرارة، وفحص أنظمة الأمان والإنترلوك، وصيانة شاملة بمعرفة الوكيل",
+   "code": "GE-PRD-024",
+   "freq": "سنوي",
+   "id": "GE-PRD-024-3",
+   "months": [
+    1
+   ],
+   "responsible": "الوكيل (IKOI)",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص مياه التبريد والفلاتر، وفحص خطوط النيتروجين والغاز الواقي من التسريب، وتنظيف القوالب والسير الناقل",
+   "code": "GE-PRD-025",
+   "freq": "شهري",
+   "id": "GE-PRD-025-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ الانتظار حتى التبريد؛ تهوية جيدة",
+   "status": {}
+  },
+  {
+   "activity": "فحص ملفات الحث والتوصيلات، وتشحيم الأجزاء المتحركة والسير الناقل، وفحص الحساسات",
+   "code": "GE-PRD-025",
+   "freq": "ربع سنوي",
+   "id": "GE-PRD-025-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "التحقق من حساسات الحرارة، وفحص أنظمة الأمان والإنترلوك، وصيانة شاملة بمعرفة الوكيل",
+   "code": "GE-PRD-025",
+   "freq": "سنوي",
+   "id": "GE-PRD-025-3",
+   "months": [
+    11
+   ],
+   "responsible": "الوكيل (IKOI)",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف المكثف وفلتر الهواء، وفحص مستوى المياه والتسريبات",
+   "code": "GE-UTL-001",
+   "freq": "شهري",
+   "id": "GE-UTL-001-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص ضغط غاز التبريد، والمضخة والمروحة والتوصيلات",
+   "code": "GE-UTL-001",
+   "freq": "ربع سنوي",
+   "id": "GE-UTL-001-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني تبريد",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ لا تُفتح دائرة الفريون إلا بفني تبريد مختص",
+   "status": {}
+  },
+  {
+   "activity": "تغيير مياه الدائرة وإضافة مانع التآكل، والتحقق من حساس الحرارة",
+   "code": "GE-UTL-001",
+   "freq": "سنوي",
+   "id": "GE-UTL-001-3",
+   "months": [
+    7
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف المكثف وفلتر الهواء، وفحص مستوى المياه والتسريبات",
+   "code": "GE-UTL-002",
+   "freq": "شهري",
+   "id": "GE-UTL-002-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص ضغط غاز التبريد، والمضخة والمروحة والتوصيلات",
+   "code": "GE-UTL-002",
+   "freq": "ربع سنوي",
+   "id": "GE-UTL-002-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني تبريد",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ لا تُفتح دائرة الفريون إلا بفني تبريد مختص",
+   "status": {}
+  },
+  {
+   "activity": "تغيير مياه الدائرة وإضافة مانع التآكل، والتحقق من حساس الحرارة",
+   "code": "GE-UTL-002",
+   "freq": "سنوي",
+   "id": "GE-UTL-002-3",
+   "months": [
+    0
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف المكثف وفلتر الهواء، وفحص مستوى المياه والتسريبات",
+   "code": "GE-UTL-003",
+   "freq": "شهري",
+   "id": "GE-UTL-003-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص ضغط غاز التبريد، والمضخة والمروحة والتوصيلات",
+   "code": "GE-UTL-003",
+   "freq": "ربع سنوي",
+   "id": "GE-UTL-003-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني تبريد",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ لا تُفتح دائرة الفريون إلا بفني تبريد مختص",
+   "status": {}
+  },
+  {
+   "activity": "تغيير مياه الدائرة وإضافة مانع التآكل، والتحقق من حساس الحرارة",
+   "code": "GE-UTL-003",
+   "freq": "سنوي",
+   "id": "GE-UTL-003-3",
+   "months": [
+    5
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف المكثف وفلتر الهواء، وفحص مستوى المياه والتسريبات",
+   "code": "GE-UTL-004",
+   "freq": "شهري",
+   "id": "GE-UTL-004-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص ضغط غاز التبريد، والمضخة والمروحة والتوصيلات",
+   "code": "GE-UTL-004",
+   "freq": "ربع سنوي",
+   "id": "GE-UTL-004-2",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "responsible": "فني تبريد",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ لا تُفتح دائرة الفريون إلا بفني تبريد مختص",
+   "status": {}
+  },
+  {
+   "activity": "تغيير مياه الدائرة وإضافة مانع التآكل، والتحقق من حساس الحرارة",
+   "code": "GE-UTL-004",
+   "freq": "سنوي",
+   "id": "GE-UTL-004-3",
+   "months": [
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص مستوى الزيت وتصريف المكثفات، ومراجعة الإنذارات على الشاشة",
+   "code": "GE-UTL-005",
+   "freq": "أسبوعي",
+   "id": "GE-UTL-005-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "عدم فتح أي غطاء أثناء التشغيل",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف أو تغيير فلتر الهواء، وفحص شد السير",
+   "code": "GE-UTL-005",
+   "freq": "ربع سنوي",
+   "id": "GE-UTL-005-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط",
+   "status": {}
+  },
+  {
+   "activity": "تغيير الزيت وفلتر الزيت والسيبراتور حسب جدول KAESER (أو عدد الساعات)، واختبار صمام الأمان",
+   "code": "GE-UTL-005",
+   "freq": "سنوي",
+   "id": "GE-UTL-005-3",
+   "months": [
+    3
+   ],
+   "responsible": "فني الصيانة / الوكيل",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط؛ الانتظار حتى التبريد؛ تجميع الزيت المستعمل",
+   "status": {}
+  },
+  {
+   "activity": "تصريف المكثفات وفحص الفلاتر الأولية، ومراجعة نقاء النيتروجين على الشاشة",
+   "code": "GE-UTL-006",
+   "freq": "شهري",
+   "id": "GE-UTL-006-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "تهوية جيدة (خطر الاختناق بالنيتروجين)؛ تفريغ الضغط قبل الفك",
+   "status": {}
+  },
+  {
+   "activity": "تغيير عناصر الفلاتر",
+   "code": "GE-UTL-006",
+   "freq": "نصف سنوي",
+   "id": "GE-UTL-006-2",
+   "months": [
+    4,
+    10
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ تفريغ الضغط",
+   "status": {}
+  },
+  {
+   "activity": "معايرة محلل الأكسجين / النقاء، وفحص الصمامات",
+   "code": "GE-UTL-006",
+   "freq": "سنوي",
+   "id": "GE-UTL-006-3",
+   "months": [
+    8
+   ],
+   "responsible": "الوكيل",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف المكثف وفلتر الهواء، وفحص مستوى المياه والتسريبات",
+   "code": "GE-UTL-007",
+   "freq": "شهري",
+   "id": "GE-UTL-007-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص ضغط غاز التبريد، والمضخة والمروحة والتوصيلات",
+   "code": "GE-UTL-007",
+   "freq": "ربع سنوي",
+   "id": "GE-UTL-007-2",
+   "months": [
+    0,
+    3,
+    6,
+    9
+   ],
+   "responsible": "فني تبريد",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ لا تُفتح دائرة الفريون إلا بفني تبريد مختص",
+   "status": {}
+  },
+  {
+   "activity": "تغيير مياه الدائرة وإضافة مانع التآكل، والتحقق من حساس الحرارة",
+   "code": "GE-UTL-007",
+   "freq": "سنوي",
+   "id": "GE-UTL-007-3",
+   "months": [
+    6
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "تنظيف المكثف وفلتر الهواء، وفحص مستوى المياه والتسريبات",
+   "code": "GE-UTL-008",
+   "freq": "شهري",
+   "id": "GE-UTL-008-1",
+   "months": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  },
+  {
+   "activity": "فحص ضغط غاز التبريد، والمضخة والمروحة والتوصيلات",
+   "code": "GE-UTL-008",
+   "freq": "ربع سنوي",
+   "id": "GE-UTL-008-2",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "responsible": "فني تبريد",
+   "safety": "فصل الكهرباء وعزلها (LOTO)؛ لا تُفتح دائرة الفريون إلا بفني تبريد مختص",
+   "status": {}
+  },
+  {
+   "activity": "تغيير مياه الدائرة وإضافة مانع التآكل، والتحقق من حساس الحرارة",
+   "code": "GE-UTL-008",
+   "freq": "سنوي",
+   "id": "GE-UTL-008-3",
+   "months": [
+    2
+   ],
+   "responsible": "فني الصيانة",
+   "safety": "فصل الكهرباء وعزلها (LOTO)",
+   "status": {}
+  }
+ ],
+ "ohs": [
+  {
+   "code": "GE-LAB-001",
+   "controls": [
+    "شفاط أبخرة فوق الفرن",
+    "استخدام ملاقط طويلة وسطح مقاوم للحرارة",
+    "عدم فتح الباب إلا عند الحاجة",
+    "فحص طبي دوري لمستوى الرصاص في الدم للفنيين"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تبريد الحرق بماء جارٍ",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "حروق من درجات حرارة حتى 1100°م",
+    "أبخرة المعادن وأكاسيد الرصاص أثناء التحليل بالصهر",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "قفازات حرارية طويلة",
+    "واقي وجه",
+    "معطف معمل",
+    "كمامة عند التعامل مع الرصاص"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 4
+  },
+  {
+   "code": "GE-LAB-002",
+   "controls": [
+    "شفاط أبخرة فوق الفرن",
+    "استخدام ملاقط طويلة وسطح مقاوم للحرارة",
+    "عدم فتح الباب إلا عند الحاجة",
+    "فحص طبي دوري لمستوى الرصاص في الدم للفنيين"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تبريد الحرق بماء جارٍ",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "حروق من درجات حرارة حتى 1100°م",
+    "أبخرة المعادن وأكاسيد الرصاص أثناء التحليل بالصهر",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "قفازات حرارية طويلة",
+    "واقي وجه",
+    "معطف معمل",
+    "كمامة عند التعامل مع الرصاص"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 4
+  },
+  {
+   "code": "GE-PRD-001",
+   "controls": [
+    "حاجز واقٍ ثابت على منطقة سحب الدرافيل",
+    "مفتاح طوارئ في متناول المشغل ويُختبر أسبوعياً",
+    "منع ارتداء الملابس الفضفاضة والإكسسوارات وربط الشعر",
+    "عزل الطاقة (LOTO) قبل التنظيف أو الضبط"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ فوراً",
+    "عكس دوران الدرافيل يدوياً لتحرير المصاب",
+    "إسعافات أولية والاتصال بالطوارئ"
+   ],
+   "hazards": [
+    "انحشار الأيدي أو الملابس بين الدرافيل",
+    "أجزاء دوارة مكشوفة (تروس وسيور)",
+    "ضوضاء",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "نظارة واقية",
+    "حذاء سلامة",
+    "واقي أذن",
+    "قفازات فقط عند الماكينة متوقفة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 4
+  },
+  {
+   "code": "GE-PRD-002",
+   "controls": [
+    "حاجز واقٍ ثابت على منطقة سحب الدرافيل",
+    "مفتاح طوارئ في متناول المشغل ويُختبر أسبوعياً",
+    "منع ارتداء الملابس الفضفاضة والإكسسوارات وربط الشعر",
+    "عزل الطاقة (LOTO) قبل التنظيف أو الضبط"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ فوراً",
+    "عكس دوران الدرافيل يدوياً لتحرير المصاب",
+    "إسعافات أولية والاتصال بالطوارئ"
+   ],
+   "hazards": [
+    "انحشار الأيدي أو الملابس بين الدرافيل",
+    "أجزاء دوارة مكشوفة (تروس وسيور)",
+    "ضوضاء",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "نظارة واقية",
+    "حذاء سلامة",
+    "واقي أذن",
+    "قفازات فقط عند الماكينة متوقفة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 4
+  },
+  {
+   "code": "GE-PRD-003",
+   "controls": [
+    "حاجز واقٍ ثابت على منطقة سحب الدرافيل",
+    "مفتاح طوارئ في متناول المشغل ويُختبر أسبوعياً",
+    "منع ارتداء الملابس الفضفاضة والإكسسوارات وربط الشعر",
+    "عزل الطاقة (LOTO) قبل التنظيف أو الضبط"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ فوراً",
+    "عكس دوران الدرافيل يدوياً لتحرير المصاب",
+    "إسعافات أولية والاتصال بالطوارئ"
+   ],
+   "hazards": [
+    "انحشار الأيدي أو الملابس بين الدرافيل",
+    "أجزاء دوارة مكشوفة (تروس وسيور)",
+    "ضوضاء",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "نظارة واقية",
+    "حذاء سلامة",
+    "واقي أذن",
+    "قفازات فقط عند الماكينة متوقفة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 4
+  },
+  {
+   "code": "GE-PRD-004",
+   "controls": [
+    "حاجز واقٍ ثابت على منطقة سحب الدرافيل",
+    "مفتاح طوارئ في متناول المشغل ويُختبر أسبوعياً",
+    "منع ارتداء الملابس الفضفاضة والإكسسوارات وربط الشعر",
+    "عزل الطاقة (LOTO) قبل التنظيف أو الضبط"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ فوراً",
+    "عكس دوران الدرافيل يدوياً لتحرير المصاب",
+    "إسعافات أولية والاتصال بالطوارئ"
+   ],
+   "hazards": [
+    "انحشار الأيدي أو الملابس بين الدرافيل",
+    "أجزاء دوارة مكشوفة (تروس وسيور)",
+    "ضوضاء",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "نظارة واقية",
+    "حذاء سلامة",
+    "واقي أذن",
+    "قفازات فقط عند الماكينة متوقفة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 4
+  },
+  {
+   "code": "GE-PRD-005",
+   "controls": [
+    "تسخين البوتقات والأدوات وتجفيفها قبل الاستخدام",
+    "التأكد من تدفق مياه التبريد قبل التشغيل",
+    "منطقة صب جافة ونظيفة وخالية من العوائق",
+    "شفط أبخرة فوق الفرن",
+    "منع فتح لوحة الكهرباء أثناء التشغيل"
+   ],
+   "emergency": [
+    "فصل التيار من مفتاح الطوارئ",
+    "طفاية بودرة أو CO2 (ممنوع استخدام الماء على المعدن المنصهر)",
+    "تبريد الحروق بماء جارٍ 20 دقيقة ونقل المصاب"
+   ],
+   "hazards": [
+    "حروق من المعدن المنصهر ورذاذه",
+    "انفجار بخار عند ملامسة المعدن المنصهر لرطوبة أو ماء",
+    "إشعاع حراري",
+    "صدمة كهربائية عالية التردد",
+    "أبخرة معادن"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "بدلة أو مريلة مقاومة للحرارة",
+    "قفازات حرارية",
+    "واقي وجه مع نظارة",
+    "حذاء سلامة جلد مقاوم للحرارة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-006",
+   "controls": [
+    "تسخين البوتقات والأدوات وتجفيفها قبل الاستخدام",
+    "التأكد من تدفق مياه التبريد قبل التشغيل",
+    "منطقة صب جافة ونظيفة وخالية من العوائق",
+    "شفط أبخرة فوق الفرن",
+    "منع فتح لوحة الكهرباء أثناء التشغيل"
+   ],
+   "emergency": [
+    "فصل التيار من مفتاح الطوارئ",
+    "طفاية بودرة أو CO2 (ممنوع استخدام الماء على المعدن المنصهر)",
+    "تبريد الحروق بماء جارٍ 20 دقيقة ونقل المصاب"
+   ],
+   "hazards": [
+    "حروق من المعدن المنصهر ورذاذه",
+    "انفجار بخار عند ملامسة المعدن المنصهر لرطوبة أو ماء",
+    "إشعاع حراري",
+    "صدمة كهربائية عالية التردد",
+    "أبخرة معادن"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "بدلة أو مريلة مقاومة للحرارة",
+    "قفازات حرارية",
+    "واقي وجه مع نظارة",
+    "حذاء سلامة جلد مقاوم للحرارة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-007",
+   "controls": [
+    "تسخين البوتقات والأدوات وتجفيفها قبل الاستخدام",
+    "التأكد من تدفق مياه التبريد قبل التشغيل",
+    "منطقة صب جافة ونظيفة وخالية من العوائق",
+    "شفط أبخرة فوق الفرن",
+    "منع فتح لوحة الكهرباء أثناء التشغيل"
+   ],
+   "emergency": [
+    "فصل التيار من مفتاح الطوارئ",
+    "طفاية بودرة أو CO2 (ممنوع استخدام الماء على المعدن المنصهر)",
+    "تبريد الحروق بماء جارٍ 20 دقيقة ونقل المصاب"
+   ],
+   "hazards": [
+    "حروق من المعدن المنصهر ورذاذه",
+    "انفجار بخار عند ملامسة المعدن المنصهر لرطوبة أو ماء",
+    "إشعاع حراري",
+    "صدمة كهربائية عالية التردد",
+    "أبخرة معادن"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "بدلة أو مريلة مقاومة للحرارة",
+    "قفازات حرارية",
+    "واقي وجه مع نظارة",
+    "حذاء سلامة جلد مقاوم للحرارة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-008",
+   "controls": [
+    "تسخين البوتقات والأدوات وتجفيفها قبل الاستخدام",
+    "التأكد من تدفق مياه التبريد قبل التشغيل",
+    "منطقة صب جافة ونظيفة وخالية من العوائق",
+    "شفط أبخرة فوق الفرن",
+    "منع فتح لوحة الكهرباء أثناء التشغيل"
+   ],
+   "emergency": [
+    "فصل التيار من مفتاح الطوارئ",
+    "طفاية بودرة أو CO2 (ممنوع استخدام الماء على المعدن المنصهر)",
+    "تبريد الحروق بماء جارٍ 20 دقيقة ونقل المصاب"
+   ],
+   "hazards": [
+    "حروق من المعدن المنصهر ورذاذه",
+    "انفجار بخار عند ملامسة المعدن المنصهر لرطوبة أو ماء",
+    "إشعاع حراري",
+    "صدمة كهربائية عالية التردد",
+    "أبخرة معادن"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "بدلة أو مريلة مقاومة للحرارة",
+    "قفازات حرارية",
+    "واقي وجه مع نظارة",
+    "حذاء سلامة جلد مقاوم للحرارة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-009",
+   "controls": [
+    "تسخين البوتقات والأدوات وتجفيفها قبل الاستخدام",
+    "التأكد من تدفق مياه التبريد قبل التشغيل",
+    "منطقة صب جافة ونظيفة وخالية من العوائق",
+    "شفط أبخرة فوق الفرن",
+    "منع فتح لوحة الكهرباء أثناء التشغيل"
+   ],
+   "emergency": [
+    "فصل التيار من مفتاح الطوارئ",
+    "طفاية بودرة أو CO2 (ممنوع استخدام الماء على المعدن المنصهر)",
+    "تبريد الحروق بماء جارٍ 20 دقيقة ونقل المصاب"
+   ],
+   "hazards": [
+    "حروق من المعدن المنصهر ورذاذه",
+    "انفجار بخار عند ملامسة المعدن المنصهر لرطوبة أو ماء",
+    "إشعاع حراري",
+    "صدمة كهربائية عالية التردد",
+    "أبخرة معادن"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "بدلة أو مريلة مقاومة للحرارة",
+    "قفازات حرارية",
+    "واقي وجه مع نظارة",
+    "حذاء سلامة جلد مقاوم للحرارة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-010",
+   "controls": [
+    "تشغيل الشفط دائماً أثناء التلميع",
+    "فحص العجلات قبل التركيب وعدم تجاوز السرعة المقررة",
+    "ربط الشعر ومنع الملابس الفضفاضة",
+    "تفريغ فلاتر الشفط بانتظام"
+   ],
+   "emergency": [
+    "إيقاف الموتور فوراً",
+    "غسل العين بالماء عند دخول غبار",
+    "إسعافات أولية للجروح"
+   ],
+   "hazards": [
+    "استنشاق غبار المعادن ومواد التلميع",
+    "اشتباك الملابس أو الشعر بالعجلة الدوارة",
+    "تطاير القطعة أو أجزاء العجلة",
+    "ضوضاء"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "متوسط",
+   "likelihood": 3,
+   "ppe": [
+    "كمامة FFP2",
+    "نظارة أو واقي وجه",
+    "واقي أذن",
+    "عدم ارتداء القفازات أثناء ملامسة العجلة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-PRD-011",
+   "controls": [
+    "تشغيل باليدين أو ستارة ضوئية",
+    "حاجز واقٍ على منطقة الكبس",
+    "تفريغ الضغط قبل الفك أو تغيير الفورم",
+    "فحص الخراطيم والتوصيلات شهرياً",
+    "تنظيف أي تسرب زيت فوراً"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ",
+    "عند إصابة بحقن زيت: نقل فوري للمستشفى حتى لو كان الجرح صغيراً",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "هرس الأيدي بين الفورم",
+    "اندفاع زيت عالي الضغط من خرطوم تالف",
+    "تطاير أجزاء أثناء الكبس",
+    "انزلاق بسبب تسرب الزيت"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 2,
+   "ppe": [
+    "نظارة واقية",
+    "قفازات عمل",
+    "حذاء سلامة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-012",
+   "controls": [
+    "تشغيل باليدين أو ستارة ضوئية",
+    "حاجز واقٍ على منطقة الكبس",
+    "تفريغ الضغط قبل الفك أو تغيير الفورم",
+    "فحص الخراطيم والتوصيلات شهرياً",
+    "تنظيف أي تسرب زيت فوراً"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ",
+    "عند إصابة بحقن زيت: نقل فوري للمستشفى حتى لو كان الجرح صغيراً",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "هرس الأيدي بين الفورم",
+    "اندفاع زيت عالي الضغط من خرطوم تالف",
+    "تطاير أجزاء أثناء الكبس",
+    "انزلاق بسبب تسرب الزيت"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 2,
+   "ppe": [
+    "نظارة واقية",
+    "قفازات عمل",
+    "حذاء سلامة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-013",
+   "controls": [
+    "تشغيل باليدين أو ستارة ضوئية",
+    "حاجز واقٍ على منطقة الكبس",
+    "تفريغ الضغط قبل الفك أو تغيير الفورم",
+    "فحص الخراطيم والتوصيلات شهرياً",
+    "تنظيف أي تسرب زيت فوراً"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ",
+    "عند إصابة بحقن زيت: نقل فوري للمستشفى حتى لو كان الجرح صغيراً",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "هرس الأيدي بين الفورم",
+    "اندفاع زيت عالي الضغط من خرطوم تالف",
+    "تطاير أجزاء أثناء الكبس",
+    "انزلاق بسبب تسرب الزيت"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 2,
+   "ppe": [
+    "نظارة واقية",
+    "قفازات عمل",
+    "حذاء سلامة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-014",
+   "controls": [
+    "حواجز مغلقة بإنترلوك يوقف الماكينة عند فتحها",
+    "ممنوع تجاوز حساسات الأمان",
+    "عزل الطاقة (LOTO) قبل تغيير الفورم",
+    "تدريب المشغلين على وضع التشغيل اليدوي"
+   ],
+   "emergency": [
+    "مفتاح الطوارئ",
+    "إخطار الصيانة وعدم إعادة التشغيل قبل الفحص",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "هرس الأيدي في منطقة السك",
+    "تشغيل آلي مفاجئ",
+    "اندفاع زيت عالي الضغط",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 2,
+   "ppe": [
+    "نظارة واقية",
+    "قفازات عمل",
+    "حذاء سلامة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-015",
+   "controls": [
+    "تشغيل باليدين أو ستارة ضوئية",
+    "حاجز واقٍ على منطقة الكبس",
+    "تفريغ الضغط قبل الفك أو تغيير الفورم",
+    "فحص الخراطيم والتوصيلات شهرياً",
+    "تنظيف أي تسرب زيت فوراً"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ",
+    "عند إصابة بحقن زيت: نقل فوري للمستشفى حتى لو كان الجرح صغيراً",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "هرس الأيدي بين الفورم",
+    "اندفاع زيت عالي الضغط من خرطوم تالف",
+    "تطاير أجزاء أثناء الكبس",
+    "انزلاق بسبب تسرب الزيت"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 2,
+   "ppe": [
+    "نظارة واقية",
+    "قفازات عمل",
+    "حذاء سلامة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-016",
+   "controls": [
+    "تشغيل باليدين أو ستارة ضوئية",
+    "حاجز واقٍ على منطقة الكبس",
+    "تفريغ الضغط قبل الفك أو تغيير الفورم",
+    "فحص الخراطيم والتوصيلات شهرياً",
+    "تنظيف أي تسرب زيت فوراً"
+   ],
+   "emergency": [
+    "الضغط على مفتاح الطوارئ",
+    "عند إصابة بحقن زيت: نقل فوري للمستشفى حتى لو كان الجرح صغيراً",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "هرس الأيدي بين الفورم",
+    "اندفاع زيت عالي الضغط من خرطوم تالف",
+    "تطاير أجزاء أثناء الكبس",
+    "انزلاق بسبب تسرب الزيت"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 2,
+   "ppe": [
+    "نظارة واقية",
+    "قفازات عمل",
+    "حذاء سلامة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-017",
+   "controls": [
+    "توصيل الماكينة بقاطع تسرب أرضي (ELCB)",
+    "تغطية الحوض أثناء التشغيل",
+    "حفظ صحيفة بيانات السلامة (MSDS) للمحلول بجوار الماكينة",
+    "فصل الكهرباء قبل التفريغ"
+   ],
+   "emergency": [
+    "غسل الجلد أو العين بالماء 15 دقيقة",
+    "فصل التيار",
+    "مراجعة MSDS والطبيب"
+   ],
+   "hazards": [
+    "رذاذ محاليل التنظيف الكيميائية",
+    "صدمة كهربائية بجوار الماء",
+    "حروق من المحلول الساخن",
+    "ضوضاء عالية التردد"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات مقاومة للكيماويات",
+    "نظارة واقية",
+    "واقي أذن"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-PRD-018",
+   "controls": [
+    "عدم لمس الحجرة أثناء التشغيل",
+    "فحص الكابلات والتوصيلات",
+    "عدم سد فتحات التهوية"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تبريد الحرق بماء جارٍ"
+   ],
+   "hazards": [
+    "حروق من الأسطح والهواء الساخن",
+    "صدمة كهربائية"
+   ],
+   "inspection": "أسبوعي",
+   "level": "منخفض",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات حرارية عند إخراج المشغولات"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 2
+  },
+  {
+   "code": "GE-PRD-019",
+   "controls": [
+    "غطاء عازل للصوت أثناء التشغيل",
+    "إيقاف الماكينة قبل إخراج المشغولات",
+    "تثبيت القواعد ومنع تحرك الماكينة"
+   ],
+   "emergency": [
+    "إيقاف الماكينة",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "ضوضاء واهتزاز",
+    "انحشار الأصابع",
+    "رذاذ مركبات التلميع"
+   ],
+   "inspection": "أسبوعي",
+   "level": "منخفض",
+   "likelihood": 2,
+   "ppe": [
+    "واقي أذن",
+    "قفازات",
+    "نظارة واقية"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 2
+  },
+  {
+   "code": "GE-PRD-020",
+   "controls": [
+    "حماية على مدخل ومخرج النفق",
+    "تهوية جيدة بالمكان",
+    "عدم إدخال اليد في النفق أثناء التشغيل"
+   ],
+   "emergency": [
+    "إيقاف الماكينة",
+    "تبريد الحرق بماء جارٍ"
+   ],
+   "hazards": [
+    "حروق من النفق الساخن",
+    "اشتباك بالسير الناقل",
+    "أبخرة البلاستيك المسخّن"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات حرارية",
+    "كمامة عند تغليف كميات كبيرة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-PRD-021",
+   "controls": [
+    "حاجز على منطقة القوالب",
+    "عدم إدخال اليد أثناء الدورة",
+    "فحص خراطيم الهواء"
+   ],
+   "emergency": [
+    "مفتاح الطوارئ",
+    "تبريد الحرق بماء جارٍ"
+   ],
+   "hazards": [
+    "حروق من وحدة اللحام الحراري",
+    "انحشار الأصابع بين القوالب",
+    "هواء مضغوط"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات حرارية",
+    "نظارة واقية"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-PRD-022",
+   "controls": [
+    "تشغيل منظومة غسيل الأبخرة (Scrubber) طوال التشغيل",
+    "تخزين الأحماض في خزانة مخصصة بعيداً عن القلويات",
+    "دش طوارئ وغسيل عيون على بعد أقل من 10 ثوانٍ ويُختبر أسبوعياً",
+    "توفير طقم احتواء انسكاب ومادة معادلة",
+    "صحيفة بيانات السلامة (MSDS) لكل مادة",
+    "عمل فردين على الأقل أثناء التكرير"
+   ],
+   "emergency": [
+    "غسل الجلد أو العين بالدش 15 دقيقة على الأقل",
+    "عند تسرب غاز: إخلاء فوري والدخول بجهاز تنفس فقط",
+    "احتواء الانسكاب بالمادة المعادلة",
+    "نقل المصاب للمستشفى ومعه MSDS"
+   ],
+   "hazards": [
+    "التعرض لأحماض مركزة (الماء الملكي: هيدروكلوريك ونيتريك)",
+    "غازات أكاسيد النيتروجين السامة (NOx)",
+    "حروق كيميائية ورذاذ",
+    "تفاعل عنيف أو تسرب من الأوعية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "كمامة وجه كامل بفلتر أحماض وغازات",
+    "بدلة مقاومة للأحماض",
+    "قفازات PVC أو نيتريل طويلة",
+    "واقي وجه",
+    "بوت مطاطي"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-023",
+   "controls": [
+    "تشغيل منظومة غسيل الأبخرة (Scrubber) طوال التشغيل",
+    "تخزين الأحماض في خزانة مخصصة بعيداً عن القلويات",
+    "دش طوارئ وغسيل عيون على بعد أقل من 10 ثوانٍ ويُختبر أسبوعياً",
+    "توفير طقم احتواء انسكاب ومادة معادلة",
+    "صحيفة بيانات السلامة (MSDS) لكل مادة",
+    "عمل فردين على الأقل أثناء التكرير"
+   ],
+   "emergency": [
+    "غسل الجلد أو العين بالدش 15 دقيقة على الأقل",
+    "عند تسرب غاز: إخلاء فوري والدخول بجهاز تنفس فقط",
+    "احتواء الانسكاب بالمادة المعادلة",
+    "نقل المصاب للمستشفى ومعه MSDS"
+   ],
+   "hazards": [
+    "التعرض لأحماض مركزة (الماء الملكي: هيدروكلوريك ونيتريك)",
+    "غازات أكاسيد النيتروجين السامة (NOx)",
+    "حروق كيميائية ورذاذ",
+    "تفاعل عنيف أو تسرب من الأوعية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "كمامة وجه كامل بفلتر أحماض وغازات",
+    "بدلة مقاومة للأحماض",
+    "قفازات PVC أو نيتريل طويلة",
+    "واقي وجه",
+    "بوت مطاطي"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-024",
+   "controls": [
+    "حساسات وإنترلوك على الأبواب والحواجز",
+    "تهوية جيدة وجهاز قياس أكسجين بالمكان",
+    "فحص خطوط الغاز من التسريب",
+    "عزل الطاقة (LOTO) قبل أي تدخل"
+   ],
+   "emergency": [
+    "إيقاف الخط من مفتاح الطوارئ",
+    "عند إنذار نقص الأكسجين: إخلاء المكان وتهويته",
+    "إسعافات الحروق ونقل المصاب"
+   ],
+   "hazards": [
+    "حروق من المعدن والسبائك الساخنة",
+    "اختناق من تسرب النيتروجين أو الغاز الواقي",
+    "أجزاء متحركة وسير ناقل",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "قفازات حرارية",
+    "نظارة واقية",
+    "حذاء سلامة",
+    "ملابس قطنية بأكمام طويلة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-PRD-025",
+   "controls": [
+    "حساسات وإنترلوك على الأبواب والحواجز",
+    "تهوية جيدة وجهاز قياس أكسجين بالمكان",
+    "فحص خطوط الغاز من التسريب",
+    "عزل الطاقة (LOTO) قبل أي تدخل"
+   ],
+   "emergency": [
+    "إيقاف الخط من مفتاح الطوارئ",
+    "عند إنذار نقص الأكسجين: إخلاء المكان وتهويته",
+    "إسعافات الحروق ونقل المصاب"
+   ],
+   "hazards": [
+    "حروق من المعدن والسبائك الساخنة",
+    "اختناق من تسرب النيتروجين أو الغاز الواقي",
+    "أجزاء متحركة وسير ناقل",
+    "صدمة كهربائية"
+   ],
+   "inspection": "يومي قبل التشغيل",
+   "level": "عالي",
+   "likelihood": 3,
+   "ppe": [
+    "قفازات حرارية",
+    "نظارة واقية",
+    "حذاء سلامة",
+    "ملابس قطنية بأكمام طويلة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-UTL-001",
+   "controls": [
+    "غطاء المروحة مركب دائماً",
+    "عدم فتح دائرة الفريون إلا بفني تبريد مختص",
+    "تنظيف أي تسرب مياه فوراً"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تهوية المكان عند تسرب الغاز"
+   ],
+   "hazards": [
+    "صدمة كهربائية",
+    "تسرب غاز التبريد",
+    "أسطح ساخنة ومروحة دوارة",
+    "انزلاق بسبب تسرب المياه"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات عمل",
+    "نظارة واقية عند الصيانة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-UTL-002",
+   "controls": [
+    "غطاء المروحة مركب دائماً",
+    "عدم فتح دائرة الفريون إلا بفني تبريد مختص",
+    "تنظيف أي تسرب مياه فوراً"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تهوية المكان عند تسرب الغاز"
+   ],
+   "hazards": [
+    "صدمة كهربائية",
+    "تسرب غاز التبريد",
+    "أسطح ساخنة ومروحة دوارة",
+    "انزلاق بسبب تسرب المياه"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات عمل",
+    "نظارة واقية عند الصيانة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-UTL-003",
+   "controls": [
+    "غطاء المروحة مركب دائماً",
+    "عدم فتح دائرة الفريون إلا بفني تبريد مختص",
+    "تنظيف أي تسرب مياه فوراً"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تهوية المكان عند تسرب الغاز"
+   ],
+   "hazards": [
+    "صدمة كهربائية",
+    "تسرب غاز التبريد",
+    "أسطح ساخنة ومروحة دوارة",
+    "انزلاق بسبب تسرب المياه"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات عمل",
+    "نظارة واقية عند الصيانة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-UTL-004",
+   "controls": [
+    "غطاء المروحة مركب دائماً",
+    "عدم فتح دائرة الفريون إلا بفني تبريد مختص",
+    "تنظيف أي تسرب مياه فوراً"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تهوية المكان عند تسرب الغاز"
+   ],
+   "hazards": [
+    "صدمة كهربائية",
+    "تسرب غاز التبريد",
+    "أسطح ساخنة ومروحة دوارة",
+    "انزلاق بسبب تسرب المياه"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات عمل",
+    "نظارة واقية عند الصيانة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-UTL-005",
+   "controls": [
+    "اختبار صمام الأمان سنوياً",
+    "عزل الطاقة وتفريغ الضغط قبل الصيانة",
+    "لافتة تحذير من التشغيل الآلي",
+    "غرفة جيدة التهوية"
+   ],
+   "emergency": [
+    "إيقاف الكمبروسر وفصل التيار",
+    "تفريغ الضغط",
+    "إسعافات أولية"
+   ],
+   "hazards": [
+    "انفجار أو اندفاع هواء عالي الضغط",
+    "أسطح وزيت ساخن",
+    "ضوضاء",
+    "بدء تشغيل آلي مفاجئ",
+    "سير دوار"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "واقي أذن",
+    "قفازات عمل",
+    "نظارة واقية"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 4
+  },
+  {
+   "code": "GE-UTL-006",
+   "controls": [
+    "جهاز قياس أكسجين بإنذار في الغرفة",
+    "تهوية دائمة",
+    "لافتات تحذير على الخزانات",
+    "اختبار صمامات الأمان"
+   ],
+   "emergency": [
+    "عند الإنذار: إخلاء المكان وفتح التهوية وعدم الدخول دون تهوية",
+    "إخراج المصاب للهواء الطلق وطلب الإسعاف"
+   ],
+   "hazards": [
+    "اختناق بسبب نقص الأكسجين في مكان مغلق",
+    "ضغط عالٍ في الخزانات والخطوط"
+   ],
+   "inspection": "أسبوعي",
+   "level": "عالي",
+   "likelihood": 2,
+   "ppe": [
+    "نظارة واقية عند الصيانة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 5
+  },
+  {
+   "code": "GE-UTL-007",
+   "controls": [
+    "غطاء المروحة مركب دائماً",
+    "عدم فتح دائرة الفريون إلا بفني تبريد مختص",
+    "تنظيف أي تسرب مياه فوراً"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تهوية المكان عند تسرب الغاز"
+   ],
+   "hazards": [
+    "صدمة كهربائية",
+    "تسرب غاز التبريد",
+    "أسطح ساخنة ومروحة دوارة",
+    "انزلاق بسبب تسرب المياه"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات عمل",
+    "نظارة واقية عند الصيانة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  },
+  {
+   "code": "GE-UTL-008",
+   "controls": [
+    "غطاء المروحة مركب دائماً",
+    "عدم فتح دائرة الفريون إلا بفني تبريد مختص",
+    "تنظيف أي تسرب مياه فوراً"
+   ],
+   "emergency": [
+    "فصل التيار",
+    "تهوية المكان عند تسرب الغاز"
+   ],
+   "hazards": [
+    "صدمة كهربائية",
+    "تسرب غاز التبريد",
+    "أسطح ساخنة ومروحة دوارة",
+    "انزلاق بسبب تسرب المياه"
+   ],
+   "inspection": "أسبوعي",
+   "level": "متوسط",
+   "likelihood": 2,
+   "ppe": [
+    "قفازات عمل",
+    "نظارة واقية عند الصيانة"
+   ],
+   "responsible": "مسؤول السلامة والصحة المهنية + مشرف القسم",
+   "severity": 3
+  }
+ ],
+ "logs": []
+}

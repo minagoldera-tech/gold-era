@@ -1170,7 +1170,12 @@ tbody tr.row-sel td{background:#FFF8E7;}
 #dest-modal th{position:sticky;top:0;background:#FAFAF9;padding:8px 6px;text-align:right;color:#9C9488;font-size:11px;border-bottom:2px solid #E8E5DF;z-index:1}
 #dest-modal td{padding:5px 6px;border-bottom:1px solid #F0EEEA}
 #dest-modal tr.pv-off td{opacity:.4;text-decoration:line-through}
-#dest-modal .pv-in{width:100%;border:1px solid #E8E5DF;border-radius:6px;padding:5px 7px;font-size:12px;font-family:Cairo,sans-serif;background:#fff;outline:none}
+#dest-modal .pv-date{background:#F3F7FC;border:1px solid #CFDDF0;border-radius:10px;padding:10px 12px;margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:#2B5FA6}
+.pv-date input,.pv-date select{border:1px solid #C8C4BC;border-radius:7px;padding:6px 8px;font-family:Cairo,sans-serif;font-size:13px;background:#fff;outline:none}
+.pv-date .pvd-btn{border:none;border-radius:7px;padding:7px 12px;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+tr.pv-dsel td{background:#EAF1FB!important}
+.pv-in.pv-dch{border-color:#2B5FA6;background:#EAF1FB;font-weight:700}
+.pv-in{width:100%;border:1px solid #E8E5DF;border-radius:6px;padding:5px 7px;font-size:12px;font-family:Cairo,sans-serif;background:#fff;outline:none}
 #dest-modal .pv-in:focus{border-color:#C8860A}
 #dest-modal .pv-t{flex:1;min-width:120px;padding:11px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;border:2px solid #E8E5DF;background:#fff;color:#5C5849}
 #dest-modal .pv-t.on-in{border-color:#C8860A;background:#C8860A;color:#fff}
@@ -1195,13 +1200,25 @@ tbody tr.row-sel td{background:#FFF8E7;}
         <button class="pv-t" id="pv-t-out" onclick="pvSetType('منصرف')">📤 منصرف</button>
         <button class="pv-t" id="pv-t-ret" onclick="pvSetType('مرتجع')">↩️ مرتجع</button>
       </div>
+      <div style="font-size:13px;font-weight:700;color:#1A1916;margin:12px 0 0">٢. تغيير التاريخ لأكتر من صف مرة واحدة <span style="font-weight:400;color:#9C9488;font-size:12px">(اختياري — علّم الصفوف من عمود 📅)</span></div>
+      <div class="pv-date">
+        <span>حدد:</span>
+        <select id="pvd-by" onchange="pvdByDate(this.value)"><option value="">صفوف تاريخ معيّن...</option></select>
+        <span>أو من صف</span><input type="number" id="pvd-from" min="1" style="width:70px" placeholder="1">
+        <span>إلى</span><input type="number" id="pvd-to" min="1" style="width:70px" placeholder="10">
+        <button class="pvd-btn" onclick="pvdRange()" style="background:#fff;color:#2B5FA6;border:1px solid #CFDDF0">تحديد</button>
+        <span style="width:1px;height:22px;background:#CFDDF0;margin:0 4px"></span>
+        <span>التاريخ الجديد:</span><input type="date" id="pvd-date">
+        <button class="pvd-btn" id="pvd-apply" onclick="pvdApply()" style="background:#2B5FA6;color:#fff">📅 تطبيق على المحدد (0)</button>
+        <button class="pvd-btn" onclick="pvdClear()" style="background:transparent;color:#9C9488">✕ إلغاء التحديد</button>
+      </div>
       <div class="pv-sum" id="pv-sum"></div>
     </div>
     <div class="pv-body">
       <table>
         <thead><tr>
           <th style="width:30px"><input type="checkbox" id="pv-all" checked onchange="pvAll(this.checked)" title="تحديد الكل"></th>
-          <th style="width:34px">#</th><th style="width:140px">التاريخ</th><th>البيان</th>
+          <th style="width:34px;color:#2B5FA6" title="تحديد لتغيير التاريخ">📅<br><input type="checkbox" id="pvd-all" onchange="pvdAll(this.checked)" title="تحديد كل الصفوف لتغيير التاريخ"></th><th style="width:34px">#</th><th style="width:140px">التاريخ</th><th>البيان</th>
           <th style="width:110px">الوزن القائم</th><th style="width:80px">العيار</th>
           <th style="width:105px;color:#C8860A">وزن 875 ✦</th><th style="width:95px">وزن 995</th><th style="width:40px"></th>
         </tr></thead>
@@ -2749,16 +2766,18 @@ function askDest(rows,source,onDone){
   _pv={rows:rows,source:source,onDone:onDone,type:null,show:300};
   txt('pv-title','📋 معاينة البيانات قبل الإضافة — من '+source);
   el('pv-all').checked=true;
+  _pvdLast=-1;['pvd-from','pvd-to','pvd-date'].forEach(function(id){if(el(id))el(id).value='';});
   pvSetType(null);
   pvRender();
   el('dest-modal').style.display='flex';
 }
 function pvRow(i){
   var r=_pv.rows[i];
-  return '<tr id="pv-r'+i+'" class="'+(r.inc?'':'pv-off')+'">'
+  return '<tr id="pv-r'+i+'" class="'+(r.inc?'':'pv-off')+(r.dsel?' pv-dsel':'')+'">'
     +'<td><input type="checkbox" '+(r.inc?'checked':'')+' onchange="pvInc('+i+',this.checked)"></td>'
+    +'<td><input type="checkbox" class="pvd-chk" '+(r.dsel?'checked':'')+' onclick="pvdClick(event,'+i+',this.checked)" style="accent-color:#2B5FA6"></td>'
     +'<td style="color:#9C9488;font-size:11px">'+(i+1)+'</td>'
-    +'<td><input class="pv-in" type="date" value="'+esc(r.date)+'" onchange="pvSet('+i+',\'date\',this.value)"></td>'
+    +'<td><input class="pv-in'+(r.dch?' pv-dch':'')+'" type="date" value="'+esc(r.date)+'" onchange="pvSet('+i+',\'date\',this.value)"></td>'
     +'<td><input class="pv-in" type="text" value="'+esc(r.client)+'" onchange="pvSet('+i+',\'client\',this.value)" style="font-weight:600"></td>'
     +'<td><input class="pv-in" type="number" step="0.001" value="'+r.weight+'" onchange="pvSet('+i+',\'weight\',this.value)"></td>'
     +'<td><input class="pv-in" type="number" step="0.1" value="'+r.karat+'" onchange="pvSet('+i+',\'karat\',this.value)"></td>'
@@ -2771,10 +2790,67 @@ function pvRender(){
   if(typeof xsClear==="function")xsClear();
   var h=[],n=_pv.rows.length,lim=Math.min(n,_pv.show);
   for(var i=0;i<lim;i++)h.push(pvRow(i));
-  if(lim<n)h.push('<tr><td colspan="9" style="text-align:center;padding:12px"><span style="font-size:12px;color:#9C9488;margin-left:8px">معروض '+N(lim,0)+' من '+N(n,0)+' — الباقي هيتضاف برضه</span><button class="btn bgh bsm" onclick="_pv.show+=500;pvRender()">⬇️ عرض المزيد</button></td></tr>');
-  if(!n)h.push('<tr><td colspan="9" style="text-align:center;padding:24px;color:#9C9488">مفيش صفوف</td></tr>');
+  if(lim<n)h.push('<tr><td colspan="10" style="text-align:center;padding:12px"><span style="font-size:12px;color:#9C9488;margin-left:8px">معروض '+N(lim,0)+' من '+N(n,0)+' — الباقي هيتضاف برضه</span><button class="btn bgh bsm" onclick="_pv.show+=500;pvRender()">⬇️ عرض المزيد</button></td></tr>');
+  if(!n)h.push('<tr><td colspan="10" style="text-align:center;padding:24px;color:#9C9488">مفيش صفوف</td></tr>');
   el('pv-tb').innerHTML=h.join('');
   pvTotals();
+  pvdRefresh();
+}
+// ===== تغيير التاريخ لصفوف متعددة في المعاينة =====
+var _pvdLast=-1;
+function pvdCount(){var c=0;for(var i=0;i<_pv.rows.length;i++)if(_pv.rows[i].dsel)c++;return c;}
+function pvdRefresh(){
+  if(!_pv)return;
+  var c=pvdCount(),b=el('pvd-apply');
+  if(b)b.textContent='📅 تطبيق على المحدد ('+N(c,0)+')';
+  var a=el('pvd-all');if(a){a.checked=c>0&&c===_pv.rows.length;a.indeterminate=c>0&&c<_pv.rows.length;}
+  var sel=el('pvd-by');
+  if(sel){
+    var cnt={},ord=[];
+    _pv.rows.forEach(function(r){var d=r.date||'';if(!(d in cnt)){cnt[d]=0;ord.push(d);}cnt[d]++;});
+    ord.sort();
+    sel.innerHTML='<option value="">صفوف تاريخ معيّن...</option>'+ord.map(function(d){return '<option value="'+esc(d)+'">'+(d?fmtDate(d):'بدون تاريخ')+' — '+N(cnt[d],0)+' صف</option>';}).join('');
+    sel.value='';
+  }
+}
+function pvdSetRow(i,c){
+  var r=_pv.rows[i];if(!r)return;r.dsel=c;
+  var tr=el('pv-r'+i);if(tr){tr.classList.toggle('pv-dsel',c);var cb=tr.querySelector('.pvd-chk');if(cb)cb.checked=c;}
+}
+// Shift + كليك = تحديد كل الصفوف بين آخر صف وده
+function pvdClick(e,i,c){
+  if(e.shiftKey&&_pvdLast>=0&&_pvdLast!==i){
+    var a=Math.min(_pvdLast,i),b=Math.max(_pvdLast,i);
+    for(var k=a;k<=b;k++)pvdSetRow(k,c);
+  }else pvdSetRow(i,c);
+  _pvdLast=i;pvdRefresh();
+}
+function pvdAll(c){for(var i=0;i<_pv.rows.length;i++)pvdSetRow(i,c);pvdRefresh();}
+function pvdClear(){pvdAll(false);_pvdLast=-1;}
+function pvdByDate(d){
+  if(!_pv)return;var n=0;
+  for(var i=0;i<_pv.rows.length;i++)if((_pv.rows[i].date||'')===d){pvdSetRow(i,true);n++;}
+  pvdRefresh();
+  if(n)toast('✓ اتحدد '+N(n,0)+' صف تاريخهم '+(d?fmtDate(d):'فاضي'));
+}
+function pvdRange(){
+  if(!_pv)return;
+  var a=parseInt(el('pvd-from').value,10),b=parseInt(el('pvd-to').value,10),n=_pv.rows.length;
+  if(!a&&!b){toast('⚠️ اكتب رقم الصف من / إلى','err');return;}
+  if(!a)a=1;if(!b)b=n;if(a>b){var t=a;a=b;b=t;}
+  a=Math.max(1,a);b=Math.min(n,b);
+  for(var i=a-1;i<b;i++)pvdSetRow(i,true);
+  pvdRefresh();toast('✓ اتحدد من صف '+a+' إلى '+b);
+}
+function pvdApply(){
+  if(!_pv)return;
+  var d=el('pvd-date').value;
+  if(!d){toast('⚠️ اختار التاريخ الجديد الأول','err');return;}
+  var n=0;
+  for(var i=0;i<_pv.rows.length;i++){var r=_pv.rows[i];if(r.dsel){r.date=d;r.dch=true;r.dsel=false;n++;}}
+  if(!n){toast('⚠️ علّم الصفوف اللي عايز تغير تاريخها من عمود 📅','err');return;}
+  _pvdLast=-1;pvRender();
+  toast('📅 تم تغيير تاريخ '+N(n,0)+' صف إلى '+fmtDate(d));
 }
 function pvSet(i,f,v){
   var r=_pv.rows[i];if(!r)return;

@@ -680,6 +680,8 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
           id="SYNC-BTN">
           🔄
         </button>
+        <button id="CAT-BTN" onclick="openCatalogEditor()" title="أوزان الأصناف"
+          style="display:none;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--gold);cursor:pointer;font-size:12px;font-weight:700;font-family:'Cairo',sans-serif">⚖️ الأوزان</button>
         <span id="LIVE-DOT" title="مزامنة لحظية" style="width:9px;height:9px;border-radius:50%;background:#8B949E;display:inline-block;box-shadow:0 0 0 3px #3FB95022;align-self:center"></span>
         <button id="RESET-BTN" onclick="confirmResetData()" title="تصفير كل البيانات"
           style="display:none;background:#E05C5018;border:1px solid #E05C5055;border-radius:8px;padding:6px 10px;color:var(--err);cursor:pointer;font-size:12px;font-weight:700;font-family:'Cairo',sans-serif;transition:.2s;align-items:center;gap:4px"
@@ -1176,6 +1178,10 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         </div>
       </div>
       <div id="MM-ITEM-HINT" style="font-size:10.5px;color:var(--muted);margin-top:6px"></div>
+      <div class="fg" id="MM-UNIT-WRAP" style="margin-top:10px;display:none;background:var(--s3);border-radius:8px;padding:8px 10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام) — قابل للتعديل</label>
+        <input type="number" id="MM-UNIT" step="0.001" oninput="onMMUnit()" style="font-family:monospace;font-weight:800;color:var(--gold);margin-top:4px">
+      </div>
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>الوزن (جرام) *</label><input type="number" id="MM-WT" step="0.001" oninput="onMMWt()"></div>
         <div class="fg" style="margin:0"><label>العيار *</label>
@@ -1465,9 +1471,9 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <div class="fg" style="margin:0"><label>ملاحظة عامة</label><input type="text" id="STK-NOTE" placeholder="تُضاف لكل الأصناف (اختياري)"></div>
       </div>
       <div style="margin-top:14px;border:1px solid var(--bd);border-radius:10px;overflow:auto">
-        <table class="stk-multi" style="width:100%;min-width:720px">
+        <table class="stk-multi" style="width:100%;min-width:800px">
           <thead><tr>
-            <th style="width:28px">#</th><th style="min-width:190px">الصنف</th><th>العدد</th><th>الوزن (جرام) *</th><th>العيار *</th><th>بعيار 875</th><th style="width:36px"></th>
+            <th style="width:28px">#</th><th style="min-width:190px">الصنف</th><th>وزن القطعة</th><th>العدد</th><th>الوزن (جرام) *</th><th>العيار *</th><th>بعيار 875</th><th style="width:36px"></th>
           </tr></thead>
           <tbody id="STK-ROWS"></tbody>
         </table>
@@ -1678,6 +1684,10 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         <div class="fg" style="margin:0" id="ER-NAME-WRAP"><label>اسم / وصف</label><input type="text" id="ER-NAME" placeholder="اسم الوزنة..."></div>
         <div class="fg" style="margin:0" id="ER-CNT-WRAP"><label>العدد</label><input type="number" id="ER-CNT" step="0.001" oninput="erCnt()" style="font-family:monospace"></div>
       </div>
+      <div class="fg" id="ER-UNIT-WRAP" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:8px 10px;border:1px solid var(--gold)44">
+        <label style="color:var(--gold)">⚖️ وزن القطعة الواحدة (جرام) — قابل للتعديل</label>
+        <input type="number" id="ER-UNIT" step="0.001" oninput="erCnt()" style="font-family:monospace;font-weight:800;color:var(--gold);margin-top:4px">
+      </div>
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>الوزن (جرام) *</label><input type="number" id="ER-WT" step="0.001" oninput="erWt()" style="font-family:monospace;font-weight:700"></div>
         <div class="fg" style="margin:0"><label>العيار *</label><input type="number" id="ER-KT" step="0.1" min="1" max="1000" oninput="erCalc()" style="font-family:monospace;font-weight:700;color:var(--gold)"></div>
@@ -1691,6 +1701,32 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       <div id="ER-WARN" style="font-size:10.5px;color:var(--warn);margin-top:4px"></div>
     </div>
     <div class="mf"><button class="btn bs" onclick="cm('MOD-EREC')">إلغاء</button><button class="btn bp" onclick="saveEditRec()">💾 حفظ التعديل</button></div>
+  </div>
+</div>
+
+<div id="MOD-CAT" class="mov">
+  <div class="mod" style="max-width:620px">
+    <div class="mh"><div class="mt">⚖️ أوزان الأصناف — وزن القطعة الواحدة</div><button class="mc" onclick="cm('MOD-CAT')">✕</button></div>
+    <div class="mb">
+      <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+        الوزن هنا هو الافتراضي في كل النوافذ (الخزن، الأقسام، الاستوك، التعديل). يُحفظ لكل الأجهزة.
+        وتقدر تغيّره لحركة واحدة من خانة "وزن القطعة" داخل النافذة نفسها.
+      </div>
+      <div style="max-height:52vh;overflow:auto;border:1px solid var(--bd);border-radius:10px">
+        <table style="width:100%"><thead><tr><th style="text-align:right">الصنف</th><th>العيار</th><th>وزن القطعة (جرام)</th></tr></thead>
+        <tbody id="CAT-ROWS"></tbody></table>
+      </div>
+      <div style="margin-top:14px;padding:12px;border:1px dashed var(--warn);border-radius:10px;background:#C8983010">
+        <div style="font-weight:800;color:var(--warn);font-size:12.5px;margin-bottom:4px">🛠 تصحيح السجلات القديمة</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:8px">
+          يعيد حساب الحركات المسجّلة بأوزان القطع القديمة. لو العدد رقم صحيح (أدخلته بالعدد) يُصحَّح الوزن،
+          ولو العدد بكسور (أدخلته بالوزن) يُصحَّح العدد. ستظهر معاينة قبل التنفيذ.
+        </div>
+        <button class="btn bsm" style="background:var(--warn);color:#000;border:none" onclick="previewFixRecords()">🔍 معاينة التصحيح</button>
+        <div id="FIX-PREV" style="margin-top:10px;font-size:12px"></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-CAT')">إغلاق</button><button class="btn bp" onclick="saveCatalogWeights()">💾 حفظ الأوزان</button></div>
   </div>
 </div>
 
@@ -1709,15 +1745,15 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
 // PRODUCT CATALOG — من جدول Station
 // ================================================================
 const CATALOG = [
-  {no:1,  name:'جنيه',             karat:875,  w21:7.990,   w24:7.99},
-  {no:2,  name:'نصف جنيه',         karat:875,  w21:3.990,   w24:3.99},
-  {no:3,  name:'ربع جنيه',         karat:875,  w21:1.990,   w24:1.99},
-  {no:5,  name:'جرام',             karat:1000, w21:1.131,   w24:0.99},
-  {no:6,  name:'ربع جرام',         karat:1000, w21:0.274,   w24:0.24},
-  {no:7,  name:'نصف جرام',         karat:1000, w21:0.560,   w24:0.49},
-  {no:8,  name:'2.5جرام',          karat:1000, w21:2.845,   w24:2.49},
-  {no:9,  name:'5جرام',            karat:1000, w21:5.702,   w24:4.99},
-  {no:10, name:'10جرام',           karat:1000, w21:11.416,  w24:9.99},
+  {no:1,  name:'جنيه',             karat:875,  w21:8,       w24:8},
+  {no:2,  name:'نصف جنيه',         karat:875,  w21:4,       w24:4},
+  {no:3,  name:'ربع جنيه',         karat:875,  w21:2,       w24:2},
+  {no:5,  name:'جرام',             karat:1000, w21:1.143,   w24:1},
+  {no:6,  name:'ربع جرام',         karat:1000, w21:0.286,   w24:0.25},
+  {no:7,  name:'نصف جرام',         karat:1000, w21:0.571,   w24:0.5},
+  {no:8,  name:'2.5جرام',          karat:1000, w21:2.857,   w24:2.5},
+  {no:9,  name:'5جرام',            karat:1000, w21:5.714,   w24:5},
+  {no:10, name:'10جرام',           karat:1000, w21:11.429,  w24:10},
   {no:11, name:'15.55جرام',        karat:1000, w21:17.770,  w24:15.55},
   {no:12, name:'20جرام',           karat:1000, w21:22.855,  w24:20},
   {no:13, name:'25جرام',           karat:1000, w21:28.569,  w24:25},
@@ -1811,6 +1847,7 @@ function stkRowHtml(){
     <td><div style="display:flex;flex-direction:column;gap:4px;min-width:180px">
         <select class="si r-item" onchange="stkRowItem(this)" style="width:100%;box-sizing:border-box">${opts}</select>
         <input type="text" class="si r-name" placeholder="اسم الوزنة (اختياري)..." style="width:100%;box-sizing:border-box;position:static"></div></td>
+    <td><input type="number" class="si r-unit" step="0.001" placeholder="—" oninput="stkRowUnit(this)" style="width:80px;font-family:monospace;color:var(--gold)" disabled></td>
     <td><input type="number" class="si r-cnt" step="1" min="0" placeholder="—" oninput="stkRowCnt(this)" style="width:80px;font-family:monospace" disabled></td>
     <td><input type="number" class="si r-wt" step="0.001" placeholder="0.000" oninput="stkRowWt(this)" style="width:110px;font-family:monospace;font-weight:700"></td>
     <td><input type="number" class="si r-kt" step="0.1" min="1" max="1000" value="875" oninput="stkRowCalc(this)" style="width:84px;font-family:monospace;color:var(--gold);font-weight:700"></td>
@@ -1833,12 +1870,16 @@ function stkRowItem(sel){
   const tr=sel.closest('tr'), c=stkCat(tr);
   tr.querySelector('.r-name').style.display=c?'none':'';
   tr.querySelector('.r-cnt').disabled=!c;
+  tr.querySelector('.r-unit').disabled=!c;
+  tr.querySelector('.r-unit').value=c?c.w24:'';
   if(c){ tr.querySelector('.r-kt').value=c.karat; tr.querySelector('.r-cnt').focus(); }
   else tr.querySelector('.r-cnt').value='';
   if(c&&tr.querySelector('.r-cnt').value) stkRowCnt(tr.querySelector('.r-cnt')); else stkRowWt(tr.querySelector('.r-wt'));
 }
-function stkRowCnt(inp){ const tr=inp.closest('tr'),c=stkCat(tr),n=parseFloat(inp.value)||0; if(c&&n) tr.querySelector('.r-wt').value=+(n*c.w24).toFixed(3); stkRowCalc(inp); }
-function stkRowWt(inp){ const tr=inp.closest('tr'),c=stkCat(tr),w=parseFloat(inp.value)||0; if(c&&c.w24) tr.querySelector('.r-cnt').value=w?+(w/c.w24).toFixed(2):''; stkRowCalc(inp); }
+const stkU=tr=>parseFloat(tr.querySelector('.r-unit').value)||stkCat(tr)?.w24||0;
+function stkRowUnit(inp){ const tr=inp.closest('tr'); if(tr.querySelector('.r-cnt').value) stkRowCnt(tr.querySelector('.r-cnt')); else stkRowWt(tr.querySelector('.r-wt')); }
+function stkRowCnt(inp){ const tr=inp.closest('tr'),u=stkU(tr),n=parseFloat(inp.value)||0; if(stkCat(tr)&&u&&n) tr.querySelector('.r-wt').value=+(n*u).toFixed(3); stkRowCalc(inp); }
+function stkRowWt(inp){ const tr=inp.closest('tr'),u=stkU(tr),w=parseFloat(inp.value)||0; if(stkCat(tr)&&u) tr.querySelector('.r-cnt').value=w?+(w/u).toFixed(2):''; stkRowCalc(inp); }
 function stkRowCalc(inp){
   const tr=inp.closest('tr'), w=parseFloat(tr.querySelector('.r-wt').value)||0, k=parseFloat(tr.querySelector('.r-kt').value)||0;
   tr.querySelector('.r-875').textContent=w&&k?N(w*k/875):'—';
@@ -2428,7 +2469,7 @@ async function init(){
         id('TAV').textContent=usr.name[0];
         id('TN').textContent=usr.name;
         id('TR').textContent=ROLES[usr.role]||usr.role;
-        if(usr.role==='admin'){ id('tab-users').style.display=''; id('RESET-BTN').style.display='inline-flex'; }
+        if(usr.role==='admin'){ id('tab-users').style.display=''; id('RESET-BTN').style.display='inline-flex'; id('CAT-BTN').style.display='inline-block'; }
         id('LOGIN').style.display='none';
         id('APP').style.display='flex';
         await loadDash();
@@ -2628,7 +2669,7 @@ async function doLogin(){
     try { localStorage.setItem('ge_session', JSON.stringify(usr)); } catch(e){}
     id('LERR').style.display='none';
     id('TAV').textContent=usr.name[0];id('TN').textContent=usr.name;id('TR').textContent=ROLES[usr.role]||usr.role;
-    if(usr.role==='admin'){ id('tab-users').style.display=''; id('RESET-BTN').style.display='inline-flex'; }
+    if(usr.role==='admin'){ id('tab-users').style.display=''; id('RESET-BTN').style.display='inline-flex'; id('CAT-BTN').style.display='inline-block'; }
     id('LOGIN').style.display='none';id('APP').style.display='flex';
     document.querySelectorAll('.app-ge-letter').forEach(el=>{
       el.style.animation='none';
@@ -2721,8 +2762,117 @@ function flashLiveDot(){ const d=id('LIVE-DOT'); if(!d) return; d.animate([{tran
 window.addEventListener('online',()=>setLiveDot(!!liveUnsubs.length));
 window.addEventListener('offline',()=>setLiveDot(false));
 
+// ================================================================
+// أوزان الأصناف — قابلة للتحكم ومحفوظة في settings/catalog
+// ================================================================
+// الأوزان القديمة التي كانت في البرنامج (لتصحيح السجلات القديمة)
+const OLD_W24={'جنيه':7.99,'نصف جنيه':3.99,'ربع جنيه':1.99,'جرام':0.99,'ربع جرام':0.24,'نصف جرام':0.49,'2.5جرام':2.49,'5جرام':4.99,'10جرام':9.99};
+let catLoaded=false;
+function applyCatalogWeights(w){
+  if(!w) return;
+  CATALOG.forEach(c=>{ const x=parseFloat(w[c.name]); if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
+  try{ fillDropdowns(); }catch(e){}
+}
+async function loadCatalogWeights(){
+  if(catLoaded) return; catLoaded=true;
+  try{
+    const s=await DB.doc('settings/catalog').get();
+    if(s.exists) applyCatalogWeights(s.data().weights);
+    firestore.doc('settings/catalog').onSnapshot?.(d=>{ if(d.exists) applyCatalogWeights(d.data().weights); });
+  }catch(e){ console.warn('catalog',e); }
+}
+function openCatalogEditor(){
+  id('CAT-ROWS').innerHTML=CATALOG.map((c,i)=>`<tr>
+    <td style="font-weight:700">${esc(c.name)}</td><td><span class="b bgld">${c.karat}</span></td>
+    <td><input type="number" class="si cat-w" data-i="${i}" step="0.001" value="${c.w24}" style="width:120px;font-family:monospace;font-weight:800;color:var(--gold)"></td></tr>`).join('');
+  id('FIX-PREV').innerHTML='';
+  om('MOD-CAT');
+}
+async function saveCatalogWeights(){
+  const w={};
+  for(const inp of document.querySelectorAll('#CAT-ROWS .cat-w')){
+    const x=parseFloat(inp.value); const c=CATALOG[+inp.dataset.i];
+    if(!(x>0)){ toast('er',`وزن غير صحيح: ${c.name}`); inp.focus(); return; }
+    w[c.name]=x;
+  }
+  await DB.doc('settings/catalog').set({weights:w,by:CU.username,at:Date.now()});
+  applyCatalogWeights(w);
+  toast('ok','✅ تم حفظ أوزان الأصناف لكل الأجهزة');
+  cm('MOD-CAT');
+}
+
+// ── تصحيح السجلات القديمة ──
+let fixPlan=[];
+async function buildFixPlan(){
+  const cur={}; CATALOG.forEach(c=>cur[c.name]=c.w24);
+  const plan=[];
+  const cols={stock:'name',dept:'item',sub:'item',main:'item'};
+  const data={};
+  for(const col of Object.keys(cols)){ data[col]=(await DB.collection(col).get()).docs.map(d=>d.data()); }
+  for(const [col,key] of Object.entries(cols)){
+    for(const r of data[col]){
+      const nm=r[key]; const ow=OLD_W24[nm], nw=cur[nm];
+      if(!ow||!nw||Math.abs(ow-nw)<1e-9) continue;
+      const cnt=+r.count||0, wt=+r.weight||0; if(!cnt||!wt) continue;
+      if(Math.abs(wt-cnt*ow)>0.02+cnt*0.0005) continue;            // لم يُحسب من الكتالوج القديم — اتركه
+      const kt=r.karat||875;
+      const isInt=Math.abs(cnt-Math.round(cnt))<0.001;
+      let upd;
+      if(isInt){ // أدخلته بالعدد → صحّح الوزن
+        const nwt=+(cnt*nw).toFixed(3);
+        upd={weight:nwt};
+        if(col==='dept'&&r.takhyeef) upd.w875=+(nwt*(1-r.takhyeef/100)*kt/875).toFixed(3); else upd.w875=+(nwt*kt/875).toFixed(3);
+        if(col==='main') upd.w1000=+(nwt*kt/1000).toFixed(3);
+      } else {   // أدخلته بالوزن → صحّح العدد
+        upd={count:+(wt/nw).toFixed(3)};
+      }
+      plan.push({col,id:r.id,name:nm,old:r,upd,kind:isInt?'w':'c'});
+    }
+  }
+  // حركة "وارد استوك" في الرئيسية تتبع سجل الاستوك المرتبط
+  for(const p of plan.filter(p=>p.col==='stock'&&p.upd.weight!==undefined)){
+    const ts=String(p.id).replace(/^\D+/,'');
+    const m=data.main.find(x=>x.id==='m'+ts&&x.type==='وارد استوك');
+    if(m&&!plan.find(q=>q.col==='main'&&q.id===m.id)){
+      const kt=m.karat||875;
+      plan.push({col:'main',id:m.id,name:p.name,old:m,upd:{weight:p.upd.weight,w875:+(p.upd.weight*kt/875).toFixed(3),w1000:+(p.upd.weight*kt/1000).toFixed(3)},kind:'w'});
+    }
+  }
+  return plan;
+}
+async function previewFixRecords(){
+  id('FIX-PREV').innerHTML='<span style="color:var(--muted)">⏳ جاري الفحص...</span>';
+  fixPlan=await buildFixPlan();
+  if(!fixPlan.length){ id('FIX-PREV').innerHTML='<span style="color:var(--ok)">✅ لا توجد سجلات تحتاج تصحيح</span>'; return; }
+  const CN={stock:'الاستوك',dept:'الأقسام',sub:'الفرعية',main:'الرئيسية'};
+  const by={}; fixPlan.forEach(p=>{by[p.col]=(by[p.col]||0)+1;});
+  const ex=fixPlan.slice(0,8).map(p=>`<tr><td>${CN[p.col]}</td><td>${esc(p.name)}</td>
+    <td class="num">${p.kind==='w'?`${N(p.old.weight)} ← <b style="color:var(--gold)">${N(p.upd.weight)}</b> جرام`:`${N3(p.old.count)} ← <b style="color:var(--gold)">${N3(p.upd.count)}</b> قطعة`}</td></tr>`).join('');
+  id('FIX-PREV').innerHTML=`<div style="margin-bottom:6px">سيتم تصحيح <b style="color:var(--warn)">${fixPlan.length}</b> سجل: ${Object.entries(by).map(([c,n])=>`${CN[c]} ${n}`).join(' · ')}</div>
+    <table style="width:100%;font-size:11.5px"><tbody>${ex}</tbody></table>${fixPlan.length>8?`<div style="color:var(--muted);font-size:10.5px;margin-top:4px">و${fixPlan.length-8} سجل آخر...</div>`:''}
+    <button class="btn bsm" style="margin-top:10px;background:var(--err);color:#fff;border:none" onclick="applyFixRecords()">✅ تنفيذ التصحيح</button>`;
+}
+async function applyFixRecords(){
+  if(!fixPlan.length) return;
+  id('FIX-PREV').innerHTML='<span style="color:var(--muted)">⏳ جاري التصحيح...</span>';
+  const ops=[]; const touched=new Set();
+  for(let i=0;i<fixPlan.length;i+=400){
+    const batch=firestore.batch();
+    fixPlan.slice(i,i+400).forEach(p=>{ batch.update(firestore.doc(`${p.col}/${p.id}`),p.upd); ops.push({action:'set',col:p.col,id:p.id,data:p.old}); if(p.col==='main'||p.col==='sub') touched.add(p.col); });
+    await batch.commit();
+  }
+  for(const c of touched) await recalcBalances(c);
+  pushUndo({label:`تصحيح ${fixPlan.length} سجل قديم`,ops});
+  const n=fixPlan.length; fixPlan=[];
+  clearCache();
+  id('FIX-PREV').innerHTML=`<span style="color:var(--ok)">✅ تم تصحيح ${n} سجل وإعادة حساب الأرصدة</span>`;
+  toast('ok',`✅ تم تصحيح ${n} سجل`);
+  try{ await TAB_LOADERS[curTab]?.(); }catch(e){}
+}
+
 async function loadDash(){
   startLive();
+  loadCatalogWeights();
   id('DDATE').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const [mm,sm,dm,sim]=await Promise.all([
     getCol('main'),getCol('sub'),getCol('dept'),getCol('silver')
@@ -2868,30 +3018,34 @@ function renderKtSummary(p,data,outTypes){
 function setMMKt(k){ id('MM-KT').value=k; calcMM(); }
 // ── الصنف اختياري: لو اخترت صنف يُضبط العيار ويُحسب الوزن من العدد والعكس ──
 function mmCat(){ const i=parseInt(id('MM-ITEM').value); return isNaN(i)?null:CATALOG[i]||null; }
+const mmUnit=()=>parseFloat(id('MM-UNIT').value)||mmCat()?.w24||0;
 function onMMItem(){
   const c=mmCat();
   id('MM-CNT-WRAP').style.opacity=c?1:.45;
   id('MM-CNT').disabled=!c;
-  if(!c){ id('MM-CNT').value=''; id('MM-ITEM-HINT').textContent='وزنة حرة — اكتب أي وزن وأي عيار'; calcMM(); return; }
+  id('MM-UNIT-WRAP').style.display=c?'':'none';
+  if(!c){ id('MM-CNT').value=''; id('MM-UNIT').value=''; id('MM-ITEM-HINT').textContent='وزنة حرة — اكتب أي وزن وأي عيار'; calcMM(); return; }
   id('MM-KT').value=c.karat;
-  id('MM-ITEM-HINT').innerHTML=`📦 ${esc(c.name)} — عيار ${c.karat} — وزن القطعة ${c.w24} جرام · اكتب العدد أو الوزن`;
+  id('MM-UNIT').value=c.w24;
+  id('MM-ITEM-HINT').innerHTML=`📦 ${esc(c.name)} — عيار ${c.karat} · اكتب العدد أو الوزن`;
   if(id('MM-CNT').value) onMMCnt(); else onMMWt();
 }
+function onMMUnit(){ if(id('MM-CNT').value) onMMCnt(); else onMMWt(); }
 function onMMCnt(){
-  const c=mmCat(), n=parseFloat(id('MM-CNT').value)||0;
-  if(c&&n) id('MM-WT').value=+(n*c.w24).toFixed(3);
+  const u=mmUnit(), n=parseFloat(id('MM-CNT').value)||0;
+  if(mmCat()&&u&&n) id('MM-WT').value=+(n*u).toFixed(3);
   calcMM();
 }
 function onMMWt(){
-  const c=mmCat(), w=parseFloat(id('MM-WT').value)||0;
-  if(c&&c.w24) id('MM-CNT').value=w?+(w/c.w24).toFixed(2):'';
+  const u=mmUnit(), w=parseFloat(id('MM-WT').value)||0;
+  if(mmCat()&&u) id('MM-CNT').value=w?+(w/u).toFixed(2):'';
   calcMM();
 }
 function openMainMov(){
   id('MM-DATE').value=today();
   id('MM-KT').value=999.9;
   id('MM-ITEM').innerHTML='<option value="">— وزنة حرة (بدون صنف) —</option>'+CATALOG.map((c,i)=>`<option value="${i}">${c.name} — ${c.karat}</option>`).join('');
-  id('MM-ITEM').value=''; id('MM-CNT').value='';
+  id('MM-ITEM').value=''; id('MM-CNT').value=''; id('MM-UNIT').value='';
   onMMItem();
   id('MM-TYPE').value='وارد';
   ['MM-WT','MM-NOTE','MM-875','MM-1K','MM-LOAN-NAME','MM-LOAN-PURPOSE'].forEach(x=>id(x).value='');
@@ -4246,6 +4400,7 @@ async function openEditRec(col,rid){
   id('ER-KT').value=erRec.karat||(col==='silver'?1000:875);
   id('ER-CNT').value=erRec.count?+(+erRec.count).toFixed(3):'';
   id('ER-NOTE').value=erRec.note||'';
+  id('ER-UNIT').value=(ci>=0&&erRec.count&&erRec.weight)?+(erRec.weight/erRec.count).toFixed(4):(ci>=0?CATALOG[ci].w24:'');
   // الحقول التي لا معنى لها في بعض السجلات
   const linked=[];
   if(col==='main'&&erRec.type==='منصرف') linked.push('حركة الوارد المقابلة في الخزنة الفرعية');
@@ -4254,15 +4409,18 @@ async function openEditRec(col,rid){
   erItem(true);
   om('MOD-EREC');
 }
+const erUnit=()=>parseFloat(id('ER-UNIT').value)||erCat()?.w24||0;
 function erItem(keep){
   const c=erCat();
   id('ER-NAME-WRAP').style.display=c?'none':'';
   id('ER-CNT-WRAP').style.opacity=c?1:.5;
+  id('ER-UNIT-WRAP').style.display=c?'':'none';
+  if(c&&(!keep||!id('ER-UNIT').value)) id('ER-UNIT').value=c.w24;
   if(c&&!keep){ id('ER-KT').value=c.karat; if(id('ER-CNT').value) erCnt(); else erWt(); return; }
   erCalc();
 }
-function erCnt(){ const c=erCat(),n=parseFloat(id('ER-CNT').value)||0; if(c&&n) id('ER-WT').value=+(n*c.w24).toFixed(3); erCalc(); }
-function erWt(){ const c=erCat(),w=parseFloat(id('ER-WT').value)||0; if(c&&c.w24) id('ER-CNT').value=w?+(w/c.w24).toFixed(3):''; erCalc(); }
+function erCnt(){ const u=erUnit(),n=parseFloat(id('ER-CNT').value)||0; if(erCat()&&u&&n) id('ER-WT').value=+(n*u).toFixed(3); erCalc(); }
+function erWt(){ const u=erUnit(),w=parseFloat(id('ER-WT').value)||0; if(erCat()&&u) id('ER-CNT').value=w?+(w/u).toFixed(3):''; erCalc(); }
 function erCalc(){
   const w=parseFloat(id('ER-WT').value)||0, k=parseFloat(id('ER-KT').value)||0;
   const old=erCol==='silver'?(erRec?.w1000||erRec?.weight||0):(erRec?.w875||0);

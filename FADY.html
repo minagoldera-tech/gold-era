@@ -680,6 +680,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
           id="SYNC-BTN">
           🔄
         </button>
+        <span id="LIVE-DOT" title="مزامنة لحظية" style="width:9px;height:9px;border-radius:50%;background:#8B949E;display:inline-block;box-shadow:0 0 0 3px #3FB95022;align-self:center"></span>
         <button id="RESET-BTN" onclick="confirmResetData()" title="تصفير كل البيانات"
           style="display:none;background:#E05C5018;border:1px solid #E05C5055;border-radius:8px;padding:6px 10px;color:var(--err);cursor:pointer;font-size:12px;font-weight:700;font-family:'Cairo',sans-serif;transition:.2s;align-items:center;gap:4px"
           onmouseover="this.style.background='var(--err)';this.style.color='#fff'"
@@ -2642,6 +2643,7 @@ async function doLogin(){
 }
 id('LP').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 function logout(){
+  stopLive();
   CU=null;
   try{undoStack.length=0;updateUndoBtn();clearCache();}catch(e){}
   try { localStorage.removeItem('ge_session'); } catch(e){}
@@ -2655,7 +2657,9 @@ function logout(){
 // ================================================================
 const TAB_LOADERS={dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
 
+let curTab='dash';
 function showTab(t){
+  curTab=t;
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('act'));
   document.querySelectorAll('.pg').forEach(el=>el.classList.remove('act'));
   document.querySelector(`.tab[onclick*="'${t}'"]`)?.classList.add('act');
@@ -2666,7 +2670,59 @@ function showTab(t){
 // ================================================================
 // DASHBOARD
 // ================================================================
+// ================================================================
+// مزامنة لحظية بين الأجهزة — Firestore realtime listeners
+// ================================================================
+const LIVE_COLS=['main','sub','dept','stock','silver'];
+let liveUnsubs=[], liveTimer=null, liveRemote=false, liveFirst={};
+// الصفحات التي تتأثر بكل مجموعة
+const LIVE_TABS={main:['dash','main','abb','ovr'],sub:['dash','sub','abb','ovr','tag'],dept:['dash','hal','tam','dam','tag','ovr'],stock:['main','ovr','dash'],silver:['sil','ovr','dash']};
+let liveDirty=new Set();
+function startLive(){
+  if(liveUnsubs.length||!CU) return;
+  LIVE_COLS.forEach(col=>{
+    liveFirst[col]=true;
+    try{
+      const un=firestore.collection(col).onSnapshot(snap=>{
+        cache[col]=snap.docs.map(d=>d.data()); cacheTime[col]=Date.now();
+        if(liveFirst[col]){ liveFirst[col]=false; return; }
+        if(!snap.docChanges().length) return;
+        if(!snap.metadata.hasPendingWrites) liveRemote=true;   // تغيير من جهاز آخر
+        liveDirty.add(col);
+        clearTimeout(liveTimer); liveTimer=setTimeout(liveRefresh,350);
+      },err=>{ console.warn('live',col,err); setLiveDot(false); });
+      liveUnsubs.push(un);
+    }catch(e){ console.warn('live',e); }
+  });
+  setLiveDot(true);
+}
+function stopLive(){ liveUnsubs.forEach(u=>{try{u();}catch(e){}}); liveUnsubs=[]; liveDirty.clear(); setLiveDot(false); }
+async function liveRefresh(){
+  const cols=[...liveDirty]; liveDirty.clear();
+  const remote=liveRemote; liveRemote=false;
+  if(!remote) return;                                     // تغييراتي أنا تُحدَّث الشاشة بها بالفعل
+  // لا نعيد رسم الصفحة أثناء فتح نافذة إدخال أو أثناء التحديد بالماوس
+  if(document.querySelector('.mov.open')||document.body.classList.contains('cs-drag')){
+    cols.forEach(c=>liveDirty.add(c)); liveRemote=true;
+    clearTimeout(liveTimer); liveTimer=setTimeout(liveRefresh,1500); return;
+  }
+  if(cols.some(c=>(LIVE_TABS[c]||[]).includes(curTab))){
+    try{ await TAB_LOADERS[curTab]?.(); }catch(e){}
+  }
+  toast('in','🔄 تم تحديث البيانات من جهاز آخر');
+  flashLiveDot();
+}
+function setLiveDot(on){
+  const d=id('LIVE-DOT'); if(!d) return;
+  d.style.background=on?'#3FB950':'#8B949E';
+  d.title=on?'مزامنة لحظية: متصل':'مزامنة لحظية: غير متصل';
+}
+function flashLiveDot(){ const d=id('LIVE-DOT'); if(!d) return; d.animate([{transform:'scale(1)'},{transform:'scale(1.9)'},{transform:'scale(1)'}],{duration:600}); }
+window.addEventListener('online',()=>setLiveDot(!!liveUnsubs.length));
+window.addEventListener('offline',()=>setLiveDot(false));
+
 async function loadDash(){
+  startLive();
   id('DDATE').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const [mm,sm,dm,sim]=await Promise.all([
     getCol('main'),getCol('sub'),getCol('dept'),getCol('silver')

@@ -4491,8 +4491,9 @@ async function printAbbByIds(ids){
     (no,win)=>openAbbDoc(rows,{d1:rows[0].date,d2:rows[0].date,src:'stock',...no,win}));
 }
 
+const FIT_SCRIPT='<scr'+'ipt>(function(){function fit(){var s=document.querySelector(".sheet"),f=document.querySelector(".fit"),ft=document.querySelector("footer");if(!s||!f)return;document.documentElement.style.setProperty("--fit",1);var cs=getComputedStyle(s),pt=parseFloat(cs.paddingTop),pb=parseFloat(cs.paddingBottom);var mm=s.offsetWidth/210;var avail=297*mm-pt-pb-(ft?ft.offsetHeight+12:30);var need=f.scrollHeight;document.documentElement.style.setProperty("--fit",need>avail?(avail/need).toFixed(4):1);}window.addEventListener("load",fit);window.addEventListener("beforeprint",fit);setTimeout(fit,300);})();</scr'+'ipt>';
 const SHEET_CSS=`
-  @page{size:A4;margin:12mm}
+  @page{size:A4;margin:0}
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{margin:0;background:#E9E6DF;font-family:'Cairo',sans-serif;color:#1C1E22}
   .bar{position:sticky;top:0;display:flex;gap:8px;justify-content:center;padding:12px;background:#1C1E22;z-index:5}
@@ -4555,8 +4556,12 @@ const SHEET_CSS=`
   .sign small.en{font-size:10px;letter-spacing:1px;color:#8E6A1F}
   footer{position:absolute;bottom:12mm;right:14mm;left:14mm;display:flex;justify-content:space-between;font-size:9.5px;color:#8A8478;border-top:1px solid #E6DFCC;padding-top:6px}
   .note{font-size:11px;color:#6B6F78;background:#F6F1E4;border-radius:6px;padding:8px 12px;margin-top:4px}
-  @media print{body{background:#fff}.bar{display:none}.sheet{margin:0;box-shadow:none;width:auto;min-height:auto;padding:6mm 8mm}
-    .sheet::before,.sheet::after{inset:0}footer{position:static;margin-top:28px}}
+  @media print{
+    html,body{width:210mm;height:297mm;margin:0;padding:0;background:#fff;overflow:hidden}
+    .bar{display:none}
+    .sheet{margin:0;box-shadow:none;width:210mm;height:297mm;min-height:0;overflow:hidden;break-after:avoid;page-break-after:avoid}
+    .fit{zoom:var(--fit,1)}
+  }
 `;
 
 function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised,origDate}){
@@ -4590,6 +4595,7 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised
 <div class="bar"><button class="bp" onclick="print()">🖨️ طباعة / حفظ PDF</button><button class="bs" onclick="close()">إغلاق</button></div>
 <div class="sheet">
   <img class="wm" src="${BRAND_LOGO}" alt="">
+  <div class="fit">
   <header>
     <div class="doc"><h1>إذن تسليم</h1><div class="en">DELIVERY NOTE</div><div class="no">${docNo}</div>${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
     <div class="brand"><img src="${BRAND_LOGO}" alt="GOLD ERA"><div class="tag"><b>عصر الذهب لصناعة الذهب</b><span>GOLD ERA FOR GOLD INDUSTRY</span></div></div>
@@ -4628,8 +4634,9 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised
     <div><div class="ln"></div><b>توقيع المُستلِم</b><small>العباسية</small></div>
   </div>
 
+  </div>
   <footer><span>GOLD ERA FACTORY · ${docNo}</span><span>طُبع بواسطة ${esc(CU?.username||'')} · ${now.toLocaleString('ar-EG')}</span></footer>
-</div></body></html>`;
+</div>${FIT_SCRIPT}</body></html>`;
   const w=win||window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الإذن'); return; }
   w.document.open(); w.document.write(html); w.document.close();
@@ -4679,6 +4686,7 @@ function openDamDoc(rows,meta={}){
 <div class="bar"><button class="bp" onclick="print()">🖨️ طباعة / حفظ PDF</button><button class="bs" onclick="close()">إغلاق</button></div>
 <div class="sheet">
   <img class="wm" src="${BRAND_LOGO}" alt="">
+  <div class="fit">
   <header>
     <div class="doc"><h1>كشف أعداد الدمغة</h1><div class="en">HALLMARK COUNT SHEET</div><div class="no">${docNo}</div>${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
     <div class="brand"><img src="${BRAND_LOGO}" alt="GOLD ERA"><div class="tag"><b>عصر الذهب لصناعة الذهب</b><span>GOLD ERA FOR GOLD INDUSTRY</span></div></div>
@@ -4708,8 +4716,9 @@ function openDamDoc(rows,meta={}){
     <div class="st"><img class="stampimg" src="${BRAND_STAMP}" alt="ختم الشركة"></div>
     <div><div class="ln"></div><b>مسؤول الدمغة</b><small>التوقيع</small></div>
   </div>
+  </div>
   <footer><span>GOLD ERA FACTORY · ${docNo}</span><span>طُبع بواسطة ${esc(CU?.username||'')} · ${now.toLocaleString('ar-EG')}</span></footer>
-</div></body></html>`;
+</div>${FIT_SCRIPT}</body></html>`;
   const w=meta.win||window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الكشف'); return; }
   w.document.open(); w.document.write(html); w.document.close();

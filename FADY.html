@@ -1049,7 +1049,11 @@ td.num, th.num { display: table-cell; text-align: right; }
         <input type="date" id="ABB-D2" class="si" onchange="loadAbb()" style="width:140px">
         <button class="btn bs bsm" onclick="document.getElementById('ABB-D1').value='';document.getElementById('ABB-D2').value='';document.getElementById('ABB-FROM').value='';loadAbb()">↺ كل السجل</button>
       </div>
-      <div class="tc"><div id="ABB-TABLE"></div></div>
+      <div class="tc" style="margin-bottom:16px">
+        <div class="thead2" style="background:#E74C3C10;border-bottom-color:#E74C3C30"><b style="color:#E74C3C">📜 أرشيف فواتير العباسية — ما تم صرفه بفاتورة</b></div>
+        <div id="ABB-INV"></div>
+      </div>
+      <div class="tc"><div class="thead2"><b>🏪 كل حركات العباسية</b></div><div id="ABB-TABLE"></div></div>
     </div>
 
     <!-- OVERVIEW PAGE -->
@@ -1816,6 +1820,23 @@ td.num, th.num { display: table-cell; text-align: right; }
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn bs bsm" style="flex:1" onclick="cm('MOD-NEXT');openDeptTr(nextItemId)">↗️ وجهة أخرى / تحويل جزئي</button>
         <button class="btn bs bsm" style="flex:1" onclick="cm('MOD-NEXT')">⏸ ابقها في القسم</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="MOD-DOCNO" class="mov">
+  <div class="mod" style="max-width:470px">
+    <div class="mh"><div class="mt">🖨️ <span id="DOCNO-KIND">مستند</span></div><button class="mc" onclick="cm('MOD-DOCNO')">✕</button></div>
+    <div class="mb">
+      <div id="DOCNO-SUM" style="font-size:12px;color:var(--muted);margin-bottom:14px"></div>
+      <button class="btn bp" style="width:100%;padding:14px;font-size:15px;justify-content:center;flex-direction:column;gap:2px" onclick="docNoNew()">
+        🆕 فاتورة جديدة<span style="font-family:monospace;font-size:13px;opacity:.85" id="DOCNO-NEXT">…</span></button>
+      <div style="margin-top:16px;padding:12px;border:1px dashed var(--warn);border-radius:10px;background:#C8983010">
+        <div style="font-weight:800;color:var(--warn);font-size:12.5px;margin-bottom:4px">✎ تصحيح فاتورة سابقة</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">لو الفاتورة السابقة فيها غلط — تُطبع البيانات الصحيحة بنفس رقمها، فلا يتكرر الترقيم.</div>
+        <select class="si" id="DOCNO-PREV" style="width:100%" onchange="document.getElementById('DOCNO-CORR-BTN').disabled=!this.value"></select>
+        <button class="btn bsm" id="DOCNO-CORR-BTN" style="margin-top:8px;width:100%;background:var(--warn);color:#000;border:none" onclick="docNoCorr()" disabled>✎ طباعة كتصحيح بنفس الرقم</button>
       </div>
     </div>
   </div>
@@ -2715,6 +2736,7 @@ async function resetAllData(){
     }catch(e){ console.error(col,e); failed.push(RESET_COLS[col]); }
   }
   mainMovs=[];subMovs=[];deptItems=[];silvItems=[];allLogs=[];stockItems=[];
+  try{ await DB.doc('settings/counter').delete(); }catch(e){}
   clearCache();undoStack.length=0;updateUndoBtn();
   mainRecalcDone=true;
   btn.textContent='🗑 تصفير نهائي';
@@ -4428,6 +4450,7 @@ const MANAGER_SIGNATURE='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAAC0C
 // إذن تسليم العباسية — ورقة مطبوعة
 // ================================================================
 function openAbbSheet(){
+  abbCorrId=null;
   id('ABBS-D1').value=today(); id('ABBS-D2').value=today();
   id('ABBS-SRC').value='stock'; id('ABBS-PREV').textContent='';
   om('MOD-ABBS');
@@ -4456,12 +4479,16 @@ async function printAbbSheet(){
   const d1=id('ABBS-D1').value, d2=id('ABBS-D2').value, src=id('ABBS-SRC').value;
   const rows=await collectAbbRows({d1,d2,src});
   if(!rows.length){ id('ABBS-PREV').innerHTML='<span style="color:var(--err)">لا يوجد ما صُرف للعباسية في هذه الفترة</span>'; return; }
-  openAbbDoc(rows,{d1,d2,src});
   cm('MOD-ABBS');
+  const fixed=abbCorrId; abbCorrId=null;
+  askDocNo('abb',`${rows.length} حركة · ${N(rows.reduce((s,r)=>s+(r.w875||0),0))} جرام (875)`,
+    (no,win)=>openAbbDoc(rows,{d1,d2,src,...no,win}),fixed);
 }
 async function printAbbByIds(ids){
   const rows=await collectAbbRows({ids});
-  if(rows.length) openAbbDoc(rows,{d1:rows[0].date,d2:rows[0].date,src:'stock'});
+  if(!rows.length) return;
+  askDocNo('abb',`${rows.map(r=>r.item).join('، ')} · ${N(rows.reduce((s,r)=>s+(r.w875||0),0))} جرام (875)`,
+    (no,win)=>openAbbDoc(rows,{d1:rows[0].date,d2:rows[0].date,src:'stock',...no,win}));
 }
 
 const SHEET_CSS=`
@@ -4488,6 +4515,7 @@ const SHEET_CSS=`
   .doc{text-align:left}
   .doc h1{margin:0;font-size:22px;font-weight:900;color:#1C1E22;text-align:right}
   .doc .en{font-family:'Cinzel',serif;font-size:10px;letter-spacing:3px;color:#A8872C;text-align:right}
+  .rev{display:block;width:max-content;margin-top:5px;font-size:10px;font-weight:800;color:#B03A2E;border:1px solid #B03A2E;border-radius:4px;padding:1px 8px}
   .no{display:inline-block;margin-top:6px;font-family:monospace;font-size:12px;background:#1C1E22;color:#E8CB7A;padding:3px 10px;border-radius:4px;direction:ltr}
   .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 18px}
   .meta div{background:#F6F1E4;border-right:3px solid #C8A84B;padding:8px 12px;border-radius:4px}
@@ -4531,7 +4559,7 @@ const SHEET_CSS=`
     .sheet::before,.sheet::after{inset:0}footer{position:static;margin-top:28px}}
 `;
 
-function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,reprint}){
+function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised,origDate}){
   // تجميع حسب الصنف والعيار
   const g={};
   rows.forEach(m=>{
@@ -4563,7 +4591,7 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,reprint}){
 <div class="sheet">
   <img class="wm" src="${BRAND_LOGO}" alt="">
   <header>
-    <div class="doc"><h1>إذن تسليم</h1><div class="en">DELIVERY NOTE</div><div class="no">${docNo}</div></div>
+    <div class="doc"><h1>إذن تسليم</h1><div class="en">DELIVERY NOTE</div><div class="no">${docNo}</div>${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
     <div class="brand"><img src="${BRAND_LOGO}" alt="GOLD ERA"><div class="tag"><b>عصر الذهب لصناعة الذهب</b><span>GOLD ERA FOR GOLD INDUSTRY</span></div></div>
   </header>
 
@@ -4602,12 +4630,12 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,reprint}){
 
   <footer><span>GOLD ERA FACTORY · ${docNo}</span><span>طُبع بواسطة ${esc(CU?.username||'')} · ${now.toLocaleString('ar-EG')}</span></footer>
 </div></body></html>`;
-  const w=window.open('','_blank');
+  const w=win||window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الإذن'); return; }
   w.document.open(); w.document.write(html); w.document.close();
-  if(!reprint) archiveDoc({id:docNo,kind:'abb',title:'إذن تسليم العباسية',date:d2||today(),d1,d2,src,
+  if(!reprint) archiveDoc({id:docId||docNo,docNo,kind:'abb',title:'إذن تسليم العباسية',date:d2||today(),d1,d2,src,
     rows:rows.map(m=>({id:m.id||'',item:m.item||'—',karat:m.karat||875,count:itemCount(m),weight:m.weight||0,w875:m.w875||0,date:m.date||'',at:m.at||0})),
-    totals:{count:T.count,weight:T.weight,w875:T.w875,items:items.length}});
+    totals:{count:T.count,weight:T.weight,w875:T.w875,items:items.length}},corr);
 }
 
 // ================================================================
@@ -4628,9 +4656,11 @@ async function printDamSheet(){
     r.closed=r.hasCnt?Math.max(0,Math.round(r.count-1)):null;
     return r;
   }).sort((a,b)=>(b.hasCnt-a.hasCnt)||b.w875-a.w875);
-  openDamDoc(rows);
+  askDocNo('dam',`${rows.length} صنف · عدد ${rows.reduce((s,r)=>s+(r.closed||0),0).toLocaleString('en-US')}`,
+    (no,win)=>openDamDoc(rows,{...no,win}));
 }
 function openDamDoc(rows,meta={}){
+  const corr=meta.corr, revised=meta.revised;
   const T={weight:0,w875:0,count:0,closed:0};
   rows.forEach(r=>{T.weight+=r.weight;T.w875+=r.w875;if(r.hasCnt){T.count+=r.count;T.closed+=r.closed;}});
   const fmt=n=>(+n).toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3});
@@ -4650,7 +4680,7 @@ function openDamDoc(rows,meta={}){
 <div class="sheet">
   <img class="wm" src="${BRAND_LOGO}" alt="">
   <header>
-    <div class="doc"><h1>كشف أعداد الدمغة</h1><div class="en">HALLMARK COUNT SHEET</div><div class="no">${docNo}</div></div>
+    <div class="doc"><h1>كشف أعداد الدمغة</h1><div class="en">HALLMARK COUNT SHEET</div><div class="no">${docNo}</div>${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
     <div class="brand"><img src="${BRAND_LOGO}" alt="GOLD ERA"><div class="tag"><b>عصر الذهب لصناعة الذهب</b><span>GOLD ERA FOR GOLD INDUSTRY</span></div></div>
   </header>
   <div class="meta">
@@ -4680,12 +4710,12 @@ function openDamDoc(rows,meta={}){
   </div>
   <footer><span>GOLD ERA FACTORY · ${docNo}</span><span>طُبع بواسطة ${esc(CU?.username||'')} · ${now.toLocaleString('ar-EG')}</span></footer>
 </div></body></html>`;
-  const w=window.open('','_blank');
+  const w=meta.win||window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الكشف'); return; }
   w.document.open(); w.document.write(html); w.document.close();
-  if(!meta.reprint) archiveDoc({id:docNo,kind:'dam',title:'كشف أعداد الدمغة',date:today(),
+  if(!meta.reprint) archiveDoc({id:meta.docId||docNo,docNo,kind:'dam',title:'كشف أعداد الدمغة',date:meta.origDate||today(),
     rows:rows.map(r=>({item:r.item,karat:r.karat,count:r.count,weight:r.weight,w875:r.w875,hasCnt:r.hasCnt,closed:r.closed})),
-    totals:{count:T.closed,weight:T.weight,w875:T.w875,items:rows.length}});
+    totals:{count:T.closed,weight:T.weight,w875:T.w875,items:rows.length}},corr);
 }
 
 // ================================================================
@@ -4797,14 +4827,109 @@ async function saveEditRec(){
 // ================================================================
 // الأرشيف والبحث
 // ================================================================
-async function archiveDoc(d){
-  try{ await DB.doc(`docs/${d.id}`).set({...d,by:CU?.username||'',at:Date.now()}); clearCache('docs'); }
-  catch(e){ console.warn('archive',e); }
+async function archiveDoc(d,corr){
+  try{
+    const ref=DB.doc(`docs/${d.id}`);
+    if(corr){
+      const old=await ref.get();
+      const o=old.exists?old.data():{};
+      const {versions,...prev}=o;
+      const hist=[...(versions||[]),{...prev}].slice(-5);
+      await ref.set({...d,date:o.date||d.date,issuedAt:o.issuedAt||o.at||Date.now(),issuedBy:o.issuedBy||o.by||'',
+        by:CU?.username||'',at:Date.now(),revCount:(o.revCount||0)+1,revisedAt:Date.now(),revisedDate:today(),versions:hist});
+      toast('ok',`✎ تم تصحيح الفاتورة ${d.docNo} بنفس الرقم`);
+    } else {
+      await ref.set({...d,by:CU?.username||'',issuedBy:CU?.username||'',at:Date.now(),issuedAt:Date.now(),revCount:0});
+    }
+    clearCache('docs');
+    if(curTab==='abb') loadAbbInvoices();
+  }catch(e){ console.warn('archive',e); }
+}
+
+// ── ترقيم موحّد لكل الطباعات: G.E.F - 00001 ──
+const fmtDocNo=n=>'G.E.F - '+String(n).padStart(5,'0');
+const docIdOf=n=>'GEF-'+String(n).padStart(5,'0');
+async function peekDocSeq(){ try{ const s=await DB.doc('settings/counter').get(); return s.exists?(s.data().seq||0):0; }catch(e){ return 0; } }
+async function allocDocSeq(){
+  const ref=firestore.doc('settings/counter');
+  if(firestore.runTransaction){
+    return await firestore.runTransaction(async t=>{ const s=await t.get(ref); const v=(s.exists?(s.data().seq||0):0)+1; t.set(ref,{seq:v},{merge:true}); return v; });
+  }
+  const s=await ref.get(); const v=(s.exists?(s.data().seq||0):0)+1; await ref.set({seq:v}); return v;
+}
+let askCb=null, askKind=null;
+const KIND_LBL={abb:'إذن تسليم العباسية',dam:'كشف أعداد الدمغة'};
+async function askDocNo(kind,summary,cb,fixedId){
+  askCb=cb; askKind=kind;
+  if(fixedId){ // تصحيح فاتورة محددة مسبقاً
+    const d=(await getCol('docs')).find(x=>x.id===fixedId);
+    const win=window.open('','_blank');
+    if(d) cb({docNo:d.docNo||d.id,docId:d.id,corr:true,origDate:d.date},win);
+    return;
+  }
+  id('DOCNO-KIND').textContent=KIND_LBL[kind]||'مستند';
+  id('DOCNO-SUM').textContent=summary||'';
+  id('DOCNO-NEXT').textContent='…';
+  const prev=(await getCol('docs')).filter(d=>d.kind===kind).sort((a,b)=>(b.issuedAt||b.at||0)-(a.issuedAt||a.at||0)).slice(0,60);
+  id('DOCNO-PREV').innerHTML='<option value="">— اختر الفاتورة المراد تصحيحها —</option>'+prev.map(d=>
+    `<option value="${esc(d.id)}">${esc(d.docNo||d.id)} · ${arabicDate(d.date)} · ${N(d.totals?.w875||0)} جرام${d.revCount?' · ✎ مُصحّحة':''}</option>`).join('');
+  id('DOCNO-CORR-BTN').disabled=true;
+  om('MOD-DOCNO');
+  peekDocSeq().then(n=>id('DOCNO-NEXT').textContent=fmtDocNo(n+1));
+}
+async function docNoNew(){
+  const win=window.open('','_blank');
+  if(win) win.document.write('<p style="font-family:sans-serif;padding:40px;text-align:center">⏳ جاري إصدار الرقم...</p>');
+  cm('MOD-DOCNO');
+  try{ const n=await allocDocSeq(); askCb&&askCb({docNo:fmtDocNo(n),docId:docIdOf(n)},win); }
+  catch(e){ console.error(e); if(win) win.close(); toast('er','تعذّر إصدار رقم جديد — تحقق من الاتصال'); }
+}
+async function docNoCorr(){
+  const did=id('DOCNO-PREV').value; if(!did) return;
+  const d=(await getCol('docs')).find(x=>x.id===did); if(!d) return;
+  const win=window.open('','_blank');
+  cm('MOD-DOCNO');
+  askCb&&askCb({docNo:d.docNo||d.id,docId:d.id,corr:true,origDate:d.date},win);
+}
+
+// ── أرشيف فواتير العباسية ──
+let abbInvoices=[], abbCorrId=null;
+async function loadAbbInvoices(){
+  const el=id('ABB-INV'); if(!el) return;
+  const d1=id('ABB-D1')?.value||'', d2=id('ABB-D2')?.value||'';
+  abbInvoices=(await getCol('docs')).filter(d=>d.kind==='abb'&&(!d1||d.date>=d1)&&(!d2||d.date<=d2))
+    .sort((a,b)=>(b.issuedAt||b.at||0)-(a.issuedAt||a.at||0));
+  if(!abbInvoices.length){ el.innerHTML='<div class="empty" style="padding:24px"><span class="eic">📜</span><p>لا توجد فواتير مطبوعة في هذه الفترة</p></div>'; return; }
+  const T=abbInvoices.reduce((s,d)=>({c:s.c+(d.totals?.count||0),w:s.w+(d.totals?.weight||0),w8:s.w8+(d.totals?.w875||0)}),{c:0,w:0,w8:0});
+  el.innerHTML=`<table><thead><tr><th>رقم الفاتورة</th><th>تاريخ الصرف</th><th>الأصناف</th><th>العدد</th><th>الوزن</th><th>875</th><th>الحالة</th><th>بواسطة</th><th></th></tr></thead><tbody>${
+    abbInvoices.map(d=>`<tr>
+      <td style="font-family:monospace;font-weight:900;color:var(--gold);white-space:nowrap">${esc(d.docNo||d.id)}</td>
+      <td style="font-size:11.5px;white-space:nowrap">${arabicDate(d.date)}</td>
+      <td style="font-size:11px;color:var(--tx2);max-width:240px">${esc((d.rows||[]).map(r=>r.item).filter((v,i,a)=>a.indexOf(v)===i).join('، '))}</td>
+      <td class="num" style="font-weight:800">${d.totals?.count?Math.round(d.totals.count).toLocaleString('en-US'):'—'}</td>
+      <td class="num">${N(d.totals?.weight||0)}</td>
+      <td class="num" style="color:#E74C3C;font-weight:900">${N(d.totals?.w875||0)}</td>
+      <td>${d.revCount?`<span class="b" style="background:#B03A2E22;color:#E07060;border:1px solid #B03A2E66" title="آخر تصحيح: ${arabicDate(d.revisedDate)}">✎ مُصحّحة ×${d.revCount}</span>`:'<span class="b bg">أصلية</span>'}</td>
+      <td style="font-size:10.5px;color:var(--muted)">${esc(d.issuedBy||d.by||'—')}</td>
+      <td style="white-space:nowrap"><button class="btn bxs bp" onclick="reprintDoc('${esc(d.id)}')" title="إعادة طباعة">🖨️</button>
+        <button class="btn bxs bs" onclick="correctAbbInvoice('${esc(d.id)}')" title="تصحيح بنفس الرقم">✎ تصحيح</button></td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr style="background:var(--s2)"><td colspan="3" style="padding:10px 14px;font-weight:800">${abbInvoices.length} فاتورة</td>
+      <td class="num" style="font-weight:900">${Math.round(T.c).toLocaleString('en-US')}</td><td class="num" style="font-weight:900">${N(T.w)}</td>
+      <td class="num" style="font-weight:900;color:#E74C3C">${N(T.w8)}</td><td colspan="3"></td></tr></tfoot></table>`;
+}
+function correctAbbInvoice(did){
+  const d=abbInvoices.find(x=>x.id===did); if(!d) return;
+  abbCorrId=did;
+  id('ABBS-D1').value=d.d1||d.date; id('ABBS-D2').value=d.d2||d.date; id('ABBS-SRC').value=d.src||'stock';
+  id('ABBS-PREV').innerHTML=`<span style="color:var(--warn)">✎ تصحيح الفاتورة <b>${esc(d.docNo||d.id)}</b> — اختر الفترة والمصدر الصحيحين ثم اضغط عرض وطباعة. سيُحفظ بنفس الرقم.</span>`;
+  om('MOD-ABBS');
 }
 function reprintDoc(docId){
-  const d=arcData.find(r=>r.src==='docs'&&r.id===docId)?.raw; if(!d) return;
-  if(d.kind==='abb') openAbbDoc(d.rows,{d1:d.d1,d2:d.d2,src:d.src,docNo:d.id,reprint:true});
-  else if(d.kind==='dam') openDamDoc(d.rows,{docNo:d.id,date:d.date,reprint:true});
+  const d=arcData.find(r=>r.src==='docs'&&r.id===docId)?.raw||abbInvoices.find(x=>x.id===docId); if(!d) return;
+  const no=d.docNo||d.id;
+  if(d.kind==='abb') openAbbDoc(d.rows,{d1:d.d1,d2:d.d2,src:d.src,docNo:no,reprint:true,revised:d.revCount>0});
+  else if(d.kind==='dam') openDamDoc(d.rows,{docNo:no,date:d.date,reprint:true,revised:d.revCount>0});
 }
 
 let arcData=[], arcShown=200, arcTimer=null;
@@ -4825,7 +4950,7 @@ async function loadArchive(force){
   dept.forEach(r=>push('dept',r,{type:r.done?'DONE ✅':'قيد العمل',item:r.item||'',dept:r.dept}));
   stock.forEach(r=>push('stock',r,{type:'استوك',item:r.name||''}));
   silver.forEach(r=>push('silver',r,{type:r.done?'DONE ✅':'فضة',item:r.item||'',w875:+r.w1000||+r.weight||0,unit1000:true}));
-  docs.forEach(r=>push('docs',r,{type:r.title||'مستند',item:r.id,count:r.totals?.count||0,weight:r.totals?.weight||0,w875:r.totals?.w875||0,
+  docs.forEach(r=>push('docs',r,{type:(r.title||'مستند')+(r.revCount?' ✎':''),item:r.docNo||r.id,count:r.totals?.count||0,weight:r.totals?.weight||0,w875:r.totals?.w875||0,
     note:(r.rows||[]).map(x=>x.item).join('، ')}));
   arcData=R.sort((a,b)=>(b.at||0)-(a.at||0));
   // قوائم الفلاتر من البيانات الفعلية
@@ -4896,6 +5021,7 @@ function renderArchive(){
 }
 
 async function loadAbb(){
+  loadAbbInvoices();
   const fromFilter=id('ABB-FROM')?.value||'';
   const d1=id('ABB-D1')?.value||'';
   const d2=id('ABB-D2')?.value||'';

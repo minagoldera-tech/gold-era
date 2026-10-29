@@ -4491,12 +4491,50 @@ async function printAbbByIds(ids){
     (no,win)=>openAbbDoc(rows,{d1:rows[0].date,d2:rows[0].date,src:'stock',...no,win}));
 }
 
+// ================================================================
+// تحميل PDF مباشر — صفحة A4 واحدة (بدون نافذة الطباعة)
+// ================================================================
+let pdfLibsP=null;
+function loadPdfLibs(){
+  if(window.html2canvas&&window.jspdf) return Promise.resolve();
+  if(pdfLibsP) return pdfLibsP;
+  const add=src=>new Promise((ok,no)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>no(new Error('load '+src));document.head.appendChild(t);});
+  pdfLibsP=Promise.all([add('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),add('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')])
+    .catch(e=>{pdfLibsP=null;throw e;});
+  return pdfLibsP;
+}
+async function makePdf(win){
+  const st=win.document.getElementById('pdfst');
+  const say=t=>{ if(st) st.textContent=t; };
+  try{
+    say('⏳ جاري تجهيز PDF...');
+    await loadPdfLibs();
+    // نرسم نسخة من الورقة داخل إطار مخفي في الصفحة نفسها ثم نحوّلها PDF
+    const fr=document.createElement('iframe');
+    fr.style.cssText='position:fixed;left:-12000px;top:0;width:900px;height:1300px;border:0;visibility:hidden';
+    document.body.appendChild(fr);
+    const fd=fr.contentDocument; fd.open(); fd.write(win.__srcHtml||win.document.documentElement.outerHTML); fd.close();
+    await new Promise(r=>{ if(fd.readyState==='complete') r(); else { fr.onload=()=>r(); setTimeout(r,3000); } });
+    if(fd.fonts&&fd.fonts.ready) await Promise.race([fd.fonts.ready,new Promise(r=>setTimeout(r,2500))]);
+    await new Promise(r=>setTimeout(r,200));
+    const bar=fd.querySelector('.bar'); if(bar) bar.style.display='none';
+    let c;
+    try{ c=await html2canvas(fd.querySelector('.sheet'),{scale:2.2,backgroundColor:'#FFFDF8',logging:false,useCORS:true}); }
+    finally{ setTimeout(()=>fr.remove(),100); }
+    const pdf=new jspdf.jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
+    const W=210,H=297,r=c.height/c.width; let w=W,h=W*r; if(h>H){h=H;w=H/r;}
+    pdf.addImage(c.toDataURL('image/jpeg',0.93),'JPEG',(W-w)/2,(H-h)/2,w,h);
+    const name=(win.document.title||'GOLD ERA').replace(/[\\/:*?"<>|]/g,'-')+'.pdf';
+    pdf.save(name);
+    say('✅ تم تحميل: '+name);
+  }catch(e){ console.error(e); say('⚠️ تعذّر إنشاء PDF — تحقق من الإنترنت أو استخدم زر الطباعة'); }
+}
 const FIT_SCRIPT='<scr'+'ipt>(function(){function fit(){var s=document.querySelector(".sheet"),f=document.querySelector(".fit"),ft=document.querySelector("footer");if(!s||!f)return;document.documentElement.style.setProperty("--fit",1);var cs=getComputedStyle(s),pt=parseFloat(cs.paddingTop),pb=parseFloat(cs.paddingBottom);var mm=s.offsetWidth/210;var avail=297*mm-pt-pb-(ft?ft.offsetHeight+12:30);var need=f.scrollHeight;document.documentElement.style.setProperty("--fit",need>avail?(avail/need).toFixed(4):1);}window.addEventListener("load",fit);window.addEventListener("beforeprint",fit);setTimeout(fit,300);})();</scr'+'ipt>';
 const SHEET_CSS=`
   @page{size:A4;margin:0}
   *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{margin:0;background:#E9E6DF;font-family:'Cairo',sans-serif;color:#1C1E22}
-  .bar{position:sticky;top:0;display:flex;gap:8px;justify-content:center;padding:12px;background:#1C1E22;z-index:5}
+  .bar{position:sticky;top:0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px;background:#1C1E22;z-index:5}
   .bar button{font-family:inherit;font-weight:700;font-size:14px;border:0;border-radius:8px;padding:9px 22px;cursor:pointer}
   .bp{background:linear-gradient(135deg,#E8CB7A,#B8892E);color:#1C1E22}.bs{background:#33363D;color:#ddd}
   .sheet{width:210mm;min-height:297mm;margin:18px auto;background:#FFFDF8;padding:14mm 14mm 12mm;position:relative;box-shadow:0 10px 40px #0002;overflow:hidden}
@@ -4592,7 +4630,7 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised
 <title>${docNo} — إذن تسليم العباسية</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 <style>${SHEET_CSS}</style></head><body>
-<div class="bar"><button class="bp" onclick="print()">🖨️ طباعة / حفظ PDF</button><button class="bs" onclick="close()">إغلاق</button></div>
+<div class="bar"><button class="bp" onclick="opener&&opener.makePdf(window)">⬇️ تحميل PDF</button><button class="bs" onclick="print()">🖨️ طباعة</button><button class="bs" onclick="close()">إغلاق</button><span id="pdfst" style="color:#E8CB7A;font-size:13px;align-self:center"></span></div>
 <div class="sheet">
   <img class="wm" src="${BRAND_LOGO}" alt="">
   <div class="fit">
@@ -4639,7 +4677,9 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised
 </div>${FIT_SCRIPT}</body></html>`;
   const w=win||window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الإذن'); return; }
+  w.__srcHtml=html;
   w.document.open(); w.document.write(html); w.document.close();
+  setTimeout(()=>makePdf(w),400);
   if(!reprint) archiveDoc({id:docId||docNo,docNo,kind:'abb',title:'إذن تسليم العباسية',date:d2||today(),d1,d2,src,
     rows:rows.map(m=>({id:m.id||'',item:m.item||'—',karat:m.karat||875,count:itemCount(m),weight:m.weight||0,w875:m.w875||0,date:m.date||'',at:m.at||0})),
     totals:{count:T.count,weight:T.weight,w875:T.w875,items:items.length}},corr);
@@ -4683,7 +4723,7 @@ function openDamDoc(rows,meta={}){
   td.mn{color:#B03A2E;font-weight:800}
   tfoot td.cl{background:#E8CB7A !important;font-size:20px}
 </style></head><body>
-<div class="bar"><button class="bp" onclick="print()">🖨️ طباعة / حفظ PDF</button><button class="bs" onclick="close()">إغلاق</button></div>
+<div class="bar"><button class="bp" onclick="opener&&opener.makePdf(window)">⬇️ تحميل PDF</button><button class="bs" onclick="print()">🖨️ طباعة</button><button class="bs" onclick="close()">إغلاق</button><span id="pdfst" style="color:#E8CB7A;font-size:13px;align-self:center"></span></div>
 <div class="sheet">
   <img class="wm" src="${BRAND_LOGO}" alt="">
   <div class="fit">
@@ -4721,7 +4761,9 @@ function openDamDoc(rows,meta={}){
 </div>${FIT_SCRIPT}</body></html>`;
   const w=meta.win||window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الكشف'); return; }
+  w.__srcHtml=html;
   w.document.open(); w.document.write(html); w.document.close();
+  setTimeout(()=>makePdf(w),400);
   if(!meta.reprint) archiveDoc({id:meta.docId||docNo,docNo,kind:'dam',title:'كشف أعداد الدمغة',date:meta.origDate||today(),
     rows:rows.map(r=>({item:r.item,karat:r.karat,count:r.count,weight:r.weight,w875:r.w875,hasCnt:r.hasCnt,closed:r.closed})),
     totals:{count:T.closed,weight:T.weight,w875:T.w875,items:rows.length}},corr);

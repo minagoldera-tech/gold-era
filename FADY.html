@@ -549,6 +549,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
 
 /* Numbers — always English LTR */
 .num { direction: ltr; display: inline-block; font-family: 'Cairo', monospace; }
+td.num, th.num { display: table-cell; text-align: right; }
 
 /* Topbar brand pulse on login */
 @keyframes topbarPulse {
@@ -673,6 +674,9 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
           onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--muted)'">
           ↩️ <span id="UNDO-COUNT" style="font-size:10px;background:#C8983030;color:var(--warn);border-radius:4px;padding:1px 5px;display:none">0</span>
         </button>
+        <input id="TOP-Q" placeholder="🔍 بحث..." title="بحث في كل الحركات (Enter)"
+          onkeydown="if(event.key==='Enter'&&this.value.trim()){document.getElementById('ARC-Q').value=this.value.trim();this.value='';showTab('arc');}"
+          style="width:150px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:12px">
         <button onclick="doSync()" title="مزامنة البيانات"
           style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--muted);cursor:pointer;font-size:13px;transition:.2s"
           onmouseover="this.style.borderColor='var(--ok)';this.style.color='var(--ok)'"
@@ -709,6 +713,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
     <div class="tab" onclick="showTab('tag')" id="tab-tag">📦 التغليف</div>
     <div class="tab" onclick="showTab('sil')" id="tab-sil">🥈 الفضة</div>
     <div class="tab" onclick="showTab('log')">📋 السجل</div>
+    <div class="tab" onclick="showTab('arc')">🗂 الأرشيف</div>
     <div class="tab" onclick="showTab('abb')">🏪 العباسية</div>
     <div class="tab" onclick="showTab('ovr')">📊 نظرة عامة</div>
     <div class="tab" onclick="showTab('ref')">🔍 المرجع</div>
@@ -815,12 +820,14 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
           <div style="display:flex;gap:6px">
             <button id="STK-TAB-NOW" class="btn bxs" onclick="showStockTab('now')"
               style="background:var(--gold);color:#000;border:none">المخزون الحالي</button>
+            <button id="STK-TAB-BAYAN" class="btn bxs bs" onclick="showStockTab('bayan')">🏦 بيان الخزنة</button>
             <button id="STK-TAB-LOG" class="btn bxs bs" onclick="showStockTab('log')">📋 سجل الاستوك</button>
             <button class="btn bxs" style="background:#E74C3C18;color:#E74C3C;border:1px solid #E74C3C44" onclick="openAbbSheet()">🖨️ إذن العباسية</button>
           </div>
         </div>
         <div id="STOCK-TABLE-NOW"><div class="empty" style="padding:20px"><span style="color:var(--muted);font-size:12px">لا يوجد استوك — اضغط "إضافة استوك"</span></div></div>
         <div id="STOCK-TABLE-LOG" style="display:none"></div>
+        <div id="STOCK-TABLE-BAYAN" style="display:none"></div>
       </div>
 
       <div class="tc">
@@ -940,7 +947,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       <div class="pgh">
         <div><div class="pgt">🔥 قسم الحل</div><div class="pgs">الذهب الخام قيد الحل — عيار 875</div></div>
         <div style="display:flex;gap:8px">
-          <button class="btn bp bsm" onclick="openAddDept('hal')">➕ إضافة صنف / وزنة</button>
+          <button class="btn bp bsm" onclick="openDeptMulti('hal')">➕ إضافة أصناف / وزنات</button>
           <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('hal')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
         </div>
       </div>
@@ -953,7 +960,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       <div class="pgh">
         <div><div class="pgt">⚙️ قسم التصنيع</div><div class="pgs">الأصناف قيد التصنيع — العدد يُحسب تلقائياً</div></div>
         <div style="display:flex;gap:8px">
-          <button class="btn bp bsm" onclick="openAddDept('tam')">➕ إضافة صنف / وزنة</button>
+          <button class="btn bp bsm" onclick="openDeptMulti('tam')">➕ إضافة أصناف / وزنات</button>
           <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('tam')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
         </div>
       </div>
@@ -969,7 +976,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       <div class="pgh">
         <div><div class="pgt">🔨 قسم الدمغة</div><div class="pgs">الأصناف قيد الدمغة — العدد يُحسب تلقائياً</div></div>
         <div style="display:flex;gap:8px">
-          <button class="btn bp bsm" onclick="openAddDept('dam')">➕ إضافة صنف / وزنة</button>
+          <button class="btn bp bsm" onclick="openDeptMulti('dam')">➕ إضافة أصناف / وزنات</button>
           <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('dam')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
           <button class="btn bp bsm" onclick="printDamSheet()">🖨️ طباعة أعداد الدمغة</button>
         </div>
@@ -986,7 +993,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       <div class="pgh">
         <div><div class="pgt">📦 قسم التغليف</div><div class="pgs">الأصناف قيد التغليف — DONE عند المطابقة</div></div>
         <div style="display:flex;gap:8px">
-          <button class="btn bp bsm" onclick="openAddDept('tag')">➕ إضافة صنف / وزنة</button>
+          <button class="btn bp bsm" onclick="openDeptMulti('tag')">➕ إضافة أصناف / وزنات</button>
           <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('tag')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
         </div>
       </div>
@@ -1002,7 +1009,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
           <b style="color:#E74C3C">🏪 ما تم صرفه على العباسية من التغليف</b>
           <div style="display:flex;gap:8px;align-items:center">
             <input type="date" id="TAG-ABB-DATE" class="si" style="width:140px" onchange="loadTagAbbasiya()">
-            <button class="btn bxs bs" onclick="id('TAG-ABB-DATE').value='';loadTagAbbasiya()">كل السجل</button>
+            <button class="btn bxs bs" onclick="document.getElementById('TAG-ABB-DATE').value='';loadTagAbbasiya()">كل السجل</button>
           </div>
         </div>
         <div id="TAG-ABB-TABLE"><div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">جاري التحميل...</div></div>
@@ -1040,7 +1047,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
         </select>
         <input type="date" id="ABB-D1" class="si" onchange="loadAbb()" style="width:140px">
         <input type="date" id="ABB-D2" class="si" onchange="loadAbb()" style="width:140px">
-        <button class="btn bs bsm" onclick="id('ABB-D1').value='';id('ABB-D2').value='';id('ABB-FROM').value='';loadAbb()">↺ كل السجل</button>
+        <button class="btn bs bsm" onclick="document.getElementById('ABB-D1').value='';document.getElementById('ABB-D2').value='';document.getElementById('ABB-FROM').value='';loadAbb()">↺ كل السجل</button>
       </div>
       <div class="tc"><div id="ABB-TABLE"></div></div>
     </div>
@@ -1100,6 +1107,44 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
     </div>
 
     <!-- LOG -->
+    <!-- ARCHIVE -->
+    <div id="pg-arc" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">🗂 الأرشيف والبحث</div><div class="pgs">كل الحركات والمستندات المطبوعة في مكان واحد</div></div>
+      </div>
+      <div class="tc" style="margin-bottom:14px;overflow:visible">
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <div style="position:relative">
+            <input class="si" id="ARC-Q" placeholder="🔍 ابحث بالصنف، البيان، الوزن، رقم المستند، المستخدم..." oninput="arcSearchDebounced()"
+              style="width:100%;box-sizing:border-box;font-size:15px;padding:12px 16px;border-color:var(--gold)66">
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select class="si" id="ARC-SRC" onchange="renderArchive()" style="width:150px">
+              <option value="">كل الأقسام</option>
+              <option value="main">🏦 الخزنة الرئيسية</option>
+              <option value="sub">💼 الخزنة الفرعية</option>
+              <option value="dept:hal">🔥 الحل</option>
+              <option value="dept:tam">⚙️ التصنيع</option>
+              <option value="dept:dam">🔨 الدمغة</option>
+              <option value="dept:tag">📦 التغليف</option>
+              <option value="stock">📦 الاستوك</option>
+              <option value="silver">🥈 الفضة</option>
+              <option value="abb">🏪 العباسية</option>
+              <option value="docs">🖨️ المستندات المطبوعة</option>
+            </select>
+            <select class="si" id="ARC-TYPE" onchange="renderArchive()" style="width:130px"><option value="">كل الأنواع</option></select>
+            <select class="si" id="ARC-KT" onchange="renderArchive()" style="width:120px"><option value="">كل العيارات</option></select>
+            <input type="date" class="si" id="ARC-D1" onchange="renderArchive()" style="width:140px" title="من تاريخ">
+            <input type="date" class="si" id="ARC-D2" onchange="renderArchive()" style="width:140px" title="إلى تاريخ">
+            <button class="btn bs bsm" onclick="arcReset()">↺ مسح</button>
+            <button class="btn bs bsm" onclick="loadArchive(true)" title="تحديث">🔄</button>
+          </div>
+        </div>
+      </div>
+      <div id="ARC-SUM" class="sgrid"></div>
+      <div class="tc"><div id="ARC-TABLE"></div></div>
+    </div>
+
     <div id="pg-log" class="pg">
       <div class="pgh"><div><div class="pgt">📋 سجل الحركات</div><div class="pgs">جميع العمليات في المصنع</div></div></div>
       <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
@@ -1697,7 +1742,7 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">
         <span style="font-size:10px;color:var(--muted)">عيار سريع:</span>
-        <button type="button" class="btn bxs bs" onclick="id('ER-KT').value=875;erCalc()">875</button><button type="button" class="btn bxs bs" onclick="id('ER-KT').value=916;erCalc()">916</button><button type="button" class="btn bxs bs" onclick="id('ER-KT').value=948;erCalc()">948</button><button type="button" class="btn bxs bs" onclick="id('ER-KT').value=995;erCalc()">995</button><button type="button" class="btn bxs bs" onclick="id('ER-KT').value=999.9;erCalc()">999.9</button><button type="button" class="btn bxs bs" onclick="id('ER-KT').value=1000;erCalc()">1000</button>
+        <button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=875;erCalc()">875</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=916;erCalc()">916</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=948;erCalc()">948</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=995;erCalc()">995</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=999.9;erCalc()">999.9</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=1000;erCalc()">1000</button>
       </div>
       <div id="ER-CALC" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px 12px;font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"></div>
       <div class="fg" style="margin-top:12px"><label>ملاحظة / بيان</label><textarea id="ER-NOTE"></textarea></div>
@@ -1730,6 +1775,49 @@ tr:hover td { background: #C8A84B0C; color: var(--tx); }
       </div>
     </div>
     <div class="mf"><button class="btn bs" onclick="cm('MOD-CAT')">إغلاق</button><button class="btn bp" onclick="saveCatalogWeights()">💾 حفظ الأوزان</button></div>
+  </div>
+</div>
+
+<div id="MOD-DADD" class="mov">
+  <div class="mod" style="max-width:980px">
+    <div class="mh"><div class="mt" id="DADD-TITLE">➕ إضافة للقسم</div><button class="mc" onclick="cm('MOD-DADD')">✕</button></div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="DADD-DATE"></div>
+        <div class="fg" style="margin:0"><label>ملاحظة عامة</label><input type="text" id="DADD-NOTE" placeholder="تُضاف لكل الأسطر (اختياري)"></div>
+      </div>
+      <div style="margin-top:14px;border:1px solid var(--bd);border-radius:10px;overflow:auto">
+        <table class="stk-multi" style="width:100%;min-width:900px">
+          <thead><tr>
+            <th style="width:28px">#</th><th style="min-width:190px">الصنف / الوزنة</th><th>وزن القطعة</th><th>العدد</th><th>الوزن (جرام) *</th><th>العيار *</th><th title="للعيار 995 فأعلى">تحييف %</th><th>بعيار 875</th><th style="width:36px"></th>
+          </tr></thead>
+          <tbody id="DADD-ROWS"></tbody>
+          <tfoot><tr style="background:var(--s2)">
+            <td></td><td style="font-weight:800;padding:10px 6px" id="DADD-TL">الإجمالي</td><td></td>
+            <td class="num" style="font-weight:800" id="DADD-TC">—</td>
+            <td class="num" style="font-weight:900;color:var(--tx)" id="DADD-TW">—</td>
+            <td></td><td></td>
+            <td class="num" style="font-weight:900;color:var(--gold);font-size:14px" id="DADD-T875">—</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <div style="margin-top:10px"><button type="button" class="btn bs bsm" onclick="drAddRow()">➕ إضافة سطر آخر</button></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-DADD')">إلغاء</button><button class="btn bp" id="DADD-SAVE" onclick="saveDeptMulti()">💾 حفظ الكل</button></div>
+  </div>
+</div>
+
+<div id="MOD-NEXT" class="mov">
+  <div class="mod" style="max-width:460px">
+    <div class="mh"><div class="mt">✅ تم DONE — أين تذهب الوزنة؟</div><button class="mc" onclick="cm('MOD-NEXT')">✕</button></div>
+    <div class="mb">
+      <div id="NEXT-INFO" style="background:var(--s2);border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:14px"></div>
+      <div id="NEXT-BTNS" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn bs bsm" style="flex:1" onclick="cm('MOD-NEXT');openDeptTr(nextItemId)">↗️ وجهة أخرى / تحويل جزئي</button>
+        <button class="btn bs bsm" style="flex:1" onclick="cm('MOD-NEXT')">⏸ ابقها في القسم</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1948,15 +2036,13 @@ async function saveStock(){
   finally{ if(btn){ btn.disabled=false; btn.textContent='💾 حفظ الكل'; } }
 }
 
+let stockTab='now';
 function showStockTab(tab){
-  const isNow=tab==='now';
-  id('STOCK-TABLE-NOW').style.display=isNow?'block':'none';
-  id('STOCK-TABLE-LOG').style.display=isNow?'none':'block';
-  id('STK-TAB-NOW').style.background=isNow?'var(--gold)':'';
-  id('STK-TAB-NOW').style.color=isNow?'#000':'';
-  id('STK-TAB-LOG').style.background=isNow?'':'var(--inf)';
-  id('STK-TAB-LOG').style.color=isNow?'':'#fff';
-  if(!isNow) loadStockLog();
+  stockTab=tab;
+  const C={now:['STOCK-TABLE-NOW','STK-TAB-NOW','var(--gold)','#000'],log:['STOCK-TABLE-LOG','STK-TAB-LOG','var(--inf)','#fff'],bayan:['STOCK-TABLE-BAYAN','STK-TAB-BAYAN','var(--ok)','#000']};
+  Object.entries(C).forEach(([k,[box,btn,bg,fg]])=>{ const on=k===tab; id(box).style.display=on?'block':'none'; id(btn).style.background=on?bg:''; id(btn).style.color=on?fg:''; });
+  if(tab==='log') loadStockLog();
+  if(tab==='bayan') loadBayan();
 }
 
 async function loadStockLog(){
@@ -2074,6 +2160,48 @@ async function loadStockTable(){
   id('STOCK-TABLE-NOW').innerHTML=html;
 }
 
+// ── بيان الخزنة الرئيسية ──
+let bayanGroups=[];
+const isStockOrigin=m=>m.type==='وارد استوك'||m.type==='تسوية استوك'||String(m.note||'').startsWith('[استوك]');
+async function loadBayan(){
+  const [main,stock]=await Promise.all([getCol('main'),getCol('stock')]);
+  const G={};
+  stock.forEach(s=>{ if((s.weight||0)<=0) return; const k='S|'+s.name+'|'+s.karat;
+    G[k]=G[k]||{src:'stock',name:s.name,karat:s.karat,weight:0,w875:0,count:0}; G[k].weight+=s.weight||0; G[k].w875+=s.w875||0; G[k].count+=s.count||0; });
+  main.filter(m=>!isStockOrigin(m)).forEach(m=>{
+    const d=movDelta(m); if(!d) return; const sg=Math.sign(d);
+    const k='M|'+(m.item||'')+'|'+(m.karat||875);
+    G[k]=G[k]||{src:'main',name:m.item||'',karat:m.karat||875,weight:0,w875:0,count:0};
+    G[k].weight+=sg*(m.weight||0); G[k].w875+=sg*(m.w875||0); G[k].count+=sg*(m.count||0);
+  });
+  bayanGroups=Object.values(G).filter(g=>Math.abs(g.w875)>0.0005).sort((a,b)=>(b.src==='main')-(a.src==='main')||b.w875-a.w875);
+  const tot=bayanGroups.reduce((s,g)=>s+g.w875,0), bal=calcBal(main);
+  const DB_=[['sub','💼 الفرعية','var(--inf)'],['hal','🔥 الحل','var(--hal)'],['tam','⚙️ التصنيع','var(--tam)'],['dam','🔨 الدمغة','var(--dam)'],['tag','📦 التغليف','var(--tag)'],['abb','🏪 العباسية','#E74C3C']];
+  const el=id('STOCK-TABLE-BAYAN');
+  if(!bayanGroups.length){ el.innerHTML='<div class="empty" style="padding:30px"><span class="eic">🏦</span><p>الخزنة فارغة</p></div>'; return; }
+  el.innerHTML=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div class="sc" style="flex:1;min-width:150px;border-right:3px solid var(--ok)"><div class="slb">إجمالي البيان (875)</div><div class="sv num" style="color:var(--ok)">${N(tot)}</div><div class="su">${bayanGroups.length} بند</div></div>
+      <div class="sc" style="flex:1;min-width:150px;border-right:3px solid var(--gold)"><div class="slb">رصيد الخزنة (875)</div><div class="sv num">${N(bal)}</div>
+        <div class="su" style="color:${Math.abs(tot-bal)<0.01?'var(--ok)':'var(--warn)'}">${Math.abs(tot-bal)<0.01?'✓ مطابق':'فرق '+N(tot-bal)}</div></div>
+    </div>
+    <table><thead><tr><th>الصنف</th><th>المصدر</th><th>العيار</th><th>العدد</th><th>الوزن</th><th>875</th><th>تحويل إلى</th></tr></thead><tbody>${
+    bayanGroups.map((g,i)=>{ const neg=g.w875<0;
+      return `<tr style="${neg?'opacity:.6':''}">
+        <td style="font-weight:800">${g.name?esc(g.name):'<span style="color:var(--muted)">⚖️ وزنات حرة (بدون صنف)</span>'}</td>
+        <td><span style="font-size:10px;padding:2px 7px;border-radius:6px;background:var(--s2);border:1px solid var(--bd)">${g.src==='stock'?'📦 استوك':'🏦 خزنة'}</span></td>
+        <td><span class="b bgld">${g.karat}</span></td>
+        <td class="num">${Math.abs(g.count)>0.0005?N3(g.count):'—'}</td>
+        <td class="num">${N(g.weight)}</td>
+        <td class="num" style="font-weight:900;color:${neg?'var(--err)':'var(--gold)'}">${N(g.w875)}</td>
+        <td>${neg?'<span style="font-size:10px;color:var(--err)">صُرف بدون صنف أكثر من الوارد</span>':`<div style="display:flex;gap:4px;flex-wrap:wrap">${DB_.map(([d,l,c])=>`<button class="btn bxs" style="background:var(--s2);color:${c};border:1px solid ${c}55;font-size:10.5px" onclick="openBayanTr(${i},'${d}')">${l}</button>`).join('')}</div>`}</td>
+      </tr>`;}).join('')}</tbody></table>
+    <div style="font-size:10.5px;color:var(--muted);margin-top:8px">💡 لكي يظهر الصرف على الصنف الصحيح، اختر الصنف عند تسجيل المنصرف أو حوّل من هنا.</div>`;
+}
+function openBayanTr(i,dest){
+  const g=bayanGroups[i]; if(!g) return;
+  openStockTransfer(g.name||`وزنة عيار ${g.karat}`,g.karat,g.weight,g.w875,g.count>0?g.count:0,dest,g.src,g.name);
+}
+
 function toggleStockDetail(rowId,arrId){
   const el=id(rowId); if(!el)return;
   const open=el.style.display==='none';
@@ -2116,9 +2244,9 @@ let stkTrData={name:'',karat:0,totalWt:0,totalW875:0,totalCnt:0,dest:''};
 
 const DEST_NAMES={sub:'💼 الخزنة الفرعية',hal:'🔥 الحل',tam:'⚙️ التصنيع',dam:'🔨 الدمغة',tag:'📦 التغليف',abb:'🏪 العباسية'};
 
-function openStockTransfer(name,karat,totalWt,totalW875,totalCnt,dest){
-  stkTrData={name,karat,totalWt,totalW875,totalCnt,dest};
-  id('STK-TR-TITLE').textContent=`📦 تحويل "${name}" ← ${DEST_NAMES[dest]||dest}`;
+function openStockTransfer(name,karat,totalWt,totalW875,totalCnt,dest,src='stock',mainItem){
+  stkTrData={name,karat,totalWt,totalW875,totalCnt,dest,src,mainItem:mainItem??name};
+  id('STK-TR-TITLE').textContent=`${src==='main'?'🏦':'📦'} تحويل "${name}" ← ${DEST_NAMES[dest]||dest}`;
   id('STK-TR-INFO').innerHTML=`
     <div style="display:flex;gap:16px;flex-wrap:wrap">
       <span>الصنف: <b style="color:var(--goldtx)">${name}</b></span>
@@ -2152,7 +2280,8 @@ async function saveStockTransfer(){
   const note=id('STK-TR-NOTE').value.trim();
   const {name,karat,totalW875,totalCnt,dest}=stkTrData;
   if(!wt||!date){toast('er','أدخل الوزن والتاريخ');return;}
-  if(wt>totalW875+0.001){toast('er','الوزن أكبر من المتاح في الاستوك');return;}
+  if(wt>totalW875+0.001){toast('er','الوزن أكبر من المتاح');return;}
+  const fromMain=stkTrData.src==='main';
 
   const nowTs=Date.now(), timeStr=nowTime();
   const actualWt=+(wt*875/karat).toFixed(3);
@@ -2162,6 +2291,8 @@ async function saveStockTransfer(){
   // ١. طرح الوزن من سجلات الاستوك الأصلية
   //    نبدأ بأقدم سجل ونطرح منه حتى ينتهي الوزن
   // ══════════════════════════════════════════════
+  const undoStockOps=[];
+  if(!fromMain){
   const stkSnap=await DB.collection('stock').get();
   // سجلات هذا الصنف فقط (بدون سجلات الخروج) مرتبة من الأقدم
   let stkItems=stkSnap.docs.map(d=>d.data())
@@ -2169,7 +2300,6 @@ async function saveStockTransfer(){
     .sort((a,b)=>a.at-b.at);
 
   let remaining=actualWt; // الوزن المراد طرحه
-  const undoStockOps=[];
 
   for(const s of stkItems){
     if(remaining<=0) break;
@@ -2192,6 +2322,7 @@ async function saveStockTransfer(){
     }
   }
   clearCache('stock');
+  }
 
   // ══════════════════════════════════════════════
   // ١.٥ الرئيسية — منصرف (الاستوك كان مُضافاً لرصيدها كـ "وارد استوك")
@@ -2199,10 +2330,10 @@ async function saveStockTransfer(){
   const mainBalNow=await freshBal('main');
   const mainOutId='m'+nowTs;
   await DB.doc(`main/${mainOutId}`).set({
-    id:mainOutId, date, type:'منصرف', weight:actualWt, karat, w875:wt,
+    id:mainOutId, date, type:'منصرف', item:fromMain?stkTrData.mainItem:name, count:+cnt.toFixed(3), weight:actualWt, karat, w875:wt,
     w1000:+(actualWt*karat/1000).toFixed(3),
     balance:mainBalNow-wt,
-    note:`[استوك] ${name} → ${DEST_NAMES[dest]||dest}${note?' | '+note:''}`,
+    note:`[${fromMain?'بيان':'استوك'}] ${name} → ${DEST_NAMES[dest]||dest}${note?' | '+note:''}`,
     time:timeStr, by:CU.username, at:nowTs-1
   });
   clearCache('main');
@@ -2216,8 +2347,8 @@ async function saveStockTransfer(){
   await DB.doc(`sub/${subInId}`).set({
     id:subInId, date, type:'وارد', item:name,
     weight:actualWt, karat, w875:wt,
-    balance:subBal+wt, from:'stock',
-    note:`من الاستوك${note?' | '+note:''}`,
+    balance:subBal+wt, from:fromMain?'main':'stock',
+    note:`${fromMain?'من الخزنة الرئيسية':'من الاستوك'}${note?' | '+note:''}`,
     time:timeStr, by:CU.username, at:nowTs
   });
 
@@ -2237,7 +2368,7 @@ async function saveStockTransfer(){
     const subOutId='s'+(nowTs+1);
     await DB.doc(`sub/${subOutId}`).set({
       id:subOutId, date, type:'عباسية', item:name,
-      weight:actualWt, karat, w875:wt, count:+cnt.toFixed(3), from:'stock',
+      weight:actualWt, karat, w875:wt, count:+cnt.toFixed(3), from:fromMain?'main':'stock',
       balance:subBal, to:'عباسية',
       note:`استوك→عباسية${note?' | '+note:''}`,
       time:timeStr, by:CU.username, at:nowTs+1
@@ -2275,8 +2406,8 @@ async function saveStockTransfer(){
   }
 
   cm('MOD-STK-TR');
-  loadMain();
-  loadSub();
+  await loadMain();
+  if(stockTab==='bayan') loadBayan();
 }
 // تُعامَل كـ منصرف عادي لكن بنوع "عباسية" ويُخصم من الرصيد
 
@@ -2540,7 +2671,7 @@ async function seedData(){
 // ================================================================
 // RESET DATA
 // ================================================================
-const RESET_COLS={main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل'};
+const RESET_COLS={main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
 
 // مقارنة مرنة: تتجاهل المسافات وعلامات الاتجاه والتشكيل واختلاف ى/ي
 function normAr(t){
@@ -2699,7 +2830,7 @@ function logout(){
 // ================================================================
 // TABS
 // ================================================================
-const TAB_LOADERS={dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
+const TAB_LOADERS={arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
 
 let curTab='dash';
 function showTab(t){
@@ -2720,7 +2851,7 @@ function showTab(t){
 const LIVE_COLS=['main','sub','dept','stock','silver'];
 let liveUnsubs=[], liveTimer=null, liveRemote=false, liveFirst={};
 // الصفحات التي تتأثر بكل مجموعة
-const LIVE_TABS={main:['dash','main','abb','ovr'],sub:['dash','sub','abb','ovr','tag'],dept:['dash','hal','tam','dam','tag','ovr'],stock:['main','ovr','dash'],silver:['sil','ovr','dash']};
+const LIVE_TABS={main:['dash','main','abb','ovr','arc'],sub:['dash','sub','abb','ovr','tag','arc'],dept:['dash','hal','tam','dam','tag','ovr','arc'],stock:['main','ovr','dash','arc'],silver:['sil','ovr','dash','arc']};
 let liveDirty=new Set();
 function startLive(){
   if(liveUnsubs.length||!CU) return;
@@ -2933,6 +3064,7 @@ async function loadMain(){
   `;
   renderMainTable();
   loadStockTable();
+  if(stockTab==='bayan') loadBayan();
 }
 
 function renderMainTable(){
@@ -3372,12 +3504,140 @@ async function loadDept(dept){
   }).join('');
 }
 
+// ── إضافة عدة أسطر لقسم ──
+let draDept=null;
+function openDeptMulti(dept){
+  draDept=dept;
+  id('DADD-TITLE').textContent=`➕ إضافة لقسم ${DEPTS[dept].icon} ${DEPTS[dept].name}`;
+  id('DADD-DATE').value=today(); id('DADD-NOTE').value='';
+  id('DADD-ROWS').innerHTML=''; drAddRow(); drTotals();
+  om('MOD-DADD');
+}
+function drAddRow(){
+  const opts='<option value="">— وزنة حرة —</option>'+CATALOG.map((c,i)=>`<option value="${i}">${c.name} — ${c.karat}</option>`).join('');
+  id('DADD-ROWS').insertAdjacentHTML('beforeend',`<tr class="dr-r">
+    <td class="dr-n" style="color:var(--muted);text-align:center"></td>
+    <td><div style="display:flex;flex-direction:column;gap:4px;min-width:180px">
+      <select class="si d-item" onchange="drItem(this)" style="width:100%;box-sizing:border-box">${opts}</select>
+      <input type="text" class="si d-name" placeholder="اسم الوزنة (اختياري)..." style="width:100%;box-sizing:border-box"></div></td>
+    <td><input type="number" class="si d-unit" step="0.001" placeholder="—" oninput="drRe(this)" style="width:78px;font-family:monospace;color:var(--gold)" disabled></td>
+    <td><input type="number" class="si d-cnt" step="1" min="0" placeholder="—" oninput="drCnt(this)" style="width:78px;font-family:monospace" disabled></td>
+    <td><input type="number" class="si d-wt" step="0.001" placeholder="0.000" oninput="drWt(this)" style="width:108px;font-family:monospace;font-weight:700"></td>
+    <td><input type="number" class="si d-kt" step="0.1" min="1" max="1000" value="875" oninput="drCalc(this)" style="width:80px;font-family:monospace;color:var(--gold);font-weight:700"></td>
+    <td><input type="number" class="si d-tk" step="0.01" placeholder="—" oninput="drCalc(this)" style="width:70px;font-family:monospace;color:var(--warn)" disabled></td>
+    <td class="num d-875" style="color:var(--gold);font-weight:800;vertical-align:middle">—</td>
+    <td><button type="button" class="btn bxs bd2" onclick="drDel(this)">✕</button></td></tr>`);
+  drNum();
+  const rs=id('DADD-ROWS').querySelectorAll('.dr-r'); rs[rs.length-1].querySelector('.d-item').focus();
+}
+function drDel(b){ if(id('DADD-ROWS').querySelectorAll('.dr-r').length<=1){ id('DADD-ROWS').innerHTML=''; drAddRow(); } else b.closest('tr').remove(); drNum(); drTotals(); }
+function drNum(){ id('DADD-ROWS').querySelectorAll('.dr-r').forEach((r,i)=>r.querySelector('.dr-n').textContent=i+1); }
+const drCat=tr=>{ const i=parseInt(tr.querySelector('.d-item').value); return isNaN(i)?null:CATALOG[i]||null; };
+const drU=tr=>parseFloat(tr.querySelector('.d-unit').value)||drCat(tr)?.w24||0;
+function drItem(sel){
+  const tr=sel.closest('tr'), c=drCat(tr);
+  tr.querySelector('.d-name').style.display=c?'none':'';
+  tr.querySelector('.d-cnt').disabled=!c; tr.querySelector('.d-unit').disabled=!c;
+  tr.querySelector('.d-unit').value=c?c.w24:'';
+  if(c){ tr.querySelector('.d-kt').value=c.karat; tr.querySelector('.d-cnt').focus(); } else tr.querySelector('.d-cnt').value='';
+  drRe(sel);
+}
+function drRe(el){ const tr=el.closest('tr'); if(tr.querySelector('.d-cnt').value) drCnt(tr.querySelector('.d-cnt')); else drWt(tr.querySelector('.d-wt')); }
+function drCnt(inp){ const tr=inp.closest('tr'),u=drU(tr),n=parseFloat(inp.value)||0; if(drCat(tr)&&u&&n) tr.querySelector('.d-wt').value=+(n*u).toFixed(3); drCalc(inp); }
+function drWt(inp){ const tr=inp.closest('tr'),u=drU(tr),w=parseFloat(inp.value)||0; if(drCat(tr)&&u) tr.querySelector('.d-cnt').value=w?+(w/u).toFixed(2):''; drCalc(inp); }
+function drRowVal(tr){
+  const c=drCat(tr), w=parseFloat(tr.querySelector('.d-wt').value)||0, k=parseFloat(tr.querySelector('.d-kt').value)||0;
+  const tk=k>=995?(parseFloat(tr.querySelector('.d-tk').value)||0):0;
+  return {c,tr,name:c?c.name:tr.querySelector('.d-name').value.trim(),cnt:c?(parseFloat(tr.querySelector('.d-cnt').value)||0):0,w,k,tk,
+    w875:w&&k?+(w*(1-tk/100)*k/875).toFixed(3):0};
+}
+function drCalc(el){
+  const tr=el.closest('tr'), k=parseFloat(tr.querySelector('.d-kt').value)||0, tkI=tr.querySelector('.d-tk');
+  tkI.disabled=!(k>=995); if(tkI.disabled) tkI.value='';
+  const r=drRowVal(tr); tr.querySelector('.d-875').textContent=r.w875?N(r.w875):'—';
+  drTotals();
+}
+function drTotals(){
+  const rs=[...id('DADD-ROWS').querySelectorAll('.dr-r')].map(drRowVal).filter(r=>r.w);
+  const W=rs.reduce((s,r)=>s+r.w,0), W8=rs.reduce((s,r)=>s+r.w875,0), C=rs.reduce((s,r)=>s+r.cnt,0);
+  id('DADD-TL').textContent=`الإجمالي — ${rs.length} سطر`;
+  id('DADD-TW').textContent=rs.length?N(W):'—'; id('DADD-T875').textContent=rs.length?N(W8):'—'; id('DADD-TC').textContent=C?N3(C):'—';
+}
+async function saveDeptMulti(){
+  const date=id('DADD-DATE').value, note=id('DADD-NOTE').value.trim(), dept=draDept;
+  if(!date){ toast('er','اختر التاريخ'); return; }
+  const rows=[...id('DADD-ROWS').querySelectorAll('.dr-r')].map(drRowVal).filter(r=>r.w||r.c||r.name);
+  if(!rows.length){ toast('er','أضف سطراً واحداً على الأقل'); return; }
+  for(const [i,r] of rows.entries()){
+    if(!r.w){ toast('er',`السطر ${i+1}: أدخل الوزن`); r.tr.querySelector('.d-wt').focus(); return; }
+    if(!(r.k>0&&r.k<=1000)){ toast('er',`السطر ${i+1}: عيار غير صحيح`); r.tr.querySelector('.d-kt').focus(); return; }
+  }
+  const btn=id('DADD-SAVE'); btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
+  try{
+    const base=Date.now(), ops=[];
+    for(const [i,r] of rows.entries()){
+      const did='di'+(base+i), item=r.name||`وزنة عيار ${r.k}`;
+      const rec={id:did,dept,item,weight:r.w,count:+(+r.cnt).toFixed(3),karat:r.k,w875:r.w875,done:false,custom:!r.c,note,by:CU.username,date,at:base+i};
+      if(r.tk) rec.takhyeef=r.tk;
+      await DB.doc(`dept/${did}`).set(rec);
+      await log('add','manual',dept,item,r.w,rec.count,r.k,r.w875,note,date);
+      ops.push({action:'delete',col:'dept',id:did});
+    }
+    pushUndo({label:`إضافة ${rows.length} سطر → ${DEPTS[dept].name}`,ops});
+    clearCache('dept');
+    const W=rows.reduce((s,r)=>s+r.w,0);
+    toast('ok',`✅ أُضيف ${rows.length} سطر لقسم ${DEPTS[dept].name} — ${N(W)} جرام`);
+    cm('MOD-DADD'); loadDept(dept);
+  }catch(e){ console.error(e); toast('er','حدث خطأ أثناء الحفظ'); }
+  finally{ btn.disabled=false; btn.textContent='💾 حفظ الكل'; }
+}
+
+// ── بعد DONE: اقتراح القسم التالي ──
+const NEXT_STEPS={hal:['tam','sub'],tam:['dam'],dam:['tag'],tag:['abb','sub']};
+const NEXT_LBL={...DEST_LBL,abb:'🏪 العباسية'};
+let nextItemId=null;
 async function markDone(iid, dept){
   await DB.doc(`dept/${iid}`).update({done:true});
   const it=deptItems.find(d=>d.id===iid);
   await log('done',dept,'done',it?.item||'',it?.weight||0,it?.count||0,it?.karat||0,it?.w875||0,'مطابقة DONE',today());
   clearCache('dept');toast('ok','✅ تم تسجيل DONE');
-  loadDept(dept);
+  await loadDept(dept);
+  if(it) openNextStep(iid,dept);
+}
+function openNextStep(iid,dept){
+  const it=deptItems.find(d=>d.id===iid); if(!it) return;
+  nextItemId=iid;
+  id('NEXT-INFO').innerHTML=`<b>${esc(it.item)}</b> · <span class="num">${N(it.weight)}</span> جرام · عيار ${it.karat}${it.count?` · عدد <span class="num">${N3(it.count)}</span>`:''}<div style="color:var(--muted);font-size:11px;margin-top:3px">من ${DEPTS[dept].icon} ${DEPTS[dept].name}</div>`;
+  id('NEXT-BTNS').innerHTML=(NEXT_STEPS[dept]||[]).map((d,i)=>`<button class="btn ${i===0?'bp':'bs'}" style="padding:12px;font-size:14px;justify-content:center" onclick="doneMove('${d}')">${i===0?'⬅️ ':''}${NEXT_LBL[d]}${i===0?' <span style="font-size:10px;opacity:.75">(الخطوة التالية)</span>':''}</button>`).join('');
+  om('MOD-NEXT');
+}
+async function doneMove(dest){
+  const snap=await DB.doc(`dept/${nextItemId}`).get(); if(!snap.exists){ cm('MOD-NEXT'); return; }
+  const it=snap.data(); const ts=Date.now(), timeStr=nowTime(), ops=[{action:'set',col:'dept',id:it.id,data:it}];
+  const base={date:today(),item:it.item,count:it.count||0,weight:it.weight,karat:it.karat,w875:it.w875,by:CU.username,time:timeStr};
+  await DB.doc(`dept/${it.id}`).delete();
+  if(DEPTS[dest]){
+    const nid='di'+ts;
+    const rec={id:nid,dept:dest,item:it.item,weight:it.weight,count:it.count||0,karat:it.karat,w875:it.w875,done:false,custom:!!it.custom,note:it.note||'',by:CU.username,date:today(),at:ts};
+    if(it.takhyeef) rec.takhyeef=it.takhyeef;
+    await DB.doc(`dept/${nid}`).set(rec); ops.push({action:'delete',col:'dept',id:nid});
+  } else if(dest==='sub'||dest==='main'){
+    const col=dest, bal=await freshBal(col), rid=(col==='sub'?'s':'m')+ts;
+    await DB.doc(`${col}/${rid}`).set({...base,id:rid,type:'وارد',balance:+(bal+it.w875).toFixed(3),from:it.dept,note:`من ${DEPTS[it.dept].name} (DONE)`,at:ts});
+    ops.push({action:'delete',col,id:rid});
+  } else if(dest==='abb'){
+    const bal=await freshBal('sub'), inId='s'+ts, outId='s'+(ts+1);
+    await DB.doc(`sub/${inId}`).set({...base,id:inId,type:'وارد',balance:+(bal+it.w875).toFixed(3),from:it.dept,note:`من ${DEPTS[it.dept].name} (DONE)`,at:ts});
+    await DB.doc(`sub/${outId}`).set({...base,id:outId,type:'عباسية',balance:+bal.toFixed(3),from:it.dept,to:'عباسية',note:`${DEPTS[it.dept].name}→عباسية`,at:ts+1});
+    ops.push({action:'delete',col:'sub',id:inId},{action:'delete',col:'sub',id:outId});
+  }
+  await log('transfer',it.dept,dest,it.item,it.weight,it.count||0,it.karat,it.w875,'بعد DONE',today());
+  pushUndo({label:`${it.item}: ${DEPTS[it.dept].name} → ${NEXT_LBL[dest]}`,ops});
+  clearCache('dept','sub','main');
+  cm('MOD-NEXT');
+  toast('ok',`✅ ${it.item} انتقل إلى ${NEXT_LBL[dest]}`);
+  await loadDept(it.dept);
+  if(dest==='abb') setTimeout(()=>conf(`🖨️ طباعة إذن التسليم لـ "${it.item}"؟`,()=>printAbbByIds(['s'+(ts+1)])),400);
 }
 
 let addMode='item';
@@ -4271,7 +4531,7 @@ const SHEET_CSS=`
     .sheet::before,.sheet::after{inset:0}footer{position:static;margin-top:28px}}
 `;
 
-function openAbbDoc(rows,{d1,d2,src}){
+function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,reprint}){
   // تجميع حسب الصنف والعيار
   const g={};
   rows.forEach(m=>{
@@ -4284,7 +4544,7 @@ function openAbbDoc(rows,{d1,d2,src}){
   const fmt=n=>(+n).toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3});
   const fc=n=>{n=+n;return n?(Math.abs(n-Math.round(n))<0.01?Math.round(n).toLocaleString('en-US'):n.toFixed(2)):'—';};
   const now=new Date();
-  const docNo='ABB-'+(d2||today()).replace(/-/g,'')+'-'+String(rows[rows.length-1].at||Date.now()).slice(-4);
+  const docNo=fixedNo||('ABB-'+(d2||today()).replace(/-/g,'')+'-'+String(rows[rows.length-1].at||Date.now()).slice(-4));
   const period=d1===d2?arabicDate(d1):`${arabicDate(d1)} — ${arabicDate(d2)}`;
   const logo=`<svg viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg"><defs>
       <radialGradient id="pm" cx="38%" cy="35%"><stop offset="0%" stop-color="#FFECB3"/><stop offset="35%" stop-color="#FFB300"/><stop offset="100%" stop-color="#BF360C"/></radialGradient>
@@ -4345,6 +4605,9 @@ function openAbbDoc(rows,{d1,d2,src}){
   const w=window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الإذن'); return; }
   w.document.open(); w.document.write(html); w.document.close();
+  if(!reprint) archiveDoc({id:docNo,kind:'abb',title:'إذن تسليم العباسية',date:d2||today(),d1,d2,src,
+    rows:rows.map(m=>({id:m.id||'',item:m.item||'—',karat:m.karat||875,count:itemCount(m),weight:m.weight||0,w875:m.w875||0,date:m.date||'',at:m.at||0})),
+    totals:{count:T.count,weight:T.weight,w875:T.w875,items:items.length}});
 }
 
 // ================================================================
@@ -4365,11 +4628,14 @@ async function printDamSheet(){
     r.closed=r.hasCnt?Math.max(0,Math.round(r.count-1)):null;
     return r;
   }).sort((a,b)=>(b.hasCnt-a.hasCnt)||b.w875-a.w875);
+  openDamDoc(rows);
+}
+function openDamDoc(rows,meta={}){
   const T={weight:0,w875:0,count:0,closed:0};
   rows.forEach(r=>{T.weight+=r.weight;T.w875+=r.w875;if(r.hasCnt){T.count+=r.count;T.closed+=r.closed;}});
   const fmt=n=>(+n).toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3});
   const fc=n=>{n=+n;return Math.abs(n-Math.round(n))<0.01?Math.round(n).toLocaleString('en-US'):n.toFixed(2);};
-  const now=new Date(), docNo='DAM-'+today().replace(/-/g,'')+'-'+String(Date.now()).slice(-4);
+  const now=new Date(), docNo=meta.docNo||('DAM-'+today().replace(/-/g,'')+'-'+String(Date.now()).slice(-4));
   const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${docNo} — كشف أعداد الدمغة</title>
@@ -4388,7 +4654,7 @@ async function printDamSheet(){
     <div class="brand"><img src="${BRAND_LOGO}" alt="GOLD ERA"><div class="tag"><b>عصر الذهب لصناعة الذهب</b><span>GOLD ERA FOR GOLD INDUSTRY</span></div></div>
   </header>
   <div class="meta">
-    <div><small>التاريخ</small><b>${arabicDate(today())}</b></div>
+    <div><small>التاريخ</small><b>${arabicDate(meta.date||today())}</b></div>
     <div><small>القسم</small><b>🔨 الدمغة</b></div>
     <div><small>عدد الأصناف</small><b>${rows.length}</b></div>
   </div>
@@ -4417,6 +4683,9 @@ async function printDamSheet(){
   const w=window.open('','_blank');
   if(!w){ toast('er','اسمح بالنوافذ المنبثقة لعرض الكشف'); return; }
   w.document.open(); w.document.write(html); w.document.close();
+  if(!meta.reprint) archiveDoc({id:docNo,kind:'dam',title:'كشف أعداد الدمغة',date:today(),
+    rows:rows.map(r=>({item:r.item,karat:r.karat,count:r.count,weight:r.weight,w875:r.w875,hasCnt:r.hasCnt,closed:r.closed})),
+    totals:{count:T.closed,weight:T.weight,w875:T.w875,items:rows.length}});
 }
 
 // ================================================================
@@ -4522,6 +4791,108 @@ async function saveEditRec(){
   if(col==='sub'||touched.has('sub')) await loadSub();
   if(col==='dept') await loadDept(r.dept);
   if(col==='silver') await loadSilver();
+  if(curTab==='arc') await loadArchive(true);
+}
+
+// ================================================================
+// الأرشيف والبحث
+// ================================================================
+async function archiveDoc(d){
+  try{ await DB.doc(`docs/${d.id}`).set({...d,by:CU?.username||'',at:Date.now()}); clearCache('docs'); }
+  catch(e){ console.warn('archive',e); }
+}
+function reprintDoc(docId){
+  const d=arcData.find(r=>r.src==='docs'&&r.id===docId)?.raw; if(!d) return;
+  if(d.kind==='abb') openAbbDoc(d.rows,{d1:d.d1,d2:d.d2,src:d.src,docNo:d.id,reprint:true});
+  else if(d.kind==='dam') openDamDoc(d.rows,{docNo:d.id,date:d.date,reprint:true});
+}
+
+let arcData=[], arcShown=200, arcTimer=null;
+const ARC_SRC={main:['🏦','الرئيسية','var(--gold)'],sub:['💼','الفرعية','var(--inf)'],stock:['📦','الاستوك','var(--warn)'],
+  silver:['🥈','الفضة','var(--sil)'],docs:['🖨️','مستند','#C58BE8']};
+function arcSearchDebounced(){ clearTimeout(arcTimer); arcTimer=setTimeout(()=>{arcShown=200;renderArchive();},180); }
+function arcReset(){ ['ARC-Q','ARC-SRC','ARC-TYPE','ARC-KT','ARC-D1','ARC-D2'].forEach(x=>id(x).value=''); arcShown=200; renderArchive(); }
+
+async function loadArchive(force){
+  if(force) clearCache();
+  id('ARC-TABLE').innerHTML='<div class="empty"><span class="eic">⏳</span><p>جاري تحميل الأرشيف...</p></div>';
+  const [main,sub,dept,stock,silver,docs]=await Promise.all(['main','sub','dept','stock','silver','docs'].map(c=>getCol(c).catch(()=>[])));
+  const R=[];
+  const push=(src,r,o)=>R.push({src,id:r.id,date:r.date||'',time:r.time||'',at:r.at||0,by:r.by||'',note:r.note||'',
+    karat:r.karat??'',count:+r.count||0,weight:+r.weight||0,w875:+(r.w875??0)||0,raw:r,...o});
+  main.forEach(r=>push('main',r,{type:r.type,item:r.item||'',abb:r.type==='عباسية'}));
+  sub.forEach(r=>push('sub',r,{type:r.type,item:r.item||'',abb:r.type==='عباسية',dest:r.to||r.from||''}));
+  dept.forEach(r=>push('dept',r,{type:r.done?'DONE ✅':'قيد العمل',item:r.item||'',dept:r.dept}));
+  stock.forEach(r=>push('stock',r,{type:'استوك',item:r.name||''}));
+  silver.forEach(r=>push('silver',r,{type:r.done?'DONE ✅':'فضة',item:r.item||'',w875:+r.w1000||+r.weight||0,unit1000:true}));
+  docs.forEach(r=>push('docs',r,{type:r.title||'مستند',item:r.id,count:r.totals?.count||0,weight:r.totals?.weight||0,w875:r.totals?.w875||0,
+    note:(r.rows||[]).map(x=>x.item).join('، ')}));
+  arcData=R.sort((a,b)=>(b.at||0)-(a.at||0));
+  // قوائم الفلاتر من البيانات الفعلية
+  const fill=(sid,vals,lbl)=>{ const el=id(sid),cur=el.value; el.innerHTML=`<option value="">${lbl}</option>`+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); if(vals.map(String).includes(cur)) el.value=cur; };
+  fill('ARC-TYPE',[...new Set(arcData.map(r=>r.type).filter(Boolean))],'كل الأنواع');
+  fill('ARC-KT',[...new Set(arcData.map(r=>String(r.karat)).filter(k=>k&&k!=='undefined'))].sort((a,b)=>a-b),'كل العيارات');
+  renderArchive();
+}
+
+function arcSrcLabel(r){
+  if(r.src==='dept'){ const d=DEPTS[r.dept]; return [d?.icon||'🏭',d?.name||r.dept,d?.color||'var(--tam)']; }
+  return ARC_SRC[r.src]||['•',r.src,'var(--muted)'];
+}
+function arcHay(r){
+  const lbl=arcSrcLabel(r)[1];
+  return normAr([r.item,r.note,r.type,r.by,lbl,r.date,arabicDate(r.date),r.karat,
+    r.weight,N(r.weight),(+r.weight).toFixed(3),r.count||'',r.w875,N(r.w875),r.raw?.loanName,r.raw?.loanPurpose,r.id,r.dest&&DEST_LBL?.[r.dest]].join(' '));
+}
+function renderArchive(){
+  const q=normAr(id('ARC-Q').value), terms=q?q.split(/\s+/).filter(Boolean):[];
+  const srcF=id('ARC-SRC').value, typeF=id('ARC-TYPE').value, ktF=id('ARC-KT').value, d1=id('ARC-D1').value, d2=id('ARC-D2').value;
+  const rawQ=id('ARC-Q').value.trim().split(/\s+/).filter(Boolean);
+  let rows=arcData.filter(r=>{
+    if(srcF){
+      if(srcF==='abb'){ if(!r.abb) return false; }
+      else if(srcF.startsWith('dept:')){ if(r.src!=='dept'||r.dept!==srcF.slice(5)) return false; }
+      else if(r.src!==srcF) return false;
+    }
+    if(typeF&&r.type!==typeF) return false;
+    if(ktF&&String(r.karat)!==ktF) return false;
+    if(d1&&r.date<d1) return false;
+    if(d2&&r.date>d2) return false;
+    if(terms.length){ const h=r._h||(r._h=arcHay(r)); if(!terms.every(t=>h.includes(t))) return false; }
+    return true;
+  });
+  // ملخص النتائج
+  const sw=rows.filter(r=>r.src!=='docs').reduce((s,r)=>s+r.weight,0);
+  const s875=rows.filter(r=>r.src!=='docs'&&!r.unit1000).reduce((s,r)=>s+r.w875,0);
+  const by={}; rows.forEach(r=>{const l=arcSrcLabel(r); by[l[1]]=(by[l[1]]||0)+1;});
+  id('ARC-SUM').innerHTML=`
+    <div class="sc" style="border-right:3px solid var(--gold)"><div class="slb">🔎 النتائج</div><div class="sv">${rows.length.toLocaleString('en-US')}</div><div class="su">من ${arcData.length.toLocaleString('en-US')} سجل</div></div>
+    <div class="sc"><div class="slb">إجمالي الوزن</div><div class="sv num">${N(sw)}</div><div class="su">جرام</div></div>
+    <div class="sc"><div class="slb">إجمالي بعيار 875</div><div class="sv num" style="color:var(--gold)">${N(s875)}</div><div class="su">جرام (بدون الفضة)</div></div>
+    <div class="sc" style="font-size:11px"><div class="slb">التوزيع</div><div style="line-height:1.8;color:var(--tx2)">${Object.entries(by).slice(0,6).map(([k,n])=>`${esc(k)}: <b>${n}</b>`).join(' · ')||'—'}</div></div>`;
+  if(!rows.length){ id('ARC-TABLE').innerHTML='<div class="empty"><span class="eic">🔍</span><p>لا توجد نتائج</p></div>'; return; }
+  const mk=t=>{ let s=esc(t??''); rawQ.forEach(w=>{ if(w.length<2) return; const re=new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'); s=s.replace(re,m=>`<mark style="background:#C8A84B55;color:inherit;border-radius:3px">${m}</mark>`); }); return s; };
+  const shown=rows.slice(0,arcShown);
+  id('ARC-TABLE').innerHTML=`<table><thead><tr>
+    <th>التاريخ</th><th>القسم</th><th>النوع</th><th>الصنف / المستند</th><th>العدد</th><th>الوزن</th><th>العيار</th><th>875</th><th>البيان</th><th>بواسطة</th><th></th>
+  </tr></thead><tbody>${shown.map(r=>{
+    const [ic,lb,co]=arcSrcLabel(r);
+    const act=r.src==='docs'
+      ? `<button class="btn bxs bp" onclick="reprintDoc('${esc(r.id)}')" title="إعادة طباعة">🖨️</button>`
+      : `<button class="btn bxs bs" onclick="openEditRec('${r.src}','${esc(r.id)}')" title="تعديل">✏️</button>`;
+    return `<tr>
+      <td style="white-space:nowrap;font-size:11px">${mk(arabicDate(r.date))}${r.time?`<div style="font-family:monospace;font-size:9.5px;color:var(--muted)">${r.time}</div>`:''}</td>
+      <td><span style="white-space:nowrap;font-size:10.5px;font-weight:700;color:${co};background:var(--s2);border:1px solid ${co}44;border-radius:6px;padding:2px 7px">${ic} ${esc(lb)}</span></td>
+      <td style="font-size:11px;white-space:nowrap">${mk(r.type)}</td>
+      <td style="font-weight:700">${mk(r.item||'—')}</td>
+      <td class="num">${r.count?N3(r.count):'—'}</td>
+      <td class="num">${N(r.weight)}</td>
+      <td>${r.karat!==''&&r.src!=='docs'?`<span class="b bgld">${r.karat}</span>`:'—'}</td>
+      <td class="num" style="color:var(--gold);font-weight:800">${r.unit1000?N(r.w875)+'<span style="font-size:8px"> /1000</span>':N(r.w875)}</td>
+      <td style="color:var(--muted);font-size:11px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.note)}">${mk(r.note||'—')}</td>
+      <td style="font-size:10.5px;color:var(--muted)">${mk(r.by||'—')}</td>
+      <td>${act}</td></tr>`;}).join('')}</tbody></table>
+    ${rows.length>arcShown?`<div style="text-align:center;padding:14px"><button class="btn bs bsm" onclick="arcShown+=300;renderArchive()">عرض المزيد (${(rows.length-arcShown).toLocaleString('en-US')} متبقي)</button></div>`:''}`;
 }
 
 async function loadAbb(){

@@ -711,6 +711,7 @@ td.num, th.num { display: table-cell; text-align: right; }
     <div class="tab" onclick="showTab('tam')" id="tab-tam">⚙️ التصنيع</div>
     <div class="tab" onclick="showTab('dam')" id="tab-dam">🔨 الدمغة</div>
     <div class="tab" onclick="showTab('tag')" id="tab-tag">📦 التغليف</div>
+    <div class="tab" onclick="showTab('loss')" id="tab-loss">📉 الخسية</div>
     <div class="tab" onclick="showTab('sil')" id="tab-sil">🥈 الفضة</div>
     <div class="tab" onclick="showTab('log')">📋 السجل</div>
     <div class="tab" onclick="showTab('arc')">🗂 الأرشيف</div>
@@ -740,6 +741,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div class="farr">→</div>
         <div class="fstep" style="background:#27AE6030;color:#2ecc71;border:1px solid #2ecc71">✅ DONE</div>
       </div>
+      <div id="D-GRAND"></div>
       <div id="D-STATS" class="sgrid"></div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -848,6 +850,8 @@ td.num, th.num { display: table-cell; text-align: right; }
               <option value="سلفة">سلفة</option>
               <option value="استرجاع">استرجاع</option>
               <option value="عباسية">عباسية</option>
+              <option value="رد سلفة">رد سلفة</option>
+              <option value="خسية">خسية</option>
               <option value="تسوية استوك">تسوية استوك</option>
             </select>
           </div>
@@ -934,6 +938,7 @@ td.num, th.num { display: table-cell; text-align: right; }
               <option value="وارد">وارد</option>
               <option value="منصرف">منصرف</option>
               <option value="عباسية">العباسية</option>
+              <option value="خسية">خسية</option>
             </select>
           </div>
         </div>
@@ -948,7 +953,6 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">🔥 قسم الحل</div><div class="pgs">الذهب الخام قيد الحل — عيار 875</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('hal')">➕ إضافة أصناف / وزنات</button>
-          <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('hal')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
         </div>
       </div>
       <div id="HAL-STATS" class="sgrid"></div>
@@ -961,7 +965,6 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">⚙️ قسم التصنيع</div><div class="pgs">الأصناف قيد التصنيع — العدد يُحسب تلقائياً</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('tam')">➕ إضافة أصناف / وزنات</button>
-          <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('tam')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
         </div>
       </div>
       <div id="TAM-STATS" class="sgrid"></div>
@@ -977,7 +980,6 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">🔨 قسم الدمغة</div><div class="pgs">الأصناف قيد الدمغة — العدد يُحسب تلقائياً</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('dam')">➕ إضافة أصناف / وزنات</button>
-          <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('dam')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
           <button class="btn bp bsm" onclick="printDamSheet()">🖨️ طباعة أعداد الدمغة</button>
         </div>
       </div>
@@ -994,7 +996,6 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">📦 قسم التغليف</div><div class="pgs">الأصناف قيد التغليف — DONE عند المطابقة</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('tag')">➕ إضافة أصناف / وزنات</button>
-          <button class="btn bsm" style="background:#5A9FE818;color:var(--inf);border:1px solid var(--inf)44" onclick="openCustomWeight('tag')" title="تُسجَّل وارد في الرئيسية ثم تمر بالفرعية حتى القسم">🏦 وزنة عبر الخزنة</button>
         </div>
       </div>
       <div id="TAG-STATS" class="sgrid"></div>
@@ -1111,6 +1112,21 @@ td.num, th.num { display: table-cell; text-align: right; }
     </div>
 
     <!-- LOG -->
+    <!-- LOSS -->
+    <div id="pg-loss" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">📉 الخسية</div><div class="pgs">خسية التصنيع — تُخصم من وزنة موجودة في قسم أو خزنة</div></div>
+        <button class="btn bp bsm" onclick="openLoss()">➕ تسجيل خسية</button>
+      </div>
+      <div id="LOSS-STATS" class="sgrid"></div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <input type="date" class="si" id="LOSS-D1" onchange="loadLoss()" style="width:140px" title="من">
+        <input type="date" class="si" id="LOSS-D2" onchange="loadLoss()" style="width:140px" title="إلى">
+        <button class="btn bs bsm" onclick="id('LOSS-D1').value='';id('LOSS-D2').value='';loadLoss()">↺ الكل</button>
+      </div>
+      <div class="tc"><div id="LOSS-TABLE"></div></div>
+    </div>
+
     <!-- ARCHIVE -->
     <div id="pg-arc" class="pg">
       <div class="pgh">
@@ -1215,7 +1231,8 @@ td.num, th.num { display: table-cell; text-align: right; }
           <select id="MM-TYPE" onchange="onMMTypeChange()">
             <option value="وارد">وارد</option>
             <option value="منصرف">منصرف (للفرعية)</option>
-            <option value="سلفة">سلفة</option>
+            <option value="سلفة">سلفة (تُضاف)</option>
+            <option value="رد سلفة">رد سلفة (تُخصم)</option>
             <option value="عباسية">منصرف العباسية 🏪</option>
           </select>
         </div>
@@ -1248,7 +1265,6 @@ td.num, th.num { display: table-cell; text-align: right; }
         <button type="button" class="btn bxs bs" onclick="setMMKt(948)">948 (23)</button>
         <button type="button" class="btn bxs bs" onclick="setMMKt(995)">995</button>
         <button type="button" class="btn bxs bs" onclick="setMMKt(999.9)">999.9 (24)</button>
-        <button type="button" class="btn bxs bs" onclick="setMMKt(1000)">1000</button>
       </div>
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>بعيار 875</label><input type="text" id="MM-875" readonly style="opacity:.6;font-family:monospace"></div>
@@ -1256,10 +1272,12 @@ td.num, th.num { display: table-cell; text-align: right; }
       </div>
       <!-- بيان السلفة — يظهر فقط عند اختيار سلفة -->
       <div id="MM-LOAN-BOX" style="display:none;background:var(--s3);border-radius:8px;padding:12px;margin-top:12px;border:1px solid var(--warn)">
-        <div style="font-size:11px;color:var(--warn);font-weight:700;margin-bottom:8px">📋 بيان السلفة</div>
-        <div class="fr">
-          <div class="fg" style="margin:0"><label>اسم المستلم</label><input type="text" id="MM-LOAN-NAME" placeholder="اسم الشخص..."></div>
-          <div class="fg" style="margin:0"><label>الغرض</label><input type="text" id="MM-LOAN-PURPOSE" placeholder="سبب السلفة..."></div>
+        <div style="font-size:11px;color:var(--warn);font-weight:700;margin-bottom:8px" id="MM-LOAN-HD">📋 بيان السلفة</div>
+        <div class="fg" style="margin:0 0 10px" id="MM-LOAN-REF-WRAP"><label>السلفة المردودة *</label>
+          <select id="MM-LOAN-REF" onchange="onLoanRef()"></select></div>
+        <div class="fr" id="MM-LOAN-NEW">
+          <div class="fg" style="margin:0"><label>من / اسم الشخص</label><input type="text" id="MM-LOAN-NAME" placeholder="اسم الشخص..."></div>
+          <div class="fg" style="margin:0"><label>البيان</label><input type="text" id="MM-LOAN-PURPOSE" placeholder="بيان السلفة..."></div>
         </div>
       </div>
       <div class="fg" style="margin-top:12px"><label>بيان / ملاحظة</label><textarea id="MM-NOTE" placeholder="..."></textarea></div>
@@ -1304,8 +1322,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <button type="button" class="btn bxs bs" onclick="setSSKt(916)">916</button>
         <button type="button" class="btn bxs bs" onclick="setSSKt(948)">948</button>
         <button type="button" class="btn bxs bs" onclick="setSSKt(995)">995</button>
-        <button type="button" class="btn bxs bs" onclick="setSSKt(999.9)">999.9</button>
-        <button type="button" class="btn bxs bs" onclick="setSSKt(1000)">1000</button>
+        <button type="button" class="btn bxs bs" onclick="setSSKt(999.9)">999.9 (24)</button>
       </div>
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0" id="SS-CNT-WRAP"><label>العدد (تلقائي)</label><input type="number" id="SS-CNT" step="0.001" placeholder="0.000" oninput="onSSCntChange()" style="font-family:monospace"></div>
@@ -1367,8 +1384,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <button type="button" class="btn bxs bs" onclick="setAddKt(916)">916</button>
         <button type="button" class="btn bxs bs" onclick="setAddKt(948)">948</button>
         <button type="button" class="btn bxs bs" onclick="setAddKt(995)">995</button>
-        <button type="button" class="btn bxs bs" onclick="setAddKt(999.9)">999.9</button>
-        <button type="button" class="btn bxs bs" onclick="setAddKt(1000)">1000</button>
+        <button type="button" class="btn bxs bs" onclick="setAddKt(999.9)">999.9 (24)</button>
       </div>
 
       <div id="ADD-TAKHYEEF-BOX" style="display:none;background:#C8A84B12;border:1px solid var(--gold)33;border-radius:8px;padding:10px;margin-top:10px">
@@ -1746,7 +1762,7 @@ td.num, th.num { display: table-cell; text-align: right; }
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center">
         <span style="font-size:10px;color:var(--muted)">عيار سريع:</span>
-        <button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=875;erCalc()">875</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=916;erCalc()">916</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=948;erCalc()">948</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=995;erCalc()">995</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=999.9;erCalc()">999.9</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=1000;erCalc()">1000</button>
+        <button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=875;erCalc()">875</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=916;erCalc()">916</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=948;erCalc()">948</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=995;erCalc()">995</button><button type="button" class="btn bxs bs" onclick="document.getElementById('ER-KT').value=999.9;erCalc()">999.9 (24)</button>
       </div>
       <div id="ER-CALC" style="margin-top:12px;background:var(--s3);border-radius:8px;padding:10px 12px;font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"></div>
       <div class="fg" style="margin-top:12px"><label>ملاحظة / بيان</label><textarea id="ER-NOTE"></textarea></div>
@@ -1777,6 +1793,14 @@ td.num, th.num { display: table-cell; text-align: right; }
         <button class="btn bsm" style="background:var(--warn);color:#000;border:none" onclick="previewFixRecords()">🔍 معاينة التصحيح</button>
         <div id="FIX-PREV" style="margin-top:10px;font-size:12px"></div>
       </div>
+      <div style="margin-top:12px;padding:12px;border:1px dashed var(--ok);border-radius:10px;background:#3FB95010">
+        <div style="font-weight:800;color:var(--ok);font-size:12.5px;margin-bottom:4px">🛠 تحديث السجلات القديمة: عيار 24 = 999.9 + أسماء الأصناف</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:8px">
+          يحوّل كل وزنة ذهب مسجّلة بعيار 1000 إلى 999.9 ويعيد حساب أوزانها وأرصدة الخزن، ويوحّد أسماء الأصناف القديمة (2.5جرام ← 2.5 جرام ...). الفضة لا تتغير.
+        </div>
+        <button class="btn bsm" style="background:var(--ok);color:#000;border:none" onclick="previewKtUpdate()">🔍 معاينة التحديث</button>
+        <div id="KTU-PREV" style="margin-top:10px;font-size:12px"></div>
+      </div>
     </div>
     <div class="mf"><button class="btn bs" onclick="cm('MOD-CAT')">إغلاق</button><button class="btn bp" onclick="saveCatalogWeights()">💾 حفظ الأوزان</button></div>
   </div>
@@ -1806,6 +1830,13 @@ td.num, th.num { display: table-cell; text-align: right; }
         </table>
       </div>
       <div style="margin-top:10px"><button type="button" class="btn bs bsm" onclick="drAddRow()">➕ إضافة سطر آخر</button></div>
+      <div class="fg" style="margin-top:14px"><label>طريقة الإضافة *</label>
+        <div class="dest-grid" style="grid-template-columns:1fr 1fr 1fr" id="DADD-MODE">
+          <button type="button" class="dest-btn" data-m="sub" onclick="setDrMode('sub',this)">💼 عبر الخزنة الفرعية<div style="font-size:9.5px;opacity:.75;font-weight:500">وارد للفرعية ← منصرف للقسم</div></button>
+          <button type="button" class="dest-btn" data-m="main" onclick="setDrMode('main',this)">🏦 عبر الرئيسية ← الفرعية<div style="font-size:9.5px;opacity:.75;font-weight:500">وارد للرئيسية ← الفرعية ← القسم</div></button>
+          <button type="button" class="dest-btn" data-m="none" onclick="setDrMode('none',this)">➕ للإجمالي فقط<div style="font-size:9.5px;opacity:.75;font-weight:500">تُضاف للقسم مباشرة</div></button>
+        </div>
+      </div>
     </div>
     <div class="mf"><button class="btn bs" onclick="cm('MOD-DADD')">إلغاء</button><button class="btn bp" id="DADD-SAVE" onclick="saveDeptMulti()">💾 حفظ الكل</button></div>
   </div>
@@ -1842,6 +1873,26 @@ td.num, th.num { display: table-cell; text-align: right; }
   </div>
 </div>
 
+<div id="MOD-LOSS" class="mov">
+  <div class="mod" style="max-width:520px">
+    <div class="mh"><div class="mt">📉 تسجيل خسية</div><button class="mc" onclick="cm('MOD-LOSS')">✕</button></div>
+    <div class="mb">
+      <div class="fg" style="margin:0"><label>تُخصم من *</label><select id="LOSS-SRC" onchange="onLossSrc()"></select></div>
+      <div id="LOSS-INFO" style="font-size:12px;background:var(--s2);border-radius:8px;padding:10px 12px;margin-top:10px;display:none"></div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>وزن الخسية (جرام) *</label><input type="number" id="LOSS-WT" step="0.001" oninput="calcLoss()" style="font-family:monospace;font-weight:800;color:var(--err)"></div>
+        <div class="fg" style="margin:0"><label>العيار *</label><input type="number" id="LOSS-KT" step="0.1" min="1" max="1000" oninput="calcLoss()" style="font-family:monospace;font-weight:700;color:var(--gold)"></div>
+      </div>
+      <div class="fr" style="margin-top:12px">
+        <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="LOSS-DATE"></div>
+        <div class="fg" style="margin:0"><label>ملاحظة</label><input type="text" id="LOSS-NOTE" placeholder="..."></div>
+      </div>
+      <div id="LOSS-CALC" class="calcbox" style="margin-top:12px"></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-LOSS')">إلغاء</button><button class="btn bp" style="background:var(--err)" onclick="saveLoss()">📉 تسجيل الخسية</button></div>
+  </div>
+</div>
+
 <div id="MOD-CONF" class="mov">
   <div class="mod" style="max-width:340px">
     <div class="mh"><div class="mt">⚠️ تأكيد</div><button class="mc" onclick="cm('MOD-CONF')">✕</button></div>
@@ -1857,31 +1908,38 @@ td.num, th.num { display: table-cell; text-align: right; }
 // PRODUCT CATALOG — من جدول Station
 // ================================================================
 const CATALOG = [
-  {no:1,  name:'جنيه',             karat:875,  w21:8,       w24:8},
-  {no:2,  name:'نصف جنيه',         karat:875,  w21:4,       w24:4},
-  {no:3,  name:'ربع جنيه',         karat:875,  w21:2,       w24:2},
-  {no:5,  name:'جرام',             karat:1000, w21:1.143,   w24:1},
-  {no:6,  name:'ربع جرام',         karat:1000, w21:0.286,   w24:0.25},
-  {no:7,  name:'نصف جرام',         karat:1000, w21:0.571,   w24:0.5},
-  {no:8,  name:'2.5جرام',          karat:1000, w21:2.857,   w24:2.5},
-  {no:9,  name:'5جرام',            karat:1000, w21:5.714,   w24:5},
-  {no:10, name:'10جرام',           karat:1000, w21:11.429,  w24:10},
-  {no:11, name:'15.55جرام',        karat:1000, w21:17.770,  w24:15.55},
-  {no:12, name:'20جرام',           karat:1000, w21:22.855,  w24:20},
-  {no:13, name:'25جرام',           karat:1000, w21:28.569,  w24:25},
-  {no:14, name:'أونصة 31.10 جرام', karat:1000, w21:35.539,  w24:31.1},
-  {no:15, name:'50جرام',           karat:1000, w21:57.137,  w24:50},
-  {no:16, name:'Tola 5',           karat:1000, w21:66.650,  w24:58.33},
-  {no:17, name:'100جرام',          karat:1000, w21:114.274, w24:100},
-  {no:18, name:'Tola 10',          karat:1000, w21:133.301, w24:116.7},
-  {no:19, name:'كيلو 999.9',       karat:1000, w21:1142.743,w24:1000},
-  {no:21, name:'كيلو 995',         karat:995,  w21:1137.132,w24:995.1},
-  {no:23, name:'500 جرام',         karat:1000, w21:571.371, w24:500},
-  {no:25, name:'250 جرام',         karat:1000, w21:285.686, w24:250},
-  {no:27, name:'ربع كيلو فضة',     karat:1000, w21:285.686, w24:250},
-  {no:29, name:'نصف كيلو فضة',     karat:1000, w21:571.371, w24:500},
-  {no:31, name:'كيلو فضة',         karat:1000, w21:1142.743,w24:1000},
+  {no:1,  name:'جنيه',            karat:875,   w24:8},
+  {no:2,  name:'نصف جنيه',        karat:875,   w24:4},
+  {no:3,  name:'ربع جنيه',        karat:875,   w24:2},
+  {no:5,  name:'1 جرام',          karat:999.9, w24:1},
+  {no:6,  name:'ربع جرام',        karat:999.9, w24:0.25},
+  {no:7,  name:'نصف جرام',        karat:999.9, w24:0.5},
+  {no:8,  name:'2.5 جرام',        karat:999.9, w24:2.5},
+  {no:9,  name:'5 جرام',          karat:999.9, w24:5},
+  {no:10, name:'10 جرام',         karat:999.9, w24:10},
+  {no:11, name:'15.55 جرام',      karat:999.9, w24:15.55},
+  {no:12, name:'20 جرام',         karat:999.9, w24:20},
+  {no:13, name:'25 جرام',         karat:999.9, w24:25},
+  {no:14, name:'31.10 جرام',      karat:999.9, w24:31.1},
+  {no:15, name:'50 جرام',         karat:999.9, w24:50},
+  {no:16, name:'58.33 جرام',      karat:999.9, w24:58.33},
+  {no:17, name:'100 جرام',        karat:999.9, w24:100},
+  {no:18, name:'116.70 جرام',     karat:999.9, w24:116.7},
+  {no:19, name:'1 كيلو',          karat:999.9, w24:1000},
+  {no:21, name:'1 كيلو عيار 995', karat:995,   w24:995.1},
+  {no:23, name:'500 جرام',        karat:999.9, w24:500},
+  {no:25, name:'250 جرام',        karat:999.9, w24:250},
+  {no:27, name:'ربع كيلو فضة',    karat:1000,  w24:250},
+  {no:29, name:'نصف كيلو فضة',    karat:1000,  w24:500},
+  {no:31, name:'كيلو فضة',        karat:1000,  w24:1000},
 ];
+CATALOG.forEach(c=>c.w21=+(c.w24*c.karat/875).toFixed(3));
+// الأسماء القديمة ← الجديدة (للسجلات المحفوظة قبل التعديل)
+const CAT_ALIAS={'جرام':'1 جرام','2.5جرام':'2.5 جرام','5جرام':'5 جرام','10جرام':'10 جرام','15.55جرام':'15.55 جرام','20جرام':'20 جرام',
+  '25جرام':'25 جرام','أونصة 31.10 جرام':'31.10 جرام','50جرام':'50 جرام','Tola 5':'58.33 جرام','100جرام':'100 جرام','Tola 10':'116.70 جرام',
+  'كيلو 999.9':'1 كيلو','كيلو 995':'1 كيلو عيار 995'};
+const catName=n=>CAT_ALIAS[n]||n;
+const catFind=n=>CATALOG.find(c=>c.name===catName(n));
 const SILVER_CAT = [
   {no:27, name:'ربع كيلو فضة', karat:1000, w21:250, w24:250},
   {no:29, name:'نصف كيلو فضة', karat:1000, w21:500, w24:500},
@@ -1913,7 +1971,7 @@ const ROLES={admin:'مدير النظام',supervisor:'مشرف',worker:'موظ�
 let stockItems = [];
 
 function fillStockDropdown(){
-  const opts = CATALOG.map((c,i)=>`<option value="${i}">${c.name} — K${c.karat} — ${c.w24}g/pc</option>`).join('');
+  const opts = CATALOG.map((c,i)=>`<option value="${i}">${c.name} — عيار ${c.karat}</option>`).join('');
   const el = document.getElementById('STK-NAME');
   if(el) el.innerHTML = `<option value="">— اختر من القائمة —</option>` + opts;
 }
@@ -2441,7 +2499,7 @@ function filterSub(val){subFilterVal=val;renderSubTable();}
 function renderSubTable(){
   fillKtSelect('SF',subMovs);
   let data=applyVaultFilters('SF',subMovs);
-  renderKtSummary('SF',data,['منصرف','عباسية']);
+  renderKtSummary('SF',data,['منصرف','عباسية','خسية']);
   if(subFilterVal) data=data.filter(m=>m.type===subFilterVal||
     (subFilterVal==='عباسية'&&m.type==='عباسية'));
   id('SUB-TABLE').innerHTML=data.length?`<table><thead><tr>
@@ -2639,7 +2697,7 @@ async function init(){
 }
 
 function fillDropdowns(){
-  const opts = CATALOG.map((c,i)=>`<option value="${i}">${c.name} — K${c.karat} — ${c.w24}g/pc</option>`).join('');
+  const opts = CATALOG.map((c,i)=>`<option value="${i}">${c.name} — عيار ${c.karat}</option>`).join('');
   ['SS-ITEM','ADD-ITEM'].forEach(elId=>{
     const el = document.getElementById(elId);
     if(el) el.innerHTML = `<option value="">— وزنة حرة (بدون صنف) —</option>` + opts;
@@ -2692,7 +2750,7 @@ async function seedData(){
 // ================================================================
 // RESET DATA
 // ================================================================
-const RESET_COLS={main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
+const RESET_COLS={loss:'الخسية',main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
 
 // مقارنة مرنة: تتجاهل المسافات وعلامات الاتجاه والتشكيل واختلاف ى/ي
 function normAr(t){
@@ -2852,7 +2910,7 @@ function logout(){
 // ================================================================
 // TABS
 // ================================================================
-const TAB_LOADERS={arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
+const TAB_LOADERS={loss:()=>loadLoss(),arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
 
 let curTab='dash';
 function showTab(t){
@@ -2922,11 +2980,12 @@ window.addEventListener('offline',()=>setLiveDot(false));
 // أوزان الأصناف — قابلة للتحكم ومحفوظة في settings/catalog
 // ================================================================
 // الأوزان القديمة التي كانت في البرنامج (لتصحيح السجلات القديمة)
-const OLD_W24={'جنيه':7.99,'نصف جنيه':3.99,'ربع جنيه':1.99,'جرام':0.99,'ربع جرام':0.24,'نصف جرام':0.49,'2.5جرام':2.49,'5جرام':4.99,'10جرام':9.99};
+const OLD_W24={'1 جرام':0.99,'2.5 جرام':2.49,'5 جرام':4.99,'10 جرام':9.99,'جنيه':7.99,'نصف جنيه':3.99,'ربع جنيه':1.99,'جرام':0.99,'ربع جرام':0.24,'نصف جرام':0.49,'2.5جرام':2.49,'5جرام':4.99,'10جرام':9.99};
 let catLoaded=false;
 function applyCatalogWeights(w){
   if(!w) return;
-  CATALOG.forEach(c=>{ const x=parseFloat(w[c.name]); if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
+  const W={}; Object.entries(w).forEach(([k,x])=>W[catName(k)]=x);
+  CATALOG.forEach(c=>{ const x=parseFloat(W[c.name]); if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
   try{ fillDropdowns(); }catch(e){}
 }
 async function loadCatalogWeights(){
@@ -2996,6 +3055,53 @@ async function buildFixPlan(){
   }
   return plan;
 }
+let ktPlan=[];
+async function buildKtPlan(){
+  const plan=[], cols={main:'item',sub:'item',dept:'item',stock:'name'};
+  for(const [col,key] of Object.entries(cols)){
+    for(const r of await getCol(col)){
+      const upd={}; const nm=r[key];
+      if(nm&&CAT_ALIAS[nm]) upd[key]=CAT_ALIAS[nm];
+      const silver=String(nm||'').includes('فضة');
+      if(+r.karat===1000&&!silver){
+        upd.karat=999.9;
+        const wt=+r.weight||0, tk=col==='dept'&&r.takhyeef?r.takhyeef:0;
+        upd.w875=+(wt*(1-tk/100)*999.9/875).toFixed(3);
+        upd.w24=to24(wt,999.9);
+      }
+      if(Object.keys(upd).length) plan.push({col,id:r.id,old:r,upd});
+    }
+  }
+  return plan;
+}
+async function previewKtUpdate(){
+  clearCache();
+  id('KTU-PREV').innerHTML='<span style="color:var(--muted)">⏳ جاري الفحص...</span>';
+  ktPlan=await buildKtPlan();
+  if(!ktPlan.length){ id('KTU-PREV').innerHTML='<span style="color:var(--ok)">✅ كل السجلات محدّثة</span>'; return; }
+  const nK=ktPlan.filter(p=>p.upd.karat).length, nN=ktPlan.filter(p=>p.upd.item||p.upd.name).length;
+  const d875=ktPlan.filter(p=>p.upd.w875!==undefined).reduce((s,p)=>s+(p.upd.w875-(p.old.w875||0)),0);
+  id('KTU-PREV').innerHTML=`<div>سيتم تحديث <b>${ktPlan.length}</b> سجل: عيار 1000←999.9 في <b>${nK}</b>، وتوحيد اسم في <b>${nN}</b>.
+    <br>فرق الوزن بعيار 875 الإجمالي: <b class="num">${N(d875)}</b> جرام.</div>
+    <button class="btn bsm" style="margin-top:8px;background:var(--ok);color:#000;border:none" onclick="applyKtUpdate()">✅ تنفيذ التحديث</button>`;
+}
+async function applyKtUpdate(){
+  if(!ktPlan.length) return;
+  id('KTU-PREV').innerHTML='<span style="color:var(--muted)">⏳ جاري التحديث...</span>';
+  const ops=[], touched=new Set();
+  for(let i=0;i<ktPlan.length;i+=400){
+    const batch=firestore.batch();
+    ktPlan.slice(i,i+400).forEach(p=>{ batch.update(firestore.doc(`${p.col}/${p.id}`),p.upd); ops.push({action:'set',col:p.col,id:p.id,data:p.old}); if(p.col==='main'||p.col==='sub') touched.add(p.col); });
+    await batch.commit();
+  }
+  for(const c of touched) await recalcBalances(c);
+  pushUndo({label:`تحديث ${ktPlan.length} سجل (عيار 24 + الأسماء)`,ops});
+  const n=ktPlan.length; ktPlan=[]; clearCache();
+  id('KTU-PREV').innerHTML=`<span style="color:var(--ok)">✅ تم تحديث ${n} سجل وإعادة حساب الأرصدة</span>`;
+  toast('ok',`✅ تم تحديث ${n} سجل`);
+  try{ await TAB_LOADERS[curTab]?.(); }catch(e){}
+}
+
 async function previewFixRecords(){
   id('FIX-PREV').innerHTML='<span style="color:var(--muted)">⏳ جاري الفحص...</span>';
   fixPlan=await buildFixPlan();
@@ -3041,6 +3147,19 @@ async function loadDash(){
   const doneCount=deptItems.filter(d=>d.done).length;
 
 
+  const grand=mainBal+subBal+deptBal;
+  const dB={}; Object.keys(DEPTS).forEach(k=>dB[k]=deptItems.filter(d=>d.dept===k).reduce((s,d)=>s+(d.w875||0),0));
+  id('D-GRAND').innerHTML=`<div style="background:linear-gradient(135deg,#C8A84B26,#C8A84B08);border:1.5px solid var(--gold);border-radius:14px;padding:18px 20px;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+      <div><div style="font-size:12px;color:var(--gold);font-weight:800">🏆 الإجمالي الكلي — الرئيسية + الفرعية + الأقسام</div>
+        <div class="num" style="font-size:32px;font-weight:900;color:var(--goldtx);margin-top:4px">${N(grand)} <span style="font-size:12px;color:var(--muted)">جرام 875</span></div>
+        <div class="num" style="font-size:16px;font-weight:800;color:var(--ok)">${N(to24(grand,875))} <span style="font-size:11px;color:var(--muted)">جرام عيار 24 (999.9)</span></div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;flex:1;min-width:280px">
+        ${[['🏦 الرئيسية',mainBal,'var(--gold)'],['💼 الفرعية',subBal,'var(--inf)'],...Object.entries(DEPTS).map(([k,d])=>[d.icon+' '+d.name,dB[k],d.color])]
+          .map(([l,v2,c])=>`<div style="background:var(--s2);border:1px solid var(--bd);border-right:3px solid ${c};border-radius:8px;padding:7px 10px">
+            <div style="font-size:10px;color:var(--muted);font-weight:700">${l}</div><div class="num" style="font-weight:900;color:${c}">${N(v2)}</div></div>`).join('')}
+      </div>
+    </div></div>`;
   id('D-STATS').innerHTML=`
     <div class="sc" style="border-right:3px solid var(--gold)"><div class="slb">🏦 الخزنة الرئيسية</div><div class="sv">${N(mainBal)}</div><div class="su">جرام — عيار 875</div></div>
     <div class="sc" style="border-right:3px solid var(--inf)"><div class="slb">💼 الخزنة الفرعية</div><div class="sv" style="color:var(--inf)">${N(subBal)}</div><div class="su">جرام — عيار 875</div></div>
@@ -3073,7 +3192,7 @@ async function loadMain(){
   const bal=calcBal(mainMovs);
   const tin=mainMovs.filter(m=>m.type==='وارد').reduce((s,m)=>s+(m.w875||0),0);
   const tout=mainMovs.filter(m=>m.type==='منصرف').reduce((s,m)=>s+(m.w875||0),0);
-  const tloan=mainMovs.filter(m=>m.type==='سلفة').reduce((s,m)=>s+(m.w875||0),0);
+  const tloan=loanOutstanding(mainMovs).reduce((s,l)=>s+Math.max(0,l.rem),0);
   id('MAIN-STATS').innerHTML=`
     <div class="sc" style="border-right:3px solid var(--gold)">
       <div class="slb">الرصيد الحالي</div>
@@ -3081,7 +3200,7 @@ async function loadMain(){
     </div>
     <div class="sc g"><div class="slb">إجمالي الوارد</div><div class="sv">${N(tin)}</div><div class="su">جرام — 875</div></div>
     <div class="sc r"><div class="slb">إجمالي المنصرف</div><div class="sv">${N(tout)}</div><div class="su">جرام — 875</div></div>
-    <div class="sc" style="border-right:3px solid var(--warn)"><div class="slb">📋 إجمالي السلف</div><div class="sv" style="color:var(--warn)">${N(tloan)}</div><div class="su">جرام — 875</div></div>
+    <div class="sc" style="border-right:3px solid var(--warn)"><div class="slb">📋 السلف المفتوحة</div><div class="sv" style="color:var(--warn)">${N(tloan)}</div><div class="su">جرام — 875</div></div>
     <div class="sc b"><div class="slb">عدد الحركات</div><div class="sv">${mainMovs.length}</div><div class="su">حركة</div></div>
   `;
   renderMainTable();
@@ -3092,7 +3211,7 @@ async function loadMain(){
 function renderMainTable(){
   fillKtSelect('MF',mainMovs);
   let data=applyVaultFilters('MF',mainMovs);
-  renderKtSummary('MF',data,['منصرف','عباسية','سلفة','تسوية استوك']);
+  renderKtSummary('MF',data,['منصرف','عباسية','رد سلفة','تسوية استوك','خسية']);
   if(mainFilterVal) data=data.filter(m=>m.type===mainFilterVal);
   id('MAIN-TABLE').innerHTML=data.length?`<table><thead><tr>
     <th>التاريخ</th><th>الوقت</th><th>النوع</th><th>الوزن</th><th>العيار</th><th>875</th><th>الرصيد</th><th>البيان</th><th></th>
@@ -3230,10 +3349,30 @@ function openMainMov(mode=''){
   om('MOD-MAIN');
 }
 
+function loanOutstanding(movs){
+  const L=movs.filter(m=>m.type==='سلفة').map(m=>({...m,rem:m.w875||0}));
+  movs.filter(m=>m.type==='رد سلفة'&&m.loanRef).forEach(r=>{ const l=L.find(x=>x.id===r.loanRef); if(l) l.rem-=(r.w875||0); });
+  return L;
+}
 function onMMTypeChange(){
   const type=id('MM-TYPE').value;
-  id('MM-LOAN-BOX').style.display = type==='سلفة' ? 'block' : 'none';
+  const isLoan=type==='سلفة', isRepay=type==='رد سلفة';
+  id('MM-LOAN-BOX').style.display = (isLoan||isRepay) ? 'block' : 'none';
+  id('MM-LOAN-HD').textContent = isRepay ? '↩️ رد سلفة — تُخصم من الرصيد' : '📋 بيان السلفة — تُضاف للرصيد';
+  id('MM-LOAN-REF-WRAP').style.display = isRepay ? '' : 'none';
+  id('MM-LOAN-NEW').style.display = isRepay ? 'none' : '';
+  if(isRepay){
+    const open=loanOutstanding(mainMovs).filter(l=>l.rem>0.0005).sort((a,b)=>b.at-a.at);
+    id('MM-LOAN-REF').innerHTML=open.length?'<option value="">— اختر السلفة —</option>'+open.map(l=>
+      `<option value="${l.id}">${esc(l.loanName||'بدون اسم')} · ${arabicDate(l.date)} · المتبقي ${N(l.rem)} (875)</option>`).join('')
+      :'<option value="">لا توجد سلف مفتوحة</option>';
+  }
   calcMM();
+}
+function onLoanRef(){
+  const l=loanOutstanding(mainMovs).find(x=>x.id===id('MM-LOAN-REF').value); if(!l) return;
+  id('MM-ITEM').value=''; onMMItem();
+  id('MM-KT').value=875; id('MM-WT').value=+l.rem.toFixed(3); calcMM();
 }
 
 function calcMM(){
@@ -3244,7 +3383,7 @@ function calcMM(){
   const bal=mmMode==='addSub'?calcBal(subMovs):calcBal(mainMovs);
   const type=id('MM-TYPE').value;
   // وارد يُضاف — منصرف وعباسية وسلفة تُخصم
-  const aft=(type==='وارد')?bal+w875:bal-w875;
+  const aft=(type==='وارد'||type==='سلفة')?bal+w875:bal-w875;
   const lb=id('MM-PREV').querySelectorAll('.row span');
   if(lb.length>=2){ lb[0].textContent=mmMode==='addSub'?'رصيد الفرعية الحالي':(mmMode==='toSub'?'رصيد الرئيسية الحالي':'الرصيد الحالي'); lb[1].textContent=mmMode==='addSub'?'رصيد الفرعية بعد الإضافة':'بعد الحركة'; }
   id('MM-CUR').textContent=N(bal)+' g';
@@ -3268,12 +3407,12 @@ async function saveMainMov(){
   let fullNote=note;
 
   if(type==='سلفة'){
-    // السلفة تُخصم من الرصيد مع بيان المستلم والغرض
+    // السلفة تُضاف للرصيد مع بيانها
     const loanName=v('MM-LOAN-NAME').trim();
     const loanPurpose=v('MM-LOAN-PURPOSE').trim();
+    if(!loanName&&!loanPurpose){toast('er','اكتب بيان السلفة (الاسم أو البيان)');return;}
     fullNote=`[سلفة]${loanName?' — '+loanName:''}${loanPurpose?' — '+loanPurpose:''}${note?' | '+note:''}`;
-    newBal=bal-w875;
-    if(newBal<-0.001){toast('er','الرصيد غير كافٍ للسلفة');return;}
+    newBal=bal+w875;
     const mid='m'+nowTs;
     await DB.doc(`main/${mid}`).set({
       id:mid, date, type:'سلفة', item, count, weight:wt, karat:kt, w875, w24:w1k,
@@ -3281,12 +3420,20 @@ async function saveMainMov(){
       time:timeStr, by:CU.username, at:nowTs
     });
   } else {
-    // وارد يُضاف، منصرف وعباسية يُخصمان
+    // وارد يُضاف، منصرف وعباسية ورد السلفة تُخصم
     newBal=(type==='وارد')?bal+w875:bal-w875;
     if(newBal<-0.001){toast('er','الرصيد غير كافٍ');return;}
+    let loanExtra={};
+    if(type==='رد سلفة'){
+      const l=loanOutstanding(await getCol('main')).find(x=>x.id===v('MM-LOAN-REF'));
+      if(!l){toast('er','اختر السلفة المردودة');return;}
+      if(w875>l.rem+0.001){toast('er',`الوزن أكبر من المتبقي في السلفة (${N(l.rem)})`);return;}
+      loanExtra={loanRef:l.id,loanName:l.loanName||''};
+      fullNote=`[رد سلفة] — ${l.loanName||''}${note?' | '+note:''}`;
+    }
     const mid='m'+nowTs;
     await DB.doc(`main/${mid}`).set({
-      id:mid, date, type, item, count, weight:wt, karat:kt, w875, w24:w1k,
+      id:mid, date, type, item, count, weight:wt, karat:kt, w875, w24:w1k, ...loanExtra,
       balance:newBal, note:fullNote, time:timeStr, by:CU.username, at:nowTs
     });
     // منصرف فقط يُضاف للفرعية — العباسية خرجت للأبد
@@ -3493,7 +3640,7 @@ async function loadDept(dept){
     return `<div class="drow drow-4" style="${it.done?'opacity:.65':''}">
       <div>
         <div class="dn">${it.item}</div>
-        <div class="dm">📅 ${arabicDate(it.date)} · 👤 ${it.by||'—'}${it.custom?' · <span style="color:var(--gold)">⚖️ وزنة</span>':''}${it.takhyeef?` · تحييف ${it.takhyeef}%`:''}</div>
+        <div class="dm">📅 ${arabicDate(it.date)} · 👤 ${it.by||'—'}${it.custom?' · <span style="color:var(--gold)">⚖️ وزنة</span>':''}${it.takhyeef?` · تحييف ${it.takhyeef}%`:''}${it.loss?` · <span style="color:var(--err)">خسية ${N(it.loss)}</span>`:''}</div>
       </div>
       <div>
         <div class="num dnum" style="color:${dep.color};font-size:16px">${N(it.weight)}</div>
@@ -3527,9 +3674,10 @@ async function loadDept(dept){
 }
 
 // ── إضافة عدة أسطر لقسم ──
-let draDept=null;
+let draDept=null, drMode=null;
+function setDrMode(m,el){ drMode=m; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.toggle('sel',b===el)); }
 function openDeptMulti(dept){
-  draDept=dept;
+  draDept=dept; drMode=null; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.remove('sel'));
   id('DADD-TITLE').textContent=`➕ إضافة لقسم ${DEPTS[dept].icon} ${DEPTS[dept].name}`;
   id('DADD-DATE').value=today(); id('DADD-NOTE').value='';
   id('DADD-ROWS').innerHTML=''; drAddRow(); drTotals();
@@ -3594,19 +3742,33 @@ async function saveDeptMulti(){
     if(!r.w){ toast('er',`السطر ${i+1}: أدخل الوزن`); r.tr.querySelector('.d-wt').focus(); return; }
     if(!(r.k>0&&r.k<=1000)){ toast('er',`السطر ${i+1}: عيار غير صحيح`); r.tr.querySelector('.d-kt').focus(); return; }
   }
+  if(!drMode){ toast('er','اختر طريقة الإضافة: عبر الفرعية أو الرئيسية أو للإجمالي فقط'); return; }
   const btn=id('DADD-SAVE'); btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
   try{
-    const base=Date.now(), ops=[];
+    const base=Date.now(), ops=[], timeStr=nowTime();
+    let mBal=drMode==='main'?await freshBal('main'):0, sBal=drMode!=='none'?await freshBal('sub'):0;
+    const dn=DEPTS[dept].name;
     for(const [i,r] of rows.entries()){
-      const did='di'+(base+i), item=r.name||`وزنة عيار ${r.k}`;
-      const rec={id:did,dept,item,weight:r.w,count:+(+r.cnt).toFixed(3),karat:r.k,w875:r.w875,done:false,custom:!r.c,note,by:CU.username,date,at:base+i};
+      const T=base+i*10, did='di'+(T+3), item=r.name||`وزنة عيار ${r.k}`;
+      const mv={date,item,count:+(+r.cnt).toFixed(3),weight:r.w,karat:r.k,w875:r.w875,w24:to24(r.w875,875),time:timeStr,by:CU.username};
+      if(drMode==='main'){
+        await DB.doc(`main/m${T}`).set({...mv,id:'m'+T,type:'وارد',balance:+(mBal+r.w875).toFixed(3),note:`وارد لـ${dn}${note?' | '+note:''}`,at:T});
+        await DB.doc(`main/m${T+1}`).set({...mv,id:'m'+(T+1),type:'منصرف',balance:+mBal.toFixed(3),note:`[إضافة قسم] → الفرعية → ${dn}`,at:T+1});
+        ops.push({action:'delete',col:'main',id:'m'+T},{action:'delete',col:'main',id:'m'+(T+1)});
+      }
+      if(drMode==='main'||drMode==='sub'){
+        await DB.doc(`sub/s${T+1}`).set({...mv,id:'s'+(T+1),type:'وارد',balance:+(sBal+r.w875).toFixed(3),from:drMode==='main'?'main':'ext',note:`وارد لـ${dn}${note?' | '+note:''}`,at:T+1});
+        await DB.doc(`sub/s${T+2}`).set({...mv,id:'s'+(T+2),type:'منصرف',balance:+sBal.toFixed(3),to:dept,note:`منصرف لـ${dn}`,at:T+2});
+        ops.push({action:'delete',col:'sub',id:'s'+(T+1)},{action:'delete',col:'sub',id:'s'+(T+2)});
+      }
+      const rec={id:did,dept,item,weight:r.w,count:+(+r.cnt).toFixed(3),karat:r.k,w875:r.w875,done:false,custom:!r.c,note,via:drMode,by:CU.username,date,at:T+3};
       if(r.tk) rec.takhyeef=r.tk;
       await DB.doc(`dept/${did}`).set(rec);
       await log('add','manual',dept,item,r.w,rec.count,r.k,r.w875,note,date);
       ops.push({action:'delete',col:'dept',id:did});
     }
     pushUndo({label:`إضافة ${rows.length} سطر → ${DEPTS[dept].name}`,ops});
-    clearCache('dept');
+    clearCache('dept','main','sub');
     const W=rows.reduce((s,r)=>s+r.w,0);
     toast('ok',`✅ أُضيف ${rows.length} سطر لقسم ${DEPTS[dept].name} — ${N(W)} جرام`);
     cm('MOD-DADD'); loadDept(dept);
@@ -3618,6 +3780,111 @@ async function saveDeptMulti(){
 const NEXT_STEPS={hal:['tam','sub'],tam:['dam'],dam:['tag'],tag:['abb','sub']};
 const NEXT_LBL={...DEST_LBL,abb:'🏪 العباسية'};
 let nextItemId=null;
+// ================================================================
+// الخسية
+// ================================================================
+let lossSrcs=[];
+async function openLoss(){
+  clearCache('dept','main','sub');
+  const [dept,main,sub]=await Promise.all([getCol('dept'),getCol('main'),getCol('sub')]);
+  lossSrcs=[{key:'main',type:'main',label:'🏦 الخزنة الرئيسية',w875:calcBal(main)},{key:'sub',type:'sub',label:'💼 الخزنة الفرعية',w875:calcBal(sub)}];
+  Object.entries(DEPTS).forEach(([k,d])=>dept.filter(x=>x.dept===k&&(x.weight||0)>0).sort((a,b)=>b.at-a.at).forEach(x=>
+    lossSrcs.push({key:'d:'+x.id,type:'dept',dept:k,rec:x,label:`${d.icon} ${d.name} — ${x.item} — ${N(x.weight)} جرام عيار ${x.karat}`})));
+  const grp={};
+  lossSrcs.forEach((s,i)=>{ const g=s.type==='dept'?`${DEPTS[s.dept].icon} ${DEPTS[s.dept].name}`:'الخزن'; (grp[g]=grp[g]||[]).push(`<option value="${i}">${esc(s.label)}${s.type!=='dept'?` — رصيد ${N(s.w875)} (875)`:''}</option>`); });
+  id('LOSS-SRC').innerHTML='<option value="">— اختر الوزنة أو الخزنة —</option>'+Object.entries(grp).map(([g,o])=>`<optgroup label="${esc(g)}">${o.join('')}</optgroup>`).join('');
+  id('LOSS-WT').value=''; id('LOSS-NOTE').value=''; id('LOSS-DATE').value=today(); id('LOSS-KT').value=875;
+  id('LOSS-INFO').style.display='none'; id('LOSS-CALC').innerHTML='';
+  om('MOD-LOSS');
+}
+const lossSel=()=>lossSrcs[parseInt(id('LOSS-SRC').value)];
+function onLossSrc(){
+  const s=lossSel(); if(!s){ id('LOSS-INFO').style.display='none'; return; }
+  id('LOSS-INFO').style.display='block';
+  if(s.type==='dept'){
+    const r=s.rec; id('LOSS-KT').value=r.karat; id('LOSS-KT').disabled=true;
+    id('LOSS-INFO').innerHTML=`<b>${esc(r.item)}</b> في ${DEPTS[s.dept].icon} ${DEPTS[s.dept].name} · الوزن <b class="num">${N(r.weight)}</b> · عيار ${r.karat}${r.count?` · عدد ${N3(r.count)}`:''} · 875: <b class="num">${N(r.w875)}</b>`;
+  } else { id('LOSS-KT').disabled=false; id('LOSS-INFO').innerHTML=`${s.label} — الرصيد <b class="num">${N(s.w875)}</b> جرام (875)`; }
+  calcLoss();
+}
+function lossW875(s,wt,kt){
+  if(s.type==='dept'){ const r=s.rec; return r.weight?+((r.w875||0)*wt/r.weight).toFixed(3):0; }
+  return +(wt*kt/875).toFixed(3);
+}
+function calcLoss(){
+  const s=lossSel(), wt=parseFloat(id('LOSS-WT').value)||0, kt=parseFloat(id('LOSS-KT').value)||0;
+  if(!s||!wt||!kt){ id('LOSS-CALC').innerHTML=''; return; }
+  const w8=lossW875(s,wt,kt);
+  const before=s.type==='dept'?s.rec.weight:s.w875, after=before-(s.type==='dept'?wt:w8);
+  id('LOSS-CALC').innerHTML=`<div class="row"><span style="color:var(--muted)">الخسية بعيار 875 / 24</span><b class="num" style="color:var(--err)">${N(w8)} / ${N(to24(w8,875))}</b></div>
+    <div class="row"><span style="color:var(--muted)">${s.type==='dept'?'وزن الوزنة بعد الخصم':'رصيد الخزنة بعد الخصم'}</span><b class="num" style="color:${after<-0.0005?'var(--err)':'var(--gold)'}">${N(after)}</b></div>`;
+}
+async function saveLoss(){
+  const s=lossSel(), wt=parseFloat(id('LOSS-WT').value)||0, kt=parseFloat(id('LOSS-KT').value)||0, date=id('LOSS-DATE').value, note=id('LOSS-NOTE').value.trim();
+  if(!s){ toast('er','اختر من أين تُخصم الخسية'); return; }
+  if(!wt||!date){ toast('er','أدخل الوزن والتاريخ'); return; }
+  if(!(kt>0&&kt<=1000)){ toast('er','عيار غير صحيح'); return; }
+  const ts=Date.now(), ops=[], w8=lossW875(s,wt,kt);
+  const L={id:'loss'+ts,date,srcType:s.type,weight:+wt.toFixed(3),karat:kt,w875:w8,w24:to24(w8,875),note,by:CU.username,at:ts};
+  if(s.type==='dept'){
+    const snap=await DB.doc(`dept/${s.rec.id}`).get(); if(!snap.exists){ toast('er','الوزنة لم تعد موجودة'); return; }
+    const r=snap.data();
+    if(wt>(r.weight||0)+0.001){ toast('er','الخسية أكبر من وزن الوزنة'); return; }
+    const nw=+((r.weight||0)-wt).toFixed(3), n8=+Math.max(0,(r.w875||0)-w8).toFixed(3);
+    await DB.doc(`dept/${r.id}`).update({weight:nw,w875:n8,loss:+(((r.loss||0)+wt).toFixed(3))});
+    ops.push({action:'set',col:'dept',id:r.id,data:r});
+    Object.assign(L,{dept:r.dept,refId:r.id,item:r.item});
+  } else {
+    const col=s.type, bal=await freshBal(col);
+    if(w8>bal+0.001){ toast('er','الخسية أكبر من رصيد الخزنة'); return; }
+    const rid=(col==='sub'?'s':'m')+ts;
+    await DB.doc(`${col}/${rid}`).set({id:rid,date,type:'خسية',item:'خسية',weight:+wt.toFixed(3),karat:kt,w875:w8,w24:to24(wt,kt),balance:+(bal-w8).toFixed(3),note:`[خسية]${note?' '+note:''}`,time:nowTime(),by:CU.username,at:ts});
+    ops.push({action:'delete',col,id:rid});
+    Object.assign(L,{refCol:col,refId:rid,item:col==='main'?'الخزنة الرئيسية':'الخزنة الفرعية'});
+  }
+  await DB.doc(`loss/${L.id}`).set(L); ops.push({action:'delete',col:'loss',id:L.id});
+  await log('loss',L.dept||L.refCol,'loss',L.item,wt,0,kt,w8,note,date);
+  pushUndo({label:`خسية ${N(wt)} جرام — ${L.item}`,ops});
+  clearCache('dept','main','sub','loss');
+  cm('MOD-LOSS'); toast('ok',`📉 تم تسجيل خسية ${N(wt)} جرام`);
+  if(curTab==='loss') loadLoss(); else await TAB_LOADERS[curTab]?.();
+}
+async function loadLoss(){
+  const d1=id('LOSS-D1').value, d2=id('LOSS-D2').value;
+  const all=(await getCol('loss')).filter(l=>(!d1||l.date>=d1)&&(!d2||l.date<=d2)).sort((a,b)=>b.at-a.at);
+  const tot=all.reduce((s,l)=>s+(l.w875||0),0), totW=all.reduce((s,l)=>s+(l.weight||0),0);
+  const by={}; all.forEach(l=>{ const k=l.dept?DEPTS[l.dept].icon+' '+DEPTS[l.dept].name:(l.refCol==='main'?'🏦 الرئيسية':'💼 الفرعية'); by[k]=(by[k]||0)+(l.w875||0); });
+  id('LOSS-STATS').innerHTML=`
+    <div class="sc" style="border-right:3px solid var(--err)"><div class="slb">📉 إجمالي الخسية</div><div class="sv num" style="color:var(--err)">${N(tot)}</div><div class="su">جرام 875 · ${N(to24(tot,875))} عيار 24</div></div>
+    <div class="sc"><div class="slb">الوزن الفعلي</div><div class="sv num">${N(totW)}</div><div class="su">${all.length} عملية</div></div>
+    <div class="sc" style="font-size:11px"><div class="slb">حسب القسم (875)</div><div style="line-height:1.8">${Object.entries(by).map(([k,v2])=>`${k}: <b class="num">${N(v2)}</b>`).join('<br>')||'—'}</div></div>`;
+  id('LOSS-TABLE').innerHTML=all.length?`<table><thead><tr><th>التاريخ</th><th>من</th><th>الوزنة</th><th>الوزن</th><th>العيار</th><th>875</th><th>عيار 24</th><th>ملاحظة</th><th>بواسطة</th><th></th></tr></thead><tbody>${
+    all.map(l=>`<tr><td style="font-size:11px;white-space:nowrap">${arabicDate(l.date)}</td>
+      <td>${l.dept?`${DEPTS[l.dept].icon} ${DEPTS[l.dept].name}`:(l.refCol==='main'?'🏦 الرئيسية':'💼 الفرعية')}</td>
+      <td style="font-weight:700">${esc(l.item||'—')}</td><td class="num" style="color:var(--err);font-weight:800">${N(l.weight)}</td>
+      <td><span class="b bgld">${l.karat}</span></td><td class="num">${N(l.w875)}</td><td class="num" style="color:var(--ok)">${N(l.w24??to24(l.w875,875))}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(l.note||'—')}</td><td style="font-size:10.5px;color:var(--muted)">${esc(l.by||'')}</td>
+      <td><button class="btn bxs bd2" onclick="delLoss('${l.id}')" title="حذف وإرجاع الوزن">🗑</button></td></tr>`).join('')}</tbody></table>`
+    :'<div class="empty"><span class="eic">📉</span><p>لا توجد خسية مسجلة</p></div>';
+}
+function delLoss(lid){
+  conf('حذف الخسية وإرجاع الوزن لمكانه؟',async()=>{
+    const ls=await DB.doc(`loss/${lid}`).get(); if(!ls.exists) return; const L=ls.data(); const ops=[{action:'set',col:'loss',id:lid,data:L}];
+    if(L.srcType==='dept'){
+      const r=await DB.doc(`dept/${L.refId}`).get();
+      if(r.exists){ const d=r.data(); ops.push({action:'set',col:'dept',id:d.id,data:d});
+        await DB.doc(`dept/${d.id}`).update({weight:+((d.weight||0)+L.weight).toFixed(3),w875:+((d.w875||0)+L.w875).toFixed(3),loss:+Math.max(0,(d.loss||0)-L.weight).toFixed(3)}); }
+      else toast('in','الوزنة الأصلية لم تعد في القسم — حُذفت الخسية فقط');
+    } else {
+      const r=await DB.doc(`${L.refCol}/${L.refId}`).get();
+      if(r.exists){ ops.push({action:'set',col:L.refCol,id:L.refId,data:r.data()}); await DB.doc(`${L.refCol}/${L.refId}`).delete(); await recalcBalances(L.refCol); }
+    }
+    await DB.doc(`loss/${lid}`).delete();
+    pushUndo({label:`حذف خسية ${N(L.weight)} جرام`,ops});
+    clearCache(); toast('ok','تم حذف الخسية وإرجاع الوزن'); loadLoss();
+  });
+}
+
 async function markDone(iid, dept){
   await DB.doc(`dept/${iid}`).update({done:true});
   const it=deptItems.find(d=>d.id===iid);
@@ -3786,14 +4053,14 @@ function openEditCnt(iid){
 
 function calcEditWt(){
   const it=deptItems.find(d=>d.id===editItemId);if(!it)return;
-  const cat=CATALOG.find(c=>c.name===it.item);
+  const cat=catFind(it.item);
   const cnt=parseFloat(v('EDIT-CNT'))||0;
   if(cat) id('EDIT-WT').value=Math.round(cnt*cat.w24*1000)/1000;
 }
 
 async function saveEditCnt(){
   const it=deptItems.find(d=>d.id===editItemId);if(!it)return;
-  const cat=CATALOG.find(c=>c.name===it.item);
+  const cat=catFind(it.item);
   const cnt=parseFloat(v('EDIT-CNT'))||0;
   const wt=cat?Math.round(cnt*cat.w24*1000)/1000:it.weight;
   const w875=cat?Math.round(wt*cat.karat/875*1000)/1000:wt;
@@ -4313,13 +4580,13 @@ async function loadOvr(){
     <span style="font-size:11px;color:var(--muted)"><span style="color:var(--tam)">■</span> أقسام ${N(deptBal)}g (${pD}%)</span>`;
 
   // ── تفاصيل الرئيسية ──
-  const mainIn  = mainMovsAll.filter(m=>m.type==='وارد'||m.type==='استرجاع'||m.type==='وارد استوك').reduce((s,m)=>s+(m.w875||0),0);
-  const mainOut = mainMovsAll.filter(m=>m.type==='منصرف'||m.type==='عباسية'||m.type==='سلفة'||m.type==='تسوية استوك').reduce((s,m)=>s+(m.w875||0),0);
-  const mainLoan= mainMovsAll.filter(m=>m.type==='سلفة').reduce((s,m)=>s+(m.w875||0),0);
+  const mainIn  = mainMovsAll.filter(m=>movDelta(m)>0).reduce((s,m)=>s+(m.w875||0),0);
+  const mainOut = mainMovsAll.filter(m=>movDelta(m)<0).reduce((s,m)=>s+(m.w875||0),0);
+  const mainLoan= loanOutstanding(mainMovsAll).reduce((s,l)=>s+Math.max(0,l.rem),0);
   id('OVR-MAIN').innerHTML=`<table><tbody>
     <tr><td>إجمالي الوارد</td><td class="num" style="color:var(--ok);font-weight:800">${N(mainIn)}</td></tr>
     <tr><td>إجمالي المنصرف</td><td class="num" style="color:var(--err)">${N(mainOut)}</td></tr>
-    <tr><td>إجمالي السلف</td><td class="num" style="color:var(--warn)">${N(mainLoan)}</td></tr>
+    <tr><td>السلف المفتوحة</td><td class="num" style="color:var(--warn)">${N(mainLoan)}</td></tr>
     <tr><td>إجمالي العباسية</td><td class="num" style="color:#E74C3C">${N(abbMain)}</td></tr>
     <tr style="border-top:2px solid var(--bd)"><td style="font-weight:800">الرصيد الحالي</td><td class="num" style="color:var(--gold);font-weight:900;font-size:16px">${N(mainBal)}</td></tr>
     <tr><td>عدد الحركات</td><td class="num" style="color:var(--muted)">${mainMovsAll.length}</td></tr>
@@ -4496,7 +4763,7 @@ async function collectAbbRows({d1,d2,src,ids}){
 
 function itemCount(m){
   if(m.count) return m.count;
-  const c=CATALOG.find(x=>x.name===m.item);
+  const c=catFind(m.item);
   return c&&c.w24?(m.weight||0)/c.w24:0;
 }
 
@@ -4813,7 +5080,7 @@ async function openEditRec(col,rid){
   id('ER-TITLE').textContent=`✏️ تعديل — ${where}`;
   id('ER-INFO').innerHTML=`${erRec.type?`<b>${esc(erRec.type)}</b> · `:''}الحالي: <b class="num">${N(erRec.weight)}</b> جرام · عيار <b>${erRec.karat||875}</b>${erRec.count?` · عدد <b class="num">${N3(erRec.count)}</b>`:''}`;
   id('ER-ITEM').innerHTML='<option value="">— وزنة حرة (بدون صنف) —</option>'+CATALOG.map((c,i)=>`<option value="${i}">${c.name} — ${c.karat}</option>`).join('');
-  const ci=CATALOG.findIndex(c=>c.name===nm);
+  const ci=CATALOG.findIndex(c=>c.name===catName(nm));
   id('ER-ITEM').value=ci>=0?String(ci):'';
   id('ER-NAME').value=ci>=0?'':nm;
   id('ER-DATE').value=erRec.date||today();
@@ -5271,8 +5538,8 @@ async function toggleUser(un){if(un==='MINA'||un===CU?.username){toast('er','ل�
 // UTILS
 // ================================================================
 function movDelta(m){
-  if(m.type==='وارد'||m.type==='استرجاع'||m.type==='وارد استوك') return (m.w875||0);
-  if(m.type==='منصرف'||m.type==='عباسية'||m.type==='سلفة'||m.type==='تسوية استوك') return -(m.w875||0);
+  if(m.type==='وارد'||m.type==='استرجاع'||m.type==='وارد استوك'||m.type==='سلفة') return (m.w875||0);
+  if(m.type==='منصرف'||m.type==='عباسية'||m.type==='رد سلفة'||m.type==='تسوية استوك'||m.type==='خسية') return -(m.w875||0);
   return 0;
 }
 function calcBal(movs){ return movs.reduce((s,m)=>s+movDelta(m),0); }

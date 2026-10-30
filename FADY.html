@@ -715,6 +715,7 @@ td.num, th.num { display: table-cell; text-align: right; }
     <div class="tab" onclick="showTab('sil')" id="tab-sil">🥈 الفضة</div>
     <div class="tab" onclick="showTab('log')">📋 السجل</div>
     <div class="tab" onclick="showTab('arc')">🗂 الأرشيف</div>
+    <div class="tab" onclick="showTab('aud')">🧮 المراجعة</div>
     <div class="tab" onclick="showTab('abb')">🏪 العباسية</div>
     <div class="tab" onclick="showTab('ovr')">📊 نظرة عامة</div>
     <div class="tab" onclick="showTab('ref')">🔍 المرجع</div>
@@ -1000,7 +1001,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('tag')">➕ إضافة أصناف / وزنات</button>
           <button class="btn bsm" style="background:#3FB95020;color:var(--ok);border:1px solid var(--ok)" onclick="openNextStepAll('tag')">✅ DONE ونقل الكل</button>
-          <button class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="openDeptMulti('tag');setTimeout(()=>document.getElementById('VCH-FILE').click(),150)">📷 من صورة سند</button>
+          <button class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="openDeptMulti('tag')" title="افتح ثم الصق الصورة بـ Ctrl+V">📋 سند من صورة (لصق)</button>
         </div>
       </div>
       <div id="TAG-STATS" class="sgrid"></div>
@@ -1130,6 +1131,20 @@ td.num, th.num { display: table-cell; text-align: right; }
         <button class="btn bs bsm" onclick="id('LOSS-D1').value='';id('LOSS-D2').value='';loadLoss()">↺ الكل</button>
       </div>
       <div class="tc"><div id="LOSS-TABLE"></div></div>
+    </div>
+
+    <!-- AUDIT -->
+    <div id="pg-aud" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">🧮 مراجعة الأرصدة والخطوات</div><div class="pgs">يتأكد أن الإجمالي صحيح وأن كل تحويل مسجّل من الطرفين</div></div>
+        <button class="btn bp bsm" onclick="loadAudit(true)">🔄 مراجعة الآن</button>
+      </div>
+      <div id="AUD-SUM"></div>
+      <div id="AUD-CHECKS"></div>
+      <div class="tc" style="margin-top:16px">
+        <div class="thead2"><b>📅 سجل الإجمالي اليومي — هل التغيّر يساوي المصروف؟</b></div>
+        <div id="AUD-DAYS"></div>
+      </div>
     </div>
 
     <!-- ARCHIVE -->
@@ -1837,8 +1852,9 @@ td.num, th.num { display: table-cell; text-align: right; }
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button type="button" class="btn bs bsm" onclick="drAddRow()">➕ إضافة سطر آخر</button>
         <button type="button" class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="document.getElementById('VCH-FILE').click()">📷 قراءة من صورة سند</button>
+        <button type="button" class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="pasteVoucherBtn()">📋 لصق صورة</button>
         <input type="file" id="VCH-FILE" accept="image/*" style="display:none" onchange="importVoucher(this.files[0]);this.value=''">
-        <span id="VCH-ST" style="font-size:11.5px;color:var(--muted)"></span>
+        <span id="VCH-ST" style="font-size:11.5px;color:var(--muted)">💡 أو اضغط Ctrl+V للصق صورة السند مباشرة</span>
       </div>
       <div class="fg" style="margin-top:14px"><label>طريقة الإضافة *</label>
         <div class="dest-grid" style="grid-template-columns:1fr 1fr 1fr" id="DADD-MODE">
@@ -2761,7 +2777,7 @@ async function seedData(){
 // ================================================================
 // RESET DATA
 // ================================================================
-const RESET_COLS={loss:'الخسية',main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
+const RESET_COLS={snap:'سجل الإجمالي اليومي',loss:'الخسية',main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
 
 // مقارنة مرنة: تتجاهل المسافات وعلامات الاتجاه والتشكيل واختلاف ى/ي
 function normAr(t){
@@ -2921,7 +2937,7 @@ function logout(){
 // ================================================================
 // TABS
 // ================================================================
-const TAB_LOADERS={loss:()=>loadLoss(),arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
+const TAB_LOADERS={aud:()=>loadAudit(),loss:()=>loadLoss(),arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
 
 let curTab='dash';
 function showTab(t){
@@ -3146,6 +3162,7 @@ async function applyFixRecords(){
 async function loadDash(){
   startLive();
   loadCatalogWeights();
+  setTimeout(()=>saveDaySnap().catch(()=>{}),1500);
   id('DDATE').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const [mm,sm,dm,sim]=await Promise.all([
     getCol('main'),getCol('sub'),getCol('dept'),getCol('silver')
@@ -3688,7 +3705,7 @@ async function loadDept(dept){
 let draDept=null, drMode=null;
 function setDrMode(m,el){ drMode=m; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.toggle('sel',b===el)); }
 function openDeptMulti(dept){
-  draDept=dept; drMode=null; if(id('VCH-ST')) id('VCH-ST').textContent=''; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.remove('sel'));
+  draDept=dept; drMode=null; if(id('VCH-ST')) id('VCH-ST').textContent='💡 الصق صورة السند هنا بـ Ctrl+V — أو اضغط 📋 لصق صورة'; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.remove('sel'));
   id('DADD-TITLE').textContent=`➕ إضافة لقسم ${DEPTS[dept].icon} ${DEPTS[dept].name}`;
   id('DADD-DATE').value=today(); id('DADD-NOTE').value='';
   id('DADD-ROWS').innerHTML=''; drAddRow(); drTotals();
@@ -3902,6 +3919,28 @@ async function importVoucher(file){
   }catch(e){ console.error(e); say('⚠️ تعذّرت القراءة — تحقق من الإنترنت وجرّب مرة أخرى'); }
 }
 
+// لصق صورة من الحافظة
+document.addEventListener('paste',e=>{
+  const items=[...(e.clipboardData?.items||[])]; const it=items.find(i=>i.type.startsWith('image/')); if(!it) return;
+  if(!CU) return;
+  e.preventDefault();
+  const f=it.getAsFile();
+  if(!id('MOD-DADD').classList.contains('open')){
+    const d=DEPT_KEYS.includes(curTab)?curTab:'tag';
+    if(curTab!==d) showTab(d);
+    openDeptMulti(d);
+  }
+  importVoucher(f);
+});
+async function pasteVoucherBtn(){
+  try{
+    if(!navigator.clipboard?.read) throw 0;
+    const items=await navigator.clipboard.read();
+    for(const ci of items){ const t=ci.types.find(x=>x.startsWith('image/')); if(t){ const b=await ci.getType(t); importVoucher(new File([b],'paste.png',{type:t})); return; } }
+    id('VCH-ST').textContent='⚠️ لا توجد صورة في الحافظة — انسخ صورة السند أولاً (Ctrl+C أو زر نسخ الصورة)';
+  }catch(e){ id('VCH-ST').textContent='💡 اضغط Ctrl+V هنا للصق الصورة'; }
+}
+
 // ── بعد DONE: اقتراح القسم التالي ──
 const NEXT_STEPS={hal:['tam','sub'],tam:['dam'],dam:['tag'],tag:['abb','sub']};
 const NEXT_LBL={...DEST_LBL,abb:'🏪 العباسية'};
@@ -4009,6 +4048,101 @@ function delLoss(lid){
     pushUndo({label:`حذف خسية ${N(L.weight)} جرام`,ops});
     clearCache(); toast('ok','تم حذف الخسية وإرجاع الوزن'); loadLoss();
   });
+}
+
+// ================================================================
+// المراجعة — تأكيد صحة الإجمالي والخطوات
+// ================================================================
+const DEPT_KEYS=['hal','tam','dam','tag'];
+async function factoryState(){
+  const [main,sub,dept,stock,loss]=await Promise.all(['main','sub','dept','stock','loss'].map(c=>getCol(c).catch(()=>[])));
+  const mainBal=calcBal(main), subBal=calcBal(sub);
+  const dB={}; DEPT_KEYS.forEach(k=>dB[k]=dept.filter(d=>d.dept===k).reduce((s,d)=>s+(d.w875||0),0));
+  const deptBal=Object.values(dB).reduce((a,b)=>a+b,0);
+  return {main,sub,dept,stock,loss,mainBal,subBal,dB,deptBal,grand:mainBal+subBal+deptBal};
+}
+// لقطة يومية للإجمالي (تُحدَّث عند فتح لوحة التحكم أو المراجعة)
+async function saveDaySnap(st){
+  st=st||await factoryState();
+  const d=today();
+  const abb=[...st.main,...st.sub].filter(m=>m.type==='عباسية'&&m.date===d).reduce((s,m)=>s+(m.w875||0),0);
+  const lossD=st.loss.filter(l=>l.date===d).reduce((s,l)=>s+(l.w875||0),0);
+  await DB.doc(`snap/${d}`).set({date:d,main:+st.mainBal.toFixed(3),sub:+st.subBal.toFixed(3),depts:+st.deptBal.toFixed(3),grand:+st.grand.toFixed(3),abb:+abb.toFixed(3),loss:+lossD.toFixed(3),at:Date.now()});
+  clearCache('snap');
+}
+async function loadAudit(force){
+  if(force) clearCache();
+  id('AUD-CHECKS').innerHTML='<div class="empty"><span class="eic">⏳</span><p>جاري المراجعة...</p></div>';
+  const st=await factoryState();
+  const {main,sub,dept,stock,mainBal,subBal,dB,deptBal,grand}=st;
+  const near=(a,b,t=0.002)=>Math.abs(a-b)<=t;
+  const abbMain=main.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
+  const abbSub=sub.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
+  id('AUD-SUM').innerHTML=`<div style="background:linear-gradient(135deg,#C8A84B22,#C8A84B06);border:1.5px solid var(--gold);border-radius:14px;padding:16px 18px;margin-bottom:14px">
+    <div style="font-size:12px;color:var(--gold);font-weight:800;margin-bottom:8px">⚖️ معادلة الموجود الآن (عيار 875)</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:15px" class="num">
+      <span>🏦 ${N(mainBal)}</span><b>+</b><span>💼 ${N(subBal)}</span><b>+</b>
+      ${DEPT_KEYS.map(k=>`<span style="color:${DEPTS[k].color}">${DEPTS[k].icon} ${N(dB[k])}</span>`).join('<b>+</b>')}
+      <b>=</b><span style="font-size:22px;font-weight:900;color:var(--goldtx)">${N(grand)}</span>
+      <span style="font-size:12px;color:var(--ok)">(عيار 24: ${N(to24(grand,875))})</span>
+    </div>
+    <div style="font-size:11.5px;color:var(--muted);margin-top:8px">🏪 إجمالي ما صُرف للعباسية حتى الآن: <b class="num" style="color:#E74C3C">${N(abbMain+abbSub)}</b> — خرج من المصنع ولا يدخل في الإجمالي.</div>
+  </div>`;
+
+  const checks=[];
+  const add=(ok,title,detail,fix)=>checks.push({ok,title,detail,fix});
+  // 1) الرصيد المحفوظ في آخر حركة = الرصيد المحسوب
+  for(const [col,movs,lbl] of [['main',main,'🏦 الرئيسية'],['sub',sub,'💼 الفرعية']]){
+    const sorted=[...movs].sort((a,b)=>(a.at||0)-(b.at||0)); let run=0, bad=0;
+    sorted.forEach(m=>{ run+=movDelta(m); if(!near(+m.balance||0,run,0.01)) bad++; });
+    add(!bad,`عمود الرصيد في ${lbl}`,bad?`${bad} حركة رصيدها المكتوب لا يطابق الحساب`:`كل الأرصدة مطابقة — الرصيد ${N(run)}`,bad?`auditFix('bal','${col}')`:null);
+  }
+  // 2) لا رصيد سالب
+  const neg=[]; if(mainBal<-0.001) neg.push('الرئيسية '+N(mainBal)); if(subBal<-0.001) neg.push('الفرعية '+N(subBal));
+  const badDept=dept.filter(d=>!(+d.weight>0)||!(+d.w875>=0)||isNaN(+d.w875));
+  add(!neg.length&&!badDept.length,'لا أرصدة أو أوزان سالبة',neg.length||badDept.length?[...neg,...badDept.map(d=>`${DEPTS[d.dept]?.name||d.dept}: ${d.item} وزن ${d.weight}`)].join(' · '):'سليم');
+  // 3) كل منصرف من الرئيسية للفرعية له وارد مقابل
+  const subIn=sub.filter(s=>s.type==='وارد');
+  const unpaired=main.filter(m=>m.type==='منصرف').filter(m=>{
+    const ts=String(m.id).replace(/^\D+/,'');
+    return !subIn.some(s=>String(s.id).replace(/^\D+/,'')===ts||(Math.abs((s.at||0)-(m.at||0))<5000&&near(s.w875||0,m.w875||0)));
+  });
+  add(!unpaired.length,'كل منصرف من الرئيسية وصل للفرعية',unpaired.length?`${unpaired.length} منصرف بدون وارد مقابل في الفرعية: `+unpaired.slice(0,5).map(m=>`${arabicDate(m.date)} ${N(m.w875)}`).join('، '):`${main.filter(m=>m.type==='منصرف').length} تحويل — كلها مسجّلة في الطرفين`);
+  // 4) الإضافة للأقسام عبر الخزنة: وارد ومنصرف متساويين
+  const chainIn=sub.filter(s=>s.type==='وارد'&&String(s.note||'').startsWith('وارد لـ'));
+  const chainBad=chainIn.filter(s=>!sub.some(o=>o.type==='منصرف'&&Math.abs((o.at||0)-(s.at||0))<=3&&near(o.w875||0,s.w875||0)));
+  add(!chainBad.length,'الإضافة للأقسام عبر الخزنة متوازنة',chainBad.length?`${chainBad.length} وارد بدون منصرف للقسم`:`${chainIn.length} إضافة — كل وارد له منصرف للقسم`);
+  // 5) العباسية من الأقسام: وارد + صرف متساويين في الفرعية (الوزنة خرجت من القسم)
+  const abbDept=sub.filter(s=>s.type==='عباسية'&&DEPT_KEYS.includes(s.from));
+  const abbBad=abbDept.filter(s=>!sub.some(o=>o.type==='وارد'&&o.from===s.from&&Math.abs((o.at||0)-(s.at||0))<=3&&near(o.w875||0,s.w875||0)));
+  add(!abbBad.length,'الصرف للعباسية من الأقسام',abbBad.length?`${abbBad.length} صرف بدون حركة وارد مقابلة`:`${abbDept.length} صرف من الأقسام — خُصم من القسم وخرج من المصنع ✓`);
+  // 6) بيان الخزنة = رصيدها
+  const stockNet=main.filter(isStockOrigin).reduce((s,m)=>s+movDelta(m),0), stockTot=stock.reduce((s,x)=>s+(x.w875||0),0);
+  add(near(stockNet,stockTot,0.01),'الاستوك مطابق لحركاته في الرئيسية',`الاستوك ${N(stockTot)} · صافي حركات الاستوك ${N(stockNet)}`);
+  // 7) لوحة التحكم ونظرة عامة بنفس الإجمالي
+  add(true,'الإجمالي الكلي موحّد',`لوحة التحكم ونظرة عامة والمراجعة: ${N(grand)} (تشمل الأصناف DONE)`);
+
+  const okN=checks.filter(c=>c.ok).length;
+  id('AUD-CHECKS').innerHTML=`<div class="tc"><div class="thead2"><b>${okN===checks.length?'✅ كل الفحوصات سليمة':`⚠️ ${checks.length-okN} فحص يحتاج مراجعة`}</b><span style="font-size:11px;color:var(--muted)">${okN}/${checks.length}</span></div>
+    ${checks.map(c=>`<div style="display:flex;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid var(--s3)">
+      <span style="font-size:18px">${c.ok?'✅':'⚠️'}</span>
+      <div style="flex:1"><div style="font-weight:800;font-size:13px">${c.title}</div><div style="font-size:11.5px;color:${c.ok?'var(--muted)':'var(--warn)'}">${c.detail}</div></div>
+      ${c.fix?`<button class="btn bxs bp" onclick="${c.fix}">🛠 إصلاح</button>`:''}</div>`).join('')}</div>`;
+
+  await saveDaySnap(st).catch(()=>{});
+  const snaps=(await getCol('snap').catch(()=>[])).sort((a,b)=>a.date<b.date?1:-1).slice(0,31);
+  id('AUD-DAYS').innerHTML=snaps.length?`<table><thead><tr><th>اليوم</th><th>الإجمالي آخر اليوم</th><th>التغيّر عن اليوم السابق</th><th>صُرف للعباسية</th><th>خسية</th><th>تغيّر غير العباسية والخسية</th></tr></thead><tbody>${
+    snaps.map((s,i)=>{ const p=snaps[i+1]; const ch=p?s.grand-p.grand:null; const other=ch===null?null:ch+(s.abb||0)+(s.loss||0);
+      return `<tr><td style="font-size:11.5px;white-space:nowrap">${arabicDate(s.date)}</td>
+        <td class="num" style="font-weight:900;color:var(--goldtx)">${N(s.grand)}</td>
+        <td class="num" style="color:${ch>0.0005?'var(--ok)':ch<-0.0005?'var(--err)':'var(--muted)'}">${ch===null?'—':(ch>0?'+':'')+N(ch)}</td>
+        <td class="num" style="color:#E74C3C">${s.abb?'-'+N(s.abb):'—'}</td><td class="num" style="color:var(--err)">${s.loss?'-'+N(s.loss):'—'}</td>
+        <td class="num" title="الوارد الجديد للمصنع في هذا اليوم">${other===null?'—':(Math.abs(other)<0.0005?'0':(other>0?'+':'')+N(other))}</td></tr>`; }).join('')}</tbody></table>
+    <div style="font-size:10.5px;color:var(--muted);padding:8px 14px">💡 العمود الأخير = الوارد الجديد للمصنع في اليوم. لو لم تُدخل ذهباً جديداً ووجدت رقماً فيه، راجع حركات ذلك اليوم من الأرشيف.</div>`
+    :'<div class="empty"><p>يبدأ التسجيل من اليوم</p></div>';
+}
+async function auditFix(kind,col){
+  if(kind==='bal'){ await recalcBalances(col); toast('ok','✅ تم إعادة حساب عمود الرصيد'); loadAudit(true); }
 }
 
 async function markDone(iid, dept){
@@ -4681,10 +4815,10 @@ async function loadOvr(){
   const abbSub  = subMovsAll.filter(m=>m.type==='عباسية').reduce((s,m)=>s+(m.w875||0),0);
   const totalAbb= abbMain+abbSub;
 
-  const total = mainBal+subBal+deptBal;
+  const total = mainBal+subBal+deptBal+deptDone;
   const pM=total>0?(mainBal/total*100).toFixed(1):0;
   const pS=total>0?(subBal/total*100).toFixed(1):0;
-  const pD=total>0?(deptBal/total*100).toFixed(1):0;
+  const pD=total>0?((deptBal+deptDone)/total*100).toFixed(1):0;
 
   // ── بطاقات الإجمالي ──
   id('OVR-TOTAL').innerHTML=`
@@ -4723,11 +4857,11 @@ async function loadOvr(){
   id('OVR-BAR').innerHTML=`
     <div style="width:${pM}%;background:var(--gold);min-width:${mainBal>0?'4px':'0'};border-radius:6px 0 0 6px"></div>
     <div style="width:${pS}%;background:var(--inf);min-width:${subBal>0?'4px':'0'}"></div>
-    <div style="width:${pD}%;background:var(--tam);min-width:${deptBal>0?'4px':'0'};border-radius:0 6px 6px 0"></div>`;
+    <div style="width:${pD}%;background:var(--tam);min-width:${(deptBal+deptDone)>0?'4px':'0'};border-radius:0 6px 6px 0"></div>`;
   id('OVR-BAR-LBL').innerHTML=`
     <span style="font-size:11px;color:var(--muted)"><span style="color:var(--gold)">■</span> رئيسية ${N(mainBal)}g (${pM}%)</span>
     <span style="font-size:11px;color:var(--muted)"><span style="color:var(--inf)">■</span> فرعية ${N(subBal)}g (${pS}%)</span>
-    <span style="font-size:11px;color:var(--muted)"><span style="color:var(--tam)">■</span> أقسام ${N(deptBal)}g (${pD}%)</span>`;
+    <span style="font-size:11px;color:var(--muted)"><span style="color:var(--tam)">■</span> أقسام ${N(deptBal+deptDone)}g (${pD}%)</span>`;
 
   // ── تفاصيل الرئيسية ──
   const mainIn  = mainMovsAll.filter(m=>movDelta(m)>0).reduce((s,m)=>s+(m.w875||0),0);

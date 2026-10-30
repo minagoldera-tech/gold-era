@@ -1252,7 +1252,7 @@ td.num, th.num { display: table-cell; text-align: right; }
       </div>
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0"><label>بعيار 875</label><input type="text" id="MM-875" readonly style="opacity:.6;font-family:monospace"></div>
-        <div class="fg" style="margin:0"><label>بعيار 1000</label><input type="text" id="MM-1K" readonly style="opacity:.6;font-family:monospace"></div>
+        <div class="fg" style="margin:0"><label>بعيار 24 (999.9)</label><input type="text" id="MM-1K" readonly style="opacity:.6;font-family:monospace"></div>
       </div>
       <!-- بيان السلفة — يظهر فقط عند اختيار سلفة -->
       <div id="MM-LOAN-BOX" style="display:none;background:var(--s3);border-radius:8px;padding:12px;margin-top:12px;border:1px solid var(--warn)">
@@ -1454,24 +1454,24 @@ td.num, th.num { display: table-cell; text-align: right; }
     <div class="mb">
       <div id="TR-INFO" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px"></div>
       <div class="fg"><label>الكمية المحوَّلة</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
-          <button class="dest-btn" onclick="setTrType('all',this)">كل الوزن</button>
-          <button class="dest-btn" onclick="setTrType('cnt',this)">كل العدد</button>
-          <button class="dest-btn" onclick="setTrType('partial',this)">جزئي</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <button class="dest-btn" id="TRT-ALL" onclick="setTrType('all',this)">📦 الوزنة كلها</button>
+          <button class="dest-btn" id="TRT-PART" onclick="setTrType('partial',this)">✂️ عدد / وزن معين</button>
         </div>
       </div>
       <div id="TR-PARTIAL" style="display:none">
         <div class="fr">
-          <div class="fg" style="margin:0"><label>وزن للتحويل (جرام)</label><input type="number" id="TR-PWT" step="0.001" oninput="calcTrRemain()"></div>
-          <div class="fg" style="margin:0"><label>عدد للتحويل</label><input type="number" id="TR-PCNT" step="0.001" oninput="calcTrRemain()"></div>
+          <div class="fg" style="margin:0" id="TR-PCNT-WRAP"><label>العدد المحوَّل</label><input type="number" id="TR-PCNT" step="1" min="0" oninput="trFromCnt()" style="font-family:monospace;font-weight:800"></div>
+          <div class="fg" style="margin:0"><label>الوزن المحوَّل (جرام)</label><input type="number" id="TR-PWT" step="0.001" oninput="trFromWt()" style="font-family:monospace;font-weight:800"></div>
         </div>
+        <div id="TR-UNIT-HINT" style="font-size:10.5px;color:var(--muted);margin-top:4px"></div>
         <div id="TR-REM" style="display:none;background:var(--s3);border-radius:8px;padding:10px;margin-top:8px;font-size:12px">
           <div style="color:var(--muted);margin-bottom:8px;font-weight:700">المتبقي</div>
           <div style="display:flex;gap:16px;margin-bottom:10px">
             <div>وزن: <b class="num" id="REM-WT">—</b> جرام</div>
             <div>عدد: <b class="num" id="REM-CNT">—</b></div>
           </div>
-          <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">المتبقي يذهب إلى</label>
+          <label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">المتبقي يذهب إلى <span style="font-weight:400">(افتراضياً يبقى في القسم)</span></label>
           <div class="dest-grid" id="REM-DEST"></div>
         </div>
       </div>
@@ -2041,7 +2041,7 @@ async function saveStock(){
       await DB.doc(`stock/${sid}`).set({id:sid,name:r.name,date,weight:r.wt,karat:r.kt,w875,count:+(+r.cnt).toFixed(3),note,by:CU.username,at:ts});
       bal+=w875;
       await DB.doc(`main/${mid}`).set({
-        id:mid,date,type:'وارد استوك',item:r.name,count:+(+r.cnt).toFixed(3),weight:r.wt,karat:r.kt,w875,w1000:+(r.wt*r.kt/1000).toFixed(3),
+        id:mid,date,type:'وارد استوك',item:r.name,count:+(+r.cnt).toFixed(3),weight:r.wt,karat:r.kt,w875,w24:to24(r.wt,r.kt),
         balance:+bal.toFixed(3),note:`[استوك] ${r.name}${r.cnt?' × '+(+(+r.cnt).toFixed(2)):''}${note?' — '+note:''}`,
         time:timeStr,by:CU.username,at:ts+1
       });
@@ -2245,7 +2245,7 @@ async function delStock(sid){
       const mid='m'+nowTs;
       await DB.doc(`main/${mid}`).set({
         id:mid, date:today(), type:'تسوية استوك', weight:s.weight||0, karat:s.karat||875,
-        w875:s.w875, w1000:+((s.weight||0)*(s.karat||875)/1000).toFixed(3),
+        w875:s.w875, w24:to24(s.weight||0,s.karat||875),
         balance:bal-s.w875, note:`حذف من الاستوك: ${s.name}`,
         time:nowTime(), by:CU.username, at:nowTs
       });
@@ -2352,7 +2352,7 @@ async function saveStockTransfer(){
   const mainOutId='m'+nowTs;
   await DB.doc(`main/${mainOutId}`).set({
     id:mainOutId, date, type:'منصرف', item:fromMain?stkTrData.mainItem:name, count:+cnt.toFixed(3), weight:actualWt, karat, w875:wt,
-    w1000:+(actualWt*karat/1000).toFixed(3),
+    w24:to24(actualWt,karat),
     balance:mainBalNow-wt,
     note:`[${fromMain?'بيان':'استوك'}] ${name} → ${DEST_NAMES[dest]||dest}${note?' | '+note:''}`,
     time:timeStr, by:CU.username, at:nowTs-1
@@ -2554,7 +2554,7 @@ async function saveRecovery(){
   const newMainBal=mainBal+wt;
   const mid='m'+nowTs;
   await DB.doc(`main/${mid}`).set({
-    id:mid, date, type:'استرجاع', weight:wt, karat:875, w875:wt, w1000:wt/875*1000,
+    id:mid, date, type:'استرجاع', weight:wt, karat:875, w875:wt, w24:to24(wt,875),
     balance:newMainBal, note:`استرجاع من الفرعية${note?' — '+note:''}`,
     time:timeStr, by:CU.username, at:nowTs+1
   });
@@ -2978,7 +2978,7 @@ async function buildFixPlan(){
         const nwt=+(cnt*nw).toFixed(3);
         upd={weight:nwt};
         if(col==='dept'&&r.takhyeef) upd.w875=+(nwt*(1-r.takhyeef/100)*kt/875).toFixed(3); else upd.w875=+(nwt*kt/875).toFixed(3);
-        if(col==='main') upd.w1000=+(nwt*kt/1000).toFixed(3);
+        if(col==='main') upd.w24=to24(nwt,kt);
       } else {   // أدخلته بالوزن → صحّح العدد
         upd={count:+(wt/nw).toFixed(3)};
       }
@@ -2991,7 +2991,7 @@ async function buildFixPlan(){
     const m=data.main.find(x=>x.id==='m'+ts&&x.type==='وارد استوك');
     if(m&&!plan.find(q=>q.col==='main'&&q.id===m.id)){
       const kt=m.karat||875;
-      plan.push({col:'main',id:m.id,name:p.name,old:m,upd:{weight:p.upd.weight,w875:+(p.upd.weight*kt/875).toFixed(3),w1000:+(p.upd.weight*kt/1000).toFixed(3)},kind:'w'});
+      plan.push({col:'main',id:m.id,name:p.name,old:m,upd:{weight:p.upd.weight,w875:+(p.upd.weight*kt/875).toFixed(3),w24:to24(p.upd.weight,kt)},kind:'w'});
     }
   }
   return plan;
@@ -3239,7 +3239,7 @@ function onMMTypeChange(){
 function calcMM(){
   const wt=parseFloat(id('MM-WT').value)||0, kt=parseFloat(id('MM-KT').value)||875;
   if(!wt)return;
-  const w875=wt*kt/875, w1k=wt*kt/1000;
+  const w875=wt*kt/875, w1k=to24(wt,kt);
   id('MM-875').value=N(w875); id('MM-1K').value=N(w1k);
   const bal=mmMode==='addSub'?calcBal(subMovs):calcBal(mainMovs);
   const type=id('MM-TYPE').value;
@@ -3259,7 +3259,7 @@ async function saveMainMov(){
   if(!date||!wt){toast('er','أدخل التاريخ والوزن');return;}
   if(!(kt>0&&kt<=1000)){toast('er','أدخل عياراً صحيحاً (من 1 إلى 1000)');return;}
   if(mmMode==='addSub') return saveAddSubBalance({date,wt,kt,item,count,note});
-  const w875=wt*kt/875, w1k=wt*kt/1000;
+  const w875=wt*kt/875, w1k=to24(wt,kt);
   const bal=await freshBal('main');
   const nowTs=Date.now();
   const timeStr=nowTime(); // وقت التسجيل الفعلي
@@ -3276,7 +3276,7 @@ async function saveMainMov(){
     if(newBal<-0.001){toast('er','الرصيد غير كافٍ للسلفة');return;}
     const mid='m'+nowTs;
     await DB.doc(`main/${mid}`).set({
-      id:mid, date, type:'سلفة', item, count, weight:wt, karat:kt, w875, w1000:w1k,
+      id:mid, date, type:'سلفة', item, count, weight:wt, karat:kt, w875, w24:w1k,
       balance:newBal, note:fullNote, loanName, loanPurpose,
       time:timeStr, by:CU.username, at:nowTs
     });
@@ -3286,7 +3286,7 @@ async function saveMainMov(){
     if(newBal<-0.001){toast('er','الرصيد غير كافٍ');return;}
     const mid='m'+nowTs;
     await DB.doc(`main/${mid}`).set({
-      id:mid, date, type, item, count, weight:wt, karat:kt, w875, w1000:w1k,
+      id:mid, date, type, item, count, weight:wt, karat:kt, w875, w24:w1k,
       balance:newBal, note:fullNote, time:timeStr, by:CU.username, at:nowTs
     });
     // منصرف فقط يُضاف للفرعية — العباسية خرجت للأبد
@@ -3320,11 +3320,11 @@ async function saveMainMov(){
 
 // إضافة رصيد للفرعية: وارد للرئيسية ← منصرف منها ← وارد للفرعية
 async function saveAddSubBalance({date,wt,kt,item,count,note}){
-  const w875=+(wt*kt/875).toFixed(3), w1k=+(wt*kt/1000).toFixed(3);
+  const w875=+(wt*kt/875).toFixed(3), w1k=to24(wt,kt);
   const ts=Date.now(), timeStr=nowTime();
   const mBal=await freshBal('main'), sBal=await freshBal('sub');
   const inId='m'+ts, outId='m'+(ts+1), subId='s'+(ts+1);
-  const base={date,item,count,weight:wt,karat:kt,w875,w1000:w1k,time:timeStr,by:CU.username};
+  const base={date,item,count,weight:wt,karat:kt,w875,w24:w1k,time:timeStr,by:CU.username};
   await DB.doc(`main/${inId}`).set({...base,id:inId,type:'وارد',balance:+(mBal+w875).toFixed(3),note:`${note||item||'إضافة رصيد'} [للفرعية]`,at:ts});
   await DB.doc(`main/${outId}`).set({...base,id:outId,type:'منصرف',balance:+mBal.toFixed(3),note:`تحويل للخزنة الفرعية${note?' | '+note:''}`,at:ts+1});
   await DB.doc(`sub/${subId}`).set({id:subId,date,type:'وارد',item:item||note||'إضافة رصيد',count,weight:wt,karat:kt,w875,
@@ -3513,7 +3513,7 @@ async function loadDept(dept){
         </div>
         <div style="background:var(--s3);border-radius:6px;padding:4px 10px;border:1px solid var(--ok)44;text-align:center">
           <div class="num" style="font-size:13px;font-weight:900;color:var(--ok)">${N(to999(it.w875))}</div>
-          <div style="font-size:8px;color:var(--ok);font-weight:700">999.9</div>
+          <div style="font-size:8px;color:var(--ok);font-weight:700">24</div>
         </div>
       </div>
       <div>${it.done?`<span class="done-badge">✅ DONE</span>`:`<button class="btn bxs bg2" onclick="markDone('${it.id}','${dept}')">DONE</button>`}</div>
@@ -3583,7 +3583,7 @@ function drTotals(){
   const rs=[...id('DADD-ROWS').querySelectorAll('.dr-r')].map(drRowVal).filter(r=>r.w);
   const W=rs.reduce((s,r)=>s+r.w,0), W8=rs.reduce((s,r)=>s+r.w875,0), C=rs.reduce((s,r)=>s+r.cnt,0);
   id('DADD-TL').textContent=`الإجمالي — ${rs.length} سطر`;
-  id('DADD-TW').textContent=rs.length?N(W):'—'; id('DADD-T875').textContent=rs.length?N(W8):'—'; id('DADD-TC').textContent=C?N3(C):'—';
+  id('DADD-TW').textContent=rs.length?N(W):'—'; id('DADD-T875').innerHTML=rs.length?`${N(W8)}<div style="font-size:10px;color:var(--ok);font-weight:700">24: ${N(to24(W8,875))}</div>`:'—'; id('DADD-TC').textContent=C?N3(C):'—';
 }
 async function saveDeptMulti(){
   const date=id('DADD-DATE').value, note=id('DADD-NOTE').value.trim(), dept=draDept;
@@ -3821,10 +3821,16 @@ function openDeptTr(iid){
   document.querySelectorAll('#MOD-TR .dest-btn').forEach(b=>b.classList.remove('sel'));
   id('TR-PARTIAL').style.display='none';id('TR-REM').style.display='none';
   id('TR-PWT').value='';id('TR-PCNT').value='';id('TR-NOTE').value='';
+  id('TR-PCNT-WRAP').style.display=it.count?'':'none';
+  id('TR-UNIT-HINT').textContent=it.count?`وزن القطعة: ${N((it.weight||0)/it.count)} جرام — اكتب العدد ويُحسب الوزن تلقائياً`:'وزنة بدون عدد — اكتب الوزن المحوَّل';
   // Dest (exclude current)
-  const dests=Object.keys(DEPTS).filter(k=>k!==it.dept).concat(['sub','main']);
-  id('TR-DEST').innerHTML=dests.map(d=>`<button class="dest-btn" onclick="selTrDest('${d}',this,'main')">${DEST_LBL[d]}</button>`).join('');
-  id('REM-DEST').innerHTML=dests.map(d=>`<button class="dest-btn" onclick="selTrDest('${d}',this,'rem')">${DEST_LBL[d]}</button>`).join('');
+  const dests=Object.keys(DEPTS).filter(k=>k!==it.dept).concat(['sub','main','abb']);
+  const LBL={...DEST_LBL,abb:'🏪 العباسية'};
+  id('TR-DEST').innerHTML=dests.map(d=>`<button class="dest-btn" onclick="selTrDest('${d}',this,'main')">${LBL[d]}</button>`).join('');
+  id('REM-DEST').innerHTML=`<button class="dest-btn sel" onclick="selTrDest('${it.dept}',this,'rem')">⏸ يبقى في ${DEPTS[it.dept].name}</button>`+
+    dests.map(d=>`<button class="dest-btn" onclick="selTrDest('${d}',this,'rem')">${LBL[d]}</button>`).join('');
+  trRemDest=it.dept;
+  setTrType('all',id('TRT-ALL'));
   om('MOD-TR');
 }
 
@@ -3839,58 +3845,77 @@ function setTrType(t,el){
   document.querySelectorAll('#MOD-TR .dest-btn[onclick*="setTrType"]').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');
   id('TR-PARTIAL').style.display=t==='partial'?'block':'none';
+  if(t==='all') id('TR-REM').style.display='none'; else calcTrRemain();
 }
-
+function trUnit(){ const it=deptItems.find(d=>d.id===trItemId); return it&&it.count?(it.weight||0)/it.count:0; }
+function trFromCnt(){ const u=trUnit(), n=parseFloat(v('TR-PCNT'))||0; if(u) id('TR-PWT').value=n?+(n*u).toFixed(3):''; calcTrRemain(); }
+function trFromWt(){ const u=trUnit(), w=parseFloat(v('TR-PWT'))||0; if(u) id('TR-PCNT').value=w?+(w/u).toFixed(2):''; calcTrRemain(); }
 function calcTrRemain(){
   const it=deptItems.find(d=>d.id===trItemId);if(!it)return;
   const pw=parseFloat(v('TR-PWT'))||0, pc=parseFloat(v('TR-PCNT'))||0;
   const remW=Math.max(0,(it.weight||0)-pw), remC=Math.max(0,(it.count||0)-pc);
-  id('REM-WT').textContent=N(remW); id('REM-CNT').textContent=N3(remC);
-  id('TR-REM').style.display=(remW>0.001)?'block':'none';
+  id('REM-WT').textContent=N(remW); id('REM-CNT').textContent=it.count?N3(remC):'—';
+  id('TR-REM').style.display=(pw>0&&remW>0.001)?'block':'none';
 }
 
 async function saveDeptTransfer(){
-  const it=deptItems.find(d=>d.id===trItemId);
-  if(!it||!trType||!trDestVal){toast('er','اختر نوع التحويل والوجهة');return;}
+  const snap=await DB.doc(`dept/${trItemId}`).get();
+  const it=snap.exists?snap.data():null;
+  if(!it||!trType||!trDestVal){toast('er','اختر الكمية والوجهة');return;}
   const note=v('TR-NOTE').trim();
-  let tW=it.weight, tC=it.count;
+  let tW=it.weight||0, tC=it.count||0;
   if(trType==='partial'){
     tW=parseFloat(v('TR-PWT'))||0; tC=parseFloat(v('TR-PCNT'))||0;
-    if(!tW&&!tC){toast('er','أدخل وزن أو عدد للتحويل');return;}
-    if(tW>it.weight+0.001){toast('er','الوزن أكبر من المتاح');return;}
+    if(!tW){toast('er','أدخل العدد أو الوزن المحوَّل');return;}
+    if(tW>(it.weight||0)+0.001){toast('er','الوزن أكبر من المتاح');return;}
+    if(it.count&&tC>it.count+0.001){toast('er','العدد أكبر من المتاح');return;}
   }
-  const tW875=tW*it.karat/875;
-  const remW=Math.max(0,(it.weight||0)-tW), remC=Math.max(0,(it.count||0)-tC), remW875=remW*it.karat/875;
+  const ratio=it.weight?tW/it.weight:1;
+  const tW875=+((it.w875||0)*ratio).toFixed(3);                // يحافظ على التحييف
+  const remW=+Math.max(0,(it.weight||0)-tW).toFixed(3), remC=+Math.max(0,(it.count||0)-tC).toFixed(3);
+  const remW875=+Math.max(0,(it.w875||0)-tW875).toFixed(3);
+  const ops=[{action:'set',col:'dept',id:it.id,data:it}];
+  const remDest=(trType==='partial'&&remW>0.001)?(trRemDest||it.dept):null;
 
-  // Delete original
-  await DB.doc(`dept/${trItemId}`).delete();
+  // المتبقي يبقى في نفس القسم ← نعدّل السجل نفسه، غير كده نحذفه
+  if(remDest===it.dept) await DB.doc(`dept/${it.id}`).update({weight:remW,count:remC,w875:remW875});
+  else await DB.doc(`dept/${it.id}`).delete();
 
-  // Create at destination
-  await createAtDest(trDestVal, it, tW, tC, tW875, note);
-
-  // Remainder
-  if(trType==='partial' && remW>0.001){
-    const remDest=trRemDest||it.dept;
-    await createAtDest(remDest, it, remW, remC, remW875, 'متبقي تحويل');
-  }
+  ops.push(...await createAtDest(trDestVal, it, tW, tC, tW875, note, 0));
+  if(remDest&&remDest!==it.dept) ops.push(...await createAtDest(remDest, it, remW, remC, remW875, 'متبقي تحويل', 5));
 
   await log('transfer',it.dept,trDestVal,it.item,tW,tC,it.karat,tW875,note,today());
-  clearCache('dept','sub','main');toast('ok',`✅ تم التحويل إلى ${DEST_LBL[trDestVal]||trDestVal}`);
+  const LBL={...DEST_LBL,abb:'🏪 العباسية'};
+  pushUndo({label:`تحويل ${it.item}: ${DEPTS[it.dept].name} → ${LBL[trDestVal]}`,ops});
+  clearCache('dept','sub','main');
+  toast('ok',`✅ تم تحويل ${it.count?N3(tC)+' قطعة — ':''}${N(tW)} جرام إلى ${LBL[trDestVal]||trDestVal}${remDest?` · المتبقي ${N(remW)} جرام → ${remDest===it.dept?'بقي في القسم':LBL[remDest]}`:''}`);
   cm('MOD-TR');loadDept(it.dept);
+  if(trDestVal==='abb') setTimeout(()=>conf(`🖨️ طباعة إذن التسليم لـ "${it.item}"؟`,()=>printAbbByIds([lastAbbId])),400);
 }
 
-async function createAtDest(dest, it, wt, cnt, w875, note){
+let lastAbbId=null;
+// إنشاء الوزنة في الوجهة — يرجّع عمليات التراجع
+async function createAtDest(dest, it, wt, cnt, w875, note, off=0){
+  const ts=Date.now()+off, timeStr=nowTime(), ops=[];
+  const base={date:today(),item:it.item,count:+(+cnt||0).toFixed(3),weight:+(+wt).toFixed(3),karat:it.karat,w875,by:CU.username,time:timeStr};
   if(dest==='sub'||dest==='main'){
-    const col=dest==='sub'?'sub':'main';
-    const snap=await DB.collection(col).orderBy('at','desc').get();
-    const movs=snap.docs.map(d=>d.data());
-    const bal=calcBal(movs);
-    const rid=(dest==='sub'?'s':'m')+Date.now()+Math.floor(Math.random()*1000);
-    await DB.doc(`${col}/${rid}`).set({id:rid,date:today(),type:'وارد',item:it.item,weight:wt,karat:it.karat,w875,balance:bal+w875,from:it.dept,note,by:CU.username,at:Date.now()});
+    const bal=await freshBal(dest), rid=(dest==='sub'?'s':'m')+ts;
+    await DB.doc(`${dest}/${rid}`).set({...base,id:rid,type:'وارد',balance:+(bal+w875).toFixed(3),from:it.dept,note:note||`من ${DEPTS[it.dept]?.name||it.dept}`,at:ts});
+    ops.push({action:'delete',col:dest,id:rid});
+  } else if(dest==='abb'){
+    const bal=await freshBal('sub'), inId='s'+ts, outId='s'+(ts+1);
+    await DB.doc(`sub/${inId}`).set({...base,id:inId,type:'وارد',balance:+(bal+w875).toFixed(3),from:it.dept,note:`من ${DEPTS[it.dept].name}`,at:ts});
+    await DB.doc(`sub/${outId}`).set({...base,id:outId,type:'عباسية',balance:+bal.toFixed(3),from:it.dept,to:'عباسية',note:note||`${DEPTS[it.dept].name}→عباسية`,at:ts+1});
+    ops.push({action:'delete',col:'sub',id:inId},{action:'delete',col:'sub',id:outId});
+    lastAbbId=outId;
   } else {
-    const nid='di'+Date.now()+Math.floor(Math.random()*1000);
-    await DB.doc(`dept/${nid}`).set({id:nid,dept:dest,item:it.item,weight:wt,count:cnt,karat:it.karat,w875,done:false,by:CU.username,date:today(),at:Date.now()});
+    const nid='di'+ts;
+    const rec={id:nid,dept:dest,item:it.item,weight:base.weight,count:base.count,karat:it.karat,w875,done:false,custom:!!it.custom,note:note||it.note||'',by:CU.username,date:today(),at:ts};
+    if(it.takhyeef) rec.takhyeef=it.takhyeef;
+    await DB.doc(`dept/${nid}`).set(rec);
+    ops.push({action:'delete',col:'dept',id:nid});
   }
+  return ops;
 }
 
 // ================================================================
@@ -4647,19 +4672,20 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised
   <div class="route"><span>🏭 مصنع GOLD ERA</span><i>⟵</i><span class="to">🏪 العباسية</span></div>
 
   <table>
-    <thead><tr><th>#</th><th style="text-align:right">الصنف</th><th>العيار</th><th>العدد</th><th>الوزن (جرام)</th><th>الوزن بعيار 875</th></tr></thead>
+    <thead><tr><th>#</th><th style="text-align:right">الصنف</th><th>العيار</th><th>العدد</th><th>الوزن (جرام)</th><th>بعيار 875</th><th>بعيار 24</th></tr></thead>
     <tbody>${items.map((r,i)=>`<tr>
       <td>${i+1}</td><td class="it">${esc(r.item)}</td><td><span class="kt">${r.karat}</span></td>
-      <td class="n cnt">${fc(r.count)}</td><td class="n">${fmt(r.weight)}</td><td class="n" style="font-weight:800">${fmt(r.w875)}</td></tr>`).join('')}
+      <td class="n cnt">${fc(r.count)}</td><td class="n">${fmt(r.weight)}</td><td class="n" style="font-weight:800">${fmt(r.w875)}</td><td class="n" style="font-weight:800;color:#2E7D4F">${fmt(to24(r.w875,875))}</td></tr>`).join('')}
     </tbody>
     <tfoot><tr><td colspan="3" style="text-align:right">الإجمالي — ${items.length} صنف</td>
-      <td class="n">${fc(T.count)}</td><td class="n">${fmt(T.weight)}</td><td class="n g">${fmt(T.w875)}</td></tr></tfoot>
+      <td class="n">${fc(T.count)}</td><td class="n">${fmt(T.weight)}</td><td class="n g">${fmt(T.w875)}</td><td class="n g" style="color:#2E7D4F">${fmt(to24(T.w875,875))}</td></tr></tfoot>
   </table>
 
-  <div class="cards">
+  <div class="cards" style="grid-template-columns:repeat(4,1fr)">
     <div class="card"><small>إجمالي العدد</small><b>${fc(T.count)}</b></div>
     <div class="card"><small>إجمالي الوزن — جرام</small><b>${fmt(T.weight)}</b></div>
     <div class="card k"><small>الإجمالي بعيار 875</small><b>${fmt(T.w875)}</b></div>
+    <div class="card k"><small>الإجمالي بعيار 24 (999.9)</small><b>${fmt(to24(T.w875,875))}</b></div>
   </div>
   <div class="note">يُثبت هذا الإذن تسليم الأصناف الموضحة أعلاه إلى العباسية، وخصمها نهائياً من خزينة المصنع.</div>
 
@@ -4744,8 +4770,9 @@ function openDamDoc(rows,meta={}){
     </tbody>
     <tfoot><tr><td colspan="3" style="text-align:right">الإجمالي</td><td class="n cl">${T.closed.toLocaleString('en-US')}</td></tr></tfoot>
   </table>
-  <div class="cards" style="grid-template-columns:1fr 1fr">
+  <div class="cards" style="grid-template-columns:1fr 1fr 1fr">
     <div class="card k"><small>الوزن الإجمالي — جرام</small><b>${fmt(T.weight)}</b></div>
+    <div class="card"><small>بعيار 24 (999.9)</small><b>${fmt(to24(T.w875,875))}</b></div>
     <div class="card"><small>إجمالي العدد</small><b>${T.closed.toLocaleString('en-US')}</b></div>
   </div>
   <div class="sign">
@@ -4820,7 +4847,7 @@ function erCalc(){
   const old=erCol==='silver'?(erRec?.w1000||erRec?.weight||0):(erRec?.w875||0);
   const nw=erCol==='silver'?w*k/1000:w*k/875;
   const d=nw-old;
-  id('ER-CALC').innerHTML=`<span>${erCol==='silver'?'بعيار 1000':'بعيار 875'}: <b class="num" style="color:var(--gold)">${N(nw)}</b></span>
+  id('ER-CALC').innerHTML=`<span>${erCol==='silver'?'بعيار 1000':'بعيار 875'}: <b class="num" style="color:var(--gold)">${N(nw)}</b></span>${erCol==='silver'?'':`<span>بعيار 24: <b class="num" style="color:var(--ok)">${N(to24(w,k))}</b></span>`}
     <span>الفرق: <b class="num" style="color:${d>0.0005?'var(--ok)':d<-0.0005?'var(--err)':'var(--muted)'}">${d>0?'+':''}${N(d)}</b></span>`;
 }
 
@@ -4836,7 +4863,7 @@ async function saveEditRec(){
   const note=id('ER-NOTE').value.trim();
   const upd={date,weight:+wt.toFixed(3),karat:kt,note,count:+(+cnt).toFixed(3)};
   if(col==='silver') upd.w1000=+(wt*kt/1000).toFixed(3);
-  else { upd.w875=+(wt*kt/875).toFixed(3); if(col==='main') upd.w1000=+(wt*kt/1000).toFixed(3); }
+  else { upd.w875=+(wt*kt/875).toFixed(3); if(col==='main') upd.w24=to24(wt,kt); }
   if(name) upd[erNameKey(col)]=name;
   if(col==='dept'&&r.takhyeef){ upd.w875=+(wt*(1-r.takhyeef/100)*kt/875).toFixed(3); }
 
@@ -4855,7 +4882,7 @@ async function saveEditRec(){
     if(await syncLinked('sub','s'+ts,d=>d.from==='main',{date,weight:upd.weight,karat:kt,w875:upd.w875,...(name?{item:name}:{}),count:upd.count})) touched.add('sub');
   }
   if(col==='stock'){
-    const mupd={date,weight:upd.weight,karat:kt,w875:upd.w875,w1000:+(wt*kt/1000).toFixed(3),note:`[استوك] ${name}${note?' — '+note:''}`};
+    const mupd={date,weight:upd.weight,karat:kt,w875:upd.w875,w24:to24(wt,kt),note:`[استوك] ${name}${note?' — '+note:''}`};
     if(await syncLinked('main','m'+ts,d=>d.type==='وارد استوك',mupd)) touched.add('main');
   }
   for(const t of touched) await recalcBalances(t);
@@ -5277,9 +5304,12 @@ function esc(s){
 // English numbers with comma separators
 // Force English (Latin) numerals always
 // دوال التحييف — تحويل من 875 لأي عيار
-function to995(w875){ return w875?+(w875*995/875).toFixed(3):0; }
-function to999(w875){ return w875?+(w875*999.9/875).toFixed(3):0; }
-function toKarat(w875,k){ return w875?+(w875*k/875).toFixed(3):0; }
+// وزن 875 ← عيار أعلى: (الوزن × 875) ÷ العيار
+function to995(w875){ return w875?+(w875*875/995).toFixed(3):0; }
+function to999(w875){ return w875?+(w875*875/999.9).toFixed(3):0; }
+function toKarat(w875,k){ return w875?+(w875*875/k).toFixed(3):0; }
+// أي وزن بأي عيار ← عيار 24 (999.9)
+function to24(wt,kt){ return wt?+(wt*(kt||875)/999.9).toFixed(3):0; }
 
 // عرض الأوزان الثلاثة — واضحة وكبيرة
 function wRow(w875){
@@ -5294,12 +5324,12 @@ function wRow(w875){
     </div>
     <div style="text-align:center;background:var(--s3);border-radius:8px;padding:8px 14px;border:1px solid var(--ok)44">
       <div class="num" style="font-weight:900;color:var(--ok);font-size:18px">${N(to999(w875))}</div>
-      <div style="font-size:10px;color:var(--ok);font-weight:700;margin-top:3px;letter-spacing:.5px">K 999.9</div>
+      <div style="font-size:10px;color:var(--ok);font-weight:700;margin-top:3px;letter-spacing:.5px">K 24 (999.9)</div>
     </div>
   </div>`;
 }
 
-const EN = new Intl.NumberFormat('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const EN = new Intl.NumberFormat('en-US', {minimumFractionDigits:3, maximumFractionDigits:3});
 const EN3= new Intl.NumberFormat('en-US', {minimumFractionDigits:0, maximumFractionDigits:3});
 
 function N(n){

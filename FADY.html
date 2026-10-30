@@ -953,6 +953,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">🔥 قسم الحل</div><div class="pgs">الذهب الخام قيد الحل — عيار 875</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('hal')">➕ إضافة أصناف / وزنات</button>
+          <button class="btn bsm" style="background:#3FB95020;color:var(--ok);border:1px solid var(--ok)" onclick="openNextStepAll('hal')">✅ DONE ونقل الكل</button>
         </div>
       </div>
       <div id="HAL-STATS" class="sgrid"></div>
@@ -965,6 +966,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">⚙️ قسم التصنيع</div><div class="pgs">الأصناف قيد التصنيع — العدد يُحسب تلقائياً</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('tam')">➕ إضافة أصناف / وزنات</button>
+          <button class="btn bsm" style="background:#3FB95020;color:var(--ok);border:1px solid var(--ok)" onclick="openNextStepAll('tam')">✅ DONE ونقل الكل</button>
         </div>
       </div>
       <div id="TAM-STATS" class="sgrid"></div>
@@ -980,6 +982,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">🔨 قسم الدمغة</div><div class="pgs">الأصناف قيد الدمغة — العدد يُحسب تلقائياً</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('dam')">➕ إضافة أصناف / وزنات</button>
+          <button class="btn bsm" style="background:#3FB95020;color:var(--ok);border:1px solid var(--ok)" onclick="openNextStepAll('dam')">✅ DONE ونقل الكل</button>
           <button class="btn bp bsm" onclick="printDamSheet()">🖨️ طباعة أعداد الدمغة</button>
         </div>
       </div>
@@ -996,6 +999,8 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div><div class="pgt">📦 قسم التغليف</div><div class="pgs">الأصناف قيد التغليف — DONE عند المطابقة</div></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp bsm" onclick="openDeptMulti('tag')">➕ إضافة أصناف / وزنات</button>
+          <button class="btn bsm" style="background:#3FB95020;color:var(--ok);border:1px solid var(--ok)" onclick="openNextStepAll('tag')">✅ DONE ونقل الكل</button>
+          <button class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="openDeptMulti('tag');setTimeout(()=>document.getElementById('VCH-FILE').click(),150)">📷 من صورة سند</button>
         </div>
       </div>
       <div id="TAG-STATS" class="sgrid"></div>
@@ -1829,7 +1834,12 @@ td.num, th.num { display: table-cell; text-align: right; }
           </tr></tfoot>
         </table>
       </div>
-      <div style="margin-top:10px"><button type="button" class="btn bs bsm" onclick="drAddRow()">➕ إضافة سطر آخر</button></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button type="button" class="btn bs bsm" onclick="drAddRow()">➕ إضافة سطر آخر</button>
+        <button type="button" class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="document.getElementById('VCH-FILE').click()">📷 قراءة من صورة سند</button>
+        <input type="file" id="VCH-FILE" accept="image/*" style="display:none" onchange="importVoucher(this.files[0]);this.value=''">
+        <span id="VCH-ST" style="font-size:11.5px;color:var(--muted)"></span>
+      </div>
       <div class="fg" style="margin-top:14px"><label>طريقة الإضافة *</label>
         <div class="dest-grid" style="grid-template-columns:1fr 1fr 1fr" id="DADD-MODE">
           <button type="button" class="dest-btn" data-m="sub" onclick="setDrMode('sub',this)">💼 عبر الخزنة الفرعية<div style="font-size:9.5px;opacity:.75;font-weight:500">وارد للفرعية ← منصرف للقسم</div></button>
@@ -1849,7 +1859,7 @@ td.num, th.num { display: table-cell; text-align: right; }
       <div id="NEXT-INFO" style="background:var(--s2);border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:14px"></div>
       <div id="NEXT-BTNS" style="display:flex;flex-direction:column;gap:8px"></div>
       <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn bs bsm" style="flex:1" onclick="cm('MOD-NEXT');openDeptTr(nextItemId)">↗️ وجهة أخرى / تحويل جزئي</button>
+        <button class="btn bs bsm" style="flex:1" id="NEXT-OTHER" onclick="cm('MOD-NEXT');openDeptTr(nextItemId)">↗️ وجهة أخرى / تحويل جزئي</button>
         <button class="btn bs bsm" style="flex:1" onclick="cm('MOD-NEXT')">⏸ ابقها في القسم</button>
       </div>
     </div>
@@ -1908,12 +1918,9 @@ td.num, th.num { display: table-cell; text-align: right; }
 // PRODUCT CATALOG — من جدول Station
 // ================================================================
 const CATALOG = [
-  {no:1,  name:'جنيه',            karat:875,   w24:8},
-  {no:2,  name:'نصف جنيه',        karat:875,   w24:4},
-  {no:3,  name:'ربع جنيه',        karat:875,   w24:2},
-  {no:5,  name:'1 جرام',          karat:999.9, w24:1},
   {no:6,  name:'ربع جرام',        karat:999.9, w24:0.25},
   {no:7,  name:'نصف جرام',        karat:999.9, w24:0.5},
+  {no:5,  name:'1 جرام',          karat:999.9, w24:1},
   {no:8,  name:'2.5 جرام',        karat:999.9, w24:2.5},
   {no:9,  name:'5 جرام',          karat:999.9, w24:5},
   {no:10, name:'10 جرام',         karat:999.9, w24:10},
@@ -1925,10 +1932,13 @@ const CATALOG = [
   {no:16, name:'58.33 جرام',      karat:999.9, w24:58.33},
   {no:17, name:'100 جرام',        karat:999.9, w24:100},
   {no:18, name:'116.70 جرام',     karat:999.9, w24:116.7},
+  {no:25, name:'250 جرام',        karat:999.9, w24:250},
+  {no:23, name:'500 جرام',        karat:999.9, w24:500},
   {no:19, name:'1 كيلو',          karat:999.9, w24:1000},
   {no:21, name:'1 كيلو عيار 995', karat:995,   w24:995.1},
-  {no:23, name:'500 جرام',        karat:999.9, w24:500},
-  {no:25, name:'250 جرام',        karat:999.9, w24:250},
+  {no:3,  name:'ربع جنيه',        karat:875,   w24:2},
+  {no:2,  name:'نصف جنيه',        karat:875,   w24:4},
+  {no:1,  name:'جنيه',            karat:875,   w24:8},
   {no:27, name:'ربع كيلو فضة',    karat:1000,  w24:250},
   {no:29, name:'نصف كيلو فضة',    karat:1000,  w24:500},
   {no:31, name:'كيلو فضة',        karat:1000,  w24:1000},
@@ -1940,6 +1950,8 @@ const CAT_ALIAS={'جرام':'1 جرام','2.5جرام':'2.5 جرام','5جرام
   'كيلو 999.9':'1 كيلو','كيلو 995':'1 كيلو عيار 995'};
 const catName=n=>CAT_ALIAS[n]||n;
 const catFind=n=>CATALOG.find(c=>c.name===catName(n));
+// ترتيب العرض حسب الكتالوج (ربع جرام أولاً ... ثم الكيلو)
+const catRank=n=>{ const i=CATALOG.findIndex(c=>c.name===catName(n)); return i<0?999:i; };
 const SILVER_CAT = [
   {no:27, name:'ربع كيلو فضة', karat:1000, w21:250, w24:250},
   {no:29, name:'نصف كيلو فضة', karat:1000, w21:500, w24:500},
@@ -2165,7 +2177,7 @@ async function loadStockTable(){
     grouped[key].totalCnt +=s.count||0;
     grouped[key].items.push(s);
   }
-  const rows=Object.values(grouped);
+  const rows=Object.values(grouped).sort((a,b)=>catRank(a.name)-catRank(b.name));
   const grandW875=rows.reduce((s,r)=>s+r.totalW875,0);
   const grandWt  =rows.reduce((s,r)=>s+r.totalWt,0);
   const grandCnt =rows.reduce((s,r)=>s+r.totalCnt,0);
@@ -2253,7 +2265,7 @@ async function loadBayan(){
     G[k]=G[k]||{src:'main',name:m.item||'',karat:m.karat||875,weight:0,w875:0,count:0};
     G[k].weight+=sg*(m.weight||0); G[k].w875+=sg*(m.w875||0); G[k].count+=sg*(m.count||0);
   });
-  bayanGroups=Object.values(G).filter(g=>Math.abs(g.w875)>0.0005).sort((a,b)=>(b.src==='main')-(a.src==='main')||b.w875-a.w875);
+  bayanGroups=Object.values(G).filter(g=>Math.abs(g.w875)>0.0005).sort((a,b)=>catRank(a.name)-catRank(b.name)||b.w875-a.w875);
   const tot=bayanGroups.reduce((s,g)=>s+g.w875,0), bal=calcBal(main);
   const DB_=[['sub','💼 الفرعية','var(--inf)'],['hal','🔥 الحل','var(--hal)'],['tam','⚙️ التصنيع','var(--tam)'],['dam','🔨 الدمغة','var(--dam)'],['tag','📦 التغليف','var(--tag)'],['abb','🏪 العباسية','#E74C3C']];
   const el=id('STOCK-TABLE-BAYAN');
@@ -2457,7 +2469,6 @@ async function saveStockTransfer(){
     pushUndo({label:`تحويل استوك للعباسية: ${name}`, ops:undoOps});
     toast('ok',`🏪 "${name}" — الاستوك → الفرعية → العباسية`);
     const _abbId=subOutId;
-    setTimeout(()=>conf(`🖨️ طباعة إذن التسليم لتحويل "${name}" للعباسية؟`,()=>printAbbByIds([_abbId])),400);
 
   } else {
     // قسم — منصرف من الفرعية للقسم
@@ -3677,7 +3688,7 @@ async function loadDept(dept){
 let draDept=null, drMode=null;
 function setDrMode(m,el){ drMode=m; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.toggle('sel',b===el)); }
 function openDeptMulti(dept){
-  draDept=dept; drMode=null; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.remove('sel'));
+  draDept=dept; drMode=null; if(id('VCH-ST')) id('VCH-ST').textContent=''; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.remove('sel'));
   id('DADD-TITLE').textContent=`➕ إضافة لقسم ${DEPTS[dept].icon} ${DEPTS[dept].name}`;
   id('DADD-DATE').value=today(); id('DADD-NOTE').value='';
   id('DADD-ROWS').innerHTML=''; drAddRow(); drTotals();
@@ -3718,7 +3729,8 @@ function drWt(inp){ const tr=inp.closest('tr'),u=drU(tr),w=parseFloat(inp.value)
 function drRowVal(tr){
   const c=drCat(tr), w=parseFloat(tr.querySelector('.d-wt').value)||0, k=parseFloat(tr.querySelector('.d-kt').value)||0;
   const tk=k>=995?(parseFloat(tr.querySelector('.d-tk').value)||0):0;
-  return {c,tr,name:c?c.name:tr.querySelector('.d-name').value.trim(),cnt:c?(parseFloat(tr.querySelector('.d-cnt').value)||0):0,w,k,tk,
+  const nmv=tr.querySelector('.d-name').value.trim();
+  return {c,tr,name:c?c.name:(nmv.startsWith('⚠️')?'':nmv),cnt:c?(parseFloat(tr.querySelector('.d-cnt').value)||0):0,w,k,tk,
     w875:w&&k?+(w*(1-tk/100)*k/875).toFixed(3):0};
 }
 function drCalc(el){
@@ -3774,6 +3786,120 @@ async function saveDeptMulti(){
     cm('MOD-DADD'); loadDept(dept);
   }catch(e){ console.error(e); toast('er','حدث خطأ أثناء الحفظ'); }
   finally{ btn.disabled=false; btn.textContent='💾 حفظ الكل'; }
+}
+
+// ================================================================
+// قراءة سند تحويل من صورة (OCR) — الصنف والعدد، والوزن يُحسب من الكتالوج
+// ================================================================
+let tessP=null;
+function loadTess(){
+  if(window.Tesseract) return Promise.resolve();
+  if(tessP) return tessP;
+  tessP=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    s.onload=ok;s.onerror=()=>{tessP=null;no(new Error('tesseract'));};document.head.appendChild(s);});
+  return tessP;
+}
+function fileToImg(file){ return new Promise((ok,no)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>ok(im); im.onerror=no; im.src=u; }); }
+// يكتشف خطوط الجدول ويقسّم الصورة لصفوف وخانات
+function detectTable(img){
+  const sc=Math.min(3,Math.max(1,1500/img.width));
+  const W=Math.round(img.width*sc), H=Math.round(img.height*sc);
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,W,H); cx.drawImage(img,0,0,W,H);
+  const px=cx.getImageData(0,0,W,H).data, dk=new Uint8Array(W*H);
+  for(let i=0;i<W*H;i++){ const l=0.3*px[i*4]+0.59*px[i*4+1]+0.11*px[i*4+2]; dk[i]=l<150?1:0; }
+  const hl=[];
+  for(let y=0;y<H;y++){ let run=0,mx=0; for(let x=0;x<W;x++){ if(dk[y*W+x]){run++; if(run>mx)mx=run;} else run=0; } if(mx>=0.3*W) hl.push(y); }
+  const lines=[]; hl.forEach(y=>{ const L=lines[lines.length-1]; if(L&&y-L[1]<=2) L[1]=y; else lines.push([y,y]); });
+  const bands=[];
+  for(let i=0;i<lines.length-1;i++){
+    const a=lines[i][1]+1, b=lines[i+1][0]-1, h=b-a+1;
+    if(h<14*sc||h>85*sc) continue;
+    const vx=[];
+    for(let x=0;x<W;x++){ let c=0; for(let y=a;y<=b;y++) c+=dk[y*W+x]; if(c>=0.8*h) vx.push(x); }
+    const seps=[]; vx.forEach(x=>{ const S=seps[seps.length-1]; if(S&&x-S[1]<=2) S[1]=x; else seps.push([x,x]); });
+    if(seps.length<4) continue;
+    const cells=[]; for(let j=0;j<seps.length-1;j++){ const x0=seps[j][1]+1, x1=seps[j+1][0]-1; if(x1-x0>12*sc) cells.push({x0,x1,y0:a,y1:b}); }
+    if(cells.length>=4) bands.push(cells);
+  }
+  return {cv,bands,sc};
+}
+function cropCell(cv,c){
+  const pad=3, w=c.x1-c.x0-2*pad, h=c.y1-c.y0-2*pad, k=2, m=12;
+  const o=document.createElement('canvas'); o.width=w*k+2*m; o.height=h*k+2*m;
+  const ox=o.getContext('2d'); ox.fillStyle='#fff'; ox.fillRect(0,0,o.width,o.height);
+  ox.imageSmoothingQuality='high'; ox.drawImage(cv,c.x0+pad,c.y0+pad,w,h,m,m,w*k,h*k);
+  return o;
+}
+const numOf=t=>{ const m=String(t||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,'.').match(/\d+(\.\d+)?/); return m?parseFloat(m[0]):NaN; };
+const KT_OF={18:750,21:875,24:999.9};
+function matchItem(kt,wt,cnt,name){
+  const gold=CATALOG.filter(c=>!c.name.includes('فضة')&&Math.abs(c.karat-kt)<1);
+  if(cnt>0&&wt>0){
+    const u=wt/cnt; let best=null,bd=1e9;
+    gold.forEach(c=>{ const d=Math.abs(c.w24-u)/c.w24; if(d<bd){bd=d;best=c;} });
+    if(best&&bd<0.03) return best;
+  }
+  const n=String(name||'');
+  if(n.includes('جنيه')) return CATALOG.find(c=>c.name===(n.includes('نصف')?'نصف جنيه':n.includes('ربع')?'ربع جنيه':'جنيه'));
+  const x=numOf(n.replace(/^[^\d]*?(\d)/,'$1'));
+  if(x>0) return gold.find(c=>Math.abs(c.w24-x)<0.006)||null;
+  return null;
+}
+async function importVoucher(file){
+  if(!file) return;
+  const st=id('VCH-ST'); const say=t=>st.textContent=t;
+  try{
+    say('⏳ تحميل أداة القراءة (أول مرة فقط)...');
+    await loadTess();
+    const img=await fileToImg(file);
+    say('⏳ تحليل الجدول...');
+    const {cv,bands}=detectTable(img);
+    if(bands.length<2){ say('⚠️ لم أتعرف على جدول في الصورة — صوّرها مستقيمة وواضحة'); return; }
+    const wNum=await Tesseract.createWorker('eng',1);
+    await wNum.setParameters({tessedit_pageseg_mode:'7',tessedit_char_whitelist:'0123456789.,'});
+    const wAra=await Tesseract.createWorker(['ara','eng'],1);
+    await wAra.setParameters({tessedit_pageseg_mode:'7'});
+    const T=async(w,c)=>(await w.recognize(cropCell(cv,c))).data.text.trim();
+    // الأعمدة من الهيدر — وإلا بالترتيب من اليمين: كود، اسم، عيار، وزن، عدد
+    const head=bands[0]; const n=head.length; const role={};
+    for(let i=0;i<n;i++){ const t=await T(wAra,head[i]);
+      if(/عدد/.test(t)) role.cnt=i; else if(/وزن/.test(t)) role.wt=i; else if(/عيار/.test(t)) role.kt=i; else if(/اسم|مجموع|صنف/.test(t)) role.name=i; else if(/كود/.test(t)) role.code=i; }
+    if([role.cnt,role.wt,role.kt].some(v2=>v2===undefined)){ role.code=n-1; role.name=n-2; role.kt=n-3; role.wt=n-4; role.cnt=n-5; }
+    const out=[];
+    for(let r=1;r<bands.length;r++){
+      const B=bands[r]; if(B.length!==n) continue;
+      say(`⏳ قراءة السطر ${r} من ${bands.length-1}...`);
+      const ktRaw=numOf(await T(wNum,B[role.kt])), wt=numOf(await T(wNum,B[role.wt])), cnt=Math.round(numOf(await T(wNum,B[role.cnt])));
+      const name=role.name!==undefined?await T(wAra,B[role.name]):'';
+      if(!(cnt>0)&&!(wt>0)) continue;
+      const kt=KT_OF[ktRaw]||(ktRaw>100?ktRaw:875);
+      const c=matchItem(kt,wt,cnt,name);
+      out.push({c,kt,wt,cnt,name});
+    }
+    await wNum.terminate(); await wAra.terminate();
+    if(!out.length){ say('⚠️ لم أقرأ أي سطر — جرّب صورة أوضح'); return; }
+    out.sort((a,b)=>(a.c?catRank(a.c.name):900)-(b.c?catRank(b.c.name):900));
+    // املأ الجدول (يحذف الأسطر الفاضية)
+    [...id('DADD-ROWS').querySelectorAll('.dr-r')].forEach(tr=>{ if(!parseFloat(tr.querySelector('.d-wt').value)) tr.remove(); });
+    let warn=0;
+    for(const o of out){
+      drAddRow(); const rs=id('DADD-ROWS').querySelectorAll('.dr-r'); const tr=rs[rs.length-1];
+      if(o.c){
+        tr.querySelector('.d-item').value=String(CATALOG.indexOf(o.c)); drItem(tr.querySelector('.d-item'));
+        tr.querySelector('.d-cnt').value=o.cnt; drCnt(tr.querySelector('.d-cnt'));
+        const calc=o.cnt*o.c.w24;
+        if(o.wt>0&&Math.abs(calc-o.wt)>Math.max(0.01,calc*0.01)){ warn++;
+          tr.querySelector('.d-name').style.display=''; tr.querySelector('.d-name').value=`⚠️ وزن السند ${o.wt}`; tr.style.background='#C8983018'; }
+      } else {
+        warn++; tr.querySelector('.d-name').value=o.name||`وزنة عيار ${o.kt}`;
+        tr.querySelector('.d-kt').value=o.kt; tr.querySelector('.d-wt').value=o.wt||''; drWt(tr.querySelector('.d-wt'));
+        tr.style.background='#E05C5018';
+      }
+    }
+    drNum(); drTotals();
+    say(`✅ تمت قراءة ${out.length} سطر${warn?` — راجع ${warn} سطر مظلل`:''}. راجع الأعداد ثم اختر طريقة الإضافة واحفظ.`);
+  }catch(e){ console.error(e); say('⚠️ تعذّرت القراءة — تحقق من الإنترنت وجرّب مرة أخرى'); }
 }
 
 // ── بعد DONE: اقتراح القسم التالي ──
@@ -3893,16 +4019,46 @@ async function markDone(iid, dept){
   await loadDept(dept);
   if(it) openNextStep(iid,dept);
 }
+let nextBulk=null;
+async function openNextStepAll(dept){
+  clearCache('dept'); await loadDept(dept);
+  const items=deptItems.filter(d=>d.dept===dept);
+  if(!items.length){ toast('er','لا توجد أصناف في القسم'); return; }
+  nextBulk=items.map(d=>d.id); nextItemId=null;
+  const W=items.reduce((s,d)=>s+(d.weight||0),0), W8=items.reduce((s,d)=>s+(d.w875||0),0), C=items.reduce((s,d)=>s+(d.count||0),0);
+  id('NEXT-INFO').innerHTML=`<b>كل أصناف ${DEPTS[dept].icon} ${DEPTS[dept].name}</b> — ${items.length} صنف
+    <div style="margin-top:4px">الوزن <b class="num">${N(W)}</b> · 875: <b class="num">${N(W8)}</b>${C?` · العدد <b class="num">${N3(C)}</b>`:''}</div>
+    <div style="color:var(--muted);font-size:11px;margin-top:3px">${items.map(d=>esc(d.item)).slice(0,8).join('، ')}${items.length>8?'…':''}</div>`;
+  id('NEXT-BTNS').innerHTML=(NEXT_STEPS[dept]||[]).map((d,i)=>`<button class="btn ${i===0?'bp':'bs'}" style="padding:12px;font-size:14px;justify-content:center" onclick="doneMove('${d}')">${i===0?'⬅️ ':''}نقل الكل إلى ${NEXT_LBL[d]}</button>`).join('');
+  id('NEXT-OTHER').style.display='none';
+  om('MOD-NEXT');
+}
 function openNextStep(iid,dept){
   const it=deptItems.find(d=>d.id===iid); if(!it) return;
-  nextItemId=iid;
+  nextItemId=iid; nextBulk=null; id('NEXT-OTHER').style.display='';
   id('NEXT-INFO').innerHTML=`<b>${esc(it.item)}</b> · <span class="num">${N(it.weight)}</span> جرام · عيار ${it.karat}${it.count?` · عدد <span class="num">${N3(it.count)}</span>`:''}<div style="color:var(--muted);font-size:11px;margin-top:3px">من ${DEPTS[dept].icon} ${DEPTS[dept].name}</div>`;
   id('NEXT-BTNS').innerHTML=(NEXT_STEPS[dept]||[]).map((d,i)=>`<button class="btn ${i===0?'bp':'bs'}" style="padding:12px;font-size:14px;justify-content:center" onclick="doneMove('${d}')">${i===0?'⬅️ ':''}${NEXT_LBL[d]}${i===0?' <span style="font-size:10px;opacity:.75">(الخطوة التالية)</span>':''}</button>`).join('');
   om('MOD-NEXT');
 }
 async function doneMove(dest){
-  const snap=await DB.doc(`dept/${nextItemId}`).get(); if(!snap.exists){ cm('MOD-NEXT'); return; }
-  const it=snap.data(); const ts=Date.now(), timeStr=nowTime(), ops=[{action:'set',col:'dept',id:it.id,data:it}];
+  const ids=nextBulk||[nextItemId]; const base0=Date.now(), allOps=[]; let dept=null, n=0, W=0;
+  cm('MOD-NEXT');
+  if(ids.length>1) toast('in',`⏳ جاري نقل ${ids.length} صنف...`);
+  for(const [i,iid] of ids.entries()){
+    const snap=await DB.doc(`dept/${iid}`).get(); if(!snap.exists) continue;
+    const it=snap.data(); dept=it.dept; n++; W+=it.weight||0;
+    if(!it.done) await DB.doc(`dept/${iid}`).update({done:true});
+    allOps.push(...await moveDoneItem({...it,done:true},dest,base0+i*5,it));
+  }
+  if(!n) return;
+  pushUndo({label:n>1?`نقل ${n} صنف: ${DEPTS[dept].name} → ${NEXT_LBL[dest]}`:`${DEPTS[dept].name} → ${NEXT_LBL[dest]}`,ops:allOps});
+  clearCache('dept','sub','main');
+  toast('ok',n>1?`✅ تم نقل ${n} صنف (${N(W)} جرام) إلى ${NEXT_LBL[dest]}`:`✅ انتقل إلى ${NEXT_LBL[dest]}`);
+  nextBulk=null;
+  await loadDept(dept);
+}
+async function moveDoneItem(it,dest,ts,orig){
+  const timeStr=nowTime(), ops=[{action:'set',col:'dept',id:it.id,data:orig||it}];
   const base={date:today(),item:it.item,count:it.count||0,weight:it.weight,karat:it.karat,w875:it.w875,by:CU.username,time:timeStr};
   await DB.doc(`dept/${it.id}`).delete();
   if(DEPTS[dest]){
@@ -3921,12 +4077,7 @@ async function doneMove(dest){
     ops.push({action:'delete',col:'sub',id:inId},{action:'delete',col:'sub',id:outId});
   }
   await log('transfer',it.dept,dest,it.item,it.weight,it.count||0,it.karat,it.w875,'بعد DONE',today());
-  pushUndo({label:`${it.item}: ${DEPTS[it.dept].name} → ${NEXT_LBL[dest]}`,ops});
-  clearCache('dept','sub','main');
-  cm('MOD-NEXT');
-  toast('ok',`✅ ${it.item} انتقل إلى ${NEXT_LBL[dest]}`);
-  await loadDept(it.dept);
-  if(dest==='abb') setTimeout(()=>conf(`🖨️ طباعة إذن التسليم لـ "${it.item}"؟`,()=>printAbbByIds(['s'+(ts+1)])),400);
+  return ops;
 }
 
 let addMode='item';
@@ -4157,7 +4308,6 @@ async function saveDeptTransfer(){
   clearCache('dept','sub','main');
   toast('ok',`✅ تم تحويل ${it.count?N3(tC)+' قطعة — ':''}${N(tW)} جرام إلى ${LBL[trDestVal]||trDestVal}${remDest?` · المتبقي ${N(remW)} جرام → ${remDest===it.dept?'بقي في القسم':LBL[remDest]}`:''}`);
   cm('MOD-TR');loadDept(it.dept);
-  if(trDestVal==='abb') setTimeout(()=>conf(`🖨️ طباعة إذن التسليم لـ "${it.item}"؟`,()=>printAbbByIds([lastAbbId])),400);
 }
 
 let lastAbbId=null;
@@ -4902,7 +5052,7 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised
     if(!g[k]) g[k]={item:m.item||'—',karat:m.karat||875,count:0,weight:0,w875:0,ops:0};
     g[k].count+=itemCount(m); g[k].weight+=(m.weight||0); g[k].w875+=(m.w875||0); g[k].ops++;
   });
-  const items=Object.values(g).sort((a,b)=>b.w875-a.w875);
+  const items=Object.values(g).sort((a,b)=>catRank(a.item)-catRank(b.item)||b.w875-a.w875);
   const T={count:0,weight:0,w875:0}; items.forEach(i=>{T.count+=i.count;T.weight+=i.weight;T.w875+=i.w875;});
   const fmt=n=>(+n).toLocaleString('en-US',{minimumFractionDigits:3,maximumFractionDigits:3});
   const fc=n=>{n=+n;return n?(Math.abs(n-Math.round(n))<0.01?Math.round(n).toLocaleString('en-US'):n.toFixed(2)):'—';};
@@ -4995,7 +5145,7 @@ async function printDamSheet(){
   const rows=Object.values(g).map(r=>{
     r.closed=r.hasCnt?Math.max(0,Math.round(r.count-1)):null;
     return r;
-  }).sort((a,b)=>(b.hasCnt-a.hasCnt)||b.w875-a.w875);
+  }).sort((a,b)=>catRank(a.item)-catRank(b.item)||b.w875-a.w875);
   askDocNo('dam',`${rows.length} صنف · عدد ${rows.reduce((s,r)=>s+(r.closed||0),0).toLocaleString('en-US')}`,
     (no,win)=>openDamDoc(rows,{...no,win}));
 }

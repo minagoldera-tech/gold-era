@@ -716,6 +716,7 @@ td.num, th.num { display: table-cell; text-align: right; }
     <div class="tab" onclick="showTab('log')">📋 السجل</div>
     <div class="tab" onclick="showTab('arc')">🗂 الأرشيف</div>
     <div class="tab" onclick="showTab('aud')">🧮 المراجعة</div>
+    <div class="tab" onclick="showTab('ops')">↩️ العمليات</div>
     <div class="tab" onclick="showTab('abb')">🏪 العباسية</div>
     <div class="tab" onclick="showTab('ovr')">📊 نظرة عامة</div>
     <div class="tab" onclick="showTab('ref')">🔍 المرجع</div>
@@ -1131,6 +1132,20 @@ td.num, th.num { display: table-cell; text-align: right; }
         <button class="btn bs bsm" onclick="id('LOSS-D1').value='';id('LOSS-D2').value='';loadLoss()">↺ الكل</button>
       </div>
       <div class="tc"><div id="LOSS-TABLE"></div></div>
+    </div>
+
+    <!-- OPERATIONS -->
+    <div id="pg-ops" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">↩️ سجل العمليات — تعديل أو تراجع عن أي عملية</div><div class="pgs">كل عملية في السيستم محفوظة ويمكن التراجع عنها أو تعديلها في أي وقت ومن أي جهاز</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <input class="si" id="OPS-Q" placeholder="🔍 بحث في العمليات..." oninput="renderOps()" style="width:220px">
+        <input type="date" class="si" id="OPS-D" onchange="renderOps()" style="width:150px">
+        <select class="si" id="OPS-ST" onchange="renderOps()" style="width:140px"><option value="">كل العمليات</option><option value="0">فعّالة</option><option value="1">تم التراجع عنها</option></select>
+        <button class="btn bs bsm" onclick="loadOps(true)">🔄</button>
+      </div>
+      <div class="tc"><div id="OPS-TABLE"></div></div>
     </div>
 
     <!-- AUDIT -->
@@ -2258,7 +2273,7 @@ async function loadStockTable(){
         <td class="num" style="font-size:12px;color:var(--gold)">${N(s.w875)}</td>
         <td class="num" style="font-size:12px">${s.count?N3(s.count):'—'}</td>
         <td style="font-size:11px;color:var(--muted)">${s.note||'—'}</td>
-        <td style="padding:7px 14px;white-space:nowrap"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('stock','${s.id}')">✏️</button> <button class="btn bxs bd2" onclick="delStock('${s.id}')">🗑</button></td>
+        <td style="padding:7px 14px;white-space:nowrap"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('stock','${s.id}')">✏️</button><button class="btn bxs bs" title="تراجع عن العملية" onclick="undoByRecord('stock','${s.id}')">↩️</button> <button class="btn bxs bd2" onclick="delStock('${s.id}')">🗑</button></td>
       </tr>`;
     });
     html+=`</tbody></table></div></div>`;
@@ -2542,7 +2557,7 @@ function renderSubTable(){
       <td class="num">${N(m.w875)}</td>
       <td class="num" style="font-weight:800;color:var(--gold)">${N(m.balance)}</td>
       <td><span class="b bbl" style="font-size:9px">${DEST_LBL[m.from||m.to]||m.from||m.to||'—'}</span></td>
-      <td style="white-space:nowrap"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('sub','${m.id}')">✏️</button> <button class="btn bxs bd2" onclick="delSub('${m.id}')">🗑</button></td>
+      <td style="white-space:nowrap"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('sub','${m.id}')">✏️</button><button class="btn bxs bs" title="تراجع عن العملية" onclick="undoByRecord('sub','${m.id}')">↩️</button> <button class="btn bxs bd2" onclick="delSub('${m.id}')">🗑</button></td>
     </tr>`).join('')
   }</tbody></table>`:'<div class="empty"><span class="eic">📭</span></div>';
 }
@@ -2582,6 +2597,7 @@ async function saveSubAbbasiya(){
     weight:wt, karat:875, w875:wt, balance:newBal,
     to:'عباسية', note, time:timeStr, by:CU.username, at:nowTs
   });
+  pushUndo({label:`صرف للعباسية من الفرعية: ${N(wt)} جرام`,ops:[{action:'delete',col:'sub',id:sid}]});
   clearCache('sub');
   toast('ok',`🏪 تم الصرف للعباسية — ${N(wt)} جرام من الفرعية`);
   cm('MOD-SUB-ABB');
@@ -2643,6 +2659,7 @@ async function saveRecovery(){
     balance:newMainBal, note:`استرجاع من الفرعية${note?' — '+note:''}`,
     time:timeStr, by:CU.username, at:nowTs+1
   });
+  pushUndo({label:`استرجاع ${N(wt)} جرام من الفرعية للرئيسية`,ops:[{action:'delete',col:'sub',id:sid},{action:'delete',col:'main',id:mid}]});
   clearCache('main','sub');
   toast('ok',`↩️ تم الاسترجاع — ${N(wt)} جرام → الخزنة الرئيسية`);
   cm('MOD-RECOVERY');
@@ -2662,6 +2679,10 @@ firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
 
 // ── DB wrapper يحاكي نفس الواجهة القديمة ──
+// ربط كل السجلات التي تُنشأ في نفس العملية برقم واحد (للتراجع والتعديل المرتبط)
+const OP_COLS=new Set(['main','sub','dept','stock','silver','loss']);
+let pendingOp=null, pendingAt=0;
+function curOpId(){ const t=Date.now(); if(!pendingOp||t-pendingAt>20000){ pendingOp='op'+t+Math.random().toString(36).slice(2,5); } pendingAt=t; return pendingOp; }
 const DB = {
   doc: (path) => {
     const parts = path.split('/');
@@ -2671,7 +2692,8 @@ const DB = {
                             exists: snap.exists,
                             data:   () => snap.exists ? {id: snap.id, ...snap.data()} : null
                           })),
-      set:    (data, opts={}) => opts.merge ? ref.set(data, {merge:true}) : ref.set(data),
+      set:    (data, opts={}) => { if(OP_COLS.has(parts[0])&&data&&typeof data==='object'&&!data.opId) data={...data,opId:curOpId()};
+                                 return opts.merge ? ref.set(data, {merge:true}) : ref.set(data); },
       update: (data)   => ref.update(data),
       delete: ()       => ref.delete(),
     };
@@ -2777,7 +2799,7 @@ async function seedData(){
 // ================================================================
 // RESET DATA
 // ================================================================
-const RESET_COLS={snap:'سجل الإجمالي اليومي',loss:'الخسية',main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
+const RESET_COLS={ops:'سجل العمليات',snap:'سجل الإجمالي اليومي',loss:'الخسية',main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
 
 // مقارنة مرنة: تتجاهل المسافات وعلامات الاتجاه والتشكيل واختلاف ى/ي
 function normAr(t){
@@ -2937,7 +2959,7 @@ function logout(){
 // ================================================================
 // TABS
 // ================================================================
-const TAB_LOADERS={aud:()=>loadAudit(),loss:()=>loadLoss(),arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
+const TAB_LOADERS={ops:()=>loadOps(),aud:()=>loadAudit(),loss:()=>loadLoss(),arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
 
 let curTab='dash';
 function showTab(t){
@@ -3257,7 +3279,7 @@ function renderMainTable(){
           ? `<span style="color:var(--warn)">📋 ${m.loanName||''}</span>${m.loanPurpose?' — '+m.loanPurpose:''}`
           : (m.note||'—')
       }</td>
-      <td style="white-space:nowrap"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('main','${m.id}')">✏️</button> <button class="btn bxs bd2" onclick="delMain('${m.id}')">🗑</button></td>
+      <td style="white-space:nowrap"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('main','${m.id}')">✏️</button><button class="btn bxs bs" title="تراجع عن العملية" onclick="undoByRecord('main','${m.id}')">↩️</button> <button class="btn bxs bd2" onclick="delMain('${m.id}')">🗑</button></td>
     </tr>`).join('')
   }</tbody></table>`:'<div class="empty"><span class="eic">📭</span><p>لا يوجد حركات</p></div>';
 }
@@ -3694,7 +3716,7 @@ async function loadDept(dept){
       <div>${it.done?`<span class="done-badge">✅ DONE</span>`:`<button class="btn bxs bg2" onclick="markDone('${it.id}','${dept}')">DONE</button>`}</div>
       <div style="display:flex;gap:4px">
         <button class="btn bxs" style="background:#2980B920;color:var(--inf);border:1px solid var(--inf)" onclick="openDeptTr('${it.id}')">↗️</button>
-        <button class="btn bxs bs" title="تعديل" onclick="openEditRec('dept','${it.id}')">✏️</button>
+        <button class="btn bxs bs" title="تعديل" onclick="openEditRec('dept','${it.id}')">✏️</button><button class="btn bxs bs" title="تراجع عن العملية" onclick="undoByRecord('dept','${it.id}')">↩️</button>
         <button class="btn bxs bd2" onclick="delDept('${it.id}','${dept}')">🗑</button>
       </div>
     </div>`;
@@ -4145,6 +4167,46 @@ async function auditFix(kind,col){
   if(kind==='bal'){ await recalcBalances(col); toast('ok','✅ تم إعادة حساب عمود الرصيد'); loadAudit(true); }
 }
 
+// ================================================================
+// سجل العمليات
+// ================================================================
+let opsAll=[];
+async function loadOps(force){
+  if(force) clearCache('ops');
+  opsAll=(await getCol('ops').catch(()=>[])).sort((a,b)=>b.at-a.at);
+  renderOps();
+}
+function renderOps(){
+  const q=normAr(id('OPS-Q').value), d=id('OPS-D').value, st=id('OPS-ST').value;
+  const rows=opsAll.filter(o=>(!q||normAr(o.label+' '+o.by+' '+(o.name||'')).includes(q))&&(!d||o.date===d)&&(st===''||String(+!!o.undone)===st)).slice(0,300);
+  id('OPS-TABLE').innerHTML=rows.length?`<table><thead><tr><th>التاريخ والوقت</th><th>العملية</th><th>عدد السجلات</th><th>بواسطة</th><th>الحالة</th><th></th></tr></thead><tbody>${
+    rows.map(o=>`<tr style="${o.undone?'opacity:.55':''}">
+      <td style="font-size:11px;white-space:nowrap">${arabicDate(o.date)}<div style="font-family:monospace;font-size:10px;color:var(--muted)">${o.time||''}</div></td>
+      <td style="font-weight:700">${esc(o.label)}</td>
+      <td class="num">${(o.keys||[]).length}</td>
+      <td style="font-size:11px;color:var(--muted)">${esc(o.name||o.by||'')}</td>
+      <td>${o.undone?`<span class="b" style="background:#8B949E22;color:var(--muted)">↩️ تم التراجع${o.undoneBy?' — '+esc(o.undoneBy):''}</span>`:'<span class="b bg">فعّالة</span>'}</td>
+      <td style="white-space:nowrap">${o.undone?'':`<button class="btn bxs bs" onclick="editOperation('${o.id}')" title="تعديل">✏️ تعديل</button>
+        <button class="btn bxs bd2" onclick="conf('↩️ التراجع عن: ${esc(o.label).replace(/'/g,'')}؟',()=>undoOperation('${o.id}'))" title="تراجع">↩️ تراجع</button>`}</td>
+    </tr>`).join('')}</tbody></table>`:'<div class="empty"><span class="eic">↩️</span><p>لا توجد عمليات مسجلة بعد — تبدأ من الآن</p></div>';
+}
+// التعديل: يفتح السجل الأساسي للعملية، والتعديل ينتقل لكل السجلات المرتبطة
+async function editOperation(docId){
+  const op=opsAll.find(o=>o.id===docId)||(await getCol('ops')).find(o=>o.id===docId); if(!op) return;
+  clearCache();
+  const cands=[];
+  for(const col of ['dept','stock','silver','sub','main']){
+    (await getCol(col)).filter(r=>op.opId&&r.opId===op.opId).forEach(r=>cands.push({col,r}));
+  }
+  if(!cands.length){
+    // عمليات قديمة: أول سجل أنشأته العملية (موجود في عمليات التراجع كحذف)
+    for(const o of op.ops||[]){ if(o.action==='delete'&&['dept','stock','silver','sub','main'].includes(o.col)){ const s=await DB.doc(`${o.col}/${o.id}`).get(); if(s.exists){ cands.push({col:o.col,r:s.data()}); break; } } }
+  }
+  if(!cands.length){ toast('in','لا يوجد سجل قابل للتعديل في هذه العملية — يمكنك التراجع عنها ثم إعادة تسجيلها'); return; }
+  const pick=cands.find(c=>c.col==='dept')||cands.find(c=>c.col==='stock')||cands.find(c=>c.col==='silver')||cands.find(c=>c.col==='sub'&&c.r.type!=='وارد')||cands[0];
+  openEditRec(pick.col,pick.r.id);
+}
+
 async function markDone(iid, dept){
   await DB.doc(`dept/${iid}`).update({done:true});
   const it=deptItems.find(d=>d.id===iid);
@@ -4487,7 +4549,7 @@ async function loadSilver(){
       <div class="num dnum" style="color:var(--sil)">${N(si.w1000||si.weight)} <span style="font-size:9px;color:var(--muted)">جرام</span></div>
       <div class="num">${N3(si.count||0)}</div>
       <div>${si.done?'<span class="done-badge">✅ DONE</span>':`<button class="btn bxs bg2" onclick="markSilDone('${si.id}')">DONE</button>`}</div>
-      <div style="display:flex;gap:4px"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('silver','${si.id}')">✏️</button><button class="btn bxs bd2" onclick="delSil('${si.id}')">🗑</button></div>
+      <div style="display:flex;gap:4px"><button class="btn bxs bs" title="تعديل" onclick="openEditRec('silver','${si.id}')">✏️</button><button class="btn bxs bs" title="تراجع عن العملية" onclick="undoByRecord('silver','${si.id}')">↩️</button><button class="btn bxs bd2" onclick="delSil('${si.id}')">🗑</button></div>
     </div>
   `).join(''):'<div class="empty"><span class="eic">🥈</span><p>لا يوجد فضة</p></div>';
 }
@@ -4496,7 +4558,7 @@ function openAddSilver(){ id('SIL-DATE').value=today(); ['SIL-WT','SIL-CNT','SIL
 
 
 async function markSilDone(sid){await DB.doc(`silver/${sid}`).update({done:true});clearCache('silver');toast('ok','✅ DONE');loadSilver();}
-async function delSil(sid){conf('حذف هذا الصنف؟',async()=>{await DB.doc(`silver/${sid}`).delete();toast('ok','تم');loadSilver();});}
+async function delSil(sid){conf('حذف هذا الصنف؟',async()=>{const s=await DB.doc(`silver/${sid}`).get();await DB.doc(`silver/${sid}`).delete();if(s.exists)pushUndo({label:`حذف فضة: ${s.data().item}`,ops:[{action:'set',col:'silver',id:sid,data:s.data()}]});clearCache('silver');toast('ok','تم');loadSilver();});}
 
 // ================================================================
 // LOG
@@ -4564,6 +4626,7 @@ async function saveAddSilver(){
     id:sid, item:name, date, weight:wt, karat:kt, w1000, count:cnt,
     note, done:false, by:CU.username, at:Date.now()
   });
+  pushUndo({label:`إضافة فضة: ${name} ${N(wt)} جرام`,ops:[{action:'delete',col:'silver',id:sid}]});
   clearCache('silver');
   toast('ok',`✅ تم حفظ: ${name} — ${N(wt)} جرام`);
   cm('MOD-SIL'); loadSilver();
@@ -4959,9 +5022,20 @@ const undoStack=[];
 const MAX_UNDO=10;
 
 function pushUndo(entry){
+  entry.opId=pendingOp; pendingOp=null;
+  entry.at=Date.now();
+  entry.docId='ops'+entry.at+Math.random().toString(36).slice(2,5);
   undoStack.push(entry);
   if(undoStack.length>MAX_UNDO) undoStack.shift();
   updateUndoBtn();
+  // سجل دائم — يسمح بالتراجع عن أي عملية في أي وقت ومن أي جهاز
+  try{
+    let ops=JSON.parse(JSON.stringify(entry.ops||[]));
+    let big=false; if(JSON.stringify(ops).length>850000){ ops=[]; big=true; }
+    firestore.collection('ops').doc(entry.docId).set({id:entry.docId,opId:entry.opId||'',label:entry.label||'',ops,big,
+      keys:[...new Set((entry.ops||[]).map(o=>o.col+'/'+o.id))],by:CU?.username||'',name:CU?.name||'',date:today(),time:nowTime(),at:entry.at,undone:false})
+      .then(()=>clearCache('ops')).catch(e=>console.warn('ops',e));
+  }catch(e){ console.warn(e); }
 }
 
 function updateUndoBtn(){
@@ -4977,21 +5051,61 @@ function updateUndoBtn(){
 
 async function doUndo(){
   if(!undoStack.length){toast('in','لا يوجد عمليات للتراجع');return;}
-  const entry=undoStack.pop();
-  updateUndoBtn();
-  toast('in',`جاري التراجع: ${entry.label}...`);
+  const entry=undoStack[undoStack.length-1];
+  if(entry.docId) return undoOperation(entry.docId);
+  undoStack.pop(); updateUndoBtn();
+  try{ await applyUndoOps(entry.ops); toast('ok',`↩️ تم التراجع: ${entry.label}`); }
+  catch(e){ toast('er','خطأ في التراجع'); undoStack.push(entry); updateUndoBtn(); }
+}
+async function applyUndoOps(ops){
+  for(const op of ops){
+    if(op.action==='delete') await DB.doc(`${op.col}/${op.id}`).delete();
+    else if(op.action==='set') await DB.doc(`${op.col}/${op.id}`).set(op.data);
+  }
+  const balCols=[...new Set(ops.map(o=>o.col))].filter(c=>c==='main'||c==='sub');
+  for(const c of balCols) await recalcBalances(c);
+  clearCache();
+  try{ await TAB_LOADERS[curTab]?.(); }catch(e){}
+}
+// التراجع عن أي عملية مسجلة — مع التراجع عن العمليات اللاحقة التي اعتمدت عليها
+async function undoOperation(docId,confirmed){
+  clearCache('ops');
+  const all=await getCol('ops');
+  const op=all.find(o=>o.id===docId);
+  if(!op){ toast('er','العملية غير موجودة'); return; }
+  if(op.undone){ toast('in','تم التراجع عن هذه العملية من قبل'); return; }
+  if(op.big||!op.ops?.length){ toast('er','لا يمكن التراجع عن هذه العملية تلقائياً — عدّل السجلات يدوياً'); return; }
+  // العمليات اللاحقة التي لمست نفس السجلات
+  const chain=[op]; const keys=new Set(op.keys||[]);
+  all.filter(o=>!o.undone&&o.at>op.at).sort((a,b)=>a.at-b.at).forEach(o=>{
+    if((o.keys||[]).some(k=>keys.has(k))){ chain.push(o); (o.keys||[]).forEach(k=>keys.add(k)); }
+  });
+  if(chain.length>1&&!confirmed){
+    id('CONF-MSG').innerHTML=`العملية <b>"${esc(op.label)}"</b> اعتمدت عليها ${chain.length-1} عملية لاحقة:<br>
+      <div style="margin:8px 0;font-size:12px;color:var(--warn)">${chain.slice(1).map(o=>`• ${esc(o.label)} — ${o.time||''}`).join('<br>')}</div>
+      سيتم التراجع عنها كلها بالترتيب (الأحدث أولاً). متابعة؟`;
+    confCb=()=>undoOperation(docId,true); om('MOD-CONF'); return;
+  }
+  toast('in',`جاري التراجع: ${op.label}...`);
   try{
-    for(const op of entry.ops){
-      if(op.action==='delete') await DB.doc(`${op.col}/${op.id}`).delete();
-      else if(op.action==='set') await DB.doc(`${op.col}/${op.id}`).set(op.data);
+    for(const o of chain.reverse()){
+      await applyUndoOps(o.ops);
+      await firestore.collection('ops').doc(o.id).update({undone:true,undoneBy:CU?.username||'',undoneAt:Date.now()});
+      const i=undoStack.findIndex(e=>e.docId===o.id); if(i>=0) undoStack.splice(i,1);
     }
-    const balCols=[...new Set(entry.ops.map(o=>o.col))].filter(c=>c==='main'||c==='sub');
-    for(const c of balCols) await recalcBalances(c);
-    clearCache();
-    const t=document.querySelector('.tab.act')?.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
-    if(t&&TAB_LOADERS[t]) TAB_LOADERS[t]();
-    toast('ok',`↩️ تم التراجع: ${entry.label}`);
-  }catch(e){ toast('er','خطأ في التراجع'); undoStack.push(entry); updateUndoBtn(); }
+    updateUndoBtn(); clearCache();
+    toast('ok',`↩️ تم التراجع: ${op.label}${chain.length>1?` (+${chain.length-1} عملية لاحقة)`:''}`);
+    try{ await TAB_LOADERS[curTab]?.(); }catch(e){}
+  }catch(e){ console.error(e); toast('er','خطأ في التراجع'); }
+}
+// زر ↩️ بجانب أي سجل: يتراجع عن العملية التي أنشأته
+async function undoByRecord(col,rid){
+  const s=await DB.doc(`${col}/${rid}`).get(); const r=s.exists?s.data():null;
+  if(!r?.opId){ toast('in','سجل قديم بدون رقم عملية — استخدم ✏️ للتعديل أو 🗑 للحذف'); return; }
+  clearCache('ops');
+  const op=(await getCol('ops')).filter(o=>o.opId===r.opId&&!o.undone).sort((a,b)=>b.at-a.at)[0];
+  if(!op){ toast('in','لا توجد عملية قابلة للتراجع لهذا السجل'); return; }
+  conf(`↩️ التراجع عن العملية: "${op.label}"؟`,()=>undoOperation(op.id));
 }
 
 // ================================================================
@@ -5377,7 +5491,8 @@ async function openEditRec(col,rid){
   const linked=[];
   if(col==='main'&&erRec.type==='منصرف') linked.push('حركة الوارد المقابلة في الخزنة الفرعية');
   if(col==='stock') linked.push('حركة "وارد استوك" في الخزنة الرئيسية');
-  id('ER-WARN').textContent=linked.length?`↻ سيتم تحديث ${linked.join(' و')} تلقائياً.`:'';
+  let ln=0; if(erRec.opId){ for(const lc of ['main','sub','dept','stock','silver']) ln+=(await getCol(lc)).filter(x=>x.opId===erRec.opId&&!(lc===col&&x.id===erRec.id)&&Math.abs((+x.weight||0)-(+erRec.weight||0))<=0.0005).length; }
+  id('ER-WARN').textContent=ln?`↻ سيتم تعديل ${ln} سجل مرتبط بنفس العملية تلقائياً (الطرف الآخر من التحويل).`:(linked.length?`↻ سيتم تحديث ${linked.join(' و')} تلقائياً.`:'');
   erItem(true);
   om('MOD-EREC');
 }
@@ -5436,6 +5551,25 @@ async function saveEditRec(){
     const mupd={date,weight:upd.weight,karat:kt,w875:upd.w875,w24:to24(wt,kt),note:`[استوك] ${name}${note?' — '+note:''}`};
     if(await syncLinked('main','m'+ts,d=>d.type==='وارد استوك',mupd)) touched.add('main');
   }
+  // كل السجلات المرتبطة بنفس العملية وبنفس الوزن (طرفي التحويل، حلقات الإضافة عبر الخزنة...)
+  let linkedN=0;
+  if(r.opId){
+    clearCache();
+    for(const lc of ['main','sub','dept','stock','silver']){
+      for(const x of await getCol(lc)){
+        if(x.opId!==r.opId||(lc===col&&x.id===r.id)||undo.some(u=>u.col===lc&&u.id===x.id)) continue;
+        if(Math.abs((+x.weight||0)-(+r.weight||0))>0.0005||Math.abs((+x.karat||875)-(+r.karat||875))>0.01) continue;
+        const nk=lc==='stock'?'name':'item';
+        const u={date,weight:upd.weight,karat:kt,count:upd.count};
+        if(lc==='silver') u.w1000=+(wt*kt/1000).toFixed(3);
+        else { const tk=lc==='dept'&&x.takhyeef?x.takhyeef:0; u.w875=+(wt*(1-tk/100)*kt/875).toFixed(3); u.w24=to24(wt,kt); }
+        if(name&&x[nk]&&!String(x[nk]).startsWith('خسية')&&x[nk]!=='تحويل من الخزنة الرئيسية') u[nk]=name;
+        undo.push({action:'set',col:lc,id:x.id,data:x});
+        await DB.doc(`${lc}/${x.id}`).update(u); linkedN++;
+        if(lc==='main'||lc==='sub') touched.add(lc);
+      }
+    }
+  }
   for(const t of touched) await recalcBalances(t);
 
   await log('edit',col==='dept'?r.dept:col,col==='dept'?r.dept:col,name||'—',wt,upd.count,kt,upd.w875||upd.w1000,
@@ -5443,7 +5577,7 @@ async function saveEditRec(){
   pushUndo({label:`تعديل ${name||'وزن'}: ${N(r.weight)} ← ${N(wt)}`,ops:undo});
   clearCache();
   cm('MOD-EREC');
-  toast('ok',`✏️ تم التعديل — ${N(wt)} جرام عيار ${kt}`);
+  toast('ok',`✏️ تم التعديل — ${N(wt)} جرام عيار ${kt}${linkedN?` · وتعديل ${linkedN} سجل مرتبط`:''}`);
   // إعادة تحميل الصفحة الحالية
   const cur=document.querySelector('.pg.on,.pg.active')?.id?.replace('pg-','');
   if(col==='main'||col==='stock') await loadMain();

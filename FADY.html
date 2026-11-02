@@ -252,24 +252,36 @@ body {
 
 /* ─── TABS ───────────────────────────────── */
 .tabs {
-  background: var(--s1);
+  position: sticky; top: 0; z-index: 40;
+  background: linear-gradient(180deg, var(--s1), color-mix(in srgb, var(--s1) 92%, #000));
   border-bottom: 1px solid var(--bd);
-  display: flex; overflow-x: auto; flex-shrink: 0;
+  box-shadow: 0 6px 18px #0000002e;
+  display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
+  padding: 8px 16px; overflow-x: auto; flex-shrink: 0; scrollbar-width: none;
 }
 .tabs::-webkit-scrollbar { height: 0; }
+.tg { position: relative; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 12px;
+  background: var(--s2); border: 1px solid var(--bd); flex-shrink: 0; }
+.tgl { position: absolute; top: -7px; right: 10px; font-size: 8.5px; font-weight: 800; letter-spacing: .4px;
+  color: var(--muted); background: var(--s1); padding: 0 5px; border-radius: 4px; line-height: 12px; pointer-events: none; }
 .tab {
-  padding: 15px 20px;
-  cursor: pointer;
-  font-size: 12.5px; font-weight: 600;
-  color: var(--muted);
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: color .18s, background .18s, border-color .18s;
-  display: flex; align-items: center; gap: 6px;
-  letter-spacing: .2px;
+  padding: 8px 13px; border-radius: 9px; cursor: pointer;
+  font-size: 12.5px; font-weight: 700; color: var(--tx2);
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+  transition: background .16s, color .16s, box-shadow .16s; user-select: none;
 }
-.tab:hover { color: var(--tx2); background: var(--s2); }
-.tab.act  { color: var(--goldtx); border-bottom-color: var(--gold); background: linear-gradient(to bottom, #C8A84B08, transparent); }
+.tab .ti { font-size: 13px; line-height: 1; filter: saturate(.9); }
+.tab .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 3px #ffffff0d; }
+.tab:hover { color: var(--tx); background: var(--s3); }
+.tab.act { color: #1C1E22; background: linear-gradient(135deg, #E8CB7A, #C8A84B 60%, #A8872C);
+  box-shadow: 0 3px 10px #C8A84B44, inset 0 1px 0 #ffffff55; }
+.tab.act .dot { box-shadow: 0 0 0 2px #1C1E2233; }
+.tab .car { font-size: 10px; opacity: .7; margin-right: 2px; }
+.tdd { position: fixed; display: none; min-width: 210px; padding: 6px; border-radius: 12px; z-index: 300;
+  background: var(--s1); border: 1px solid var(--bd); box-shadow: 0 16px 40px #00000066; flex-direction: column; gap: 2px; }
+.tdd.open { display: flex; }
+.tdd .tab { padding: 10px 12px; }
+@media (max-width: 900px) { .tgl { display: none; } .tabs { padding: 6px 10px; gap: 6px; } .tab { padding: 8px 10px; } }
 
 /* ─── CONTENT ────────────────────────────── */
 .cnt { flex: 1; overflow-y: auto; background: var(--bg); }
@@ -703,25 +715,38 @@ td.num, th.num { display: table-cell; text-align: right; }
   </div>
 
   <!-- TABS -->
-  <div class="tabs">
-    <div class="tab act" onclick="showTab('dash')">📊 لوحة التحكم</div>
-    <div class="tab" onclick="showTab('main')">🏦 الخزنة الرئيسية</div>
-    <div class="tab" onclick="showTab('sub')">💼 الخزنة الفرعية</div>
-    <div class="tab" onclick="showTab('hal')" style="border-bottom-color:transparent" id="tab-hal">🔥 الحل</div>
-    <div class="tab" onclick="showTab('tam')" id="tab-tam">⚙️ التصنيع</div>
-    <div class="tab" onclick="showTab('dam')" id="tab-dam">🔨 الدمغة</div>
-    <div class="tab" onclick="showTab('tag')" id="tab-tag">📦 التغليف</div>
-    <div class="tab" onclick="showTab('loss')" id="tab-loss">📉 الخسية</div>
-    <div class="tab" onclick="showTab('sil')" id="tab-sil">🥈 الفضة</div>
-    <div class="tab" onclick="showTab('log')">📋 السجل</div>
-    <div class="tab" onclick="showTab('arc')">🗂 الأرشيف</div>
-    <div class="tab" onclick="showTab('aud')">🧮 المراجعة</div>
-    <div class="tab" onclick="showTab('ops')">↩️ العمليات</div>
-    <div class="tab" onclick="showTab('abb')">🏪 العباسية</div>
-    <div class="tab" onclick="showTab('ovr')">📊 نظرة عامة</div>
-    <div class="tab" onclick="showTab('ref')">🔍 المرجع</div>
-    <div class="tab" id="tab-users" style="display:none" onclick="showTab('users')">👥 مستخدمون</div>
-  </div>
+  <nav class="tabs" id="NAV">
+    <div class="tg">
+      <div class="tab act" onclick="showTab('dash')"><span class="ti">📊</span>لوحة التحكم</div>
+    </div>
+    <div class="tg"><span class="tgl">الخزن</span>
+      <div class="tab" onclick="showTab('main')"><span class="ti">🏦</span>الرئيسية</div>
+      <div class="tab" onclick="showTab('sub')"><span class="ti">💼</span>الفرعية</div>
+    </div>
+    <div class="tg"><span class="tgl">الأقسام</span>
+      <div class="tab" onclick="showTab('hal')" id="tab-hal"><i class="dot" style="background:var(--hal)"></i>الحل</div>
+      <div class="tab" onclick="showTab('tam')" id="tab-tam"><i class="dot" style="background:var(--tam)"></i>التصنيع</div>
+      <div class="tab" onclick="showTab('dam')" id="tab-dam"><i class="dot" style="background:var(--dam)"></i>الدمغة</div>
+      <div class="tab" onclick="showTab('tag')" id="tab-tag"><i class="dot" style="background:var(--tag)"></i>التغليف</div>
+    </div>
+    <div class="tg"><span class="tgl">الصرف</span>
+      <div class="tab" onclick="showTab('abb')"><span class="ti">🏪</span>العباسية</div>
+      <div class="tab" onclick="showTab('loss')" id="tab-loss"><span class="ti">📉</span>الخسية</div>
+      <div class="tab" onclick="showTab('sil')" id="tab-sil"><span class="ti">🥈</span>الفضة</div>
+    </div>
+    <div class="tg"><span class="tgl">المتابعة</span>
+      <div class="tab" onclick="showTab('ovr')"><span class="ti">📈</span>نظرة عامة</div>
+      <div class="tab" onclick="showTab('aud')"><span class="ti">🧮</span>المراجعة</div>
+      <div class="tab tdd-btn" id="TDD-BTN" onclick="toggleTabMenu(event)"><span class="ti">☰</span><span id="TDD-LBL">المزيد</span><span class="car">▾</span></div>
+    </div>
+    <div class="tdd" id="TDD">
+      <div class="tab" onclick="showTab('arc')"><span class="ti">🗂</span>الأرشيف والبحث</div>
+      <div class="tab" onclick="showTab('ops')"><span class="ti">↩️</span>سجل العمليات</div>
+      <div class="tab" onclick="showTab('log')"><span class="ti">📋</span>سجل الحركات</div>
+      <div class="tab" onclick="showTab('ref')"><span class="ti">🔍</span>المرجع</div>
+      <div class="tab" id="tab-users" style="display:none" onclick="showTab('users')"><span class="ti">👥</span>المستخدمون</div>
+    </div>
+  </nav>
 
   <div class="cnt">
 
@@ -1138,7 +1163,9 @@ td.num, th.num { display: table-cell; text-align: right; }
     <div id="pg-ops" class="pg">
       <div class="pgh">
         <div><div class="pgt">↩️ سجل العمليات — تعديل أو تراجع عن أي عملية</div><div class="pgs">كل عملية في السيستم محفوظة ويمكن التراجع عنها أو تعديلها في أي وقت ومن أي جهاز</div></div>
+        <button class="btn bsm" style="background:#C8983020;color:var(--warn);border:1px solid var(--warn)" onclick="previewLegacy()">🔗 ربط العمليات القديمة</button>
       </div>
+      <div id="OPS-LEG"></div>
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
         <input class="si" id="OPS-Q" placeholder="🔍 بحث في العمليات..." oninput="renderOps()" style="width:220px">
         <input type="date" class="si" id="OPS-D" onchange="renderOps()" style="width:150px">
@@ -2962,11 +2989,26 @@ function logout(){
 const TAB_LOADERS={ops:()=>loadOps(),aud:()=>loadAudit(),loss:()=>loadLoss(),arc:()=>loadArchive(),dash:loadDash,main:loadMain,sub:loadSub,hal:()=>loadDept('hal'),tam:()=>loadDept('tam'),dam:()=>loadDept('dam'),tag:()=>{loadDept('tag');loadTagAbbasiya();},sil:loadSilver,log:loadLog,abb:loadAbb,ovr:loadOvr,ref:()=>{},users:loadUsers};
 
 let curTab='dash';
+function toggleTabMenu(e){
+  e.stopPropagation();
+  const m=id('TDD'), r=id('TDD-BTN').getBoundingClientRect();
+  if(m.classList.contains('open')){ m.classList.remove('open'); return; }
+  m.classList.add('open');
+  const w=m.offsetWidth; let left=r.right-w; if(left<8) left=8;
+  m.style.top=(r.bottom+6)+'px'; m.style.left=left+'px';
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('#TDD')&&!e.target.closest('#TDD-BTN')) id('TDD')?.classList.remove('open'); });
+window.addEventListener('resize',()=>id('TDD')?.classList.remove('open'));
 function showTab(t){
   curTab=t;
   document.querySelectorAll('.tab').forEach(el=>el.classList.remove('act'));
   document.querySelectorAll('.pg').forEach(el=>el.classList.remove('act'));
-  document.querySelector(`.tab[onclick*="'${t}'"]`)?.classList.add('act');
+  const at=document.querySelector(`.tab[onclick*="'${t}'"]`); at?.classList.add('act');
+  const inMenu=at&&at.closest('#TDD');
+  id('TDD-BTN')?.classList.toggle('act',!!inMenu);
+  if(id('TDD-LBL')) id('TDD-LBL').textContent=inMenu?[...at.childNodes].filter(x=>!(x.classList&&x.classList.contains('ti'))).map(x=>x.textContent).join('').trim():'المزيد';
+  id('TDD')?.classList.remove('open');
+  at&&!inMenu&&at.scrollIntoView({block:'nearest',inline:'nearest'});
   id(`pg-${t}`)?.classList.add('act');
   TAB_LOADERS[t]?.();
 }
@@ -4182,7 +4224,7 @@ function renderOps(){
   id('OPS-TABLE').innerHTML=rows.length?`<table><thead><tr><th>التاريخ والوقت</th><th>العملية</th><th>عدد السجلات</th><th>بواسطة</th><th>الحالة</th><th></th></tr></thead><tbody>${
     rows.map(o=>`<tr style="${o.undone?'opacity:.55':''}">
       <td style="font-size:11px;white-space:nowrap">${arabicDate(o.date)}<div style="font-family:monospace;font-size:10px;color:var(--muted)">${o.time||''}</div></td>
-      <td style="font-weight:700">${esc(o.label)}</td>
+      <td style="font-weight:700">${esc(o.label)}${o.legacy?' <span class="b" style="font-size:9px;background:#C8983022;color:var(--warn)">قديمة</span>':''}</td>
       <td class="num">${(o.keys||[]).length}</td>
       <td style="font-size:11px;color:var(--muted)">${esc(o.name||o.by||'')}</td>
       <td>${o.undone?`<span class="b" style="background:#8B949E22;color:var(--muted)">↩️ تم التراجع${o.undoneBy?' — '+esc(o.undoneBy):''}</span>`:'<span class="b bg">فعّالة</span>'}</td>
@@ -4190,6 +4232,84 @@ function renderOps(){
         <button class="btn bxs bd2" onclick="conf('↩️ التراجع عن: ${esc(o.label).replace(/'/g,'')}؟',()=>undoOperation('${o.id}'))" title="تراجع">↩️ تراجع</button>`}</td>
     </tr>`).join('')}</tbody></table>`:'<div class="empty"><span class="eic">↩️</span><p>لا توجد عمليات مسجلة بعد — تبدأ من الآن</p></div>';
 }
+// ================================================================
+// ربط العمليات القديمة (قبل سجل العمليات) — حتى يمكن تعديلها والتراجع عنها
+// ================================================================
+let legacyPlan=[];
+async function buildLegacyPlan(){
+  clearCache();
+  const [main,sub,dept,stock,silver,logs]=await Promise.all(['main','sub','dept','stock','silver','logs'].map(c=>getCol(c).catch(()=>[])));
+  const recs=[];
+  [['main',main],['sub',sub],['dept',dept],['stock',stock],['silver',silver]].forEach(([col,a])=>a.forEach(r=>{ if(!r.opId&&r.at) recs.push({col,r}); }));
+  recs.sort((a,b)=>a.r.at-b.r.at);
+  // تجميع: سجلات نفس العملية = نفس اللحظة (±3 ثواني) + نفس الوزن والعيار + نفس المستخدم
+  const groups=[];
+  for(const x of recs){
+    const w=+x.r.weight||0, k=+x.r.karat||875;
+    const g=groups.slice(-12).reverse().find(g=>x.r.at-g.last<=3000&&g.by===(x.r.by||'')&&Math.abs(g.w-w)<0.0005&&Math.abs(g.k-k)<0.01&&x.col!=='silver'&&g.items[0].col!=='silver');
+    if(g){ g.items.push(x); g.last=x.r.at; } else groups.push({items:[x],first:x.r.at,last:x.r.at,w,k,by:x.r.by||''});
+  }
+  const transferLogs=logs.filter(l=>l.type==='transfer');
+  return groups.map(g=>{
+    const it=g.items, has=(c,t)=>it.find(x=>x.col===c&&(!t||x.r.type===t));
+    const r0=it[0].r, nm=(it.find(x=>x.r.item||x.r.name)?.r.item)||(it.find(x=>x.r.name)?.r.name)||'', wt=N(g.w);
+    const ops=[], keys=it.map(x=>x.col+'/'+x.r.id);
+    let label='', undoable=true;
+    const d=has('dept'), mOut=has('main','منصرف'), sIn=has('sub','وارد'), sOut=has('sub','منصرف'), sAbb=has('sub','عباسية'), stk=has('stock');
+    if(stk&&has('main','وارد استوك')) label=`إضافة استوك: ${nm} ${wt}`;
+    else if(mOut&&sIn&&sOut&&d) label=`إضافة لـ${DEPTS[d.r.dept]?.name||''} عبر الرئيسية: ${nm} ${wt}`;
+    else if(sIn&&sOut&&d) label=`إضافة لـ${DEPTS[d.r.dept]?.name||''} عبر الفرعية: ${nm} ${wt}`;
+    else if(sAbb&&sIn&&DEPTS[sAbb.r.from]) label=`${DEPTS[sAbb.r.from].name} → العباسية: ${nm} ${wt}`;
+    else if(mOut&&sIn&&sAbb) label=`استوك → العباسية: ${nm} ${wt}`;
+    else if(mOut&&sIn&&sOut&&!d) label=`تحويل: ${nm} ${wt}`;
+    else if(mOut&&sIn) label=`تحويل من الرئيسية للفرعية: ${wt}`;
+    else if(sOut&&d) label=`تحويل من الفرعية: ${nm} → ${DEPTS[d.r.dept]?.name||''} ${wt}`;
+    else if(sOut&&has('main','استرجاع')) label=`استرجاع من الفرعية للرئيسية: ${wt}`;
+    else if(it.length===1&&d){
+      const tl=transferLogs.find(l=>Math.abs((l.at||0)-d.r.at)<=4000&&l.to===d.r.dept&&Math.abs((+l.weight||0)-(+d.r.weight||0))<0.0005);
+      if(tl&&DEPTS[tl.from]){ label=`${nm}: ${DEPTS[tl.from].name} → ${DEPTS[d.r.dept].name} ${wt}`; ops.push({action:'set',col:'dept',id:d.r.id,data:{...d.r,dept:tl.from}}); }
+      else label=`إضافة لـ${DEPTS[d.r.dept]?.name||d.r.dept}: ${nm} ${wt}`;
+    }
+    else if(it.length===1&&(it[0].col==='main'||it[0].col==='sub')) label=`${it[0].col==='main'?'الرئيسية':'الفرعية'} — ${r0.type}${nm?': '+nm:''} ${wt}`;
+    else if(it.length===1&&it[0].col==='silver') label=`إضافة فضة: ${nm} ${wt}`;
+    else label=`${it.map(x=>x.r.type||x.col).join(' + ')}: ${nm} ${wt}`;
+    if(!ops.length) it.forEach(x=>ops.push({action:'delete',col:x.col,id:x.r.id}));
+    const opId='legacy'+g.first+'_'+r0.id;
+    return {opId,label,ops,keys,items:it,at:g.first,date:r0.date||'',by:r0.by||'',undoable};
+  });
+}
+async function previewLegacy(){
+  id('OPS-LEG').innerHTML='<div class="tc" style="padding:14px;margin-bottom:12px">⏳ جاري فحص السجلات القديمة...</div>';
+  legacyPlan=await buildLegacyPlan();
+  if(!legacyPlan.length){ id('OPS-LEG').innerHTML='<div class="tc" style="padding:14px;margin-bottom:12px;color:var(--ok)">✅ كل السجلات مربوطة بعملياتها</div>'; return; }
+  const multi=legacyPlan.filter(p=>p.items.length>1).length;
+  id('OPS-LEG').innerHTML=`<div class="tc" style="padding:14px 16px;margin-bottom:12px;border-color:var(--warn)">
+    <div style="font-weight:800;color:var(--warn);margin-bottom:6px">🔗 وُجدت ${legacyPlan.length} عملية قديمة (${legacyPlan.reduce((s,p)=>s+p.items.length,0)} سجل) — منها ${multi} عملية لها أكثر من طرف</div>
+    <div style="font-size:11.5px;color:var(--muted);max-height:180px;overflow:auto;line-height:1.9">${legacyPlan.slice(-25).reverse().map(p=>`• ${arabicDate(p.date)} — ${esc(p.label)} <span style="opacity:.7">(${p.items.length} سجل)</span>`).join('<br>')}${legacyPlan.length>25?'<br>…':''}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">بعد الربط تظهر في القائمة ويمكن <b>تعديلها</b> (يتعدّل كل أطرافها) أو <b>التراجع</b> عنها. لا يتغير أي وزن أو رصيد.</div>
+    <button class="btn bsm bp" style="margin-top:10px" onclick="applyLegacy()">✅ ربط العمليات القديمة</button></div>`;
+}
+async function applyLegacy(){
+  if(!legacyPlan.length) return;
+  id('OPS-LEG').innerHTML='<div class="tc" style="padding:14px;margin-bottom:12px">⏳ جاري الربط...</div>';
+  let n=0;
+  for(let i=0;i<legacyPlan.length;i+=150){
+    const batch=firestore.batch();
+    for(const p of legacyPlan.slice(i,i+150)){
+      p.items.forEach(x=>batch.update(firestore.doc(`${x.col}/${x.r.id}`),{opId:p.opId}));
+      const did='opsL'+p.at+'_'+String(p.items[0].r.id).slice(-6);
+      batch.set(firestore.doc(`ops/${did}`),{id:did,opId:p.opId,label:p.label,ops:p.ops,big:false,keys:p.keys,by:p.by,name:p.by,
+        date:p.date,time:new Date(p.at).toTimeString().slice(0,8),at:p.at,undone:false,legacy:true});
+      n++;
+    }
+    await batch.commit();
+  }
+  legacyPlan=[]; clearCache();
+  id('OPS-LEG').innerHTML=`<div class="tc" style="padding:14px;margin-bottom:12px;color:var(--ok)">✅ تم ربط ${n} عملية قديمة — يمكنك الآن تعديلها أو التراجع عنها من القائمة</div>`;
+  toast('ok',`✅ تم ربط ${n} عملية قديمة`);
+  loadOps(true);
+}
+
 // التعديل: يفتح السجل الأساسي للعملية، والتعديل ينتقل لكل السجلات المرتبطة
 async function editOperation(docId){
   const op=opsAll.find(o=>o.id===docId)||(await getCol('ops')).find(o=>o.id===docId); if(!op) return;

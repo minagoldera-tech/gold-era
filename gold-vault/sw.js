@@ -1,5 +1,5 @@
 // يخلي البرنامج يفتح حتى لو النت قاطع
-const CACHE="gold-vault-v7";
+const CACHE="gold-vault-v8";
 const SHELL=["./","./index.html","./app.js","./config.js","./manifest.json","./icon-192.png","./icon-512.png","./login-bg.jpg",
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js",

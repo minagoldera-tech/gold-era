@@ -244,22 +244,106 @@ td.nowrap,.nowrap{white-space:nowrap}
 .permgrid h4{margin:0 0 6px;font-size:14px}
 .permgrid label.chk{display:flex;padding:3px 0;font-size:14px}
 .useredit{display:flex;flex-direction:column;gap:10px;padding:8px 0}
+
+/* --- overview hero & big tiles, audit --- */
+.hero{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;background:var(--vault);color:var(--vault-fg);border-radius:14px;padding:18px 22px}
+.hero-t{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}.hero-t h2{font-size:26px;color:var(--vault-fg)}
+.hero-m{background:var(--gold);color:#1B1405;border-radius:999px;padding:3px 14px;font-weight:700;font-size:15px}
+.hero-c{display:flex;flex-direction:column;align-items:flex-end;gap:2px;margin-inline-start:auto}
+.hero-c b{font-size:28px;font-variant-numeric:tabular-nums;letter-spacing:.5px;direction:ltr;unicode-bidi:plaintext}.hero-c span{font-size:14px;opacity:.85}
+.bigtiles{display:grid;grid-template-columns:1fr 1fr;gap:16px}.bigtiles.one{grid-template-columns:1fr}
+@media (max-width:640px){.bigtiles{grid-template-columns:1fr}.hero-c{align-items:flex-start;margin-inline-start:0}}
+.bigtile{border-radius:14px;padding:20px 22px;display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);background:var(--surface);min-width:0}
+.bigtile.gold{background:linear-gradient(135deg,var(--gold-soft),var(--surface));border-color:var(--gold)}
+.bigtile.cash{background:linear-gradient(135deg,var(--ok-soft),var(--surface));border-color:var(--ok)}
+.bt-l{font-size:16px;font-weight:700;color:var(--muted)}
+.bigtile b{font-size:46px;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.bigtile.gold b{color:var(--gold)}.bigtile.cash b{color:var(--ok)}
+.bt-u{font-size:14px;color:var(--muted)}
+.bt-s{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.bt-s span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px}
+tr.dayrow td{background:var(--surface2);font-weight:700;color:var(--gold-fg);text-align:right}
+
+/* --- journal rows --- */
+.journal-list,.moves{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.jr-day{background:var(--surface2);color:var(--gold-fg);font-weight:700;font-size:13.5px;padding:7px 14px;border-bottom:1px solid var(--line)}
+.jr{display:grid;grid-template-columns:86px minmax(0,1fr) auto auto;gap:6px 14px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.jr:last-child{border-bottom:0}
+.jr.void{background:var(--surface2)}.jr.void .jr-main,.jr.void .jr-nums{opacity:.55}.jr.void .jr-items{text-decoration:line-through}
+.jr-date{display:flex;flex-direction:column;line-height:1.3}.jr-date b{font-size:14px}.jr-date span{font-size:12.5px;color:var(--muted)}
+.jr-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.jr-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13.5px}
+.jr-br{font-weight:600}
+.tag{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:0 7px;font-size:12.5px}
+.jr-items{display:flex;gap:6px;flex-wrap:wrap}
+.ipill{background:var(--gold-soft);color:var(--gold-fg);border-radius:8px;padding:3px 9px;font-size:13.5px;font-weight:600;white-space:nowrap}
+.ipill b{font-weight:700}
+.more-pill{font:inherit;font-size:13px;background:none;border:1px dashed var(--gold);color:var(--gold-fg);border-radius:8px;padding:2px 9px;cursor:pointer}
+.jr-note{font-size:12.5px;color:var(--muted)}
+.jr-nums{display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-align:end;white-space:nowrap}
+.jr-nums b{font-size:16px}.jr-nums small{font-size:12px;color:var(--muted);font-weight:400}
+.jr-money{font-weight:700;color:var(--ok);font-size:14px}.jr-emp{font-size:12.5px;color:var(--muted)}
+.jr-act{display:flex;gap:4px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.jr-act .acts{display:inline-flex;gap:4px}
+.jr-det{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;background:var(--surface2);border-radius:10px;padding:10px 12px;margin-top:4px}
+.jr-det[hidden]{display:none!important}
+.det-side{display:flex;flex-direction:column;gap:8px}
+table.mini{font-size:13.5px;background:var(--surface);border-radius:8px;overflow:hidden}
+table.mini th,table.mini td{padding:5px 10px}
+@media (max-width:720px){
+  .jr{grid-template-columns:70px minmax(0,1fr);}
+  .jr-nums{grid-column:2;flex-direction:row;align-items:baseline;gap:10px;justify-content:flex-start}
+  .jr-act{grid-column:1/-1;justify-content:flex-start}
+  .jr-det{grid-template-columns:1fr}
+}
+
+/* --- export, selection, expenses, full archive --- */
+.exp{display:flex;gap:6px;flex-wrap:wrap}
+.selbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13.5px;color:var(--muted)}
+.selbar label.chk{color:var(--fg)}
+.selbox{display:inline-flex;align-items:center;padding:0 4px}.selbox input{width:18px;height:18px}
+.catbars{display:flex;flex-direction:column;gap:8px}
+.cb{display:grid;grid-template-columns:minmax(120px,200px) 1fr auto;gap:10px;align-items:center;font-size:14px}
+.cbt{height:12px;background:var(--surface2);border-radius:999px;overflow:hidden}.cbt div{height:100%;background:var(--bad)}
+.fullarc summary{cursor:pointer;font-size:14.5px}.fullarc[open] summary{margin-bottom:10px}
+#print{display:none}
+@media print{
+  body{background:#fff!important;color:#000!important}
+  body>*:not(#print){display:none!important}
+  #print{display:block!important;font-family:Tahoma,Arial,sans-serif;font-size:11px;color:#000;direction:rtl}
+  #print .ph{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #8a6a12;padding-bottom:6px;margin-bottom:10px}
+  #print h1{font-size:18px;margin:0}#print h2{font-size:14px;margin:2px 0 0;font-weight:600}#print h3{font-size:13px;margin:14px 0 4px;color:#5c4208}
+  #print .pm{font-size:10px;text-align:left;color:#333}
+  #print table{width:100%;border-collapse:collapse;margin-bottom:8px;page-break-inside:auto}
+  #print th,#print td{border:1px solid #999;padding:3px 4px;text-align:center;white-space:normal!important;overflow-wrap:normal;word-break:normal;position:static!important}
+  #print table{table-layout:auto;max-width:100%}
+  #print.wide{font-size:9px}
+  html,body{width:auto!important;overflow:visible!important}
+  :root{padding:0!important}
+  #print th{background:#efe6cc}
+  #print tr{page-break-inside:avoid}
+  #print tr.gap td{border:0;height:8px}
+  #print .inv{display:flex;justify-content:space-between;gap:12px;border:1px solid #999;border-radius:6px;padding:8px;margin-bottom:10px;font-size:12px;line-height:1.6}
+  #print .totline{font-weight:700;font-size:12px}
+  #print .paytbl td{font-size:12px}
+  #print .sign{display:flex;justify-content:space-around;margin-top:50px}#print .sign span{border-top:1px solid #000;padding-top:4px;width:200px;text-align:center}
+}
 </style>
+<style id="pagesize">@page{size:A4 portrait;margin:10mm}</style>
 </head>
 <body>
 <header class="bar" id="bar" hidden>
   <div class="bar-row">
     <div class="brand">
       <svg class="ingot" viewBox="0 0 34 22" aria-hidden="true"><path d="M7 2h20l6 18H1z" fill="var(--gold)"/><path d="M9 5h16l3 9H6z" fill="#F3D779" opacity=".55"/></svg>
-      <div><h1>خزائن الذهب</h1><small>مخزون السبائك – بوابة 2 و بوابة 4</small></div>
+      <div><h1>خزائن الذهب</h1><small>خزنة جدة (السعودية) – بوابة ELPOP و بوابة 4</small></div>
     </div>
     <div class="user"><span class="sync on" id="sync">متزامن</span><span id="who"></span><button id="logout">خروج</button></div>
     <div class="seg" role="group" aria-label="الفرع" id="branchSeg">
-      <button data-b="b2">بوابة 2</button><button data-b="b4">بوابة 4</button><button data-b="all">الفرعين</button>
+      <button data-b="b2">بوابة ELPOP</button><button data-b="b4">بوابة 4</button><button data-b="all">الفرعين</button>
     </div>
   </div>
   <nav class="tabs" id="tabs">
-    <a href="#home">الرئيسية</a><a href="#stock">المخزون</a><a href="#new">حركة جديدة</a><a href="#app">الأبلكيشن</a><a href="#cash">الخزينة</a><a href="#archive">الأرشيف اليومي</a><a href="#month">الملخص الشهري</a><a href="#log">سجل الحركات</a><a href="#count">الجرد</a><a href="#items" hidden>الإعدادات</a>
+    <a href="#home">الرئيسية</a><a href="#stock">المخزون</a><a href="#new">حركة جديدة</a><a href="#app">الأبلكيشن</a><a href="#cash">الخزينة</a><a href="#exp">المصروفات</a><a href="#archive">الأرشيف</a><a href="#month">الملخص الشهري</a><a href="#log">سجل الحركات</a><a href="#count">الجرد</a><a href="#audit">سجل العمليات</a><a href="#items" hidden>الإعدادات</a>
   </nav>
 </header>
 <main id="app"><div class="empty">جاري التحميل…</div></main>
@@ -267,6 +351,7 @@ td.nowrap,.nowrap{white-space:nowrap}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
 </body>

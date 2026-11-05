@@ -1,7 +1,8 @@
 /* خزائن الذهب – تطبيق مستقل يعمل على Firebase (Firestore + Authentication) */
 (function(){
 "use strict";
-const BR={b2:"بوابة 2",b4:"بوابة 4"};
+const BR={b2:"بوابة ELPOP",b4:"بوابة 4"};
+const VAULT_TITLE="خزنة جدة (السعودية)";
 const BKEYS=["b2","b4"];
 const LOC={main:"الخزنة الرئيسية",sub:"الخزنة الفرعية",show:"البترينة",res:"محجوز للأبلكيشن"};
 const LOCS=["main","sub","show","res"];          // every place gold can sit
@@ -31,7 +32,7 @@ const T={
   adjust:{l:"تسوية جرد (+ / −)",loc:1,signed:1,g:"أخرى",cat:"adj",perm:"count"}
 };
 /* What a staff account can see and do. The owner (admin) can do everything. */
-const SCREENS=[["stock","المخزون"],["new","حركة جديدة"],["app","الأبلكيشن"],["cash","الخزينة"],["archive","الأرشيف اليومي"],["month","الملخص الشهري"],["log","سجل الحركات"],["count","الجرد"]];
+const SCREENS=[["stock","المخزون"],["new","حركة جديدة"],["app","الأبلكيشن"],["cash","الخزينة"],["exp","المصروفات"],["archive","الأرشيف اليومي"],["month","الملخص الشهري"],["log","سجل الحركات"],["count","الجرد"],["audit","سجل العمليات (مين سجّل إيه وإمتى)"]];
 const ACTIONS=[["sale","بيع ومرتجعات"],["transfer","تحويلات (بين الخزن والفروع)"],["stockin","وارد / منصرف / رصيد افتتاحي"],["buy","شراء من عملاء"],["app","طلبات الأبلكيشن"],["cash","تسجيل في الخزينة"],["count","الجرد"],["edit","تعديل وتراجع عن العمليات"],["money","يشوف أرصدة الفلوس والتقارير المالية"]];
 const DEFAULT_PERMS={s_stock:true,s_new:true,s_archive:true,s_log:true,sale:true,transfer:true};
 const USER_DOMAIN="users.goldvault.app";
@@ -69,6 +70,8 @@ const addMonths=(ym,n)=>{const [y,m]=ym.split("-").map(Number);const d=new Date(
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const other=b=>b==="b2"?"b4":"b2";
 const custKey=s=>String(s||"").trim().replace(/\s+/g," ").toLowerCase();
+/* audit trail: who did what and when (creations come from the records themselves) */
+function audit(action,details,extra){if(!db||!S.email)return;db.collection("audit").doc().set({ts:Date.now(),by:S.email,name:myName(),action,details:String(details||""),...(extra||{})}).catch(()=>{})}
 function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3200)}
 const itemById=id=>S.items.find(i=>i.id===id);
 const iname=id=>itemById(id)?.name||"صنف محذوف";
@@ -151,7 +154,7 @@ async function cashInRange(from,to){
 const knownCustomers=()=>{const s=new Map();for(const m of S.live.concat(S.appMoves))if(m.cust&&!s.has(custKey(m.cust)))s.set(custKey(m.cust),m.cust);return [...s.values()].sort()};
 
 /* ---------- shell ---------- */
-const ROUTES=["home","stock","new","app","cash","archive","month","log","count","items"];
+const ROUTES=["home","stock","new","app","cash","exp","archive","month","log","count","audit","items"];
 function readRoute(){const h=location.hash.slice(1);S.route=ROUTES.includes(h)?h:"home"}
 window.addEventListener("hashchange",()=>{readRoute();render();window.scrollTo(0,0)});
 window.addEventListener("online",()=>{S.online=true;syncChip()});
@@ -164,8 +167,8 @@ function syncChip(){const c=$("#sync");if(!c)return;
   else{c.className="sync on";c.textContent="متزامن"}}
 function shell(on){$("#bar").hidden=!on;}
 const VIEWFN={home:[()=>vHome(),()=>bHome()],stock:[()=>vStock(),()=>bStock()],new:[()=>vNew(),()=>bNew()],app:[()=>vApp(),()=>bApp()],
-  cash:[()=>vCash(),()=>bCash()],archive:[()=>vArchive(),()=>bArchive()],month:[()=>vMonth(),()=>bMonth()],log:[()=>vLog(),()=>bLog()],
-  count:[()=>vCount(),()=>bCount()],items:[()=>vItems(),()=>bItems()]};
+  cash:[()=>vCash(),()=>bCash()],exp:[()=>vExp(),()=>bExp()],archive:[()=>vArchive(),()=>bArchive()],month:[()=>vMonth(),()=>bMonth()],log:[()=>vLog(),()=>bLog()],
+  count:[()=>vCount(),()=>bCount()],audit:[()=>vAudit(),()=>bAudit()],items:[()=>vItems(),()=>bItems()]};
 function render(){
   if(!S.email)return;
   shell(true);document.body.classList.remove("loginbg");
@@ -182,7 +185,7 @@ function render(){
   if(!canSee(S.route)){S.route="home"}
   let html="";
   if(!S.items.length&&S.route!=="items")html+=`<div class="note info">لسه مفيش أصناف.${isAdmin()?" ادخل على «الإعدادات» وضيف الأصناف.":""}</div>`;
-  const [v,b]=VIEWFN[S.route];app.innerHTML=html+v();b();
+  const [v,b]=VIEWFN[S.route];app.innerHTML=html+v();b();bindPrintButtons();
 }
 let rt=null;function rerender(){
   const a=document.activeElement;
@@ -191,10 +194,22 @@ let rt=null;function rerender(){
 }
 
 /* ---------- HOME ---------- */
+function clockText(){const d=new Date();let h=d.getHours();const ap=h<12?"ص":"م";h=h%12||12;return `${h}:${String(d.getMinutes()).padStart(2,"0")}:${String(d.getSeconds()).padStart(2,"0")} ${ap}`}
+setInterval(()=>{const c=document.getElementById("clock");if(c)c.textContent=clockText()},1000);
 function vHome(){
   const bal=balances();const t=today();
   const allZero=BKEYS.every(b=>VAULTS.every(l=>Object.values(bal[b][l]).every(v=>!v)));
-  let h=`<div class="head"><h2>نظرة عامة</h2><span class="muted small">${fdate(t)}</span></div>`;
+  const bs=bsel();let tg=0,t24=0,tp=0;
+  for(const b of bs)for(const it of S.items)for(const l of LOCS){const v=q(bal,b,l,it.id);tg+=v*iw(it.id);t24+=v*iw(it.id)*ik(it.id)/999.9;if(it.unit!=="g")tp+=v}
+  const tcash=bs.reduce((a,b)=>a+cashBal(b),0);
+  let h=`<section class="hero"><div class="hero-t"><h2>${VAULT_TITLE}</h2><span class="hero-m">${fmonth(t.slice(0,7))}</span></div>
+    <div class="hero-c"><b id="clock">${clockText()}</b><span>${fdate(t)}</span></div></section>
+  <div class="bigtiles ${showMoney()?"":"one"}">
+    <div class="bigtile gold"><span class="bt-l">إجمالي الدهب</span><b>${fmt(t24)}</b><span class="bt-u">جرام عيار 24</span>
+      <div class="bt-s"><span>${fmt(tg)} جم وزن قائم</span><span>${fmt(tp)} قطعة</span>${bs.length>1?bs.map(b=>{let g=0;for(const it of S.items)for(const l of LOCS)g+=q(bal,b,l,it.id)*iw(it.id)*ik(it.id)/999.9;return `<span>${BR[b]}: ${fmt(g)}</span>`}).join(""):""}</div></div>
+    ${showMoney()?`<div class="bigtile cash"><span class="bt-l">إجمالي الكاشات</span><b>${fmt(tcash)}</b><span class="bt-u">ريال سعودي</span>
+      <div class="bt-s">${bs.length>1?bs.map(b=>`<span>${BR[b]}: ${fmt(cashBal(b))}</span>`).join(""):`<span>${BR[bs[0]]}</span>`}</div></div>`:""}
+  </div>`;
   if(allZero&&isAdmin())h+=`<div class="note info"><b>ابدأ من هنا:</b> لو عندك بيانات الشيت القديم، ادخل «الإعدادات ← استيراد». أو سجّل الرصيد الافتتاحي من «حركة جديدة ← حركات تانية ← رصيد افتتاحي»، أو من «الجرد».</div>`;
   h+=`<div class="grid2">`;
   for(const b of bsel()){
@@ -246,7 +261,7 @@ function vaultOptions(){const bs=bsel();const cur=(bs.length>1?"all":bs[0])+"|"+
 function vStock(){
   const bal=balances();const bs=bsel();const rows=stockRows(bal);const view=VIEWS[SV.view];
   const sel=(id,opts,cur)=>`<select id="${id}">${opts.map(([v,l])=>`<option value="${v}" ${v===cur?"selected":""}>${l}</option>`).join("")}</select>`;
-  let h=`<div class="head"><div><h2>المخزون</h2><div class="vault-title">${vaultLabel()}</div></div><button class="btn sm" id="exStock">تحميل Excel</button></div>
+  let h=`<div class="head"><div><h2>المخزون</h2><div class="vault-title">${vaultLabel()}</div></div><div class="exp"><button class="btn sm" id="exStock">Excel</button><button class="btn sm" data-pdf="exStock">طباعة / PDF</button></div></div>
   <section class="toolbar">
     <label class="grow">الخزنة<select id="sv_vault">${vaultOptions()}</select></label>
     <label>الترتيب${sel("sv_sort",[["weight","حسب الوزن"],["grams","الأكثر جرامات"],["low","الأقل كمية"],["alerts","التنبيهات أولاً"]],SV.sort)}</label>
@@ -456,6 +471,7 @@ function saveMove(){
     const ref=db.collection("moves").doc();const b=db.batch();
     b.set(ref,r.m);b.update(db.collection("moves").doc(d.editOf),{void:true,voidBy:S.email,voidAt:Date.now(),replacedBy:ref.id});
     b.commit().catch(e=>toast("التعديل ما اتحفظش: "+errText(e)));
+    audit("تعديل حركة",`${T[r.m.type]?.l||""} – ${BR[r.m.branch]}${r.m.inv?" – إذن "+r.m.inv:""}${r.m.cust?" – "+r.m.cust:""}`,{ref:d.editOf,newRef:ref.id,branch:r.m.branch});
     toast("اتحفظ التعديل ✓");S.draft=null;location.hash="log";return;
   }
   writeDoc("moves",r.m,"اتسجلت الحركة ✓");
@@ -472,26 +488,49 @@ function moveActions(m){
   return `<button class="btn xs" data-edit="${m.id}">تعديل</button><button class="btn xs danger" data-undo="${m.id}">تراجع</button>`;
 }
 function typeChip(m){const t=T[m.type]||{l:m.type};const cls=t.sale>0?"ok":t.sale<0?"warn":m.type==="adjust"?"bad":m.type==="branch"?"gold":t.app?"gold":m.type==="buy"?"warn":"plain";return `<span class="chip ${cls}">${t.l}</span>`}
-function moveCard(m){
+function moveCard(m,opt){
+  /* one tidy journal row: date | what & who | totals | actions, with the full item list folded under «التفاصيل» */
   const t=T[m.type]||{l:m.type};const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);
-  return `<div class="move ${m.void?"void":""}"><div class="mh">${typeChip(m)}<b>${BR[m.branch]||""}</b>${m.to?`<span class="muted">← ${BR[m.to]}</span>`:""}${t.loc&&m.lines[0]?.loc?`<span class="muted small">${LOC[m.lines[0].loc]}</span>`:""}${m.inv?`<span class="chip plain">إذن ${esc(m.inv)}</span>`:""}${m.order?`<span class="chip plain">طلب ${esc(m.order)}</span>`:""}<span class="muted small" style="margin-inline-start:auto">${fdate(m.date)} · ${ftime(m.ts)}${m.emp?" · "+esc(m.emp):""}</span>${m.void?`<span class="chip bad">${m.replacedBy?"اتعدّلت":"اتلغت"}</span>`:""}${m.editOf?'<span class="chip plain">معدّلة</span>':""}${m._pending?'<span class="chip warn">لسه ما اتزامنتش</span>':""}</div>
-  <div class="ml">${lineSummary(m)} <span class="muted small">(${fmt(g)} جم)</span></div>
-  ${pt?`<div class="paychips">${m.pay.cash?`<span>كاش <b>${fmt(m.pay.cash)}</b></span>`:""}${m.pay.bank?`<span>بنك <b>${fmt(m.pay.bank)}</b></span>`:""}${m.pay.card?`<span>شبكة <b>${fmt(m.pay.card)}</b></span>`:""}<span class="pt">الإجمالي <b>${sar(pt)}</b></span></div>`:""}
-  ${m.note||m.cust?`<div class="muted small">${m.cust?`<b>العميل:</b> ${esc(m.cust)}${m.phone?" ("+esc(m.phone)+")":""}`:""}${m.cust&&m.note?" · ":""}${esc(m.note||"")}</div>`:""}
-  <div class="row acts" data-abox="${m.id}">${moveActions(m)}</div></div>`;
+  const n=m.lines.length;const shown=m.lines.slice(0,2);
+  const pill=ln=>`<span class="ipill">${esc(iname(ln.item))} <b>× ${ln.qty>0&&t.signed?"+":""}${fmt(ln.qty)}${isG(ln.item)?" جم":""}</b></span>`;
+  const status=m.void?`<span class="chip bad">${m.replacedBy?"اتعدّلت":"اتلغت"}</span>`:m.editOf?'<span class="chip plain">معدّلة</span>':"";
+  return `<article class="jr ${m.void?"void":""}">
+  <div class="jr-date"><b>${fdateShort(m.date)}</b><span>${ftime(m.ts)}</span></div>
+  <div class="jr-main">
+    <div class="jr-top">${typeChip(m)}<span class="jr-br">${BR[m.branch]||""}${m.to?" ← "+BR[m.to]:""}${t.loc&&m.lines[0]?.loc?" · "+LOC[m.lines[0].loc]:""}</span>${m.inv?`<span class="tag">إذن ${esc(m.inv)}</span>`:""}${m.order?`<span class="tag">طلب ${esc(m.order)}</span>`:""}${m.cust?`<a href="#log" class="custlink" data-c="${esc(m.cust)}">${esc(m.cust)}</a>`:""}${status}${m._pending?'<span class="chip warn">لسه ما اتزامنتش</span>':""}</div>
+    <div class="jr-items">${shown.map(pill).join("")}${n>2?`<button class="more-pill" data-det="${m.id}">+ ${n-2} صنف</button>`:""}</div>
+    ${m.note?`<div class="jr-note">${esc(m.note)}</div>`:""}
+  </div>
+  <div class="jr-nums"><b>${fmt(g)} <small>جم</small></b>${pt&&showMoney()?`<span class="jr-money">${sar(pt)}</span>`:""}<span class="jr-emp">${esc(m.emp||nameOf(m.by))}</span></div>
+  <div class="jr-act">${opt?.sel?`<label class="selbox" title="تحديد للطباعة"><input type="checkbox" data-sel="${m.id}" ${LOGSTATE.sel.has(m.id)?"checked":""}></label>`:""}<button class="btn xs" data-det="${m.id}">التفاصيل</button><span class="acts" data-abox="${m.id}">${moveActions(m)}</span></div>
+  <div class="jr-det" id="det-${m.id}" hidden>
+    <table class="mini"><thead><tr><th class="name">الصنف</th><th>العدد</th><th>الجرام</th>${m.lines.some(l=>l.k&&l.k!=999.9)?"<th>العيار</th>":""}</tr></thead><tbody>
+    ${m.lines.map(ln=>`<tr><td class="name">${esc(iname(ln.item))}</td><td>${ln.qty>0&&t.signed?"+":""}${fmt(ln.qty)}${isG(ln.item)?" جم":""}</td><td>${fmt(lineG(ln))}</td>${m.lines.some(l=>l.k&&l.k!=999.9)?`<td>${ln.k||ik(ln.item)}</td>`:""}</tr>`).join("")}
+    <tr class="tot"><td class="name">الإجمالي (${n} صنف)</td><td>${fmt(m.lines.filter(l=>!isG(l.item)).reduce((a,l)=>a+Math.abs(l.qty),0))}</td><td>${fmt(g)}</td>${m.lines.some(l=>l.k&&l.k!=999.9)?"<td></td>":""}</tr></tbody></table>
+    <div class="det-side">${pt&&showMoney()?`<div class="paychips">${m.pay.cash?`<span>كاش <b>${fmt(m.pay.cash)}</b></span>`:""}${m.pay.bank?`<span>بنك <b>${fmt(m.pay.bank)}</b></span>`:""}${m.pay.card?`<span>شبكة <b>${fmt(m.pay.card)}</b></span>`:""}<span class="pt">الإجمالي <b>${sar(pt)}</b></span></div>`:""}
+    ${m.cust?`<div class="small"><b>العميل:</b> ${esc(m.cust)}${m.phone?` · <span dir="ltr">${esc(m.phone)}</span>`:""}</div>`:""}
+    <div class="row"><button class="btn xs" data-pinv="${m.id}">طباعة ${T[m.type]?.pay?"الفاتورة":"الحركة"}</button></div>
+    <div class="small muted">اتسجلت ${fdate(dstr(new Date(m.ts||Date.now())))} الساعة ${ftime(m.ts)} بواسطة ${esc(m.emp||nameOf(m.by))}${m.date!==dstr(new Date(m.ts||Date.now()))?` · بتاريخ ${fdate(m.date)}`:""}</div></div>
+  </div></article>`;
 }
 const findMove=id=>S.live.find(x=>x.id===id)||LOGSTATE.list.find(x=>x.id===id);
 function bindMoveActions(){
+  document.querySelectorAll("[data-pinv]").forEach(b=>b.onclick=()=>{const m=findMove(b.dataset.pinv);if(m)printInvoice(m)});
+  document.querySelectorAll("[data-det]").forEach(b=>b.onclick=()=>{const d=document.getElementById("det-"+b.dataset.det);if(!d)return;d.hidden=!d.hidden;
+    document.querySelectorAll(`[data-det="${b.dataset.det}"].btn`).forEach(x=>x.textContent=d.hidden?"التفاصيل":"إخفاء")});
+  document.querySelectorAll(".custlink").forEach(a=>a.onclick=e=>{e.preventDefault();LOGSTATE.custMode=a.dataset.c;LOGSTATE.page=0;if(S.route==="log")render();else location.hash="log"});
   document.querySelectorAll("[data-undo]").forEach(b=>b.onclick=()=>{const id=b.dataset.undo;const box=document.querySelector(`[data-abox="${id}"]`);
     box.innerHTML=`<span class="small">التراجع بيلغي العملية وأثرها على الرصيد والكاش. متأكد؟</span><button class="btn xs danger" data-yes>أيوه، تراجع</button><button class="btn xs" data-no>لا</button>`;
     box.querySelector("[data-no]").onclick=()=>render();
     box.querySelector("[data-yes]").onclick=()=>{const m=findMove(id);
       if(m){const bal=balances(null,id);const bad=deltas(m).map(d=>({...d,v:q(bal,d.b,d.loc,d.item)})).filter(d=>d.v<0);
         if(bad.length){box.innerHTML=`<span class="note bad small">مينفعش التراجع: «${esc(iname(bad[0].item))}» في ${LOC[bad[0].loc]} هيبقى بالسالب لأنه اتصرف بعدها. اتراجع عن العمليات اللي بعدها الأول.</span>`;return}}
+      if(m)audit("تراجع عن حركة",`${T[m.type]?.l||""} – ${BR[m.branch]} – ${fdate(m.date)}${m.inv?" – إذن "+m.inv:""}${m.cust?" – "+m.cust:""}`,{ref:id,branch:m.branch});
       db.collection("moves").doc(id).update({void:true,voidBy:S.email,voidAt:Date.now()}).then(()=>{if(S.route==="log")LOGSTATE.reload()}).catch(e=>toast("ما نجحش: "+errText(e)));toast("اتراجعت العملية")};});
   document.querySelectorAll("[data-restore]").forEach(b=>b.onclick=()=>{const id=b.dataset.restore;const m=findMove(id);if(!m)return;
     const after=balances(Object.assign({},m,{void:false}),id);const bad=deltas(m).filter(d=>q(after,d.b,d.loc,d.item)<0);
     if(bad.length){toast(`مينفعش الاسترجاع: «${iname(bad[0].item)}» هيبقى بالسالب.`);return}
+    audit("استرجاع حركة",`${T[m.type]?.l||""} – ${BR[m.branch]} – ${fdate(m.date)}${m.inv?" – إذن "+m.inv:""}`,{ref:id,branch:m.branch});
     db.collection("moves").doc(id).update({void:false,voidBy:S.email,voidAt:Date.now()}).then(()=>{if(S.route==="log")LOGSTATE.reload()}).catch(e=>toast("ما نجحش: "+errText(e)));toast("اترجعت العملية")});
   document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const m=findMove(b.dataset.edit);if(!m)return;
     S.draft=Object.assign(freshDraft(),{editOf:m.id,branch:m.branch,type:m.type,date:m.date,note:m.note||"",loc:m.lines[0]?.loc||"main",
@@ -549,7 +588,7 @@ const CS={kind:"out",month:null,draft:{cat:"",desc:"",amount:"",date:null,branch
 function vCash(){
   if(!CS.month)CS.month=today().slice(0,7);const d=CS.draft;if(!d.date)d.date=today();if(!d.branch||!allowedBranches().includes(d.branch))d.branch=bsel()[0];
   const cats=CASH_CATS[CS.kind];if(!cats.includes(d.cat))d.cat=cats[0];
-  let h=`<div class="head"><h2>الخزينة (الكاش)</h2><button class="btn sm" id="exCash">تحميل Excel</button></div>`;
+  let h=`<div class="head"><h2>الخزينة (الكاش)</h2><div class="exp"><button class="btn sm" id="exCash">Excel</button><button class="btn sm" data-pdf="exCash">طباعة / PDF</button></div></div>`;
   if(showMoney()){h+=`<div class="kpis">`;for(const b of bsel())h+=`<div class="kpi"><span>رصيد الكاش – ${BR[b]}</span><b>${fmt(cashBal(b))}</b><i>ريال سعودي</i></div>`;h+=`</div>`}
   if(can("cash"))h+=`<section class="panel"><h3>تسجيل إيداع أو سحب</h3>
   <div class="row"><div class="seg2" role="group" aria-label="النوع"><button data-ck="in" aria-pressed="${CS.kind==="in"}">إيداع (داخل)</button><button data-ck="out" aria-pressed="${CS.kind==="out"}">سحب / مصروف (خارج)</button></div>
@@ -578,7 +617,7 @@ function bCash(){
   $("#cm_next").onclick=()=>{CS.month=addMonths(CS.month,1);render()};
   (async()=>{const box=$("#cashBody");const from=CS.month+"-01",to=monthEnd(CS.month);let list,mv;
     try{[list,mv]=await Promise.all([cashInRange(from,to),movesInRange(from,to)])}catch(e){box.innerHTML=`<div class="note bad">ما قدرناش نجيب الشهر ده (محتاج إنترنت).</div>`;return}
-    if(!$("#cashBody"))return;
+    if(!box.isConnected)return;
     const bs=bsel();list=list.filter(c=>bs.includes(c.branch));mv=mv.filter(m=>!m.void&&bs.includes(m.branch)&&T[m.type]?.pay&&m.pay);
     let tin=0,tout=0;for(const c of list){if(c.void)continue;if(c.kind==="in")tin+=c.amount;else tout+=c.amount}
     let sc=0,sb=0,sk=0,bc=0;for(const m of mv){const p=T[m.type].pay;if(p>0){sc+=m.pay.cash||0;sb+=m.pay.bank||0;sk+=m.pay.card||0}else bc+=m.pay.cash||0}
@@ -593,18 +632,103 @@ function bCash(){
         cashRows.push([fdate(c.date),BR[c.branch],c.kind==="in"?"إيداع":"سحب",c.cat,c.desc,c.amount,c.emp||nameOf(c.by),c.void?"ملغي":""])}
       h+=`</tbody></table></div>`}
     box.innerHTML=h+`</section>`;
-    const upd=(id,v)=>db.collection("cash").doc(id).update({void:v,voidBy:S.email,voidAt:Date.now()}).then(()=>{toast(v?"اتراجع":"اترجع");render()}).catch(e=>toast(errText(e)));
+    const upd=(id,v)=>{const c=list.find(x=>x.id===id);audit(v?"تراجع عن خزينة":"استرجاع خزينة",c?`${c.kind==="in"?"إيداع":"سحب"} ${fmt(c.amount)} – ${c.cat} – ${c.desc}`:"",{ref:id,branch:c?.branch});return db.collection("cash").doc(id).update({void:v,voidBy:S.email,voidAt:Date.now()}).then(()=>{toast(v?"اتراجع":"اترجع");render()}).catch(e=>toast(errText(e)))};
     document.querySelectorAll("[data-cv]").forEach(b=>b.onclick=()=>{if(b.dataset.sure)upd(b.dataset.cv,true);else{b.dataset.sure=1;b.textContent="متأكد؟"}});
     document.querySelectorAll("[data-cr]").forEach(b=>b.onclick=()=>upd(b.dataset.cr,false));
   })();
   $("#exCash").onclick=()=>saveCsv(`الخزينة_${CS.month}.csv`,cashRows);
 }
 
+
+/* ---------- EXPENSES SHEET (like the old «مصروفات عام») ---------- */
+const EX={month:null,cat:"",kind:"out",draft:{cat:"مصروفات عامة",desc:"",amount:"",date:null,branch:null}};let expRows=[];
+function vExp(){
+  if(!EX.month)EX.month=today().slice(0,7);const d=EX.draft;if(!d.date)d.date=today();if(!d.branch||!allowedBranches().includes(d.branch))d.branch=bsel()[0];
+  let h=`<div class="head"><div><h2>المصروفات</h2><div class="vault-title">${fmonth(EX.month)} – ${bsel().length>1?"الفرعين":BR[bsel()[0]]}</div></div><div class="exp"><button class="btn sm" id="exExp">Excel</button><button class="btn sm" data-pdf="exExp">طباعة / PDF</button></div></div>`;
+  if(can("cash"))h+=`<section class="panel"><h3>تسجيل مصروف</h3><div class="form">
+    <label>البند<select id="e_cat">${CASH_CATS.out.map(c=>`<option ${c===d.cat?"selected":""}>${c}</option>`).join("")}</select></label>
+    <label>المبلغ (ر.س)<input type="number" inputmode="decimal" step="any" min="0" id="e_amt" value="${esc(d.amount)}"></label>
+    <label>التاريخ<input type="date" id="e_date" value="${d.date}"></label>
+    ${allowedBranches().length>1?`<label>الفرع<select id="e_br">${allowedBranches().map(b=>`<option value="${b}" ${d.branch===b?"selected":""}>${BR[b]}</option>`).join("")}</select></label>`:""}
+    <label style="grid-column:1/-1">البيان<input id="e_desc" value="${esc(d.desc)}" placeholder="مثلاً: راتب بيشوي ايمن، فاتورة كهرباء، صيانة السكن"></label></div>
+    <div id="e_err"></div><div class="row"><button class="btn gold" id="e_save">حفظ المصروف</button><span class="muted small">المصروف بيتخصم من كاش الخزينة.</span></div></section>`;
+  h+=`<section class="daynav"><button class="btn" id="em_prev">‹ الشهر اللي قبله</button><div class="dayc"><b>${fmonth(EX.month)}</b></div><button class="btn" id="em_next" ${EX.month>=today().slice(0,7)?"disabled":""}>الشهر اللي بعده ›</button></section>
+  <section class="toolbar"><label>البند<select id="e_fcat"><option value="">كل البنود</option>${CASH_CATS.out.map(c=>`<option ${EX.cat===c?"selected":""}>${c}</option>`).join("")}</select></label>
+  <label>يعرض<select id="e_kind"><option value="out" ${EX.kind==="out"?"selected":""}>المصروفات (سحب) بس</option><option value="all" ${EX.kind==="all"?"selected":""}>السحب والإيداع</option></select></label></section>
+  <div id="expBody"><div class="empty">جاري التحميل…</div></div>`;
+  return h;
+}
+function bExp(){
+  const d=EX.draft;const keep=()=>{const g=id=>$("#"+id);if(!g("e_cat"))return;d.cat=g("e_cat").value;d.amount=g("e_amt").value;d.date=g("e_date").value;d.desc=g("e_desc").value;if(g("e_br"))d.branch=g("e_br").value};
+  ["e_cat","e_amt","e_date","e_desc","e_br"].forEach(id=>{const e=$("#"+id);if(e)e.oninput=e.onchange=keep});
+  $("#e_save")&&($("#e_save").onclick=()=>{keep();const a=Number(d.amount);const e=$("#e_err");
+    if(!(a>0))return e.innerHTML=`<div class="note bad">اكتب المبلغ.</div>`;if(!d.desc.trim())return e.innerHTML=`<div class="note bad">اكتب البيان (المصروف ده إيه).</div>`;
+    writeDoc("cash",{date:d.date,ts:Date.now(),branch:d.branch,kind:"out",cat:d.cat,desc:d.desc.trim(),amount:a,by:S.email,emp:myName(),void:false},"اتسجل المصروف ✓");
+    EX.draft={cat:d.cat,desc:"",amount:"",date:d.date,branch:d.branch};render()});
+  $("#em_prev").onclick=()=>{EX.month=addMonths(EX.month,-1);render()};$("#em_next").onclick=()=>{EX.month=addMonths(EX.month,1);render()};
+  $("#e_fcat").onchange=e=>{EX.cat=e.target.value;render()};$("#e_kind").onchange=e=>{EX.kind=e.target.value;render()};
+  (async()=>{const box=$("#expBody");let list;try{list=await cashInRange(EX.month+"-01",monthEnd(EX.month))}catch(e){box.innerHTML=`<div class="note bad">محتاج إنترنت.</div>`;return}
+    if(!box.isConnected)return;const bs=bsel();
+    list=list.filter(c=>bs.includes(c.branch)&&(EX.kind==="all"||c.kind==="out")&&(!EX.cat||c.cat===EX.cat)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.ts-b.ts);
+    const live=list.filter(c=>!c.void);const out=live.filter(c=>c.kind==="out").reduce((a,c)=>a+c.amount,0),inn=live.filter(c=>c.kind==="in").reduce((a,c)=>a+c.amount,0);
+    const byCat={};live.filter(c=>c.kind==="out").forEach(c=>byCat[c.cat]=(byCat[c.cat]||0)+c.amount);const mx=Math.max(1,...Object.values(byCat));
+    let h=`<div class="kpis"><div class="kpi bad"><span>إجمالي المصروفات</span><b>${fmt(out)}</b><i>ر.س – ${fmonth(EX.month)}</i></div><div class="kpi"><span>عدد البنود</span><b>${live.filter(c=>c.kind==="out").length}</b><i>مصروف</i></div>${EX.kind==="all"?`<div class="kpi"><span>إيداعات</span><b>${fmt(inn)}</b><i>ر.س</i></div>`:""}</div>`;
+    if(Object.keys(byCat).length)h+=`<section class="panel"><h3>المصروفات حسب البند</h3><div class="catbars">${Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="cb"><span>${esc(k)}</span><div class="cbt"><div style="width:${v/mx*100}%"></div></div><b>${fmt(v)}</b></div>`).join("")}</div></section>`;
+    expRows=[["م","التاريخ","الصيغة","البند","البيان","المبلغ","الفرع","الموظف","الحالة"]];
+    h+=`<section class="panel"><h3>ورقة المصروفات – ${fmonth(EX.month)}</h3>`;
+    if(!list.length)h+=`<div class="empty">مفيش مصروفات في الشهر ده.</div>`;
+    else{h+=`<div class="tbl-wrap"><table><thead><tr><th>م</th><th>التاريخ</th><th>الصيغة</th><th class="name">البند</th><th class="name">البيان</th><th>المبلغ</th><th>الفرع</th><th>الموظف</th><th></th></tr></thead><tbody>`;
+      let run=0;list.forEach((c,i)=>{const ok=can("edit")&&!(S.closing&&c.ts<=S.closing.ts);if(!c.void)run+=c.kind==="out"?c.amount:0;
+        h+=`<tr class="${c.void?"voidrow":""}"><td>${i+1}</td><td class="nowrap">${fdate(c.date)}</td><td><span class="chip ${c.kind==="in"?"ok":"bad"}">${c.kind==="in"?"إيداع":"سحب"}</span></td><td class="name">${esc(c.cat)}</td><td class="name">${esc(c.desc)}</td><td><b>${fmt(c.amount)}</b></td><td>${BR[c.branch]}</td><td>${esc(c.emp||nameOf(c.by))}</td><td>${ok?(c.void?`<button class="btn xs" data-er="${c.id}">استرجاع</button>`:`<button class="btn xs danger" data-ev="${c.id}">تراجع</button>`):""}</td></tr>`;
+        expRows.push([i+1,fdate(c.date),c.kind==="in"?"إيداع":"سحب",c.cat,c.desc,c.amount,BR[c.branch],c.emp||nameOf(c.by),c.void?"ملغي":""])});
+      h+=`<tr class="tot"><td></td><td></td><td></td><td class="name">الإجمالي</td><td></td><td>${fmt(out)}</td><td colspan="3"></td></tr></tbody></table></div>`;
+      expRows.push([],["","","","الإجمالي","",out])}
+    box.innerHTML=h+`</section>`;
+    const upd=(id,v)=>{const c=list.find(x=>x.id===id);audit(v?"تراجع عن خزينة":"استرجاع خزينة",c?`${c.kind==="in"?"إيداع":"سحب"} ${fmt(c.amount)} – ${c.cat} – ${c.desc}`:"",{ref:id,branch:c?.branch});
+      db.collection("cash").doc(id).update({void:v,voidBy:S.email,voidAt:Date.now()}).then(()=>{toast(v?"اتراجع":"اترجع");render()}).catch(e=>toast(errText(e)))};
+    document.querySelectorAll("[data-ev]").forEach(b=>b.onclick=()=>{if(b.dataset.sure)upd(b.dataset.ev,true);else{b.dataset.sure=1;b.textContent="متأكد؟"}});
+    document.querySelectorAll("[data-er]").forEach(b=>b.onclick=()=>upd(b.dataset.er,false));
+  })();
+  $("#exExp").onclick=()=>saveCsv(`المصروفات_${EX.month}.csv`,expRows,`ورقة المصروفات – ${fmonth(EX.month)}`);
+}
+
 /* ---------- DAILY ARCHIVE ---------- */
+const FA={p:"m",open:false,from:null,to:null};
+function faRange(){const t=today();if(FA.p==="m")return [monthStart(),t];if(FA.p==="pm"){const m=addMonths(t.slice(0,7),-1);return [m+"-01",monthEnd(m)]}
+  if(FA.p==="y")return [t.slice(0,4)+"-01-01",t];if(FA.p==="all")return ["2000-01-01",t];return [FA.from||monthStart(),FA.to||t]}
+async function buildArchive(){
+  const [from,to]=faRange();const bs=bsel();const money=showMoney();
+  const [mv,cs]=await Promise.all([movesInRange(from,to),cashInRange(from,to)]);
+  const moves=mv.filter(m=>bs.includes(m.branch)||bs.includes(m.to)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.ts-b.ts);
+  const cash=cs.filter(c=>bs.includes(c.branch)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.ts-b.ts);
+  const live=moves.filter(m=>!m.void);const sales=live.filter(m=>T[m.type]?.sale);
+  const salesRows=[["التاريخ","الوقت","الفرع","رقم الإذن","العميل","موبايل","الأصناف","الجرام",...(money?["كاش","بنك","شبكة","الإجمالي"]:[]),"الموظف","ملاحظات"]];
+  for(const m of sales){const s=T[m.type].sale;salesRows.push([fdate(m.date),ftime(m.ts),BR[m.branch],m.inv||"",m.cust||"",m.phone||"",m.lines.map(l=>iname(l.item)+" × "+l.qty).join("، "),s*m.lines.reduce((a,l)=>a+lineG(l),0),...(money?[s*(m.pay?.cash||0),s*(m.pay?.bank||0),s*(m.pay?.card||0),s*payTotal(m.pay)]:[]),m.emp||nameOf(m.by),m.note||""])}
+  const cashRowsA=[["التاريخ","الفرع","الصيغة","البند","البيان","المبلغ","الموظف","الحالة"],...cash.map(c=>[fdate(c.date),BR[c.branch],c.kind==="in"?"إيداع":"سحب",c.cat,c.desc,c.amount,c.emp||nameOf(c.by),c.void?"ملغي":""])];
+  const expRowsA=[["التاريخ","الفرع","البند","البيان","المبلغ","الموظف"],...cash.filter(c=>!c.void&&c.kind==="out").map(c=>[fdate(c.date),BR[c.branch],c.cat,c.desc,c.amount,c.emp||nameOf(c.by)])];
+  const bal=balances();const stockRowsA=[["الصنف","الوزن","العيار",...bs.flatMap(b=>LOCS.map(l=>`${BR[b]} - ${LOCSHORT[l]}`)),"الإجمالي","الجرام","عيار 24"]];
+  for(const it of S.items){let p=0;const r=[it.name,it.unit==="g"?"بالوزن":it.weight,ik(it.id)];for(const b of bs)for(const l of LOCS){const v=q(bal,b,l,it.id);p+=v;r.push(v)}const g=p*iw(it.id);r.push(p,g,g*ik(it.id)/999.9);stockRowsA.push(r)}
+  const sg=sales.reduce((a,m)=>a+T[m.type].sale*m.lines.reduce((x,l)=>x+lineG(l),0),0);
+  const pc=sales.reduce((a,m)=>a+T[m.type].sale*(m.pay?.cash||0),0),pb=sales.reduce((a,m)=>a+T[m.type].sale*(m.pay?.bank||0),0),pk=sales.reduce((a,m)=>a+T[m.type].sale*(m.pay?.card||0),0);
+  const ex=cash.filter(c=>!c.void&&c.kind==="out").reduce((a,c)=>a+c.amount,0),dep=cash.filter(c=>!c.void&&c.kind==="in").reduce((a,c)=>a+c.amount,0);
+  const label=from==="2000-01-01"?"كل الفترات":`من ${fdate(from)} إلى ${fdate(to)}`;
+  const sumRows=[["البند","القيمة"],["الفترة",label],["الفروع",bs.map(b=>BR[b]).join("، ")],["عدد الحركات",live.length],["عدد فواتير البيع",sales.length],["المبيعات (جرام)",sg],
+    ...(money?[["مبيعات كاش (ر.س)",pc],["مبيعات بنك (ر.س)",pb],["مبيعات شبكة (ر.س)",pk],["إجمالي المبيعات (ر.س)",pc+pb+pk],["إيداعات (ر.س)",dep],["المصروفات (ر.س)",ex],["رصيد الكاش الحالي (ر.س)",bs.reduce((a,b)=>a+cashBal(b),0)]]:[]),
+    ["رصيد الدهب الحالي عيار 24 (جم)",stockRowsA.slice(1).reduce((a,r)=>a+r[r.length-1],0)]];
+  const sheets=[{name:"ملخص",rows:sumRows},{name:"المبيعات",rows:salesRows},{name:"كل الحركات",rows:logRows(moves)},...(canSee("cash")||canSee("exp")?[{name:"الخزينة",rows:cashRowsA},{name:"المصروفات",rows:expRowsA}]:[]),{name:"المخزون الحالي",rows:stockRowsA}];
+  return {sheets,label,from,to,moves,cash};
+}
+
 const AR={day:null,kind:"sales"};
 function vArchive(){
   if(!AR.day)AR.day=today();
-  return `<div class="head"><h2>الأرشيف اليومي</h2><button class="btn sm" id="exAr">تحميل Excel</button></div>
+  const fa=FA;
+  return `<details class="panel fullarc" ${fa.open?"open":""}><summary><b>الأرشيف الشامل</b> – حفظ وطباعة كل البيانات لأي فترة (حركات، فواتير، خزينة، مصروفات، مخزون، ملخص)</summary>
+  <div class="form"><label>الفترة<select id="fa_p"><option value="m" ${fa.p==="m"?"selected":""}>الشهر ده</option><option value="pm" ${fa.p==="pm"?"selected":""}>الشهر اللي فات</option><option value="y" ${fa.p==="y"?"selected":""}>السنة دي</option><option value="all" ${fa.p==="all"?"selected":""}>كل حاجة من الأول</option><option value="c" ${fa.p==="c"?"selected":""}>فترة أختارها</option></select></label>
+  ${fa.p==="c"?`<label>من<input type="date" id="fa_from" value="${fa.from||monthStart()}"></label><label>إلى<input type="date" id="fa_to" value="${fa.to||today()}"></label>`:""}</div>
+  <div class="row"><button class="btn gold" id="fa_x">تحميل الأرشيف Excel (كل الشيتات)</button><button class="btn" id="fa_p2">طباعة / PDF</button>${isAdmin()?`<button class="btn" id="fa_j">نسخة احتياطية كاملة (JSON)</button>`:""}<span class="muted small" id="fa_msg"></span></div>
+  <p class="muted small">البيانات كلها محفوظة دايماً على Firebase ومش بتتمسح. الأرشيف ده نسخة منها تحتفظ بيها على جهازك أو تطبعها.</p></details>
+  <div class="head"><h2>الأرشيف اليومي</h2><div class="exp"><button class="btn sm" id="exAr">Excel</button><button class="btn sm" data-pdf="exAr">طباعة / PDF</button></div></div>
   <section class="daynav">
     <button class="btn" id="ar_prev">‹ اليوم اللي قبله</button>
     <div class="dayc"><b>${fdate(AR.day)}</b><input type="date" id="ar_day" value="${AR.day}" aria-label="اختار اليوم"></div>
@@ -616,6 +740,20 @@ function vArchive(){
 }
 let arRows=[];
 function bArchive(){
+  $(".fullarc").ontoggle=e=>{FA.open=e.target.open};
+  $("#fa_p").onchange=e=>{FA.p=e.target.value;FA.open=true;render()};
+  $("#fa_from")&&($("#fa_from").onchange=e=>FA.from=e.target.value);$("#fa_to")&&($("#fa_to").onchange=e=>FA.to=e.target.value);
+  const run=async kind=>{const msg=$("#fa_msg");msg.textContent="بيجهّز الأرشيف…";
+    try{const a=await buildArchive();msg.textContent="";
+      if(kind==="x")saveXlsx(`أرشيف_خزنة_جدة_${a.from==="2000-01-01"?"كامل":a.from+"_"+a.to}.xlsx`,a.sheets);
+      else printTables(`الأرشيف الشامل – ${a.label}`,a.sheets.map(s=>({title:s.name,rows:s.rows})));
+    }catch(e){msg.textContent="ما نجحش: "+(e.code?errText(e):e.message)}};
+  $("#fa_x").onclick=()=>run("x");$("#fa_p2").onclick=()=>run("p");
+  $("#fa_j")&&($("#fa_j").onclick=async()=>{const msg=$("#fa_msg");msg.textContent="بيجهّز النسخة الاحتياطية…";
+    try{const [mv,cs,au]=await Promise.all(["moves","cash","audit"].map(c=>db.collection(c).get()));
+      const data={app:"gold-vault",exportedAt:new Date().toISOString(),by:S.email,items:S.items,closing:S.closing,moves:mv.docs.map(d=>({id:d.id,...d.data()})),cash:cs.docs.map(d=>({id:d.id,...d.data()})),audit:au.docs.map(d=>({id:d.id,...d.data()}))};
+      download(`نسخة_احتياطية_${today()}.json`,new Blob([JSON.stringify(data)],{type:"application/json"}));audit("نسخة احتياطية كاملة",`${data.moves.length} حركة، ${data.cash.length} خزينة`);msg.textContent="اتحملت ✓"}
+    catch(e){msg.textContent="ما نجحش: "+errText(e)}});
   const go=d=>{AR.day=d>today()?today():d;render()};
   $("#ar_prev").onclick=()=>go(addDays(AR.day,-1));
   $("#ar_next").onclick=()=>go(addDays(AR.day,1));
@@ -625,7 +763,7 @@ function bArchive(){
   (async()=>{const box=$("#arBody");let list,cash;
     try{[list,cash]=await Promise.all([movesInRange(AR.day,AR.day),cashInRange(AR.day,AR.day)]);list=list.filter(m=>bsel().includes(m.branch)||bsel().includes(m.to));cash=cash.filter(c=>bsel().includes(c.branch)&&!c.void)}
     catch(e){box.innerHTML=`<div class="note bad">ما قدرناش نجيب اليوم ده (محتاج إنترنت).</div>`;return}
-    if(!$("#arBody"))return;
+    if(!box.isConnected)return;
     const sales=list.filter(m=>!m.void&&T[m.type]?.sale);const bs=bsel();
     let h=`<div class="kpis">`;
     for(const b of bs){let g=0,money=0;sales.filter(m=>m.branch===b).forEach(m=>{const s=T[m.type].sale;m.lines.forEach(ln=>{g+=s*lineG(ln)});money+=s*payTotal(m.pay)});
@@ -659,7 +797,7 @@ function bArchive(){
 const MS={month:null};let monthRows=[];
 function vMonth(){
   if(!MS.month)MS.month=today().slice(0,7);
-  return `<div class="head"><h2>الملخص الشهري</h2><button class="btn sm" id="exMon">تحميل Excel</button></div>
+  return `<div class="head"><h2>الملخص الشهري</h2><div class="exp"><button class="btn sm" id="exMon">Excel</button><button class="btn sm" data-pdf="exMon">طباعة / PDF</button></div></div>
   <section class="daynav"><button class="btn" id="ms_prev">‹ الشهر اللي قبله</button><div class="dayc"><b>${fmonth(MS.month)}</b><span class="muted small">${bsel().length>1?"الفرعين":BR[bsel()[0]]}</span></div><button class="btn" id="ms_next" ${MS.month>=today().slice(0,7)?"disabled":""}>الشهر اللي بعده ›</button></section>
   <div id="monBody"><div class="empty">جاري الحساب…</div></div>`;
 }
@@ -671,7 +809,7 @@ function bMonth(){
     let inM,after,cIn,cAfter;
     try{[inM,after,cIn,cAfter]=await Promise.all([movesInRange(from,to),to<t?movesInRange(addDays(to,1),t):[],cashInRange(from,to),to<t?cashInRange(addDays(to,1),t):[]])}
     catch(e){box.innerHTML=`<div class="note bad">ما قدرناش نجيب الشهر ده (محتاج إنترنت).</div>`;return}
-    if(!$("#monBody"))return;
+    if(!box.isConnected)return;
     inM=inM.filter(m=>!m.void);after=after.filter(m=>!m.void);
     const cur=balances();const end={},start={},col={};const C=["in","buy","out","sale","adj"];
     for(const it of S.items){let e=0;for(const b of bs)for(const l of LOCS)e+=q(cur,b,l,it.id);end[it.id]=e;col[it.id]={in:0,buy:0,out:0,sale:0,adj:0}}
@@ -715,13 +853,16 @@ function bMonth(){
   })();
 }
 
+function logRows(list){const money=showMoney();const rows=[["التاريخ","الوقت","الفرع","نوع الحركة","رقم الإذن","رقم الطلب","العميل","موبايل","المكان","الصنف","العدد","الوزن (جم)",...(money?["كاش","بنك","شبكة"]:[]),"الموظف","ملاحظات","الحالة"]];
+  for(const m of list)m.lines.forEach((ln,i)=>rows.push([fdate(m.date),ftime(m.ts),BR[m.branch]+(m.to?" ← "+BR[m.to]:""),T[m.type]?.l||m.type,m.inv||"",m.order||"",m.cust||"",m.phone||"",ln.loc?LOC[ln.loc]:"",iname(ln.item),ln.qty,Math.round(lineG(ln)*100)/100,...(money?[i?"":(m.pay?.cash||""),i?"":(m.pay?.bank||""),i?"":(m.pay?.card||"")]:[]),m.emp||nameOf(m.by),m.note||"",m.void?(m.replacedBy?"اتعدّلت":"اتلغت"):"سارية"]));
+  return rows}
 /* ---------- LOG (professional journal: filter, search, edit, undo, restore) ---------- */
-const LOGSTATE={from:null,to:null,type:"",item:"",status:"",q:"",page:0,list:[],custMode:null,reload:()=>{}};
+const LOGSTATE={sel:new Set(),from:null,to:null,type:"",item:"",status:"",q:"",page:0,list:[],custMode:null,reload:()=>{}};
 const PAGE=50;
 function vLog(){
   const L=LOGSTATE;if(!L.from){L.from=monthStart();L.to=today()}
   const groups={};for(const [k,v] of Object.entries(T))(groups[v.g]=groups[v.g]||[]).push([k,v]);
-  return `<div class="head"><h2>سجل الحركات</h2><button class="btn sm" id="exLog">تحميل Excel</button></div>
+  return `<div class="head"><h2>سجل الحركات</h2><div class="exp"><button class="btn sm" id="exLog">Excel</button><button class="btn sm" data-pdf="exLog">طباعة / PDF</button></div></div>
   <section class="toolbar">
     <label class="grow">بحث<input id="l_q" value="${esc(L.q)}" placeholder="اسم العميل، رقم الإذن، رقم الطلب، موبايل، ملاحظة…"></label>
     <label>من<input type="date" id="l_from" value="${L.from}"></label><label>إلى<input type="date" id="l_to" value="${L.to}"></label>
@@ -744,7 +885,7 @@ function bLog(){
   const fill=async()=>{const box=$("#logBody");if(!box)return;let raw;
     try{raw=L.custMode?(await db.collection("moves").where("custKey","==",custKey(L.custMode)).get()).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.ts-a.ts):await movesInRange(L.from,L.to)}
     catch(e){box.innerHTML=`<div class="note bad">ما قدرناش نجيب الحركات (محتاج إنترنت). ${esc(errText(e))}</div>`;return}
-    if(!$("#logBody"))return;
+    if(!box.isConnected)return;
     L.list=raw;const list=raw.filter(logRowMatch);L.shown=list;
     let sg=0,sm=0,nInv=0;for(const m of list){if(m.void||!T[m.type]?.sale)continue;nInv++;const s=T[m.type].sale;m.lines.forEach(ln=>sg+=s*lineG(ln));sm+=s*payTotal(m.pay)}
     const pages=Math.max(1,Math.ceil(list.length/PAGE));if(L.page>=pages)L.page=pages-1;const slice=list.slice(L.page*PAGE,(L.page+1)*PAGE);
@@ -752,18 +893,21 @@ function bLog(){
     let h=`<div class="logsum"><span><b>${list.length}</b> حركة</span><span><b>${nInv}</b> فاتورة بيع</span><span>مبيعات <b>${fmt(sg)}</b> جم</span>${showMoney()?`<span>بقيمة <b>${sar(sm)}</b></span>`:""}
       ${custHit?`<button class="btn sm" id="l_cust" data-c="${esc(custHit)}">كل فواتير «${esc(custHit)}» من الأول</button>`:""}</div>`;
     if(!list.length){box.innerHTML=h+`<div class="empty">مفيش حركات مطابقة.</div>`;bindTop();return}
-    h+=`<div class="tbl-wrap journal"><table><thead><tr><th>التاريخ</th><th>النوع</th><th>الفرع</th><th>الإذن / الطلب</th><th class="name">العميل</th><th class="name">الأصناف</th><th>الجرام</th>${showMoney()?"<th>المبلغ</th>":""}<th>الموظف</th><th>الحالة</th><th></th></tr></thead><tbody>`;
-    for(const m of slice){const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);
-      h+=`<tr class="${m.void?"voidrow":""}"><td class="nowrap">${fdateShort(m.date)}<br><span class="muted small">${ftime(m.ts)}</span></td><td>${typeChip(m)}</td><td class="nowrap">${BR[m.branch]||""}${m.to?" ← "+BR[m.to]:""}</td>
-        <td>${m.inv?esc(m.inv):""}${m.order?`<span class="muted small">طلب ${esc(m.order)}</span>`:""}</td><td class="name">${m.cust?`<a href="#log" class="custlink" data-c="${esc(m.cust)}">${esc(m.cust)}</a>${m.phone?`<br><span class="muted small" dir="ltr">${esc(m.phone)}</span>`:""}`:""}</td>
-        <td class="name wrap">${lineSummary(m)}${m.note?`<div class="muted small">${esc(m.note)}</div>`:""}</td><td>${fmt(g)}</td>${showMoney()?`<td>${pt?`<b>${fmt(pt)}</b><div class="muted small">${[m.pay.cash?"كاش "+fmt(m.pay.cash):"",m.pay.bank?"بنك "+fmt(m.pay.bank):"",m.pay.card?"شبكة "+fmt(m.pay.card):""].filter(Boolean).join(" · ")}</div>`:""}</td>`:""}
-        <td>${esc(m.emp||nameOf(m.by))}</td><td>${m.void?`<span class="chip bad">${m.replacedBy?"اتعدّلت":"اتلغت"}</span>`:m.editOf?'<span class="chip plain">معدّلة</span>':'<span class="chip ok">سارية</span>'}</td>
-        <td class="nowrap"><div class="acts" data-abox="${m.id}">${moveActions(m)}</div></td></tr>`}
-    h+=`</tbody></table></div>`;
+    h+=`<div class="selbar"><label class="chk"><input type="checkbox" id="sel_all"> تحديد كل الصفحة</label><span id="sel_n">${L.sel.size?`محدد ${L.sel.size}`:"حدد حركات عشان تطبعها أو تصدّرها لوحدها"}</span>
+      <button class="btn sm" id="sel_x" ${L.sel.size?"":"disabled"}>Excel المحدد</button><button class="btn sm" id="sel_p" ${L.sel.size?"":"disabled"}>طباعة المحدد</button><button class="btn sm" id="sel_c" ${L.sel.size?"":"disabled"}>إلغاء التحديد</button></div>`;
+    h+=`<div class="journal-list">`;let lastDay="";
+    for(const m of slice){if(m.date!==lastDay){h+=`<div class="jr-day">${fdate(m.date)}</div>`;lastDay=m.date}h+=moveCard(m,{sel:true})}
+    h+=`</div>`;
     if(pages>1)h+=`<div class="row pager"><button class="btn sm" id="pg_prev" ${L.page?"":"disabled"}>‹ السابق</button><span class="muted small">صفحة ${L.page+1} من ${pages}</span><button class="btn sm" id="pg_next" ${L.page<pages-1?"":"disabled"}>التالي ›</button></div>`;
     box.innerHTML=h;bindTop();bindMoveActions();
+    const selUpd=()=>{const n=L.sel.size;$("#sel_n").textContent=n?`محدد ${n}`:"حدد حركات عشان تطبعها أو تصدّرها لوحدها";["sel_x","sel_p","sel_c"].forEach(id=>$("#"+id).disabled=!n)};
+    document.querySelectorAll("[data-sel]").forEach(c=>c.onchange=()=>{if(c.checked)L.sel.add(c.dataset.sel);else L.sel.delete(c.dataset.sel);selUpd()});
+    $("#sel_all").onchange=e=>{document.querySelectorAll("[data-sel]").forEach(c=>{c.checked=e.target.checked;if(c.checked)L.sel.add(c.dataset.sel);else L.sel.delete(c.dataset.sel)});selUpd()};
+    const selRows=()=>logRows(L.list.filter(m=>L.sel.has(m.id)));
+    $("#sel_x").onclick=()=>saveXlsx(`حركات_محددة_${today()}.xlsx`,[{name:"حركات محددة",rows:selRows()}]);
+    $("#sel_p").onclick=()=>printTables(`حركات محددة (${L.sel.size})`,[{rows:selRows()}]);
+    $("#sel_c").onclick=()=>{L.sel.clear();fill()};
     $("#pg_prev")&&($("#pg_prev").onclick=()=>{L.page--;fill()});$("#pg_next")&&($("#pg_next").onclick=()=>{L.page++;fill()});
-    document.querySelectorAll(".custlink").forEach(a=>a.onclick=e=>{e.preventDefault();L.custMode=a.dataset.c;L.page=0;render()});
   };
   const bindTop=()=>{$("#l_cust")&&($("#l_cust").onclick=()=>{L.custMode=$("#l_cust").dataset.c;L.page=0;render()})};
   L.reload=fill;
@@ -772,9 +916,54 @@ function bLog(){
   let qt;$("#l_q").oninput=e=>{clearTimeout(qt);qt=setTimeout(()=>{L.q=e.target.value.trim();L.page=0;fill()},250)};
   $("#l_custx")&&($("#l_custx").onclick=()=>{L.custMode=null;render()});
   fill();
-  $("#exLog").onclick=()=>{const list=L.shown||[];const rows=[["التاريخ","الوقت","الفرع","نوع الحركة","رقم الإذن","رقم الطلب","العميل","موبايل","الفرع المستلم","المكان","الصنف","العدد","الوزن (جم)","كاش","بنك","شبكة","الموظف","ملاحظات","الحالة"]];
-    for(const m of list)m.lines.forEach((ln,i)=>rows.push([fdate(m.date),ftime(m.ts),BR[m.branch],T[m.type]?.l||m.type,m.inv||"",m.order||"",m.cust||"",m.phone||"",m.to?BR[m.to]:"",ln.loc?LOC[ln.loc]:"",iname(ln.item),ln.qty,Math.round(lineG(ln)*100)/100,i?"":(m.pay?.cash||""),i?"":(m.pay?.bank||""),i?"":(m.pay?.card||""),m.emp||nameOf(m.by),m.note||"",m.void?(m.replacedBy?"اتعدّلت":"اتلغت"):"سارية"]));
+  $("#exLog").onclick=()=>{const rows=logRows(L.shown||[]);
     saveCsv(`سجل_الحركات_${L.custMode?custKey(L.custMode):L.from+"_"+L.to}.csv`,rows)};
+}
+
+
+/* ---------- AUDIT TRAIL ---------- */
+const AU={from:null,to:null,who:"",kind:""};let auRows=[];
+const dayStart=iso=>parseD(iso).getTime(),dayEnd=iso=>parseD(addDays(iso,1)).getTime()-1;
+function vAudit(){
+  if(!AU.from){AU.to=today();AU.from=addDays(today(),-6)}
+  return `<div class="head"><h2>سجل العمليات</h2><div class="exp"><button class="btn sm" id="exAu">Excel</button><button class="btn sm" data-pdf="exAu">طباعة / PDF</button></div></div>
+  <p class="muted small">كل عملية اتعملت في البرنامج: مين عملها، وإمتى بالظبط (اليوم والساعة)، حتى لو التاريخ المكتوب على الفاتورة مختلف.</p>
+  <section class="toolbar"><label>من<input type="date" id="au_from" value="${AU.from}"></label><label>إلى<input type="date" id="au_to" value="${AU.to}"></label>
+  <label>المستخدم<select id="au_who"><option value="">الكل</option></select></label>
+  <label>نوع العملية<select id="au_kind"><option value="">الكل</option>${[["move","تسجيل حركات وفواتير"],["cash","الخزينة"],["fix","تعديل / تراجع / استرجاع"],["admin","الإعدادات والمستخدمين"],["login","الدخول"]].map(([k,l])=>`<option value="${k}" ${AU.kind===k?"selected":""}>${l}</option>`).join("")}</select></label></section>
+  <div id="auBody"><div class="empty">جاري التحميل…</div></div>`;
+}
+function bAudit(){
+  const fill=async()=>{const box=$("#auBody");const a=dayStart(AU.from),z=dayEnd(AU.to);let mv,cs,au;
+    try{[mv,cs,au]=await Promise.all([db.collection("moves").where("ts",">=",a).where("ts","<=",z).get(),db.collection("cash").where("ts",">=",a).where("ts","<=",z).get(),db.collection("audit").where("ts",">=",a).where("ts","<=",z).get()])}
+    catch(e){box.innerHTML=`<div class="note bad">ما قدرناش نجيب السجل. ${esc(errText(e))}</div>`;return}
+    if(!$("#auBody"))return;
+    const rows=[];
+    for(const d of mv.docs){const m=d.data();if(m.imp||m.editOf)continue;const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);
+      rows.push({ts:m.ts,by:m.by,name:m.emp,kind:"move",action:"سجّل "+(T[m.type]?.l||m.type),branch:m.branch,
+        details:`${m.lines.map(ln=>iname(ln.item)+" × "+fmt(ln.qty)).join("، ")} (${fmt(g)} جم)${m.inv?" – إذن "+m.inv:""}${m.cust?" – العميل: "+m.cust:""}${pt&&showMoney()?" – "+sar(pt):""}${m.date!==dstr(new Date(m.ts))?" – بتاريخ "+fdate(m.date):""}`})}
+    for(const d of cs.docs){const c=d.data();if(c.imp)continue;rows.push({ts:c.ts,by:c.by,name:c.emp,kind:"cash",action:c.kind==="in"?"سجّل إيداع في الخزينة":"سجّل سحب من الخزينة",branch:c.branch,details:`${c.cat} – ${c.desc}${showMoney()?" – "+sar(c.amount):""}`})}
+    for(const d of au.docs){const x=d.data();const k=/دخول/.test(x.action)?"login":/تعديل حركة|تراجع|استرجاع/.test(x.action)?"fix":/خزينة/.test(x.action)?"cash":"admin";rows.push({ts:x.ts,by:x.by,name:x.name,kind:k,action:x.action,branch:x.branch,details:x.details})}
+    rows.sort((p,q2)=>q2.ts-p.ts);
+    const who=new Map();rows.forEach(r=>who.set(r.by,r.name||nameOf(r.by)));
+    const sel=$("#au_who");sel.innerHTML=`<option value="">الكل</option>`+[...who].map(([e,n])=>`<option value="${esc(e)}" ${AU.who===e?"selected":""}>${esc(n||e)}</option>`).join("");
+    const list=rows.filter(r=>(!AU.who||r.by===AU.who)&&(!AU.kind||r.kind===AU.kind));
+    auRows=[["اليوم","الساعة","المستخدم","العملية","الفرع","التفاصيل"]];
+    const KC={move:"ok",cash:"gold",fix:"bad",admin:"plain",login:"plain"};
+    let h=`<div class="logsum"><span><b>${list.length}</b> عملية</span><span><b>${new Set(list.map(r=>r.by)).size}</b> مستخدم</span></div>`;
+    if(!list.length)h+=`<div class="empty">مفيش عمليات في الفترة دي.</div>`;
+    else{h+=`<div class="tbl-wrap journal"><table><thead><tr><th>اليوم</th><th>الساعة</th><th>المستخدم</th><th>العملية</th><th>الفرع</th><th class="name">التفاصيل</th></tr></thead><tbody>`;
+      let lastDay="";
+      for(const r of list.slice(0,500)){const day=dstr(new Date(r.ts));const t=new Date(r.ts);let hh=t.getHours();const ap=hh<12?"ص":"م";hh=hh%12||12;const tm=`${hh}:${String(t.getMinutes()).padStart(2,"0")}:${String(t.getSeconds()).padStart(2,"0")} ${ap}`;
+        if(day!==lastDay){h+=`<tr class="dayrow"><td colspan="6">${fdate(day)}</td></tr>`;lastDay=day}
+        h+=`<tr><td class="nowrap">${fdateShort(day)}</td><td class="nowrap"><b>${tm}</b></td><td class="nowrap"><b>${esc(r.name||nameOf(r.by))}</b></td><td><span class="chip ${KC[r.kind]}">${esc(r.action)}</span></td><td class="nowrap">${r.branch?BR[r.branch]:""}</td><td class="name wrap">${esc(r.details)}</td></tr>`;
+        auRows.push([fdate(day),tm,r.name||nameOf(r.by),r.action,r.branch?BR[r.branch]:"",r.details])}
+      h+=`</tbody></table></div>`;if(list.length>500)h+=`<p class="muted small">ظاهر أحدث 500 عملية – ضيّق الفترة عشان تشوف الباقي.</p>`}
+    box.innerHTML=h;};
+  const upd=()=>{AU.from=$("#au_from").value||addDays(today(),-6);AU.to=$("#au_to").value||today();AU.who=$("#au_who").value;AU.kind=$("#au_kind").value;fill()};
+  ["au_from","au_to","au_who","au_kind"].forEach(id=>$("#"+id).onchange=upd);
+  $("#exAu").onclick=()=>saveCsv(`سجل_العمليات_${AU.from}_${AU.to}.csv`,auRows);
+  fill();
 }
 
 /* ---------- COUNT ---------- */
@@ -840,7 +1029,7 @@ function vItems(){
     <td style="width:100px"><input type="number" step="1" min="0" data-im="${i}" value="${it.min??0}"></td><td><input type="checkbox" data-io="${i}" ${it.off?"":"checked"} style="width:auto"></td></tr>`});
   h+=`</tbody></table></div><p class="muted small">«بالوزن» يعني الصنف بيتسجل بالجرام مش بالعدد (زي الدهب الخام). الصنف غير النشط بيختفي من القوائم، بس رصيده وسجله بيفضلوا.</p>
   <div id="i_msg"></div><div class="row"><button class="btn gold" id="i_save">حفظ الأصناف</button><button class="btn" id="i_undo">تراجع</button></div></section>`;
-  h+=`<section class="panel"><h3>استيراد بيانات شيت الإكسيل القديم</h3><p class="small">اختار ملف <b>gold-import.json</b>. هيضيف الأصناف الناقصة (زي الدهب الخام) ويحدّث أوزان التولة، وينقل الوارد والمبيعات بالفلوس ورقم الإذن، والمصروفات وإيداعات الأبلكيشن والرصيد الافتتاحي للكاش. البضاعة بتدخل <b>الخزنة الرئيسية – بوابة 2</b>. لو استوردت نفس الملف مرتين، مش هيتكرر حاجة.</p>
+  h+=`<section class="panel"><h3>استيراد بيانات شيت الإكسيل القديم</h3><p class="small">اختار ملف <b>gold-import.json</b>. هيضيف الأصناف الناقصة (زي الدهب الخام) ويحدّث أوزان التولة، وينقل الوارد والمبيعات بالفلوس ورقم الإذن، والمصروفات وإيداعات الأبلكيشن والرصيد الافتتاحي للكاش. البضاعة بتدخل <b>الخزنة الرئيسية – بوابة ELPOP</b>. لو استوردت نفس الملف مرتين، مش هيتكرر حاجة.</p>
   <input type="file" id="imp_file" accept=".json,application/json"><div id="imp_msg">${importData?impSummary(importData):""}</div></section>`;
   const cl=S.closing;
   h+=`<section class="panel"><h3>إقفال الفترة (ترحيل الأرصدة)</h3><p class="small">بيحفظ الأرصدة الحالية (الدهب والكاش) كرصيد بداية عشان البرنامج يفضل سريع مع كتر الحركات. اعمله آخر كل شهر بعد الجرد. الحركات القديمة بتفضل في الأرشيف والملخص، بس مش هتقدر تعدّلها أو تتراجع عنها بعد الإقفال.</p>
@@ -878,10 +1067,12 @@ function bItems(){
   // users
   document.querySelectorAll("[data-ue]").forEach(b=>b.onclick=()=>{UE.edit=UE.edit===b.dataset.ue?null:b.dataset.ue;render()});
   document.querySelectorAll("[data-ua]").forEach(b=>b.onclick=()=>{const u=S.users.find(x=>x.id===b.dataset.ua);if(!u)return;
+    audit(u.active?"إيقاف مستخدم":"تفعيل مستخدم",u.name);
     db.doc("users/"+u.id).update({active:!u.active}).then(()=>toast(u.active?"اتوقف الحساب":"اتفعّل الحساب")).catch(e=>toast(errText(e)))});
   $("#ue_cancel")&&($("#ue_cancel").onclick=()=>{UE.edit=null;render()});
   $("#ue_save")&&($("#ue_save").onclick=()=>{const {perms,branches}=readPerms("e");const name=$("#ue_name").value.trim();
     if(!branches.length){toast("اختار فرع واحد على الأقل.");return}
+    audit("تعديل صلاحيات",(S.users.find(x=>x.id===UE.edit)?.name||"")+" – "+branches.map(b=>BR[b]).join("، "));
     db.doc("users/"+UE.edit).update({perms,branches,...(name?{name}:{})}).then(()=>{toast("اتحفظت الصلاحيات ✓");UE.edit=null;render()}).catch(e=>toast(errText(e)))});
   $("#u_add").onclick=async()=>{const first=$("#u_first").value.trim(),last=$("#u_last").value.trim(),pass=$("#u_pass").value;const {perms,branches}=readPerms("n");
     const um=x=>{$("#u_msg").innerHTML=x};
@@ -895,7 +1086,7 @@ function bItems(){
       const sec=firebase.apps.find(a=>a.name==="sec")||firebase.initializeApp(CFG,"sec");
       await sec.auth().createUserWithEmailAndPassword(email,pass);await sec.auth().signOut();
       await db.doc("users/"+email).set({name,user:cap(first)+" "+cap(last),perms,branches,active:true,created:Date.now()});
-      toast("اتضاف "+name+" ✓");um(`<div class="note info">ابعت للموظف: اسم الدخول <b dir="ltr">${esc(name)}</b> وكلمة السر اللي كتبتها.</div>`);
+      audit("إضافة مستخدم",name+" – "+branches.map(b=>BR[b]).join("، "));toast("اتضاف "+name+" ✓");um(`<div class="note info">ابعت للموظف: اسم الدخول <b dir="ltr">${esc(name)}</b> وكلمة السر اللي كتبتها.</div>`);
       $("#u_first").value="";$("#u_last").value="";$("#u_pass").value="";
     }catch(e){um(`<div class="note bad">${esc(errText(e))}</div>`)}
     btn.disabled=false;btn.textContent="إضافة الموظف";};
@@ -913,11 +1104,11 @@ function bItems(){
       if(!name){if(!S.items.some(x=>x.id===it.id))continue;return msg("اسم الصنف مينفعش يبقى فاضي.")}
       if(!(w>0))return msg(`اكتب وزن صحيح للصنف «${name}».`);if(!Number.isInteger(mn)||mn<0)return msg(`الحد الأدنى للصنف «${name}» لازم رقم صحيح.`);
       const o={id:it.id,name,weight:w,karat:k,min:mn};if(g)o.unit="g";if(it.off)o.off=true;out.push(o)}
-    db.doc("config/items").set({items:out}).catch(e=>toast(errText(e)));S.itemsDraft=null;toast("اتحفظت الأصناف ✓");render()};
+    db.doc("config/items").set({items:out}).catch(e=>toast(errText(e)));audit("تعديل الأصناف",`${out.length} صنف`);S.itemsDraft=null;toast("اتحفظت الأصناف ✓");render()};
   // import
   const bindImp=()=>{const go=$("#imp_go");if(!go)return;go.onclick=async()=>{if(!S.online){$("#imp_msg").innerHTML=`<div class="note warn">الاستيراد محتاج إنترنت.</div>`;return}
     go.disabled=true;const say=t=>{const m=$("#imp_msg");if(m)m.innerHTML=`<div class="note info">${esc(t)}</div>`};
-    try{const n=await runImport(importData,say);importData=null;$("#imp_msg").innerHTML=`<div class="note info">${n?`خلص الاستيراد ✓ – اتنقل ${n} سجل. افتح «الملخص الشهري» واتأكد من الأرقام.`:"الملف ده اتنقل قبل كده بالكامل – مفيش حاجة جديدة."}</div>`}
+    try{const n=await runImport(importData,say);importData=null;if(n)audit("استيراد شيت الإكسيل",`${n} سجل`);$("#imp_msg").innerHTML=`<div class="note info">${n?`خلص الاستيراد ✓ – اتنقل ${n} سجل. افتح «الملخص الشهري» واتأكد من الأرقام.`:"الملف ده اتنقل قبل كده بالكامل – مفيش حاجة جديدة."}</div>`}
     catch(e){go.disabled=false;$("#imp_msg").innerHTML=`<div class="note bad">الاستيراد وقف: ${esc(e.code?errText(e):e.message)}</div>`}}};
   $("#imp_file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.moves)||!Array.isArray(d.items))throw 0;d.cash=d.cash||[];importData=d;$("#imp_msg").innerHTML=impSummary(d);bindImp()}catch(x){$("#imp_msg").innerHTML=`<div class="note bad">الملف ده مش ملف استيراد صحيح.</div>`}};r.readAsText(f)};
   bindImp();
@@ -927,7 +1118,7 @@ function bItems(){
     if(!S.online){box.innerHTML=`<span class="note warn small">التصفير محتاج إنترنت.</span>`;return}
     box.innerHTML=`<span class="small"><b>متأكد؟</b> كل أرصدة الدهب والكاش هتبقى صفر في الفرعين.</span><button class="btn sm danger" id="rz_yes">أيوه، صفّر</button><button class="btn sm" id="rz_no">لا</button>`;
     $("#rz_no").onclick=()=>render();
-    $("#rz_yes").onclick=async()=>{try{await db.doc("config/closing").set({ts:lastTs(),date:today(),bal:emptyBal(),cash:{b2:0,b4:0},by:S.email,reset:true});toast("اتصفّر البرنامج – كل الأرصدة صفر")}catch(e){toast("التصفير ما نجحش: "+errText(e))}}};
+    $("#rz_yes").onclick=async()=>{try{await db.doc("config/closing").set({ts:lastTs(),date:today(),bal:emptyBal(),cash:{b2:0,b4:0},by:S.email,reset:true});audit("تصفير الأرصدة","كل أرصدة الدهب والكاش بقت صفر");toast("اتصفّر البرنامج – كل الأرصدة صفر")}catch(e){toast("التصفير ما نجحش: "+errText(e))}}};
   $("#cl_btn").onclick=()=>{const box=$("#cl_box");
     if(!S.online){box.innerHTML=`<span class="note warn small">الإقفال محتاج إنترنت.</span>`;return}
     box.innerHTML=`<span class="small">هيتم ترحيل ${S.live.length} حركة و${S.cash.length} إيداع/سحب. متأكد؟</span><button class="btn sm pri" id="cl_yes">أيوه، اقفل</button><button class="btn sm" id="cl_no">لا</button>`;
@@ -935,20 +1126,57 @@ function bItems(){
     $("#cl_yes").onclick=async()=>{const bal=balances();const clean=emptyBal();
       for(const b of BKEYS)for(const l of LOCS)for(const [k,v] of Object.entries(bal[b][l]))if(v)clean[b][l][k]=v;
       const cash={};for(const b of BKEYS)cash[b]=Math.round(cashBal(b)*100)/100;
-      try{await db.doc("config/closing").set({ts:lastTs(),date:today(),bal:clean,cash,by:S.email});toast("اتقفلت الفترة ✓")}catch(e){toast("الإقفال ما نجحش: "+errText(e))}}};
+      try{await db.doc("config/closing").set({ts:lastTs(),date:today(),bal:clean,cash,by:S.email});audit("إقفال فترة",fdate(today()));toast("اتقفلت الفترة ✓")}catch(e){toast("الإقفال ما نجحش: "+errText(e))}}};
 }
 
 /* ---------- utils ---------- */
-function saveCsv(name,rows){
-  const csv="﻿"+rows.map(r=>r.map(c=>{const s=String(c??"");return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}).join(",")).join("\r\n");
-  const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
-  const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+/* Excel (.xlsx via SheetJS) and print/PDF (browser print → «Save as PDF»). Every export button routes here. */
+let PRINT_MODE=false;
+const pageTitle=()=>{const h=$("#app .head h2")?.textContent||"تقرير";const sub=$("#app .vault-title,#app .dayc b")?.textContent;return sub?`${h} – ${sub}`:h};
+function saveCsv(name,rows,title){
+  if(PRINT_MODE){PRINT_MODE=false;return printTables(title||pageTitle(),[{rows}])}
+  saveXlsx(name.replace(/\.csv$/,".xlsx"),[{name:(title||pageTitle()).slice(0,31),rows}]);
 }
-
+function sheetFrom(rows){rows=rows.map(r=>r.map(c=>typeof c==="number"?Math.round(c*100)/100:c));const ws=XLSX.utils.aoa_to_sheet(rows);
+  const w=[];rows.forEach(r=>r.forEach((c,i)=>{w[i]=Math.min(60,Math.max(w[i]||6,String(c??"").length+2))}));ws["!cols"]=w.map(x=>({wch:x}));return ws}
+function saveXlsx(file,sheets){
+  if(!window.XLSX){const r=sheets[0].rows;const csv="﻿"+r.map(x=>x.map(c=>{const v=String(c??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")).join("\r\n");
+    return download(file.replace(/\.xlsx$/,".csv"),new Blob([csv],{type:"text/csv;charset=utf-8"}))}
+  const wb=XLSX.utils.book_new();wb.Workbook={Views:[{RTL:true}]};const used=new Set();
+  for(const sh of sheets){let n=String(sh.name||"Sheet").replace(/[\\\/\?\*\[\]:]/g," ").slice(0,31);while(used.has(n))n=n.slice(0,28)+" "+used.size;used.add(n);XLSX.utils.book_append_sheet(wb,sheetFrom(sh.rows.length?sh.rows:[["مفيش بيانات"]]),n)}
+  const out=XLSX.write(wb,{bookType:"xlsx",type:"array"});download(file,new Blob([out],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
+  audit("تصدير Excel",file);
+}
+const FN_MAP=[["أرشيف_خزنة_جدة","Jeddah-Vault-Archive"],["نسخة_احتياطية","Backup"],["سجل_الحركات","Moves"],["سجل_العمليات","Audit"],["حركات_محددة","Selected-Moves"],["المصروفات","Expenses"],["الخزينة","Cash"],["مخزون","Stock"],["ملخص","Monthly-Summary"],["أرشيف","Daily"],["كامل","All"]];
+/* Browsers drop non-Latin download names, so files get English names; the content stays Arabic. */
+const asciiName=n=>{for(const [a,e] of FN_MAP)n=n.split(a).join(e);n=n.replace(/[^\x20-\x7E]+/g,"").replace(/\s+/g,"").replace(/_+/g,"_").replace(/^_|_(?=\.)/g,"");return n.startsWith(".")?"Gold-Vault"+n:n};
+function download(name,blob){name=asciiName(name);const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)}
+function tableHtml(rows){if(!rows||!rows.length)return `<p>مفيش بيانات.</p>`;const [hd,...body]=rows;
+  return `<table><thead><tr>${hd.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${body.map(r=>r.length?`<tr>${hd.map((_,i)=>`<td>${esc(typeof r[i]==="number"?fmt(r[i]):r[i]??"")}</td>`).join("")}</tr>`:`<tr class="gap"><td colspan="${hd.length}"></td></tr>`).join("")}</tbody></table>`}
+function printTables(title,sections,extraHtml){
+  const wide=sections.some(s=>(s.rows?.[0]?.length||0)>7);
+  let p=$("#print");if(!p){p=document.createElement("div");p.id="print";document.body.appendChild(p)}
+  $("#pagesize").textContent=`@page{size:A4 ${wide?"landscape":"portrait"};margin:10mm}`;
+  p.className=wide?"wide":"";
+  p.innerHTML=`<header class="ph"><div><h1>${esc(VAULT_TITLE)}</h1><h2>${esc(title)}</h2></div><div class="pm">اتطبع: ${fdate(today())} – ${clockText()}<br>بواسطة: ${esc(myName())}</div></header>
+    ${extraHtml||""}${sections.map(s=>`${s.title?`<h3>${esc(s.title)}</h3>`:""}${s.html||tableHtml(s.rows)}`).join("")}`;
+  audit("طباعة / PDF",title);
+  setTimeout(()=>{window.print()},50);
+}
+function bindPrintButtons(){document.querySelectorAll("[data-pdf]").forEach(b=>b.onclick=()=>{const src=document.getElementById(b.dataset.pdf);if(!src)return;PRINT_MODE=true;src.click();setTimeout(()=>{PRINT_MODE=false},0)})}
+function printInvoice(m){
+  const t=T[m.type]||{l:m.type};const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);
+  const rows=[["#","الصنف","العدد","الوزن (جم)","العيار"],...m.lines.map((ln,i)=>[i+1,iname(ln.item),ln.qty,Math.round(lineG(ln)*100)/100,ln.k||ik(ln.item)])];
+  const info=`<div class="inv"><div><b>${esc(t.l)}</b><br>الفرع: ${BR[m.branch]||""}${m.to?" ← "+BR[m.to]:""}</div><div>${m.inv?`رقم الإذن: <b>${esc(m.inv)}</b><br>`:""}${m.order?`رقم الطلب: <b>${esc(m.order)}</b><br>`:""}التاريخ: ${fdate(m.date)} – ${ftime(m.ts)}</div>
+    <div>${m.cust?`العميل: <b>${esc(m.cust)}</b><br>`:""}${m.phone?`موبايل: <span dir="ltr">${esc(m.phone)}</span><br>`:""}الموظف: ${esc(m.emp||nameOf(m.by))}</div></div>`;
+  const pay=pt?`<table class="paytbl"><tr>${m.pay.cash?`<td>كاش<br><b>${fmt(m.pay.cash)}</b></td>`:""}${m.pay.bank?`<td>بنك<br><b>${fmt(m.pay.bank)}</b></td>`:""}${m.pay.card?`<td>شبكة<br><b>${fmt(m.pay.card)}</b></td>`:""}<td>الإجمالي<br><b>${sar(pt)}</b></td></tr></table>`:"";
+  printTables(m.inv?`فاتورة رقم ${m.inv}`:t.l,[{rows}],info);
+  const p=$("#print");p.insertAdjacentHTML("beforeend",`<p class="totline">الإجمالي: ${m.lines.length} صنف – ${fmt(g)} جرام</p>${pay}${m.note?`<p>ملاحظات: ${esc(m.note)}</p>`:""}<div class="sign"><span>توقيع الموظف</span><span>توقيع العميل</span></div>`);
+}
 /* ---------- login ---------- */
 function renderLogin(msg){
   shell(false);document.body.classList.add("loginbg");
-  $("#app").innerHTML=`<div class="loginwrap"><div class="loginphoto"><img src="login-bg.jpg" alt="كورنيش جدة ومسجد الرحمة"><span>جدة · كورنيش البحر الأحمر</span></div><section class="panel login"><div class="brand big"><svg class="ingot" viewBox="0 0 34 22" aria-hidden="true"><path d="M7 2h20l6 18H1z" fill="var(--gold)"/><path d="M9 5h16l3 9H6z" fill="#F3D779" opacity=".55"/></svg><div><h2>خزائن الذهب</h2><span class="muted small">بوابة 2 · بوابة 4</span></div></div>
+  $("#app").innerHTML=`<div class="loginwrap"><div class="loginphoto"><img src="login-bg.jpg" alt="كورنيش جدة ومسجد الرحمة"><span>جدة · كورنيش البحر الأحمر</span></div><section class="panel login"><div class="brand big"><svg class="ingot" viewBox="0 0 34 22" aria-hidden="true"><path d="M7 2h20l6 18H1z" fill="var(--gold)"/><path d="M9 5h16l3 9H6z" fill="#F3D779" opacity=".55"/></svg><div><h2>خزائن الذهب</h2><span class="muted small">${VAULT_TITLE}</span></div></div>
   <label>اسم المستخدم<input id="lg_e" dir="ltr" autocomplete="username" placeholder="Ahmed Ali" value="${esc(store.get("gv.lastUser")||"")}"></label>
   <label>كلمة السر<input id="lg_p" type="password" dir="ltr" autocomplete="current-password"></label>
   <div id="lg_msg">${msg?`<div class="note bad">${esc(msg)}</div>`:""}</div>
@@ -1029,6 +1257,7 @@ function boot(){
     S.email=(u.email||"").toLowerCase();render();
     await bootstrapIfFirst().catch(e=>toast(errText(e)));
     startData();
+    try{if(!sessionStorage.getItem("gv.in")){sessionStorage.setItem("gv.in","1");setTimeout(()=>audit("دخول البرنامج",navigator.userAgent.includes("Mobile")?"من موبايل":"من كمبيوتر"),2500)}}catch(e){}
   });
 }
 window.__gv={S,balances,deltas,status,cashBal};

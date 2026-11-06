@@ -1,6 +1,7 @@
 /* خزائن الذهب – تطبيق مستقل يعمل على Firebase (Firestore + Authentication) */
 (function(){
 "use strict";
+const APP_VERSION="13";
 const BR={b2:"بوابة ELPOP",b4:"بوابة 4"};
 const VAULT_TITLE="خزنة جدة (السعودية)";
 const BKEYS=["b2","b4"];
@@ -1242,7 +1243,18 @@ function startData(){
   subs.push(db.collection("moves").where("app","==",true).onSnapshot(s=>{S.appMoves=s.docs.map(d=>({id:d.id,...d.data()}));if(S.route==="app")rerender()},()=>{}));
   subs.push(db.doc("config/closing").onSnapshot(s=>{S.closing=s.exists?s.data():null;S.closingLoaded=true;const ts=S.closing?.ts||0;if(ts!==lastTs){lastTs=ts;subLive()}rerender()},()=>{S.closingLoaded=true;if(lastTs===undefined){lastTs=0;subLive()}rerender()}));
 }
+/* Make sure every device runs the newest upload: compare with version.json (never cached) and refresh caches if needed. */
+async function ensureLatest(){
+  try{const r=await fetch("version.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=String((await r.json()).v||"");
+    if(v&&v!==APP_VERSION){
+      if(sessionStorage.getItem("gv.upd")===v)return;sessionStorage.setItem("gv.upd",v);
+      if(window.caches)for(const k of await caches.keys())await caches.delete(k);
+      if(navigator.serviceWorker)for(const reg of await navigator.serviceWorker.getRegistrations())await reg.unregister();
+      location.reload();
+    }}catch(e){}
+}
 function boot(){
+  ensureLatest();const vb=document.getElementById("ver");if(vb)vb.textContent="إصدار "+APP_VERSION;
   CFG=window.FIREBASE_CONFIG;
   if(!CFG||!CFG.apiKey||/ضع|PASTE|xxx/i.test(CFG.apiKey)){shell(false);$("#app").innerHTML=`<section class="panel"><h2>البرنامج محتاج يتربط بقاعدة البيانات</h2><p>افتح ملف <b>config.js</b> وحط فيه بيانات مشروع Firebase بتاعك، وبعدين ارفع الملفات تاني.</p></section>`;return}
   if(!window.firebase){$("#app").innerHTML=`<div class="note bad">محتاج إنترنت لأول تشغيل للبرنامج.</div>`;return}

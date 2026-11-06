@@ -1,9 +1,9 @@
 /* خزائن الذهب – تطبيق مستقل يعمل على Firebase (Firestore + Authentication) */
 (function(){
 "use strict";
-const APP_VERSION="13";
+const APP_VERSION="16";
 const BR={b2:"بوابة ELPOP",b4:"بوابة 4"};
-const VAULT_TITLE="خزنة جدة (السعودية)";
+const VAULT_TITLE="خزينة السعودية (جدة) EL POP";
 const BKEYS=["b2","b4"];
 const LOC={main:"الخزنة الرئيسية",sub:"الخزنة الفرعية",show:"البترينة",res:"محجوز للأبلكيشن"};
 const LOCS=["main","sub","show","res"];          // every place gold can sit
@@ -489,6 +489,16 @@ function moveActions(m){
   return `<button class="btn xs" data-edit="${m.id}">تعديل</button><button class="btn xs danger" data-undo="${m.id}">تراجع</button>`;
 }
 function typeChip(m){const t=T[m.type]||{l:m.type};const cls=t.sale>0?"ok":t.sale<0?"warn":m.type==="adjust"?"bad":m.type==="branch"?"gold":t.app?"gold":m.type==="buy"?"warn":"plain";return `<span class="chip ${cls}">${t.l}</span>`}
+function moveDetHtml(m){const t=T[m.type]||{l:m.type};const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);const n=m.lines.length;
+  return `<div class="jr-det" id="det-${m.id}" hidden>
+    <table class="mini"><thead><tr><th class="name">الصنف</th><th>العدد</th><th>الجرام</th>${m.lines.some(l=>l.k&&l.k!=999.9)?"<th>العيار</th>":""}</tr></thead><tbody>
+    ${m.lines.map(ln=>`<tr><td class="name">${esc(iname(ln.item))}</td><td>${ln.qty>0&&t.signed?"+":""}${fmt(ln.qty)}${isG(ln.item)?" جم":""}</td><td>${fmt(lineG(ln))}</td>${m.lines.some(l=>l.k&&l.k!=999.9)?`<td>${ln.k||ik(ln.item)}</td>`:""}</tr>`).join("")}
+    <tr class="tot"><td class="name">الإجمالي (${n} صنف)</td><td>${fmt(m.lines.filter(l=>!isG(l.item)).reduce((a,l)=>a+Math.abs(l.qty),0))}</td><td>${fmt(g)}</td>${m.lines.some(l=>l.k&&l.k!=999.9)?"<td></td>":""}</tr></tbody></table>
+    <div class="det-side">${pt&&showMoney()?`<div class="paychips">${m.pay.cash?`<span>كاش <b>${fmt(m.pay.cash)}</b></span>`:""}${m.pay.bank?`<span>بنك <b>${fmt(m.pay.bank)}</b></span>`:""}${m.pay.card?`<span>شبكة <b>${fmt(m.pay.card)}</b></span>`:""}<span class="pt">الإجمالي <b>${sar(pt)}</b></span></div>`:""}
+    ${m.cust?`<div class="small"><b>العميل:</b> ${esc(m.cust)}${m.phone?` · <span dir="ltr">${esc(m.phone)}</span>`:""}</div>`:""}
+    <div class="row"><button class="btn xs" data-pinv="${m.id}">طباعة ${T[m.type]?.pay?"الفاتورة":"الحركة"}</button></div>
+    <div class="small muted">اتسجلت ${fdate(dstr(new Date(m.ts||Date.now())))} الساعة ${ftime(m.ts)} بواسطة ${esc(m.emp||nameOf(m.by))}${m.date!==dstr(new Date(m.ts||Date.now()))?` · بتاريخ ${fdate(m.date)}`:""}</div></div>
+  </div>`}
 function moveCard(m,opt){
   /* one tidy journal row: date | what & who | totals | actions, with the full item list folded under «التفاصيل» */
   const t=T[m.type]||{l:m.type};const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);
@@ -504,15 +514,7 @@ function moveCard(m,opt){
   </div>
   <div class="jr-nums"><b>${fmt(g)} <small>جم</small></b>${pt&&showMoney()?`<span class="jr-money">${sar(pt)}</span>`:""}<span class="jr-emp">${esc(m.emp||nameOf(m.by))}</span></div>
   <div class="jr-act">${opt?.sel?`<label class="selbox" title="تحديد للطباعة"><input type="checkbox" data-sel="${m.id}" ${LOGSTATE.sel.has(m.id)?"checked":""}></label>`:""}<button class="btn xs" data-det="${m.id}">التفاصيل</button><span class="acts" data-abox="${m.id}">${moveActions(m)}</span></div>
-  <div class="jr-det" id="det-${m.id}" hidden>
-    <table class="mini"><thead><tr><th class="name">الصنف</th><th>العدد</th><th>الجرام</th>${m.lines.some(l=>l.k&&l.k!=999.9)?"<th>العيار</th>":""}</tr></thead><tbody>
-    ${m.lines.map(ln=>`<tr><td class="name">${esc(iname(ln.item))}</td><td>${ln.qty>0&&t.signed?"+":""}${fmt(ln.qty)}${isG(ln.item)?" جم":""}</td><td>${fmt(lineG(ln))}</td>${m.lines.some(l=>l.k&&l.k!=999.9)?`<td>${ln.k||ik(ln.item)}</td>`:""}</tr>`).join("")}
-    <tr class="tot"><td class="name">الإجمالي (${n} صنف)</td><td>${fmt(m.lines.filter(l=>!isG(l.item)).reduce((a,l)=>a+Math.abs(l.qty),0))}</td><td>${fmt(g)}</td>${m.lines.some(l=>l.k&&l.k!=999.9)?"<td></td>":""}</tr></tbody></table>
-    <div class="det-side">${pt&&showMoney()?`<div class="paychips">${m.pay.cash?`<span>كاش <b>${fmt(m.pay.cash)}</b></span>`:""}${m.pay.bank?`<span>بنك <b>${fmt(m.pay.bank)}</b></span>`:""}${m.pay.card?`<span>شبكة <b>${fmt(m.pay.card)}</b></span>`:""}<span class="pt">الإجمالي <b>${sar(pt)}</b></span></div>`:""}
-    ${m.cust?`<div class="small"><b>العميل:</b> ${esc(m.cust)}${m.phone?` · <span dir="ltr">${esc(m.phone)}</span>`:""}</div>`:""}
-    <div class="row"><button class="btn xs" data-pinv="${m.id}">طباعة ${T[m.type]?.pay?"الفاتورة":"الحركة"}</button></div>
-    <div class="small muted">اتسجلت ${fdate(dstr(new Date(m.ts||Date.now())))} الساعة ${ftime(m.ts)} بواسطة ${esc(m.emp||nameOf(m.by))}${m.date!==dstr(new Date(m.ts||Date.now()))?` · بتاريخ ${fdate(m.date)}`:""}</div></div>
-  </div></article>`;
+  ${moveDetHtml(m)}</article>`;
 }
 const findMove=id=>S.live.find(x=>x.id===id)||LOGSTATE.list.find(x=>x.id===id);
 function bindMoveActions(){
@@ -527,12 +529,12 @@ function bindMoveActions(){
       if(m){const bal=balances(null,id);const bad=deltas(m).map(d=>({...d,v:q(bal,d.b,d.loc,d.item)})).filter(d=>d.v<0);
         if(bad.length){box.innerHTML=`<span class="note bad small">مينفعش التراجع: «${esc(iname(bad[0].item))}» في ${LOC[bad[0].loc]} هيبقى بالسالب لأنه اتصرف بعدها. اتراجع عن العمليات اللي بعدها الأول.</span>`;return}}
       if(m)audit("تراجع عن حركة",`${T[m.type]?.l||""} – ${BR[m.branch]} – ${fdate(m.date)}${m.inv?" – إذن "+m.inv:""}${m.cust?" – "+m.cust:""}`,{ref:id,branch:m.branch});
-      db.collection("moves").doc(id).update({void:true,voidBy:S.email,voidAt:Date.now()}).then(()=>{if(S.route==="log")LOGSTATE.reload()}).catch(e=>toast("ما نجحش: "+errText(e)));toast("اتراجعت العملية")};});
+      db.collection("moves").doc(id).update({void:true,voidBy:S.email,voidAt:Date.now()}).then(()=>{if(S.route==="log"||S.route==="audit")LOGSTATE.reload()}).catch(e=>toast("ما نجحش: "+errText(e)));toast("اتراجعت العملية")};});
   document.querySelectorAll("[data-restore]").forEach(b=>b.onclick=()=>{const id=b.dataset.restore;const m=findMove(id);if(!m)return;
     const after=balances(Object.assign({},m,{void:false}),id);const bad=deltas(m).filter(d=>q(after,d.b,d.loc,d.item)<0);
     if(bad.length){toast(`مينفعش الاسترجاع: «${iname(bad[0].item)}» هيبقى بالسالب.`);return}
     audit("استرجاع حركة",`${T[m.type]?.l||""} – ${BR[m.branch]} – ${fdate(m.date)}${m.inv?" – إذن "+m.inv:""}`,{ref:id,branch:m.branch});
-    db.collection("moves").doc(id).update({void:false,voidBy:S.email,voidAt:Date.now()}).then(()=>{if(S.route==="log")LOGSTATE.reload()}).catch(e=>toast("ما نجحش: "+errText(e)));toast("اترجعت العملية")});
+    db.collection("moves").doc(id).update({void:false,voidBy:S.email,voidAt:Date.now()}).then(()=>{if(S.route==="log"||S.route==="audit")LOGSTATE.reload()}).catch(e=>toast("ما نجحش: "+errText(e)));toast("اترجعت العملية")});
   document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{const m=findMove(b.dataset.edit);if(!m)return;
     S.draft=Object.assign(freshDraft(),{editOf:m.id,branch:m.branch,type:m.type,date:m.date,note:m.note||"",loc:m.lines[0]?.loc||"main",
       lines:m.lines.map(l=>({item:l.item,qty:l.qty,...(l.k?{k:l.k}:{})})),pickOpen:false,inv:m.inv||"",cash:m.pay?.cash||"",bank:m.pay?.bank||"",card:m.pay?.card||"",
@@ -935,32 +937,51 @@ function vAudit(){
   <div id="auBody"><div class="empty">جاري التحميل…</div></div>`;
 }
 function bAudit(){
-  const fill=async()=>{const box=$("#auBody");const a=dayStart(AU.from),z=dayEnd(AU.to);let mv,cs,au;
+  const fill=async()=>{const box=$("#auBody");if(!box)return;const a=dayStart(AU.from),z=dayEnd(AU.to);let mv,cs,au;
     try{[mv,cs,au]=await Promise.all([db.collection("moves").where("ts",">=",a).where("ts","<=",z).get(),db.collection("cash").where("ts",">=",a).where("ts","<=",z).get(),db.collection("audit").where("ts",">=",a).where("ts","<=",z).get()])}
     catch(e){box.innerHTML=`<div class="note bad">ما قدرناش نجيب السجل. ${esc(errText(e))}</div>`;return}
-    if(!$("#auBody"))return;
-    const rows=[];
-    for(const d of mv.docs){const m=d.data();if(m.imp||m.editOf)continue;const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);
-      rows.push({ts:m.ts,by:m.by,name:m.emp,kind:"move",action:"سجّل "+(T[m.type]?.l||m.type),branch:m.branch,
-        details:`${m.lines.map(ln=>iname(ln.item)+" × "+fmt(ln.qty)).join("، ")} (${fmt(g)} جم)${m.inv?" – إذن "+m.inv:""}${m.cust?" – العميل: "+m.cust:""}${pt&&showMoney()?" – "+sar(pt):""}${m.date!==dstr(new Date(m.ts))?" – بتاريخ "+fdate(m.date):""}`})}
-    for(const d of cs.docs){const c=d.data();if(c.imp)continue;rows.push({ts:c.ts,by:c.by,name:c.emp,kind:"cash",action:c.kind==="in"?"سجّل إيداع في الخزينة":"سجّل سحب من الخزينة",branch:c.branch,details:`${c.cat} – ${c.desc}${showMoney()?" – "+sar(c.amount):""}`})}
-    for(const d of au.docs){const x=d.data();const k=/دخول/.test(x.action)?"login":/تعديل حركة|تراجع|استرجاع/.test(x.action)?"fix":/خزينة/.test(x.action)?"cash":"admin";rows.push({ts:x.ts,by:x.by,name:x.name,kind:k,action:x.action,branch:x.branch,details:x.details})}
+    if(!box.isConnected)return;
+    const rows=[];const movesById=new Map();
+    for(const d of mv.docs){const m={id:d.id,...d.data()};movesById.set(m.id,m);if(m.imp||m.editOf)continue;
+      rows.push({ts:m.ts,by:m.by,name:m.emp,kind:"move",action:"سجّل "+(T[m.type]?.l||m.type),branch:m.branch,move:m,
+        details:`${m.lines.map(ln=>iname(ln.item)+" × "+fmt(ln.qty)).join("، ")}${m.inv?" – إذن "+m.inv:""}${m.cust?" – العميل: "+m.cust:""}`})}
+    for(const d of cs.docs){const c={id:d.id,...d.data()};if(c.imp)continue;rows.push({ts:c.ts,by:c.by,name:c.emp,kind:"cash",action:c.kind==="in"?"سجّل إيداع في الخزينة":"سجّل سحب من الخزينة",branch:c.branch,cash:c,details:`${c.cat} – ${c.desc}`})}
+    for(const d of au.docs){const x=d.data();const k=/دخول/.test(x.action)?"login":/تعديل حركة|تراجع|استرجاع/.test(x.action)?"fix":/خزينة/.test(x.action)?"cash":"admin";rows.push({ts:x.ts,by:x.by,name:x.name,kind:k,action:x.action,branch:x.branch,details:x.details,ref:x.newRef||x.ref})}
     rows.sort((p,q2)=>q2.ts-p.ts);
+    LOGSTATE.list=[...movesById.values()];
     const who=new Map();rows.forEach(r=>who.set(r.by,r.name||nameOf(r.by)));
     const sel=$("#au_who");sel.innerHTML=`<option value="">الكل</option>`+[...who].map(([e,n])=>`<option value="${esc(e)}" ${AU.who===e?"selected":""}>${esc(n||e)}</option>`).join("");
     const list=rows.filter(r=>(!AU.who||r.by===AU.who)&&(!AU.kind||r.kind===AU.kind));
     auRows=[["اليوم","الساعة","المستخدم","العملية","الفرع","التفاصيل"]];
     const KC={move:"ok",cash:"gold",fix:"bad",admin:"plain",login:"plain"};
+    const tm=ts=>{const t=new Date(ts);let hh=t.getHours();const ap=hh<12?"ص":"م";hh=hh%12||12;return `${hh}:${String(t.getMinutes()).padStart(2,"0")}:${String(t.getSeconds()).padStart(2,"0")} ${ap}`};
     let h=`<div class="logsum"><span><b>${list.length}</b> عملية</span><span><b>${new Set(list.map(r=>r.by)).size}</b> مستخدم</span></div>`;
-    if(!list.length)h+=`<div class="empty">مفيش عمليات في الفترة دي.</div>`;
-    else{h+=`<div class="tbl-wrap journal"><table><thead><tr><th>اليوم</th><th>الساعة</th><th>المستخدم</th><th>العملية</th><th>الفرع</th><th class="name">التفاصيل</th></tr></thead><tbody>`;
-      let lastDay="";
-      for(const r of list.slice(0,500)){const day=dstr(new Date(r.ts));const t=new Date(r.ts);let hh=t.getHours();const ap=hh<12?"ص":"م";hh=hh%12||12;const tm=`${hh}:${String(t.getMinutes()).padStart(2,"0")}:${String(t.getSeconds()).padStart(2,"0")} ${ap}`;
-        if(day!==lastDay){h+=`<tr class="dayrow"><td colspan="6">${fdate(day)}</td></tr>`;lastDay=day}
-        h+=`<tr><td class="nowrap">${fdateShort(day)}</td><td class="nowrap"><b>${tm}</b></td><td class="nowrap"><b>${esc(r.name||nameOf(r.by))}</b></td><td><span class="chip ${KC[r.kind]}">${esc(r.action)}</span></td><td class="nowrap">${r.branch?BR[r.branch]:""}</td><td class="name wrap">${esc(r.details)}</td></tr>`;
-        auRows.push([fdate(day),tm,r.name||nameOf(r.by),r.action,r.branch?BR[r.branch]:"",r.details])}
-      h+=`</tbody></table></div>`;if(list.length>500)h+=`<p class="muted small">ظاهر أحدث 500 عملية – ضيّق الفترة عشان تشوف الباقي.</p>`}
-    box.innerHTML=h;};
+    if(!list.length){box.innerHTML=h+`<div class="empty">مفيش عمليات في الفترة دي.</div>`;return}
+    h+=`<div class="journal-list">`;let lastDay="";let k=0;
+    for(const r of list.slice(0,500)){const day=dstr(new Date(r.ts));const id="au"+(k++);
+      if(day!==lastDay){h+=`<div class="jr-day">${fdate(day)}</div>`;lastDay=day}
+      const m=r.move?movesById.get(r.move.id)||r.move:(r.ref&&movesById.get(r.ref))||null;const c=r.cash;
+      let main="",nums="",acts="",det="";
+      if(m&&r.kind==="move"){const g=m.lines.reduce((s,ln)=>s+Math.abs(lineG(ln)),0);const pt=payTotal(m.pay);
+        main=`<div class="jr-items">${m.lines.slice(0,2).map(ln=>`<span class="ipill">${esc(iname(ln.item))} <b>× ${fmt(ln.qty)}</b></span>`).join("")}${m.lines.length>2?`<button class="more-pill" data-det="${m.id}">+ ${m.lines.length-2} صنف</button>`:""}</div>
+          <div class="jr-top">${m.inv?`<span class="tag">إذن ${esc(m.inv)}</span>`:""}${m.cust?`<span class="tag">${esc(m.cust)}</span>`:""}${m.void?`<span class="chip bad">${m.replacedBy?"اتعدّلت بعدين":"اتلغت بعدين"}</span>`:""}${m.date!==day?`<span class="tag">بتاريخ ${fdateShort(m.date)}</span>`:""}</div>`;
+        nums=`<b>${fmt(g)} <small>جم</small></b>${pt&&showMoney()?`<span class="jr-money">${sar(pt)}</span>`:""}`;
+        acts=`<button class="btn xs" data-det="${m.id}">التفاصيل</button><span class="acts" data-abox="${m.id}">${moveActions(m)}</span>`;det=moveDetHtml(m);}
+      else if(c){nums=showMoney()?`<b class="${c.kind==="in"?"pos":"neg"}">${sar(c.amount)}</b>`:"";main=`<div class="jr-note">${esc(r.details)}</div>${c.void?'<div><span class="chip bad">اتلغت بعدين</span></div>':""}`;
+        const ok=can("edit")&&!(S.closing&&c.ts<=S.closing.ts);acts=ok?(c.void?`<button class="btn xs" data-acr="${c.id}">استرجاع</button>`:`<button class="btn xs danger" data-acv="${c.id}">تراجع</button>`):"";}
+      else{main=`<div class="jr-note">${esc(r.details)}</div>`;if(m)acts=`<button class="btn xs" data-det="${m.id}">الحركة</button>`,det=moveDetHtml(m);}
+      h+=`<article class="jr au"><div class="jr-date"><b>${tm(r.ts)}</b><span>${fdateShort(day)}</span></div>
+        <div class="jr-main"><div class="jr-top"><b class="who">${esc(r.name||nameOf(r.by))}</b><span class="chip ${KC[r.kind]}">${esc(r.action)}</span>${r.branch?`<span class="jr-br">${BR[r.branch]}</span>`:""}</div>${main}</div>
+        <div class="jr-nums">${nums}</div><div class="jr-act">${acts}</div>${det}</article>`;
+      auRows.push([fdate(day),tm(r.ts),r.name||nameOf(r.by),r.action,r.branch?BR[r.branch]:"",r.details])}
+    h+=`</div>`;if(list.length>500)h+=`<p class="muted small">ظاهر أحدث 500 عملية – ضيّق الفترة عشان تشوف الباقي.</p>`;
+    box.innerHTML=h;bindMoveActions();
+    const upd=(id,v)=>{const cc=list.find(x=>x.cash?.id===id)?.cash;audit(v?"تراجع عن خزينة":"استرجاع خزينة",cc?`${cc.kind==="in"?"إيداع":"سحب"} ${fmt(cc.amount)} – ${cc.cat} – ${cc.desc}`:"",{ref:id,branch:cc?.branch});
+      db.collection("cash").doc(id).update({void:v,voidBy:S.email,voidAt:Date.now()}).then(()=>{toast(v?"اتراجع":"اترجع");fill()}).catch(e=>toast(errText(e)))};
+    document.querySelectorAll("[data-acv]").forEach(b=>b.onclick=()=>{if(b.dataset.sure)upd(b.dataset.acv,true);else{b.dataset.sure=1;b.textContent="متأكد؟"}});
+    document.querySelectorAll("[data-acr]").forEach(b=>b.onclick=()=>upd(b.dataset.acr,false));
+  };
+  LOGSTATE.reload=fill;
   const upd=()=>{AU.from=$("#au_from").value||addDays(today(),-6);AU.to=$("#au_to").value||today();AU.who=$("#au_who").value;AU.kind=$("#au_kind").value;fill()};
   ["au_from","au_to","au_who","au_kind"].forEach(id=>$("#"+id).onchange=upd);
   $("#exAu").onclick=()=>saveCsv(`سجل_العمليات_${AU.from}_${AU.to}.csv`,auRows);
@@ -1177,21 +1198,17 @@ function printInvoice(m){
 /* ---------- login ---------- */
 function renderLogin(msg){
   shell(false);document.body.classList.add("loginbg");
-  $("#app").innerHTML=`<div class="loginwrap"><div class="loginphoto"><img src="login-bg.jpg" alt="كورنيش جدة ومسجد الرحمة"><span>جدة · كورنيش البحر الأحمر</span></div><section class="panel login"><div class="brand big"><svg class="ingot" viewBox="0 0 34 22" aria-hidden="true"><path d="M7 2h20l6 18H1z" fill="var(--gold)"/><path d="M9 5h16l3 9H6z" fill="#F3D779" opacity=".55"/></svg><div><h2>خزائن الذهب</h2><span class="muted small">${VAULT_TITLE}</span></div></div>
+  $("#app").innerHTML=`<div class="loginwrap"><div class="loginphoto"><img src="login-bg.jpg" alt="كورنيش جدة ومسجد الرحمة"><span>جدة · كورنيش البحر الأحمر</span></div><section class="panel login"><div class="brand big"><img class="ingot" src="gold-bars.png" alt="سبائك جولد ايرا"><div><h2>${VAULT_TITLE}</h2><span class="muted small">بوابة ELPOP · بوابة 4</span></div></div>
   <label>اسم المستخدم<input id="lg_e" dir="ltr" autocomplete="username" placeholder="Ahmed Ali" value="${esc(store.get("gv.lastUser")||"")}"></label>
   <label>كلمة السر<input id="lg_p" type="password" dir="ltr" autocomplete="current-password"></label>
   <div id="lg_msg">${msg?`<div class="note bad">${esc(msg)}</div>`:""}</div>
   <button class="btn gold" id="lg_go">دخول</button>
-  <p class="muted small">المدير بيدخل بالإيميل بتاعه. الموظفين بيدخلوا بالاسم الإنجليزي اللي المدير عمله ليهم.</p>
-  <details class="first"><summary>أول مرة تشغّل البرنامج؟</summary><p class="small">اكتب إيميلك وكلمة سر جديدة فوق (6 حروف/أرقام على الأقل) واضغط الزرار ده. أول حساب بيتعمل بيبقى هو المدير.</p><button class="btn pri" id="lg_first">إنشاء حساب المدير</button><button class="btn" id="lg_reset">نسيت كلمة السر (للمدير)</button></details></section></div>`;
+  </section></div>`;
   const go=async()=>{const raw=$("#lg_e").value.trim(),p=$("#lg_p").value;if(!raw||!p)return;const e=toLoginEmail(raw);
     $("#lg_go").disabled=true;$("#lg_go").textContent="جاري الدخول…";
     try{store.set("gv.lastUser",raw);await auth.signInWithEmailAndPassword(e,p)}
     catch(err){renderLogin(errText(err))}};
-  $("#lg_first").onclick=()=>{const e=$("#lg_e").value.trim().toLowerCase(),p=$("#lg_p").value;if(!e.includes("@")||p.length<6){$("#lg_msg").innerHTML=`<div class="note warn">اكتب إيميلك وكلمة سر 6 حروف/أرقام على الأقل.</div>`;return}store.set("gv.lastUser",e);firstRun(e,p)};
   $("#lg_go").onclick=go;$("#lg_p").onkeydown=ev=>{if(ev.key==="Enter")go()};
-  $("#lg_reset").onclick=async()=>{const e=$("#lg_e").value.trim();if(!e.includes("@")){$("#lg_msg").innerHTML=`<div class="note warn">اكتب إيميل المدير الأول. الموظفين لو نسيوا كلمة السر، المدير يعملهم حساب جديد.</div>`;return}
-    try{await auth.sendPasswordResetEmail(e);$("#lg_msg").innerHTML=`<div class="note info">بعتنالك رسالة على الإيميل لتغيير كلمة السر.</div>`}catch(err){$("#lg_msg").innerHTML=`<div class="note bad">${esc(errText(err))}</div>`}};
 }
 function firstRun(e,p){
   $("#app").innerHTML=`<section class="panel login"><h2>تجهيز البرنامج لأول مرة</h2><p>هنعمل حساب المدير بالإيميل <b dir="ltr">${esc(e)}</b> وكلمة السر اللي كتبتها، وهنضيف قائمة الأصناف. كل الأرصدة هتبدأ صفر.</p>

@@ -1,6 +1,6 @@
 // يخلي البرنامج يفتح حتى لو النت قاطع، ودايماً يجيب آخر نسخة لما النت موجود
-const CACHE="gold-vault-v13";
-const SHELL=["./","./index.html","./app.js?v=13","./config.js?v=13","./manifest.json","./icon-192.png","./icon-512.png","./login-bg.jpg",
+const CACHE="gold-vault-v16";
+const SHELL=["./","./index.html","./app.js?v=16","./config.js?v=16","./manifest.json","./icon-192.png","./icon-512.png","./login-bg.jpg","./ingot.svg","./gold-bars.png",
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js",
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js",

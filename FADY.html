@@ -1993,7 +1993,7 @@ const CATALOG = [
   {no:25, name:'250 جرام',        karat:999.9, w24:250},
   {no:23, name:'500 جرام',        karat:999.9, w24:500},
   {no:19, name:'1 كيلو',          karat:999.9, w24:1000},
-  {no:21, name:'1 كيلو عيار 995', karat:995,   w24:995.1},
+  {no:21, name:'1 كيلو عيار 995', karat:995,   w24:1000},  // الكيلو 995 وزنه 1000 جرام ← بعيار 875 = 1000×995×العدد÷875
   {no:3,  name:'ربع جنيه',        karat:875,   w24:2},
   {no:2,  name:'نصف جنيه',        karat:875,   w24:4},
   {no:1,  name:'جنيه',            karat:875,   w24:8},
@@ -3071,12 +3071,12 @@ window.addEventListener('offline',()=>setLiveDot(false));
 // أوزان الأصناف — قابلة للتحكم ومحفوظة في settings/catalog
 // ================================================================
 // الأوزان القديمة التي كانت في البرنامج (لتصحيح السجلات القديمة)
-const OLD_W24={'1 جرام':0.99,'2.5 جرام':2.49,'5 جرام':4.99,'10 جرام':9.99,'جنيه':7.99,'نصف جنيه':3.99,'ربع جنيه':1.99,'جرام':0.99,'ربع جرام':0.24,'نصف جرام':0.49,'2.5جرام':2.49,'5جرام':4.99,'10جرام':9.99};
+const OLD_W24={'1 كيلو عيار 995':995.1,'1 جرام':0.99,'2.5 جرام':2.49,'5 جرام':4.99,'10 جرام':9.99,'جنيه':7.99,'نصف جنيه':3.99,'ربع جنيه':1.99,'جرام':0.99,'ربع جرام':0.24,'نصف جرام':0.49,'2.5جرام':2.49,'5جرام':4.99,'10جرام':9.99};
 let catLoaded=false;
 function applyCatalogWeights(w){
   if(!w) return;
   const W={}; Object.entries(w).forEach(([k,x])=>W[catName(k)]=x);
-  CATALOG.forEach(c=>{ const x=parseFloat(W[c.name]); if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
+  CATALOG.forEach(c=>{ let x=parseFloat(W[c.name]); if(c.karat===995&&Math.abs(x-995.1)<0.001) x=1000; /* وزن قديم خاطئ محفوظ */ if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
   try{ fillDropdowns(); }catch(e){}
 }
 async function loadCatalogWeights(){
@@ -3117,7 +3117,7 @@ async function buildFixPlan(){
   for(const col of Object.keys(cols)){ data[col]=(await DB.collection(col).get()).docs.map(d=>d.data()); }
   for(const [col,key] of Object.entries(cols)){
     for(const r of data[col]){
-      const nm=r[key]; const ow=OLD_W24[nm], nw=cur[nm];
+      const nm=catName(r[key]); const ow=OLD_W24[nm], nw=cur[nm];
       if(!ow||!nw||Math.abs(ow-nw)<1e-9) continue;
       const cnt=+r.count||0, wt=+r.weight||0; if(!cnt||!wt) continue;
       if(Math.abs(wt-cnt*ow)>0.02+cnt*0.0005) continue;            // لم يُحسب من الكتالوج القديم — اتركه

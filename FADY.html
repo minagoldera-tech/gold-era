@@ -3076,7 +3076,7 @@ let catLoaded=false;
 function applyCatalogWeights(w){
   if(!w) return;
   const W={}; Object.entries(w).forEach(([k,x])=>W[catName(k)]=x);
-  CATALOG.forEach(c=>{ let x=parseFloat(W[c.name]); if(c.karat===995&&Math.abs(x-995.1)<0.001) x=1000; /* وزن قديم خاطئ محفوظ */ if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
+  CATALOG.forEach(c=>{ let x=parseFloat(W[c.name]); if(c.karat===995) x=1000; /* الكيلو 995 وزنه دائماً 1000 جرام مهما كان المحفوظ */ if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
   try{ fillDropdowns(); }catch(e){}
 }
 async function loadCatalogWeights(){

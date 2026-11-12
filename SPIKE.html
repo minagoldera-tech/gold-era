@@ -1234,7 +1234,10 @@ tr.pv-dsel td{background:#EAF1FB!important}
 
 <script>
 // ===================== CATALOG =====================
-// ===== JSONBin Config (بديل GitHub - لا يحتاج توكن ثابت) =====
+// ===== Firebase Config (المزامنة بين الأجهزة) =====
+var _FB_DB   = 'https://gold-era--spike-default-rtdb.europe-west1.firebasedatabase.app'; // رابط Realtime Database من Firebase
+var _FB_ROOT = 'spk_507af2dd21655cdd93d9ef6f'; // اسم المجلد السري جوه قاعدة البيانات (لازم يطابق الـ Rules)
+// ===== JSONBin القديم: بيتقرا مرة واحدة بس عشان ننقل أي بيانات قديمة، وممكن يتشال بعدين =====
 var _JB_KEY  = '$2a$10$4sJ/64rfFD2coOsM9o.dUeqVhHeLy.DYKGOAvfiSz5S6mEApBR8xq';
 var _JB_DATA_BIN  = '6ab27e78ac6210605ae97edf'; // bin البيانات
 var _JB_USERS_BIN = '6ab27e7cffd5d16053231682'; // bin المستخدمين
@@ -2379,41 +2382,58 @@ var _USERS = (function(){
 })();
 var _CU = null;
 
-// Pull users from JSONBin on startup
-var _usersReady = false;
-(async function(){
+// ===== Firebase Realtime Database (بديل JSONBin) =====
+// كل سجل متخزن لوحده، وكل جهاز بيرفع السجلات اللي اتغيرت بس ويسحب اللي اتغير من آخر مرة.
+// مفيش حد للحجم زي JSONBin، والسحب بيبقى صغير جداً لأنه بيجيب الجديد بس.
+var _FB_USERS_DEFAULT=[{u:'MARIA',p:'542002',name:'MARIA',role:'admin'}];
+function _fbOn(){return !!(_FB_DB&&/^https:\/\//.test(_FB_DB));}
+function _fbUrl(path,q){return _FB_DB.replace(/\/+$/,'')+'/'+_FB_ROOT+(path?'/'+path:'')+'.json'+(q?'?'+q:'');}
+async function _fb(method,path,body,q,ms){
+  var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},ms||25000);
   try{
-    var ctrl = new AbortController();
-    setTimeout(function(){ ctrl.abort(); }, 5000);
-    var r = await fetch(_JB_URL + _JB_USERS_BIN + '/latest',
-      {headers:{'X-Master-Key':_JB_KEY}, signal:ctrl.signal});
-    if(r.ok){
-      var d = await r.json();
-      if(d.record && d.record.users && d.record.users.length > 0){
-        _USERS = d.record.users;
-        localStorage.setItem('sb_users_db', JSON.stringify(_USERS));
-      }
+    var opt={method:method,signal:ctrl.signal,cache:'no-store'};
+    if(body!==undefined&&body!==null){opt.headers={'Content-Type':'application/json'};opt.body=JSON.stringify(body);}
+    var r=await fetch(_fbUrl(path,q),opt);
+    var txt=await r.text(),js=null;try{js=JSON.parse(txt);}catch(e){}
+    if(!r.ok){
+      var m=(js&&js.error)||txt||('HTTP '+r.status);
+      var why=(r.status===401||r.status===403)?'Firebase رفض الطلب — راجعي الـ Rules':r.status===404?'رابط Firebase غلط':r.status===400&&/index/i.test(m)?'ناقص indexOn في الـ Rules':r.status===429?'طلبات كتير — هيعيد المحاولة':'خطأ من السيرفر';
+      throw {msg:why+' ('+r.status+': '+String(m).substring(0,120)+')'};
     }
-  }catch(e){}
-  finally{
-    _usersReady = true;
-  }
-})();
+    return js;
+  }catch(e){
+    if(e&&e.msg)throw e;
+    throw {msg:(e&&e.name==='AbortError')?'السيرفر مردش (انتهت المهلة)':(navigator.onLine===false?'مفيش إنترنت':'تعذر الاتصال بالسيرفر')};
+  }finally{clearTimeout(tid);}
+}
+
+// ===== المستخدمين =====
+var _usersReady=false;
+async function ghPullUsers(){
+  if(!_fbOn())return;
+  try{
+    var u=await _fb('GET','users',null,null,6000);
+    if(u&&u.length>0){_USERS=u;localStorage.setItem('sb_users_db',JSON.stringify(_USERS));}
+    else if(u===null){await _fb('PUT','users',_USERS&&_USERS.length?_USERS:_FB_USERS_DEFAULT);} // أول مرة: نرفع المستخدمين الحاليين
+  }catch(e){console.warn('fbPullUsers:',e);}
+}
+async function ghPushUsers(){
+  if(!_fbOn())return;
+  try{await _fb('PUT','users',_USERS);}catch(e){console.warn('fbPushUsers:',e);}
+}
+(async function(){try{await ghPullUsers();}finally{_usersReady=true;}})();
 
 function _saveUsers(){
   localStorage.setItem('sb_users_db', JSON.stringify(_USERS));
-  // Also sync users to GitHub so all devices get the update
   ghPushUsers();
 }
 
-// ===== DATA SYNC via JSONBin (نسخة جديدة: دمج بدل الكتابة فوق بيانات الأجهزة التانية) =====
-// الفكرة:
-//  - كل سجل جديد/متعدل بياخد _t (وقت التعديل)، وكل سجل محذوف بيتسجل في DEL.
-//  - المزامنة = سحب → دمج (الأحدث يكسب) → رفع. فمفيش جهاز يمسح شغل جهاز تاني.
-//  - بنرفع بس الفرق عن البيانات المدمجة في الملف (_PDF_INC/_PDF_OUT) عشان الحجم يبقى صغير جداً.
-//  - رفع تلقائي بعد أي تعديل بثانيتين، وسحب تلقائي كل دقيقة ونص وعند الرجوع للصفحة.
-var SYNC_PULL_MS=90000;
+// ===== DATA SYNC =====
+var SYNC_PULL_MS=20000;
 var _syncBusy=false,_syncAgain=false,_pushT=null,_lastSyncOk=null;
+// _FBM: s = آخر وقت سيرفر اتسحب لحد عنده، p = بصمة آخر نسخة متفق عليها مع السيرفر لكل سجل
+var _FBM={b:'',s:0,p:{}};
+var _SV={'.sv':'timestamp'};
 
 function _pack(r){return [r.id,r.date||'',r.type||'',r.desc||'',r.detail||'',+r.w||0,+r.k||0,+r.w8||0,+r.w9||0,+r.w7||0,+r.pcs||0,r.notes||'',r._t||0];}
 function _unpack(a){var o={id:a[0],date:a[1],type:a[2],desc:a[3],detail:a[4],w:a[5],k:a[6],w8:a[7],w9:a[8],w7:a[9],pcs:a[10],notes:a[11]};if(a[12])o._t=a[12];if(!o.detail)delete o.detail;return o;}
@@ -2501,6 +2521,119 @@ function syncMerge(remote){
   return {localChanged:localChanged,needPush:remoteChanged};
 }
 
+function _h(str){var h=5381,h2=52711;for(var i=0;i<str.length;i++){var c=str.charCodeAt(i);h=((h<<5)+h+c)|0;h2=((h2<<5)+h2^c)|0;}return (h>>>0).toString(36)+(h2>>>0).toString(36);}
+
+// تطبيق سجل جاي من السيرفر على البيانات المحلية — الأحدث يكسب
+function _applyRemoteRec(idx,c,a){
+  var id=a[0],t=a[12]||0,r=_unpack(a);
+  if(DEL[id]&&DEL[id]>=t)return false;
+  var f=idx[id];
+  if(f){
+    var cur=f.arr[f.i],lt=cur._t||0;
+    if(t<lt)return false;
+    if(t===lt){var fl=_fp(cur),fr=_fp(r);if(f.c===c&&fl===fr)return false;if(fr<fl)return false;}
+    if(f.c===c){f.arr[f.i]=r;return true;}
+    f.arr.splice(f.i,1);
+    // الفهارس اتحركت — نعيد بنا الفهرس
+    _rebuildIdx(idx);
+  }
+  var arr=c==='i'?INC:OUT;arr.push(r);idx[id]={arr:arr,i:arr.length-1,c:c};
+  return true;
+}
+function _rebuildIdx(idx){
+  for(var k in idx)delete idx[k];
+  for(var i=0;i<INC.length;i++)idx[INC[i].id]={arr:INC,i:i,c:'i'};
+  for(var i=0;i<OUT.length;i++)idx[OUT[i].id]={arr:OUT,i:i,c:'o'};
+  return idx;
+}
+function _applyRemoteDel(idx,id,t){
+  if(!DEL[id]||t>DEL[id])DEL[id]=t;
+  var f=idx[id];
+  if(f&&(f.arr[f.i]._t||0)<=t){f.arr.splice(f.i,1);_rebuildIdx(idx);return true;}
+  return false;
+}
+
+// استيراد مرة واحدة من JSONBin القديم (قراءة بس) عشان مفيش حاجة تضيع في النقلة
+async function _importOldJsonBin(){
+  if(_FBM.jb||typeof _JB_URL==='undefined')return false;
+  var changed=false;
+  try{
+    var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},8000);
+    var r=await fetch(_JB_URL+_JB_DATA_BIN+'/latest',{headers:{'X-Master-Key':_JB_KEY},signal:ctrl.signal,cache:'no-store'});
+    clearTimeout(tid);
+    if(r.ok){
+      var js=await r.json(),doc=js&&js.record!==undefined?js.record:js;
+      if(doc&&(doc.v===3||(doc.inc&&doc.inc.length)||(doc.out&&doc.out.length))){
+        changed=syncMerge(syncDecode(doc)).localChanged;
+      }
+    }
+    _FBM.jb=1;
+  }catch(e){console.warn('JSONBin import skipped',e);}
+  return changed;
+}
+
+async function syncNow(silent){
+  if(!_CU)return false;
+  if(!_fbOn()){setSyncState('err','لسه مفيش رابط Firebase في الملف');return false;}
+  if(_syncBusy){_syncAgain=true;return false;}
+  _syncBusy=true;
+  if(!silent)setSyncState('busy');
+  var ok=false,changed=false;
+  try{
+    if(_FBM.b!==BASE_ID){_FBM={b:BASE_ID,s:0,p:{}};}
+    if(!_FBM.jb&&await _importOldJsonBin())changed=true;
+    // 1) سحب اللي اتغير على السيرفر من آخر مرة
+    var since=_FBM.s||0,maxS=since,q='orderBy=%22s%22&startAt='+since;
+    var recs=await _fb('GET','recs',null,q)||{};
+    var dels=await _fb('GET','del',null,q)||{};
+    var idx=_rebuildIdx({});
+    for(var k in recs){
+      var o=recs[k];if(!o||!o.a)continue;
+      var a;try{a=JSON.parse(o.a);}catch(e){continue;}
+      if(_applyRemoteRec(idx,o.c,a))changed=true;
+      _FBM.p[k]=_h(o.c+o.a);
+      if(o.s>maxS)maxS=o.s;
+    }
+    for(var k in dels){
+      var d=dels[k];if(!d)continue;
+      if(_applyRemoteDel(idx,+k.slice(1),d.t))changed=true;
+      _FBM.p['d'+k.slice(1)]=String(d.t);
+      if(d.s>maxS)maxS=d.s;
+    }
+    _FBM.s=maxS;
+    // 2) رفع اللي اتغير هنا ومارفعناهوش قبل كده
+    var enc=syncEncode(),upd=[],pend=[];
+    for(var i=0;i<enc.recs.length;i++){
+      var e=enc.recs[i],c=e[0],js=JSON.stringify(e.slice(1)),key='r'+e[1],sig=_h(c+js);
+      if(_FBM.p[key]!==sig){upd.push(['recs/'+key,{c:c,a:js,s:_SV}]);pend.push([key,sig]);}
+    }
+    for(var i=0;i<enc.del.length;i++){
+      var id=enc.del[i][0],t=enc.del[i][1];
+      if(_FBM.p['d'+id]!==String(t)){upd.push(['del/d'+id,{t:t,s:_SV}]);pend.push(['d'+id,String(t)]);}
+    }
+    for(var i=0;i<upd.length;i+=400){
+      var body={};
+      for(var j=i;j<Math.min(i+400,upd.length);j++)body[upd[j][0]]=upd[j][1];
+      if(!silent&&upd.length>400)setSyncState('busy','رفع '+Math.min(i+400,upd.length)+' / '+upd.length);
+      await _fb('PATCH','',body);
+      for(var j=i;j<Math.min(i+400,upd.length);j++)_FBM.p[pend[j][0]]=pend[j][1];
+    }
+    if(changed){DATA_VER++;refreshVisible();}
+    _autoSave();
+    _lastSyncOk=Date.now();
+    setSyncState('ok');
+    ok=true;
+  }catch(e){
+    _autoSave();
+    setSyncState('err',e&&e.msg?e.msg:String(e));
+    console.warn('sync error',e);
+  }finally{
+    _syncBusy=false;
+    if(_syncAgain){_syncAgain=false;setTimeout(function(){syncNow(true);},300);}
+  }
+  return ok;
+}
+
 function setSyncState(state,msg){
   var e=document.getElementById('sync-status');if(!e)return;
   clearTimeout(e._fadeTimer);
@@ -2512,55 +2645,6 @@ function setSyncState(state,msg){
   else{e.textContent='🔴 المزامنة فشلت — '+(msg||'');e.style.background='#FCEAEA';e.style.color='#B83232';e.style.borderColor='#f0c4c4';e.title=msg||'';}
 }
 
-async function _jb(method,body){
-  var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},20000);
-  try{
-    var opt={method:method,headers:{'X-Master-Key':_JB_KEY},signal:ctrl.signal,cache:'no-store'};
-    if(body){opt.headers['Content-Type']='application/json';opt.body=JSON.stringify(body);}
-    var r=await fetch(_JB_URL+_JB_DATA_BIN+(method==='GET'?'/latest':''),opt);
-    var txt=await r.text(),js=null;try{js=JSON.parse(txt);}catch(e){}
-    if(!r.ok){
-      var m=(js&&js.message)||txt||('HTTP '+r.status);
-      var why=r.status===401?'مفتاح JSONBin غير صحيح':r.status===403?'الحساب وصل للحد (عدد الطلبات أو حجم البيانات)':r.status===413?'حجم البيانات أكبر من المسموح':r.status===404?'الـ Bin غير موجود':r.status===429?'طلبات كتير — هيعيد المحاولة':'خطأ من السيرفر';
-      throw {msg:why+' ('+r.status+': '+String(m).substring(0,120)+')'};
-    }
-    return js;
-  }catch(e){
-    if(e&&e.msg)throw e;
-    throw {msg:(e&&e.name==='AbortError')?'السيرفر مردش (انتهت المهلة)':(navigator.onLine===false?'مفيش إنترنت':'تعذر الاتصال بالسيرفر')};
-  }finally{clearTimeout(tid);}
-}
-
-async function syncNow(silent){
-  if(!_CU)return false;
-  if(_syncBusy){_syncAgain=true;return false;}
-  _syncBusy=true;
-  if(!silent)setSyncState('busy');
-  var ok=false;
-  try{
-    var js=await _jb('GET');
-    var doc=js&&js.record!==undefined?js.record:js;
-    var hasRemote=doc&&((doc.v===3)||(doc.inc&&doc.inc.length)||(doc.out&&doc.out.length));
-    var res={localChanged:false,needPush:true};
-    if(hasRemote){
-      if(doc.v===3&&doc.base&&doc.base!==BASE_ID)console.warn('نسخة الملف مختلفة عن الأجهزة الأخرى',doc.base,BASE_ID);
-      res=syncMerge(syncDecode(doc));
-    }
-    if(res.needPush)await _jb('PUT',syncEncode());
-    if(res.localChanged){DATA_VER++;refreshVisible();}
-    _autoSave();
-    _lastSyncOk=Date.now();
-    setSyncState('ok');
-    ok=true;
-  }catch(e){
-    setSyncState('err',e&&e.msg?e.msg:String(e));
-    console.warn('sync error',e);
-  }finally{
-    _syncBusy=false;
-    if(_syncAgain){_syncAgain=false;setTimeout(function(){syncNow(true);},300);}
-  }
-  return ok;
-}
 function schedulePush(){
   if(!_CU)return;
   setSyncState('pending');
@@ -2588,30 +2672,6 @@ document.addEventListener('visibilitychange',function(){
 window.addEventListener('online',function(){if(_CU)syncNow();});
 window.addEventListener('beforeunload',function(){try{_autoSave();}catch(e){}});
 // ===== END DATA SYNC =====
-
-async function ghPushUsers(){
-  try{
-    await fetch(_JB_URL + _JB_USERS_BIN, {
-      method: 'PUT',
-      headers: {'Content-Type':'application/json','X-Master-Key':_JB_KEY},
-      body: JSON.stringify({users: _USERS})
-    });
-  }catch(e){ console.warn('jbPushUsers:',e); }
-}
-
-async function ghPullUsers(){
-  try{
-    var r = await fetch(_JB_URL + _JB_USERS_BIN + '/latest',
-      {headers:{'X-Master-Key':_JB_KEY}});
-    if(r.ok){
-      var d = await r.json();
-      if(d.record && d.record.users && d.record.users.length > 0){
-        _USERS = d.record.users;
-        localStorage.setItem('sb_users_db', JSON.stringify(_USERS));
-      }
-    }
-  }catch(e){ console.warn('jbPullUsers:',e); }
-}
 
 function tryLogin(){
   var u = document.getElementById('f-user').value.trim();
@@ -2648,6 +2708,8 @@ function tryLogin(){
   // تحميل البيانات المحلية فوراً، وبعدين مزامنة في الخلفية
   var saved=null;
   try{saved=JSON.parse(localStorage.getItem('sb_shared_data')||'null');}catch(e){}
+  _FBM=(saved&&saved.fb&&saved.fb.b===BASE_ID)?saved.fb:{b:BASE_ID,s:0,p:{}};
+  if(!_FBM.p)_FBM.p={};
   if(saved&&typeof saved==='object'&&('inc' in saved)){
     DEL=saved.del||{};
     var hasAny=(saved.inc&&saved.inc.length)||(saved.out&&saved.out.length);
@@ -2678,7 +2740,7 @@ function loadBuiltinData(){
 function _autoSave(){
   if(!_CU)return; // قبل تسجيل الدخول متكتبش فوق البيانات المحفوظة
   try{
-    var data = {inc: INC, out: OUT, del: DEL};
+    var data = {inc: INC, out: OUT, del: DEL, fb: _FBM};
     localStorage.setItem('sb_shared_data', JSON.stringify(data));
   }catch(e){
     console.warn('AutoSave failed:', e);

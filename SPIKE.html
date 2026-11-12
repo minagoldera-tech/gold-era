@@ -2413,8 +2413,24 @@ async function ghPullUsers(){
   if(!_fbOn())return;
   try{
     var u=await _fb('GET','users',null,null,6000);
-    if(u&&u.length>0){_USERS=u;localStorage.setItem('sb_users_db',JSON.stringify(_USERS));}
-    else if(u===null){await _fb('PUT','users',_USERS&&_USERS.length?_USERS:_FB_USERS_DEFAULT);} // أول مرة: نرفع المستخدمين الحاليين
+    var list=(u&&u.length)?u.slice():[];
+    var need=!(u&&u.length);
+    // مرة واحدة: نضم مستخدمين JSONBin القديم + المحفوظين على الجهاز عشان محدش يضيع في النقلة
+    if(localStorage.getItem('sb_users_jb_merged')!=='1'){
+      var extra=[];
+      try{
+        var ctrl=new AbortController(),tid=setTimeout(function(){ctrl.abort();},6000);
+        var r=await fetch(_JB_URL+_JB_USERS_BIN+'/latest',{headers:{'X-Master-Key':_JB_KEY},signal:ctrl.signal,cache:'no-store'});
+        clearTimeout(tid);
+        if(r.ok){var d=await r.json();if(d&&d.record&&d.record.users)extra=extra.concat(d.record.users);}
+      }catch(e){console.warn('old users import skipped',e);}
+      extra=extra.concat(_USERS||[]);
+      for(var i=0;i<extra.length;i++){var x=extra[i];if(x&&x.u&&!list.some(function(y){return y.u===x.u;})){list.push(x);need=true;}}
+      localStorage.setItem('sb_users_jb_merged','1');
+    }
+    if(!list.length)list=_FB_USERS_DEFAULT.slice();
+    _USERS=list;localStorage.setItem('sb_users_db',JSON.stringify(_USERS));
+    if(need)await _fb('PUT','users',_USERS);
   }catch(e){console.warn('fbPullUsers:',e);}
 }
 async function ghPushUsers(){
@@ -2674,6 +2690,7 @@ window.addEventListener('beforeunload',function(){try{_autoSave();}catch(e){}});
 // ===== END DATA SYNC =====
 
 function tryLogin(){
+  if(!_usersReady){var _b=document.getElementById('f-err');setTimeout(tryLogin,400);return;}
   var u = document.getElementById('f-user').value.trim();
   var p = document.getElementById('f-pass').value.trim();
   // Hardcoded users - always work regardless of GitHub sync

@@ -1674,16 +1674,21 @@ td.num, th.num { display: table-cell; text-align: right; }
     <div class="mh"><div class="mt" id="STK-TR-TITLE">📦 تحويل من الاستوك</div><button class="mc" onclick="cm('MOD-STK-TR')">✕</button></div>
     <div class="mb">
       <div id="STK-TR-INFO" style="background:var(--s2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--tx2)"></div>
+      <div class="fg" id="STK-TR-CNT-WRAP" style="display:none;margin-bottom:12px">
+        <label>العدد المُحوَّل (اكتب أي عدد تريده)</label>
+        <input type="number" id="STK-TR-CNT" step="1" min="0" placeholder="مثال: 3" oninput="stkTrFromCnt()" style="font-family:monospace;font-weight:800;font-size:16px">
+        <div id="STK-TR-UNIT-HINT" style="font-size:10.5px;color:var(--muted);margin-top:4px"></div>
+      </div>
       <div class="fr">
         <div class="fg" style="margin:0">
           <label>الوزن المُحوَّل (جرام بعيار 875) *</label>
-          <input type="number" id="STK-TR-WT" step="0.001" placeholder="0.000" oninput="calcStkTr()">
+          <input type="number" id="STK-TR-WT" step="0.001" placeholder="0.000" oninput="stkTrFromWt()">
         </div>
         <div class="fg" style="margin:0"><label>التاريخ *</label><input type="date" id="STK-TR-DATE"></div>
       </div>
       <div class="fr" style="margin-top:12px">
         <div class="fg" style="margin:0">
-          <label>الكمية (كل / جزء)</label>
+          <label>اختصارات (اختياري)</label>
           <div style="display:flex;gap:8px;margin-top:6px">
             <button class="btn bsm bs" onclick="setStkTrAll()">كل الوزن</button>
             <button class="btn bsm bs" onclick="setStkTrHalf()">النصف</button>
@@ -1693,6 +1698,7 @@ td.num, th.num { display: table-cell; text-align: right; }
       </div>
       <div id="STK-TR-PREV" class="calcbox" style="display:none;margin-top:12px">
         <div class="row"><span style="color:var(--muted)">المتبقي في الاستوك بعد التحويل</span><b class="num" style="color:var(--warn)" id="STK-TR-REM">—</b></div>
+        <div class="row" id="STK-TR-REMC-ROW" style="display:none"><span style="color:var(--muted)">العدد المتبقي</span><b class="num" style="color:var(--inf)" id="STK-TR-REMC">—</b></div>
       </div>
     </div>
     <div class="mf">
@@ -2405,6 +2411,9 @@ function openStockTransfer(name,karat,totalWt,totalW875,totalCnt,dest,src='stock
     </div>`;
   id('STK-TR-DATE').value=today();
   id('STK-TR-WT').value='';
+  id('STK-TR-CNT').value='';
+  id('STK-TR-CNT-WRAP').style.display=totalCnt?'':'none';
+  id('STK-TR-UNIT-HINT').textContent=totalCnt?`المتاح: ${N3(totalCnt)} قطعة — القطعة = ${N(totalW875/totalCnt)} جرام (875) — اكتب العدد ويُحسب الوزن تلقائياً`:'';
   id('STK-TR-NOTE').value='';
   id('STK-TR-PREV').style.display='none';
   const btn=id('STK-TR-BTN');
@@ -2412,14 +2421,31 @@ function openStockTransfer(name,karat,totalWt,totalW875,totalCnt,dest,src='stock
   om('MOD-STK-TR');
 }
 
-function setStkTrAll(){ id('STK-TR-WT').value=+(stkTrData.totalW875.toFixed(3)); calcStkTr(); }
-function setStkTrHalf(){ id('STK-TR-WT').value=+(stkTrData.totalW875/2).toFixed(3); calcStkTr(); }
+function setStkTrAll(){ id('STK-TR-WT').value=+(stkTrData.totalW875.toFixed(3)); stkTrFromWt(); }
+function setStkTrHalf(){ id('STK-TR-WT').value=+(stkTrData.totalW875/2).toFixed(3); stkTrFromWt(); }
+// وزن القطعة بعيار 875 في هذا الصنف
+function stkTrUnit(){ return stkTrData.totalCnt?stkTrData.totalW875/stkTrData.totalCnt:0; }
+// كتب العدد ← يُحسب الوزن
+function stkTrFromCnt(){
+  const u=stkTrUnit(), n=parseFloat(id('STK-TR-CNT').value)||0;
+  if(u) id('STK-TR-WT').value=n?+Math.min(n*u, n>=stkTrData.totalCnt-0.0005?stkTrData.totalW875:Infinity).toFixed(3):'';
+  calcStkTr();
+}
+// كتب الوزن ← يُحسب العدد
+function stkTrFromWt(){
+  const u=stkTrUnit(), w=parseFloat(id('STK-TR-WT').value)||0;
+  if(u) id('STK-TR-CNT').value=w?+(w/u).toFixed(3):'';
+  calcStkTr();
+}
 
 function calcStkTr(){
   const wt=parseFloat(id('STK-TR-WT').value)||0;
   if(!wt){id('STK-TR-PREV').style.display='none';return;}
   const rem=stkTrData.totalW875-wt;
   id('STK-TR-REM').textContent=N(rem)+' جرام';
+  const tc=stkTrData.totalCnt||0, pc=parseFloat(id('STK-TR-CNT').value)||0;
+  id('STK-TR-REMC-ROW').style.display=tc?'':'none';
+  if(tc) id('STK-TR-REMC').textContent=N3(Math.max(0,tc-pc));
   id('STK-TR-PREV').style.display='block';
 }
 
@@ -2434,7 +2460,9 @@ async function saveStockTransfer(){
 
   const nowTs=Date.now(), timeStr=nowTime();
   const actualWt=+(wt*875/karat).toFixed(3);
-  const cnt=totalCnt?(wt/totalW875*totalCnt):0;
+  const cntIn=parseFloat(id('STK-TR-CNT').value)||0;
+  if(totalCnt&&cntIn>totalCnt+0.001){toast('er','العدد أكبر من المتاح');return;}
+  const cnt=totalCnt?(cntIn>0?cntIn:(wt/totalW875*totalCnt)):0;   // العدد المكتوب له الأولوية
 
   // ══════════════════════════════════════════════
   // ١. طرح الوزن من سجلات الاستوك الأصلية

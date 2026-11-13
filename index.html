@@ -971,9 +971,9 @@ function toArr(x) { if (!x) return []; return (Array.isArray(x) ? x : Object.val
 function clean(x) { return JSON.parse(JSON.stringify(x)); }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 function num(x) { const n = Number(x); return isFinite(n) ? n : 0; }
-function r2(x) { return Math.round(num(x) * 100) / 100; }
+function r2(x) { const n = num(x); return (n < 0 ? -1 : 1) * Math.round(Math.abs(n) * 100 + 1e-7) / 100; }   // تقريب لأقرب قرش بدون أخطاء الكسور العشرية
 function hm(h) { const m = Math.round(num(h) * 60); return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0'); }   // 5.10 ساعة تُعرض 5:06
-function money(n) { return Math.round(num(n)).toLocaleString('en-US'); }
+function money(n) { const v = r2(n); return v.toLocaleString('en-US', Number.isInteger(v) ? {} : { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }   // المبالغ بالقرش دون تقريب للجنيه
 function todayStr() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
 function nowStamp() { const d = new Date(); return todayStr() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
 function safeKey(code) { return String(code == null ? '' : code).trim().replace(/[.#$\[\]\/\s'"\\<>&]+/g, '-'); }
@@ -1061,7 +1061,7 @@ function parseTime(v) {
   if (typeof v === 'number') {
     if (!isFinite(v) || v < 0) return null;
     if (Number.isInteger(v) && v >= 1 && v <= 23) return v * 60;      // رقم ساعة صحيح
-    return Math.round((v - Math.floor(v)) * 1440) % 1440;             // وقت إكسيل (كسر من اليوم)
+    return Math.floor(Math.round((v - Math.floor(v)) * 86400) / 60) % 1440;             // وقت إكسيل (كسر من اليوم)
   }
   if (v instanceof Date) return v.getHours() * 60 + v.getMinutes();
   let t = String(v).trim().replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
@@ -1168,35 +1168,39 @@ function advScheduled(a) {
 function calcFin(emp, rowsOverride) {
   const rows = rowsOverride || weekOf(emp);
   const sh = shiftOf(emp);
-  let totalWork = 0, totalLate = 0, totalOt = 0, totalAbs = 0, incomplete = 0, present = 0, pending = 0, latePenaltyH = 0;
+  let totalAbs = 0, incomplete = 0, present = 0, pending = 0;
+  let workMin = 0, lateMin = 0, otMin = 0, latePenaltyMin = 0;      // كل الأزمنة بالدقائق الصحيحة
   const lateMult = num(SETTINGS.lateMult), otMult = num(SETTINGS.otMult);
+  const shiftMin = Math.round(sh.hours * 60);
   rows.forEach(r => {
     const c = calcDay(emp, r);
-    totalWork += c.work; totalLate += c.late; totalOt += c.ot;
-    latePenaltyH += Math.min(c.late * lateMult, sh.hours);        // خصم تأخير اليوم لا يتجاوز خصم غياب اليوم كاملاً
+    workMin += Math.round(c.work * 60); lateMin += c.lateMin; otMin += c.otMin;
+    latePenaltyMin += Math.min(c.lateMin * lateMult, shiftMin);    // خصم تأخير اليوم لا يتجاوز خصم غياب اليوم كاملاً
     if (r.status === ST.ABSENT) totalAbs++;
     if (r.status === ST.PRESENT) present++;
     if (r.status === ST.PENDING) pending++;
     if (c.incomplete) incomplete++;
   });
+  const totalWork = workMin / 60, totalLate = lateMin / 60, totalOt = otMin / 60;
   const salary = num(emp.salary);
   const hourlyRate = salary / (6 * sh.hours);
-  const lateDeduction = latePenaltyH * hourlyRate;
-  const otPay = totalOt * otMult * hourlyRate;
-  const absDeduction = SETTINGS.deductAbsence ? totalAbs * sh.hours * hourlyRate : 0;
+  // كل بند يُحسب مباشرة من الراتب والدقائق ويُقرَّب مرة واحدة للقرش — فمجموع البنود يساوي الصافي تماماً
+  const lateDeduction = r2(latePenaltyMin * salary / (6 * shiftMin));
+  const otPay = r2(otMin * otMult * salary / (6 * shiftMin));
+  const absDeduction = SETTINGS.deductAbsence ? r2(totalAbs * salary / 6) : 0;
   const adj = ADJ[emp.code] || [];
-  const bonus = adj.filter(a => a.type === 'bonus').reduce((s, a) => s + num(a.amount), 0);
-  const penalty = adj.filter(a => a.type === 'penalty').reduce((s, a) => s + num(a.amount), 0);
-  const gross = salary - lateDeduction - absDeduction + otPay + bonus - penalty;
+  const bonus = r2(adj.filter(a => a.type === 'bonus').reduce((s, a) => s + num(a.amount), 0));
+  const penalty = r2(adj.filter(a => a.type === 'penalty').reduce((s, a) => s + num(a.amount), 0));
+  const gross = r2(salary - lateDeduction - absDeduction + otPay + bonus - penalty);
   const advs = ADV[emp.code] || [];
-  const advOutstanding = advs.reduce((s, a) => s + Math.max(0, num(a.remaining)), 0);
-  const advPlanned = advs.reduce((s, a) => s + advScheduled(a), 0);
+  const advOutstanding = r2(advs.reduce((s, a) => s + Math.max(0, num(a.remaining)), 0));
+  const advPlanned = r2(advs.reduce((s, a) => s + advScheduled(a), 0));
   // خصم السلف لا يتجاوز المستحق، والباقي يبقى في رصيد السلفة ويُرحَّل
-  const advDue = Math.min(advPlanned, Math.max(0, Math.round(gross)));
-  const net = gross - advDue;
+  const advDue = Math.min(advPlanned, Math.max(0, gross));
+  const net = r2(gross - advDue);
   return { shiftH: sh.hours, hourlyRate, totalWork, totalLate, totalOt, totalAbs, incomplete, present, pending,
-    lateDeduction, absDeduction, totalDeduction: lateDeduction + absDeduction, otPay, bonus, penalty,
-    gross, advOutstanding, advPlanned, advDue, net, carry: net < 0 ? Math.round(-net) : 0 };
+    lateDeduction, absDeduction, totalDeduction: r2(lateDeduction + absDeduction), otPay, bonus, penalty,
+    gross, advOutstanding, advPlanned, advDue, net, carry: net < 0 ? r2(-net) : 0 };
 }
 
 // =============================================
@@ -1311,7 +1315,7 @@ function convertLegacy(L) {
 function weekTotals(rows) {
   const t = { count: rows.length, net: 0, salary: 0, abs: 0, late: 0, ot: 0, adv: 0 };
   rows.forEach(r => { t.net += Math.max(0, num(r.net)); t.salary += num(r.salary); t.abs += num(r.abs); t.late += num(r.late); t.ot += num(r.ot); t.adv += num(r.adv); });
-  t.late = r2(t.late); t.ot = r2(t.ot);
+  t.late = r2(t.late); t.ot = r2(t.ot); t.net = r2(t.net); t.salary = r2(t.salary); t.adv = r2(t.adv);
   return t;
 }
 // كلمات المرور القديمة كانت نصاً صريحاً في المتصفح — نحذفها بعد التحويل
@@ -1325,6 +1329,38 @@ function scrubLegacyUsers() {
 }
 
 let hadCache = false;
+let LEGACY_LOCAL_USERS = [];
+// نقل حسابات النسخة السابقة (من هذا الجهاز ومن السحابة القديمة) مرة واحدة فقط — دون استبدال أي حساب موجود
+async function migrateLegacyUsers(db) {
+  if (!fbdb || (db && db.meta && db.meta.usersMigrated)) return;
+  const has = l => !!l && USERS.some(u => (u.email || '').toLowerCase() === l || (u.username || '').toLowerCase() === l);
+  const added = [];
+  const consider = nu => {
+    const a = (nu.email || '').toLowerCase(), b = (nu.username || '').toLowerCase();
+    if ((!a && !b) || has(a) || has(b)) return;
+    USERS.push(nu); added.push(nu);
+  };
+  LEGACY_LOCAL_USERS.forEach(consider);
+  try {
+    const old = (await withTimeout(fbdb.ref(OLD_ROOT + '/users').once('value'), 9000)).val();
+    toArr(convertLegacy({ users: old }).users).forEach(consider);
+  } catch (e) { console.error('Legacy users read error:', e); return; }   // نعيد المحاولة في التشغيل القادم
+  const map = { 'meta/usersMigrated': true };
+  added.forEach(u => { map['users/' + u.id] = u; });
+  try { await fbdb.ref(ROOT).update(clean(map)); } catch (e) { console.error('Legacy users save error:', e); }
+}
+// استرجاع حساب المدير الأساسي مرة واحدة فقط (كلمة المرور محفوظة كتشفير، ويُطلب تغييرها عند أول دخول)
+const ADMIN_RECOVERY = { username: 'MINA', name: 'MINA', salt: '9853965e8b49618522b638377f2bdc4e', hash: '3702fc24b7675e92482df330815772ceae47b9ec7b541f9f60b6cb2103d1fc3f' };
+async function recoverMainAdmin(db) {
+  if (!fbdb || (db && db.meta && db.meta.adminRecovered)) return;
+  const id = ADMIN_RECOVERY.username.toLowerCase();
+  let u = USERS.find(x => (x.email || '').toLowerCase() === id || (x.username || '').toLowerCase() === id);
+  if (!u) { u = { id: uid(), email: '', username: ADMIN_RECOVERY.username, name: ADMIN_RECOVERY.name }; USERS.push(u); }
+  Object.assign(u, { role: 'Admin', allowedTabs: ALL_TABS.slice(), canEdit: true, status: 'نشط',
+                     salt: ADMIN_RECOVERY.salt, hash: ADMIN_RECOVERY.hash, mustChange: true });
+  try { await fbdb.ref(ROOT).update(clean({ 'meta/adminRecovered': true, ['users/' + u.id]: u })); }
+  catch (e) { console.error('Admin recovery save error:', e); }
+}
 function loadLocal() {
   let cached = null;
   try { const raw = localStorage.getItem(CACHE_KEY); if (raw) cached = JSON.parse(raw); } catch (e) { cached = null; }
@@ -1335,7 +1371,9 @@ function loadLocal() {
   } else {
     const L = readLegacyLocal();
     if (!L.employees || !toArr(L.employees).length) L.employees = clean(INITIAL_EMPLOYEES);
-    stateFromDB(convertLegacy(L));
+    const conv = convertLegacy(L);
+    LEGACY_LOCAL_USERS = toArr(conv.users);      // نحتفظ بهم حتى لا تمسحهم بيانات السحابة
+    stateFromDB(conv);
   }
   try { CURRENT_IMAGE = localStorage.getItem(IMG_CACHE_KEY) || ''; } catch (e) {}
 }
@@ -1389,6 +1427,8 @@ async function initCloud() {
       await fbdb.ref(ROOT).set(clean(db));
     }
     stateFromDB(db);
+    await migrateLegacyUsers(db);
+    await recoverMainAdmin(db);
     saveLocal();
     scrubLegacyUsers();
     attachListeners();
@@ -2161,15 +2201,15 @@ function deleteAdvance(id) {
 }
 // توزيع خصم الأسبوع على السلف (الأقدم أولاً)
 function allocateAdvances(code, amount, label) {
-  let left = Math.round(amount);
+  let left = r2(amount);
   const list = clean(ADV[code] || []);
   list.forEach(a => {
     if (left <= 0) return;
-    const take = Math.min(advScheduled(a), left);
+    const take = r2(Math.min(advScheduled(a), left));
     if (take <= 0) return;
     a.remaining = r2(num(a.remaining) - take);
     a.payments = toArr(a.payments).concat([{ label, amount: take }]);
-    left -= take;
+    left = r2(left - take);
   });
   return list;
 }
@@ -2289,7 +2329,7 @@ function closeWeek() {
   calc.forEach(({ emp, f }) => {
     rows.push({ code: emp.code, name: emp.name, category: emp.category, salary: num(emp.salary), abs: f.totalAbs, late: r2(f.totalLate), ot: r2(f.totalOt),
       lateDed: r2(f.lateDeduction), absDed: r2(f.absDeduction), otPay: r2(f.otPay), bonus: r2(f.bonus), penalty: r2(f.penalty),
-      adv: f.advDue, net: Math.round(f.net), carry: f.carry, advLeft: Math.max(0, r2(f.advOutstanding - f.advDue)) + f.carry });
+      adv: f.advDue, net: f.net, carry: f.carry, advLeft: r2(Math.max(0, r2(f.advOutstanding - f.advDue)) + f.carry) });
     detail.attendance[emp.code] = weekOf(emp);
     if ((ADJ[emp.code] || []).length) detail.adjustments[emp.code] = ADJ[emp.code];
     let list = ADV[emp.code] || [];
@@ -2407,7 +2447,7 @@ function exportToExcel() {
   const adv = [['كود', 'الاسم', 'النوع', 'التاريخ', 'المبلغ', 'المتبقي', 'القسط الأسبوعي', 'ملاحظة']];
   EMPLOYEES.forEach(emp => {
     const f = calcFin(emp);
-    pay.push([emp.code, emp.name, emp.category, num(emp.salary), r2(f.hourlyRate), f.totalAbs, r2(f.totalLate), r2(f.totalOt), r2(f.lateDeduction), r2(f.absDeduction), r2(f.otPay), r2(f.bonus), r2(f.penalty), f.advDue, Math.max(0, Math.round(f.net)), f.carry, Math.max(0, r2(f.advOutstanding - f.advDue))]);
+    pay.push([emp.code, emp.name, emp.category, num(emp.salary), r2(f.hourlyRate), f.totalAbs, r2(f.totalLate), r2(f.totalOt), r2(f.lateDeduction), r2(f.absDeduction), r2(f.otPay), r2(f.bonus), r2(f.penalty), f.advDue, Math.max(0, f.net), f.carry, Math.max(0, r2(f.advOutstanding - f.advDue))]);
     weekOf(emp).forEach(r => { const c = calcDay(emp, r); att.push([emp.code, emp.name, r.day, r.inTime, r.outTime, r.status, r2(c.work), r2(c.late), r2(c.ot), dayNotes(r, c)]); });
     (ADV[emp.code] || []).forEach(a => adv.push([emp.code, emp.name, a.kind === 'debt' ? 'دين مرحّل' : 'سلفة', a.date || '', num(a.amount), Math.max(0, num(a.remaining)), num(a.installment) || 'كامل', a.note || '']));
   });

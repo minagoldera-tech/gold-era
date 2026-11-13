@@ -937,6 +937,7 @@ const TAB_LABELS = { dashboard:'الاستعلام', payroll:'الرواتب', i
   'upload-archive':'رفع الكشف', history:'الأرشيف', users:'المستخدمون', audit:'سجل التعديلات' };
 const DEFAULT_SETTINGS = { deductAbsence:true, graceMinutes:0, lateMult:2, otMult:2, sundayAsOvertime:true };
 const MIN_PASS = 8;
+const PAY_DAYS = 7;   // الراتب الأسبوعي يُقسم على 7 أيام ثم على ساعات الوردية
 
 // =============================================
 // ===== الحالة الكاملة للتطبيق =====
@@ -1183,11 +1184,11 @@ function calcFin(emp, rowsOverride) {
   });
   const totalWork = workMin / 60, totalLate = lateMin / 60, totalOt = otMin / 60;
   const salary = num(emp.salary);
-  const hourlyRate = salary / (6 * sh.hours);
+  const hourlyRate = salary / (PAY_DAYS * sh.hours);
   // كل بند يُحسب مباشرة من الراتب والدقائق ويُقرَّب مرة واحدة للقرش — فمجموع البنود يساوي الصافي تماماً
-  const lateDeduction = r2(latePenaltyMin * salary / (6 * shiftMin));
-  const otPay = r2(otMin * otMult * salary / (6 * shiftMin));
-  const absDeduction = SETTINGS.deductAbsence ? r2(totalAbs * salary / 6) : 0;
+  const lateDeduction = r2(latePenaltyMin * salary / (PAY_DAYS * shiftMin));
+  const otPay = r2(otMin * otMult * salary / (PAY_DAYS * shiftMin));
+  const absDeduction = SETTINGS.deductAbsence ? r2(totalAbs * salary / PAY_DAYS) : 0;
   const adj = ADJ[emp.code] || [];
   const bonus = r2(adj.filter(a => a.type === 'bonus').reduce((s, a) => s + num(a.amount), 0));
   const penalty = r2(adj.filter(a => a.type === 'penalty').reduce((s, a) => s + num(a.amount), 0));
@@ -1454,6 +1455,13 @@ function attachListeners() {
     CURRENT_IMAGE = s.val() || '';
     showCurrentImage();
   });
+  // إشعار فوري عند وصول رفع جديد من جهاز تسجيل الحضور (entry.html)
+  let firstUpload = true;
+  fbdb.ref(ROOT + '/lastUpload').on('value', s => {
+    const v = s.val();
+    if (firstUpload) { firstUpload = false; return; }
+    if (v && currentUser) showNotification('📥 رفع حضور جديد من ' + (v.by || 'جهاز التسجيل') + ' — ' + (v.days || '') + ' (' + num(v.count) + ' سجل)');
+  });
   fbdb.ref('.info/connected').on('value', s => setSync(s.val() ? 'online' : 'offline'));
 }
 function onDataChanged(key) {
@@ -1618,7 +1626,7 @@ function switchTab(tabId) {
 }
 function policyText() {
   const g = num(SETTINGS.graceMinutes);
-  return '⚡ <strong>قاعدة الحساب:</strong> ساعة التأخير = خصم ' + r2(SETTINGS.lateMult) + ' ساعة | ساعة الإضافي = استحقاق ' + r2(SETTINGS.otMult) +
+  return '⚡ <strong>قاعدة الحساب:</strong> سعر الساعة = الراتب ÷ ' + PAY_DAYS + ' أيام ÷ ساعات الوردية | ساعة التأخير = خصم ' + r2(SETTINGS.lateMult) + ' ساعة | ساعة الإضافي = استحقاق ' + r2(SETTINGS.otMult) +
     ' ساعة | الانصراف المبكر يُحتسب تأخيراً | الساعات تُعرض ساعة:دقيقة' + (g > 0 ? ' | فترة السماح ' + g + ' دقيقة' : '');
 }
 function renderAll() {
@@ -1946,7 +1954,7 @@ function renderManageTable() {
       <td><span class="badge ${emp.category === 'شباب' ? 'badge-holiday' : 'badge-present'}">${esc(emp.category)}</span></td>
       <td>${esc(shiftLabel(emp))}</td>
       <td style="font-weight:bold;color:var(--primary);">${money(emp.salary)} ج.م</td>
-      <td>${(num(emp.salary) / (6 * sh.hours)).toFixed(2)} ج.م</td>
+      <td>${(num(emp.salary) / (PAY_DAYS * sh.hours)).toFixed(2)} ج.م</td>
       <td>${admin
         ? `<button class="btn btn-gold btn-sm" onclick="openEditEmpModal(${jsq(emp.code)})">✏️ تعديل</button>
            <button class="btn btn-danger btn-sm" onclick="deleteEmp(${jsq(emp.code)})">🗑️ حذف</button>`

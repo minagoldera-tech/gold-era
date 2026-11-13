@@ -353,6 +353,7 @@ tbody tr.row-sel td{background:#FFF8E7;}
       <button class="btn bgh bsm" onclick="window.print()">🖨️ طباعة</button>
       <span id="user-name-badge" style="font-size:12px;color:#9C9488;font-weight:600;padding:4px 8px;background:#FFF8E7;border:1px solid #E8C547;border-radius:6px" id="unb">👤 MARIA</span>
       <button id="adm-btn" onclick="admOpen()" style="display:none;padding:5px 11px;background:#1C1A16;color:#F5C842;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">⚙️ المستخدمون</button>
+      <button class="btn bgh bsm" id="undo-btn" onclick="undoLast()" title="مفيش خطوات للتراجع" disabled style="opacity:.45">↩️ تراجع</button>
       <button class="btn bsucc bsm" onclick="manualSync()" title="مزامنة مع GitHub">🔄 مزامنة</button>
       <button id="reset-btn" onclick="resetAll()" style="display:none;background:#c0392b;color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:13px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif;">🗑️ تصفير</button>
       <button class="btn bd bsm" onclick="doLogout()">🚪 خروج</button>
@@ -1069,6 +1070,16 @@ tbody tr.row-sel td{background:#FFF8E7;}
     </div>
   </div><!-- end sc-area2 -->
 
+  <!-- الملفات المرفوعة (لإلغاء استيراد) -->
+  <div class="card" id="imp-card" style="margin-top:13px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <div style="font-size:15px;font-weight:700">🗂️ الملفات المرفوعة</div>
+      <button class="btn bgh bsm" onclick="impRender()">🔄 تحديث</button>
+    </div>
+    <div style="font-size:12px;color:#9C9488;margin-bottom:10px">كل ملف اترفع بيظهر هنا. "إلغاء الملف" بيمسح كل الحركات اللي اتضافت منه مرة واحدة، والحذف بيتزامن على كل الأجهزة.</div>
+    <div id="imp-list"></div>
+  </div>
+
   <!-- Zoom Modal -->
   <div id="scan-zoom-modal" onclick="this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;align-items:center;justify-content:center;cursor:zoom-out">
     <img id="scan-zoom-img" style="max-width:95vw;max-height:95vh;border-radius:8px;object-fit:contain">
@@ -1314,6 +1325,7 @@ function toNum(v){
 var DATA_VER=1,_rv={in:0,out:0,kpi:0,ov:0};
 var DEL={}; // سجلات محذوفة: id -> وقت الحذف (للمزامنة بين الأجهزة)
 function dataChanged(){
+  try{_undoRecord();}catch(e){console.warn('undo',e);}
   DATA_VER++;
   clearTimeout(window._saveT);
   window._saveT=setTimeout(_autoSave,400);
@@ -1343,6 +1355,7 @@ function G(name){
 }
 function renderPage(name){
   if(name==='cat')renderCat();
+  if(name==='scan')impRender();
   if(name==='overview'&&_rv.ov!==DATA_VER)renderOverview();
   if(name==='in'){if(!el('in-igr')||!el('in-igr').children.length)renderIgr('in');if(_rv.in!==DATA_VER)renderIn();}
   if(name==='out'){if(!el('out-igr')||!el('out-igr').children.length)renderIgr('out');if(_rv.out!==DATA_VER)renderOut();}
@@ -2634,7 +2647,7 @@ async function syncNow(silent){
       await _fb('PATCH','',body);
       for(var j=i;j<Math.min(i+400,upd.length);j++)_FBM.p[pend[j][0]]=pend[j][1];
     }
-    if(changed){DATA_VER++;refreshVisible();}
+    if(changed){DATA_VER++;refreshVisible();try{undoRebase();}catch(e){}}
     _autoSave();
     _lastSyncOk=Date.now();
     setSyncState('ok');
@@ -2675,6 +2688,7 @@ function refreshVisible(){
   if(name==='in')renderIn();
   else if(name==='out')renderOut();
   else if(name==='overview')renderOverview();
+  else if(name==='scan')impRender();
 }
 // للتوافق مع الكود القديم
 async function ghPush(){schedulePush();}
@@ -2741,6 +2755,7 @@ function tryLogin(){
     OUT=OUT.filter(function(r){return !DEL[r.id]||(r._t||0)>DEL[r.id];});
   }
   DATA_VER++;
+  try{undoReset();}catch(e){}
   updateKPIs();renderIn();renderOut();
   applyPerms(_CU);
   syncNow();
@@ -2984,11 +2999,144 @@ function pvApprove(){
   updateKPIs();
   toast('✅ تم إضافة '+added+' سجل إلى '+(isOut?'المنصرف':type==='مرتجع'?'المرتجع':'الوارد'));
   if(typeof P.onDone==='function')P.onDone();
+  try{impRender();}catch(e){}
   var pg=isOut?'out':'in';
   G(pg);
   setTimeout(function(){stab(pg,2);},50);
 }
 function destPick(type){if(_pv){_pv.type=type;pvApprove();}} // للتوافق
+
+
+
+// ===== تراجع خطوة لورا =====
+// كل تعديل (إضافة/حذف/تعديل/رفع ملف) بيتسجل كخطوة فيها النسخة القديمة من السجلات اللي اتغيرت بس.
+// التراجع بيرجّع السجلات دي زي ما كانت، وبيتزامن على باقي الأجهزة زي أي تعديل.
+var _undoSt=[],_undoCur=null,_undoBusy=false,UNDO_MAX=30;
+function _undoSnap(){
+  var m={};
+  for(var i=0;i<INC.length;i++)m[INC[i].id]='i'+JSON.stringify(INC[i]);
+  for(var i=0;i<OUT.length;i++)m[OUT[i].id]='o'+JSON.stringify(OUT[i]);
+  return m;
+}
+function undoReset(){_undoSt=[];_undoCur=_undoSnap();undoBtn();}
+function undoRebase(){_undoCur=_undoSnap();} // بعد ما بيانات تيجي من جهاز تاني
+function _undoRecord(){
+  if(_undoBusy||!_undoCur){_undoCur=_undoSnap();return;}
+  var n=_undoSnap(),d={},k=0,add=0,del=0,ed=0;
+  for(var id in n){if(_undoCur[id]!==n[id]){d[id]=_undoCur[id]===undefined?null:_undoCur[id];k++;if(_undoCur[id]===undefined)add++;else ed++;}}
+  for(var id in _undoCur){if(!(id in n)){d[id]=_undoCur[id];k++;del++;}}
+  if(k){_undoSt.push({d:d,add:add,del:del,ed:ed,t:Date.now()});if(_undoSt.length>UNDO_MAX)_undoSt.shift();}
+  _undoCur=n;
+  undoBtn();
+}
+function _undoDesc(s){
+  var p=[];
+  if(s.add)p.push('إضافة '+s.add+' حركة');
+  if(s.del)p.push('حذف '+s.del+' حركة');
+  if(s.ed)p.push('تعديل '+s.ed+' حركة');
+  return p.join(' + ')||'تعديل';
+}
+function undoBtn(){
+  var b=document.getElementById('undo-btn');if(!b)return;
+  var s=_undoSt[_undoSt.length-1];
+  b.disabled=!s;b.style.opacity=s?'1':'.45';
+  b.title=s?('تراجع عن: '+_undoDesc(s)+' (Ctrl+Z) — متاح '+_undoSt.length+' خطوة'):'مفيش خطوات للتراجع';
+  b.textContent=s?('↩️ تراجع ('+_undoSt.length+')'):'↩️ تراجع';
+}
+function undoLast(){
+  var s=_undoSt[_undoSt.length-1];
+  if(!s){toast('مفيش خطوات للتراجع');return;}
+  var n=s.add+s.del+s.ed;
+  if(!confirm('هترجعي خطوة لورا:\n'+_undoDesc(s)+'\n\nمتأكدة؟'))return;
+  _undoSt.pop();
+  var now=Date.now(),idx={};
+  for(var i=0;i<INC.length;i++)idx[INC[i].id]={a:'i',i:i};
+  for(var i=0;i<OUT.length;i++)idx[OUT[i].id]={a:'o',i:i};
+  var rmI={},rmO={},addI=[],addO=[];
+  for(var id in s.d){
+    var before=s.d[id],cur=idx[id],curR=cur?(cur.a==='i'?INC:OUT)[cur.i]:null;
+    if(before===null){ // الحركة كانت متضافة → تتشال
+      if(cur){(cur.a==='i'?rmI:rmO)[id]=1;DEL[id]=Math.max(now,((curR&&curR._t)||0)+1);}
+      continue;
+    }
+    var c=before.charAt(0),r=JSON.parse(before.slice(1));
+    r._t=Math.max(now,((curR&&curR._t)||0)+1,(DEL[id]||0)+1);
+    if(cur&&cur.a===c){(c==='i'?INC:OUT)[cur.i]=r;}
+    else{if(cur)(cur.a==='i'?rmI:rmO)[id]=1;(c==='i'?addI:addO).push(r);}
+  }
+  INC=INC.filter(function(r){return !rmI[r.id];}).concat(addI);
+  OUT=OUT.filter(function(r){return !rmO[r.id];}).concat(addO);
+  try{for(var id in s.d){delete inSelIds[id];delete outSelIds[id];}}catch(e){}
+  _undoBusy=true;try{dataChanged();}finally{_undoBusy=false;}
+  updateKPIs();refreshVisible();
+  try{var pg=document.querySelector('.pg.on');if(pg&&pg.id==='p-scan')impRender();}catch(e){}
+  undoBtn();
+  toast('↩️ اتلغت آخر خطوة ('+_undoDesc(s)+')');
+}
+document.addEventListener('keydown',function(e){
+  if(!(e.ctrlKey||e.metaKey)||e.shiftKey||(e.key!=='z'&&e.key!=='Z'&&e.key!=='ي'))return;
+  var ae=document.activeElement;if(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))return;
+  if(!_CU||!_undoSt.length)return;
+  e.preventDefault();undoLast();
+});
+
+// ===== الملفات المرفوعة: عرض وإلغاء استيراد كامل =====
+function impBatches(){
+  var M={};
+  function scan(arr,cat){
+    for(var i=0;i<arr.length;i++){
+      var r=arr[i],n=r.notes||'';
+      if(n.indexOf('مستورد من')!==0)continue;
+      var key=(r._t||0)+'|'+r.type+'|'+n;
+      var b=M[key];
+      if(!b)b=M[key]={key:key,t:r._t||0,type:r.type,src:n.replace('مستورد من ',''),cat:cat,ids:[],w8:0,d1:'',d2:''};
+      b.ids.push(r.id);b.w8+=(+r.w8||0);
+      if(r.date){if(!b.d1||r.date<b.d1)b.d1=r.date;if(!b.d2||r.date>b.d2)b.d2=r.date;}
+    }
+  }
+  scan(INC,'in');scan(OUT,'out');
+  var L=[];for(var k in M)L.push(M[k]);
+  L.sort(function(a,b){return b.t-a.t;});
+  return L;
+}
+var _impL=[];
+function impRender(){
+  var box=document.getElementById('imp-list');if(!box)return;
+  _impL=impBatches();
+  if(!_impL.length){box.innerHTML='<div style="padding:14px;text-align:center;color:#9C9488;font-size:13px">مفيش ملفات مرفوعة</div>';return;}
+  var h='',show=Math.min(_impL.length,30);
+  for(var i=0;i<show;i++){
+    var b=_impL[i],dt=b.t?new Date(b.t):null;
+    var when=dt?dt.toLocaleDateString('ar-EG-u-nu-latn',{day:'numeric',month:'short'})+' '+dt.toLocaleTimeString('ar-EG-u-nu-latn',{hour:'2-digit',minute:'2-digit'}):'—';
+    var tc=b.type==='منصرف'?'#B83232':b.type==='مرتجع'?'#8B5E04':'#2D7A4F';
+    var rng=b.d1?(b.d1===b.d2?b.d1:b.d1+' → '+b.d2):'';
+    h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid #E8E5DF;border-radius:10px;margin-bottom:8px">'
+      +'<div style="flex:1;min-width:180px">'
+      +'<div style="font-weight:700;font-size:13px"><span style="color:'+tc+'">'+(b.type==='مستلم'?'وارد':b.type)+'</span> — '+b.ids.length+' حركة — '+N(b.w8)+' جم ع21</div>'
+      +'<div style="font-size:12px;color:#9C9488">اترفع '+when+' · '+b.src+(rng?' · تواريخ الحركات: '+rng:'')+'</div>'
+      +'</div>'
+      +'<button class="btn bd bsm" onclick="impUndo('+i+')">🗑️ إلغاء الملف</button>'
+      +'</div>';
+  }
+  if(_impL.length>show)h+='<div style="font-size:12px;color:#9C9488">… و '+(_impL.length-show)+' ملفات أقدم</div>';
+  box.innerHTML=h;
+}
+function impUndo(i){
+  var b=_impL[i];if(!b)return;
+  if(!confirm('هتمسح '+b.ids.length+' حركة '+b.type+' ('+N(b.w8)+' جم ع21) اللي اتضافت من الملف ده.\nمتأكدة؟'))return;
+  var set={};for(var j=0;j<b.ids.length;j++)set[b.ids[j]]=1;
+  var now=Date.now();
+  function rm(arr){
+    var out=[];
+    for(var j=0;j<arr.length;j++){var r=arr[j];if(set[r.id]){DEL[r.id]=Math.max(now,(r._t||0)+1);try{delete inSelIds[r.id];delete outSelIds[r.id];}catch(e){}}else out.push(r);}
+    return out;
+  }
+  INC=rm(INC);OUT=rm(OUT);
+  dataChanged();updateKPIs();
+  try{renderIn();}catch(e){}try{renderOut();}catch(e){}
+  impRender();
+  toast('🗑️ تم إلغاء الملف ومسح '+b.ids.length+' حركة');
+}
 
 // ===== SCAN =====
 var _scRows = [];

@@ -405,7 +405,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
     <div class="balance-pill">
       <div class="bl">الرصيد الفعلي — شامل الكل</div>
       <div class="bv" id="sb-bal">—</div>
-      <div class="bl2">بدون المعلم والمهندس</div>
+      <div class="bl2">بدون مصاريف المعلم</div>
       <div class="bv2" id="sb-bal2">—</div>
     </div>
     <div class="sync-row" id="sync-row" style="cursor:pointer" onclick="syncNow()" title="اضغط لجلب آخر البيانات من كل الأجهزة (مزامنة الآن)">
@@ -425,6 +425,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
 
     <div class="sb-sec">الخزنة</div>
     <div class="sb-item" data-s="kassa"><div class="sb-ico">🏦</div><span>الخزنة الرئيسية</span><span class="sb-tot" id="st-kassa">—</span></div>
+    <div class="sb-item" data-s="ledger"><div class="sb-ico">📒</div><span>دفتر الرصيد</span></div>
 
     <div class="sb-sec">أوراق الصرف</div>
     <div class="sb-item" data-s="expenses"><div class="sb-ico">💸</div><span>المصروفات العامة</span><span class="sb-tot" id="st-expenses">—</span></div>
@@ -491,7 +492,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
         <div class="entry-title">تسجيل قيد جديد — اكتب البند واختر الورقة</div>
         <div class="frow main">
           <div class="fg"><label>التاريخ</label><input type="date" id="q-date"></div>
-          <div class="fg"><label>البند / البيان</label><input type="text" id="q-desc" placeholder="اكتب وصف البند…"></div>
+          <div class="fg"><label>البند / البيان</label><input type="text" id="q-desc" list="desc-list" autocomplete="off" placeholder="اكتب وصف البند…"><datalist id="desc-list"></datalist></div>
           <div class="fg"><label>الورقة</label>
             <select id="q-sheet" onchange="updateEntryExtras()">
               <option value="expenses">💸 المصروفات العامة</option>
@@ -523,15 +524,15 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
           <div class="fg" id="q-advbal-wrap" hidden><label>السلف المستحقة عليه حالياً</label><div class="balbox" id="q-advbal-v">—</div></div>
           <div class="fg" id="q-party-wrap" hidden><label>الجهة / المورد</label><input type="text" id="q-party" list="party-list" placeholder="اسم الجهة…"><datalist id="party-list"></datalist></div>
         </div>
-        <div style="font-size:.68rem;color:var(--text3);margin-top:10px">Enter ينقلك بين الحقول ويحفظ من حقل المبلغ — وبعد الحفظ يرجع المؤشر للبند مباشرة · لو القيد مكرر (نفس المبلغ والبيان والتاريخ) هيظهرلك تنبيه قبل الحفظ · 🎨 كليك يمين على أي صف عشان تلوّنه وتعلّمه</div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:10px">بعد كل حفظ هيظهرلك الرصيد الجديد، وفي الجدول تحت عمود «الرصيد بعدها» لكل عملية (والتفصيل الكامل في 📒 دفتر الرصيد) · Enter ينقلك بين الحقول ويحفظ من حقل المبلغ — وبعد الحفظ يرجع المؤشر للبند مباشرة · لو القيد مكرر (نفس المبلغ والبيان والتاريخ) هيظهرلك تنبيه قبل الحفظ · 🎨 كليك يمين على أي صف عشان تلوّنه وتعلّمه</div>
       </div>
 
       <div class="tw">
         <div class="tw-head"><span class="tt">آخر القيود</span><span class="tc" id="recent-cnt"></span></div>
         <div style="overflow-x:auto">
           <table>
-            <thead><tr><th>التاريخ</th><th>الورقة</th><th>البند</th><th>المبلغ (ج.م)</th><th>بواسطة</th><th></th></tr></thead>
-            <tbody id="tb-recent"><tr><td colspan="6"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr></tbody>
+            <thead><tr><th>التاريخ</th><th>الورقة</th><th>البند</th><th>المبلغ (ج.م)</th><th>الرصيد بعدها</th><th>بواسطة</th><th></th></tr></thead>
+            <tbody id="tb-recent"><tr><td colspan="7"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -588,7 +589,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
       </div>
       <div class="kpi-row k6">
         <div class="kpi g"><div class="kl">إجمالي الوارد</div><div class="kv" id="ki-inc">0</div></div>
-        <div class="kpi r"><div class="kl">إجمالي المنصرف</div><div class="kv" id="ki-sp">0</div></div>
+        <div class="kpi r"><div class="kl">إجمالي المنصرف</div><div class="kv" id="ki-sp">0</div><div class="ks" id="ki-sp-prev"></div></div>
         <div class="kpi"><div class="kl">المرتبات</div><div class="kv" id="ki-sal">0</div></div>
         <div class="kpi"><div class="kl">سلف مستحقة</div><div class="kv" id="ki-adv">0</div></div>
         <div class="kpi"><div class="kl">العربون المقدم</div><div class="kv" id="ki-dep">0</div></div>
@@ -596,12 +597,23 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
       </div>
       <div class="dash-grid">
         <div class="cc"><h3>توزيع المصروفات</h3><canvas id="chart" height="220"></canvas></div>
-        <div class="cc"><h3>تفصيل الأوراق</h3><div class="bk" id="bk-list"><div class="empty" style="padding:18px">لا بيانات بعد</div></div></div>
+        <div class="cc"><h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px">تفصيل الأوراق <button class="btn-mini" onclick="openBudgets()" title="حدّد حد أقصى شهري لكل بند">🎯 الميزانيات</button></h3><div class="bk" id="bk-list"><div class="empty" style="padding:18px">لا بيانات بعد</div></div></div>
       </div>
     </div>
 
     <!-- ═══ KASSA ═══ -->
     <div class="section" id="sec-kassa">
+      <div class="entry-block">
+        <div class="entry-title">🧮 جرد الخزنة — قارن الفلوس المعدودة بالرصيد الدفتري</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end">
+          <div class="fg" style="width:190px"><label>المبلغ المعدود فعلياً (ج.م)</label><input type="text" inputmode="decimal" id="cnt-amt" placeholder="0" oninput="grp(this);countPreview()"></div>
+          <div class="fg" style="width:170px"><label>الرصيد الدفتري (شامل الكل)</label><div class="balbox" id="cnt-book">—</div></div>
+          <div class="fg" style="width:190px"><label>الفرق (معدود − دفتري)</label><div class="balbox" id="cnt-diff">—</div></div>
+          <div class="fg" style="flex:1;min-width:150px"><label>ملاحظة (اختياري)</label><input type="text" id="cnt-note" placeholder="سبب الفرق…"></div>
+          <button class="btn btn-gold" style="padding:10px 16px" onclick="saveCount()">حفظ الجرد</button>
+        </div>
+        <div id="cnt-last" style="font-size:.74rem;color:var(--text2);margin-top:10px;line-height:1.8"></div>
+      </div>
       <div class="tw">
         <div class="tw-head">
           <span class="tt">سجل الخزنة الرئيسية</span>
@@ -615,6 +627,30 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
           <tbody id="tb-kassa"></tbody></table>
         </div>
         <div class="tf"><span class="tf-lbl">صافي الخزنة (وارد − منصرف مباشر):</span><span class="tf-val" id="tot-kassa">0</span></div>
+      </div>
+    </div>
+
+    <!-- ═══ دفتر الرصيد ═══ -->
+    <div class="section" id="sec-ledger">
+      <div class="kpi-row" id="lg-kpis"></div>
+      <div class="entry-block">
+        <div class="entry-title">📒 دفتر الرصيد — كل عملية وجنبها الرصيد قبلها وبعدها</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+          <div class="fg" style="flex:1;min-width:180px"><label>بحث</label><input type="text" id="lg-q" placeholder="بيان، ورقة، اسم، مبلغ…" oninput="renderLedger()"></div>
+          <div class="fg" style="width:170px"><label>النوع</label><select id="lg-type" onchange="renderLedger()"><option value="">كل العمليات</option><option value="in">➕ إضافة للرصيد</option><option value="out">➖ خصم من الرصيد</option></select></div>
+          <div class="fg" style="width:150px"><label>من تاريخ</label><input type="date" id="lg-from" onchange="renderLedger()"></div>
+          <div class="fg" style="width:150px"><label>إلى تاريخ</label><input type="date" id="lg-to" onchange="renderLedger()"></div>
+          <div class="fg" style="width:150px"><label>الترتيب</label><select id="lg-ord" onchange="renderLedger()"><option value="desc">الأحدث أولاً</option><option value="asc">الأقدم أولاً</option></select></div>
+        </div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:10px;line-height:1.8">العمليات مرتّبة بوقت تسجيلها الفعلي واحدة ورا التانية — وآخر رقم في عمود «الرصيد بعد العملية» هو نفس الرصيد الفعلي (شامل الكل) اللي فوق في القائمة. القيود المُرحّلة وخصم السلفة من المرتب مش بتظهر هنا لأنها مش بتغيّر الرصيد.</div>
+      </div>
+      <div class="tw">
+        <div class="tw-head"><span class="tt">العمليات المتتالية</span><span class="tc" id="lg-cnt"></span></div>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>#</th><th>وقت التسجيل</th><th>تاريخ القيد</th><th>الورقة</th><th>البيان</th><th>إضافة (+)</th><th>خصم (−)</th><th>الرصيد بعد العملية</th><th>بواسطة</th></tr></thead>
+          <tbody id="tb-ledger"></tbody>
+        </table></div>
+        <div id="lg-more" style="text-align:center"></div>
       </div>
     </div>
 
@@ -691,7 +727,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
           <div class="fg" style="width:160px"><label>العملية</label><select id="au-act" onchange="renderAudit()"><option value="">كل العمليات</option><option value="add">➕ إضافة</option><option value="edit">✎ تعديل</option><option value="del">🗑 حذف</option><option value="bulk">📦 عمليات مجمّعة</option></select></div>
           <div class="fg" style="flex:1;min-width:180px"><label>بحث</label><input type="text" id="au-q" placeholder="بند، عامل، ورقة، مبلغ…" oninput="renderAudit()"></div>
         </div>
-        <div class="muted" style="font-size:.72rem;margin-top:10px;line-height:1.8">كل إضافة أو تعديل أو حذف بيتسجّل هنا تلقائياً باسم المستخدم اللي عمله — وفي التعديل بيظهر القيمة القديمة والجديدة وصاحب القيد الأصلي. ولو مستخدم تاني عمل أي تغيير وانت فاتح البرنامج هيظهرلك تنبيه فوري 🔔.</div>
+        <div class="muted" style="font-size:.72rem;margin-top:10px;line-height:1.8">كل إضافة أو تعديل أو حذف بيتسجّل هنا تلقائياً باسم المستخدم اللي عمله — وفي التعديل بيظهر القيمة القديمة والجديدة وصاحب القيد الأصلي. ولو مستخدم تاني عمل أي تغيير وانت فاتح البرنامج هيظهرلك تنبيه فوري 🔔. ولو قيد اتحذف بالغلط اضغط «↩ استرجِع القيد» جنبه وهيرجع زي ما كان.</div>
       </div>
       <div id="au-refund" hidden style="background:rgba(208,72,72,.08);border:1px solid rgba(208,72,72,.45);border-radius:12px;padding:12px 16px;font-size:.84rem;line-height:1.9;margin-bottom:16px"></div>
       <div class="tw">
@@ -809,6 +845,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
         <div class="fg"><label>تاريخ صرف الأسبوع</label><input type="date" id="sal-date" onchange="renderSalGrid()"></div>
         <button class="btn btn-ghost" onclick="copyLastWeek()" title="ملء الكشف بأرقام آخر أسبوع">⧉ انسخ الأسبوع السابق</button>
         <button class="btn btn-gold" onclick="payAll()" title="صرف كل الصفوف المملوءة دفعة واحدة">💰 صرف الكل</button>
+        <button class="btn btn-ghost" onclick="dateSlips()" title="طباعة قسائم كل المصروف لهم في هذا التاريخ — كل قسيمة في صفحة">🧾 قسائم الأسبوع</button>
         <button class="btn btn-gold" onclick="saveWeekToKeeper()" title="يحفظ مرتبات هذا الأسبوع في الحافظة، ويزيله من الشاشة، ويجهّز أسبوعاً جديداً بنفس الأسماء والمبالغ جاهزة">📁 احفظ الأسبوع وابدأ التالي</button>
         <button class="btn btn-ghost" onclick="go('payweeks')" title="فتح حافظة الأسابيع للرجوع لأي أسبوع سابق">🗂️ الحافظة</button>
         <button class="btn btn-ghost" onclick="toggleAddEmp()">＋ موظف جديد</button>
@@ -950,6 +987,22 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
   </div>
 </div>
 
+<!-- ═══ BUDGETS MODAL ═══ -->
+<div id="modal-budget" onclick="if(event.target===this)closeBudgets()" style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px">
+  <div class="modal">
+    <div class="modal-head"><h2>🎯 ميزانية الشهر لكل بند</h2><button class="modal-x" onclick="closeBudgets()">✕</button></div>
+    <div class="modal-body">
+      <div style="font-size:.76rem;color:var(--text2);line-height:1.8;margin-bottom:10px">اكتب الحد الأقصى اللي عايز تصرفه في الشهر لكل بند. هيظهرلك في «نظرة عامة» صرفت كام في المية، وتنبيه لما توصل 80% أو تتجاوز. سيب الخانة فاضية لو مش عايز حد.</div>
+      <div id="budget-rows" style="display:flex;flex-direction:column;gap:9px"></div>
+      <div id="budget-err" style="color:var(--red);font-size:.75rem;min-height:16px;margin-top:8px"></div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button class="btn btn-gold" style="flex:1;padding:11px" onclick="saveBudgets()">💾 حفظ الميزانيات</button>
+        <button class="btn btn-ghost" style="padding:11px 16px" onclick="closeBudgets()">إلغاء</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ EDIT ENTRY MODAL ═══ -->
 <div id="modal-edit" onclick="if(event.target===this)closeEdit()" style="position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:20px">
   <div class="modal">
@@ -959,6 +1012,7 @@ body.sel-dragging,body.sel-dragging *{user-select:none!important;-webkit-user-se
       <div id="edit-who" style="font-size:.72rem;color:var(--text2);margin:-4px 0 10px;line-height:1.7"></div>
       <div class="m-form" style="flex-direction:column;gap:10px;align-items:stretch">
         <div class="fg"><label>التاريخ</label><input type="date" id="edit-date"></div>
+        <div class="fg" id="edit-cat-wrap" hidden><label>الورقة — غيّرها لو عايز تنقل القيد لورقة تانية</label><select id="edit-cat"></select></div>
         <div class="fg" id="edit-party-wrap" hidden><label>الجهة / المورد</label><input type="text" id="edit-party" placeholder="الجهة"></div>
         <div class="fg"><label>البيان</label><input type="text" id="edit-desc" placeholder="البيان"></div>
         <div class="fg"><label>المبلغ (ج.م)</label><input type="text" inputmode="decimal" id="edit-amt" placeholder="0" oninput="grp(this)"></div>
@@ -1029,7 +1083,7 @@ const CATS = {
   deposit:  {label:'العربون المقدم',  color:'#8A6FB8', icon:'🪙'},
 };
 const TITLES = {
-  entry:'قيد جديد', xlimport:'استيراد مصروفات من Excel', dash:'نظرة عامة', kassa:'الخزنة الرئيسية',
+  entry:'قيد جديد', xlimport:'استيراد مصروفات من Excel', dash:'نظرة عامة', kassa:'الخزنة الرئيسية', ledger:'دفتر الرصيد — الرصيد بعد كل عملية',
   expenses:'المصروفات العامة', hallmark:'الدمغة', tools:'أدوات التشغيل',
   packaging:'الأغلفة', machines:'آلات التشغيل', master:'مصاريف المعلم',
   engineer:'المهندس ابرام', deposit:'العربون المقدم', advances:'السلف',
@@ -1053,6 +1107,7 @@ let salDraft={}; // empId -> {b,e,a}
 let advBalMap={}; // empId -> outstanding advance balance
 let period=null; // {id,label,startISO,by}
 let reportKind='month', reportLabel='';
+let budgets={}; // ميزانية كل بند {expenses:100000,...}
 
 // ═══ UTILS ════════════════════════════════════════════════════════════════
 const $=id=>document.getElementById(id);
@@ -1064,7 +1119,9 @@ const gnum=v=>{v=String(v==null?'':v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨�
 const numv=v=>{const n=parseFloat(String(v==null?'':v).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,''));return isNaN(n)?0:n;};
 function grp(el){ if(!el) return; el.value=gnum(el.value); try{el.setSelectionRange(el.value.length,el.value.length);}catch(e){} }
 const fmtd=d=>{try{return new Date(d+'T00:00').toLocaleDateString('ar-EG-u-nu-latn',{day:'2-digit',month:'short',year:'numeric'})}catch{return d||'—'}};
-const td=()=>new Date().toISOString().split('T')[0];
+const isoLocal=d=>{const z=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate());};
+const td=()=>isoLocal(new Date()); // تاريخ اليوم بتوقيت الجهاز (مش UTC)
+const isAdmin=()=>!!me&&me.role==='admin';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // اسم الموظف الحالي من قائمة الموظفين (يجعل تعديل الاسم ينعكس في كل المنظومة) مع رجوع للاسم المخزّن
 function empNameOf(id,fb){ const e=empDocs.find(d=>d.id===id); return e?e.data().name:(fb||'—'); }
@@ -1244,7 +1301,7 @@ async function boot(){
     totals['salaries']=tot; counts['salaries']=snap.size;
     const el=$('st-salaries'); if(el) el.textContent=fmtN(tot);
     if(cur==='salaries') $('tb-total').textContent=fmt(tot);
-    updateAdvDerived(); renderSalHist(); refreshDash(); updateBal();
+    updateAdvDerived(); renderSalHist(); renderRecent(); refreshDash(); updateBal();
   },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
   db.collection('payweeks').onSnapshot(snap=>{
     weekDocs=snap.docs.slice().sort((a,b)=>(b.data().savedAt||'').localeCompare(a.data().savedAt||'')||(b.data().date||'').localeCompare(a.data().date||''));
@@ -1264,6 +1321,9 @@ async function boot(){
     // تعديل/إضافة/حذف اسم ينعكس فوراً في كل المنظومة
     renderSalGrid(); fillRpList(); fillEmpSelect(); renderSalHist(); renderAdvances(); renderReport(); renderRecent(); fillStmtLists(); renderAdvStmt();
   },e=>{markOffline();toast('خطأ اشتراك: '+e.code);});
+  db.doc('config/budgets').onSnapshot(snap=>{ budgets=snap.exists?(snap.data()||{}):{}; refreshDash(); },e=>{});
+  resumeClosing();              // لو إغلاق شهر اتقطع في النص يكمّل تلقائياً
+  setTimeout(backupReminder,4500);
 }
 // recompute advance balances (سلف مصروفة − سداد نقدي − مخصوم من المرتبات)
 function updateAdvDerived(){
@@ -1288,9 +1348,12 @@ function go(s){
   $('sb').classList.remove('open');
   let t=null;
   if(s==='kassa') t=(totals['kassa-in']||0)-(totals['kassa-out']||0);
+  else if(s==='ledger') t=balanceWith();
   else if(s==='advances') t=Object.values(advBalMap).reduce((x,v)=>x+(v>0?v:0),0);
   else if(totals[s]!=null) t=totals[s];
   $('tb-total').textContent=t!=null?fmt(t):'';
+  if(s==='ledger') renderLedger();
+  if(s==='kassa') countPreview();
   if(s==='dash') refreshDash(true);
   if(s==='entry') setTimeout(()=>$('q-desc').focus(),50);
   if(s==='salaries'){ if(!$('sal-date').value)$('sal-date').value=td(); renderSalGrid(); }
@@ -1377,7 +1440,8 @@ async function saveEntry(){
       await db.collection('advances').add(rec);
       lbl=(kind==='repay'?'سداد سلفة — ':'سلفة — ')+emp.data().name;
     }else if(isDep){
-      const party=$('q-party').value.trim();
+      let party=$('q-party').value.trim();
+      { const ex=[...new Set((catDocs['deposit']||[]).map(d=>d.data().party).filter(Boolean))].find(p=>normD(p)===normD(party)); if(ex) party=ex; } // نفس الجهة بنفس الكتابة
       if(!party){ toast('اكتب اسم الجهة'); $('q-party').focus(); return; }
       const rec={category:'deposit',date,desc,amount:amt,party,by:me.u,at:new Date().toISOString()};
       if(!dupConfirm('entries',rec)) return;
@@ -1391,13 +1455,18 @@ async function saveEntry(){
     }
     $('q-desc').value=''; $('q-amt').value='';
     $('q-desc').focus();
-    toast('حُفظ في «'+lbl+'» ✓');
+    let msg='حُفظ في «'+lbl+'» ✓ — الرصيد الآن: '+fmt(balanceWith());
+    const bgv=+budgets[sheet]||0;
+    if(bgv){ const used=totals[sheet]||0;
+      if(used>=bgv) msg+=' · ⚠️ تجاوز الميزانية ('+fmtN(used)+' من '+fmtN(bgv)+')';
+      else if(used>=0.8*bgv) msg+=' · ⚠️ وصل '+Math.round(used/bgv*100)+'% من الميزانية'; }
+    toast(msg,bgv?5200:3600);
   }catch(e){ toast('خطأ في الحفظ: '+(e.message||e.code||'')); }
 }
 
 // ═══ RECENT FEED ══════════════════════════════════════════════════════════
-function sheetBadge(d){
-  const x=d.data();
+function sheetBadge(d){ return sheetBadgeX(d.data()); }
+function sheetBadgeX(x){
   if(x.type==='in')  return '<span class="badge in">الخزنة — وارد</span>';
   if(x.type==='out') return '<span class="badge out">الخزنة — منصرف</span>';
   if(x.kind==='take')  return '<span class="badge out">💵 سلفة</span>';
@@ -1409,16 +1478,18 @@ function renderRecent(){
   const all=[...Object.values(catDocs).flat(),...kassaDocs,...advDocs]
     .sort((a,b)=>(b.data().at||'').localeCompare(a.data().at||'')).slice(0,12);
   const tb=$('tb-recent'); if(!tb) return;
+  const lm={}; buildLedger().forEach(r=>{lm[r.id]=r;}); fillDescList();
   $('recent-cnt').textContent=all.length?('آخر '+all.length+' قيد'):'';
   tb.innerHTML=all.length===0
-    ?'<tr><td colspan="6"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr>'
+    ?'<tr><td colspan="7"><div class="empty"><div class="empty-ico">✎</div>لا توجد قيود بعد — سجّل أول قيد من الأعلى</div></td></tr>'
     :all.map(d=>{const x=d.data();const col=x.type?'kassa':(x.kind?'advances':'entries');
       const extra=x.kind?empNameOf(x.empId,x.empName):(x.party||'');
       return`<tr${rowA(col,d.id)}>
       <td class="muted">${fmtd(x.date)}</td>
       <td>${sheetBadge(d)}</td>
       <td>${extra?'<b>'+esc(extra)+'</b> — ':''}${esc(x.desc)}${dupTag(d.id)}</td>
-      <td class="num">${fmtN(x.amount)}</td>
+      <td class="num" style="color:var(--${lm[d.id]?(lm[d.id].eff>0?'green':'red'):'text'})">${lm[d.id]?(lm[d.id].eff>0?'+':'−'):''}${fmtN(x.amount)}</td>
+      <td class="num" style="color:var(--gold-l)">${lm[d.id]?fmtN(lm[d.id].after):'<span title="لا يغيّر الرصيد" style="color:var(--text3)">—</span>'}</td>
       <td class="muted">${byHtml(x)}</td>
       <td style="text-align:left">${x.fromPayroll?'<span class="muted" style="font-size:.7rem">تلقائي</span>':'<button class="btn-del" onclick="delTwo(this,()=>delDoc(\''+col+'\',\''+d.id+'\'))">✕</button>'}</td>
     </tr>`}).join('');
@@ -1430,10 +1501,13 @@ function renderCat(cat){
   const docs=catDocs[cat]||[];
   const rows=docs.slice().sort((a,b)=>(b.data().date||'').localeCompare(a.data().date||'')||(b.data().at||'').localeCompare(a.data().at||''));
   const tot=docs.reduce((s,d)=>s+(+d.data().amount||0),0);
+  const hadF=document.activeElement&&document.activeElement.id==='cf-'+cat;
+  w._tot=tot;
   w.innerHTML=`
     <div class="tw-head">
       <span class="tt">${CATS[cat].icon} ${CATS[cat].label}</span>
       <span style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="cf-${cat}" value="${esc(catQ[cat]||'')}" placeholder="🔍 بحث في الورقة…" oninput="catFilter('${cat}',this.value)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:5px 9px;font-size:.76rem;outline:none;width:170px;font-family:inherit">
         <span class="tc">${docs.length} قيد</span>
         <button class="btn btn-ghost" style="font-size:.72rem;padding:4px 10px" onclick="goEntry('${cat}')">＋ إضافة</button>
       </span>
@@ -1442,7 +1516,7 @@ function renderCat(cat){
       <thead><tr><th>التاريخ</th><th>البند</th><th>المبلغ (ج.م)</th><th>بواسطة</th><th></th></tr></thead>
       <tbody>${rows.length===0
         ?`<tr><td colspan="5"><div class="empty"><div class="empty-ico">${CATS[cat].icon}</div>لا توجد قيود في هذه الورقة — أضِف من «قيد جديد»</div></td></tr>`
-        :rows.map(d=>{const x=d.data();return`<tr${rowA('entries',d.id)}>
+        :rows.map(d=>{const x=d.data();return`<tr${rowA('entries',d.id)} data-q="${esc(normD((x.desc||'')+' '+Math.round(+x.amount||0)+' '+(x.date||'')+' '+fmtd(x.date)+' '+(x.by||'')))}" data-a="${+x.amount||0}">
           <td class="muted">${fmtd(x.date)}</td>
           <td>${esc(x.desc)}${dupTag(d.id)}</td>
           <td class="num">${fmtN(x.amount)}</td>
@@ -1450,7 +1524,9 @@ function renderCat(cat){
           <td style="text-align:left;white-space:nowrap"><button class="btn-mini" onclick="openEdit('entries','${d.id}')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc('entries','${d.id}'))">✕</button></td>
         </tr>`}).join('')}
       </tbody></table></div>
-    <div class="tf"><span class="tf-lbl">الإجمالي:</span><span class="tf-val">${fmt(tot)}</span></div>`;
+    <div class="tf"><span class="tf-lbl" id="cfl-${cat}">الإجمالي:</span><span class="tf-val" id="cft-${cat}">${fmt(tot)}</span></div>`;
+  if(catQ[cat]) catFilter(cat);
+  if(hadF){ const el=$('cf-'+cat); if(el){ el.focus(); try{ el.setSelectionRange(el.value.length,el.value.length); }catch(e){} } }
 }
 function renderKassa(){
   const tb=$('tb-kassa'); if(!tb) return;
@@ -1516,6 +1592,9 @@ function findDocData(coll,id){
 function openEdit(coll,id){
   const x=findDocData(coll,id); if(!x){ toast('تعذّر فتح القيد'); return; }
   editRef={coll,id,hasParty:x.party!=null};
+  { const canMove=coll==='entries'&&!!CATS[x.category]&&x.category!=='deposit'&&!x.deduct;
+    editRef.cat=canMove?x.category:null; $('edit-cat-wrap').hidden=!canMove;
+    if(canMove){ $('edit-cat').innerHTML=Object.keys(CATS).filter(c=>c!=='deposit').map(c=>`<option value="${c}">${CATS[c].icon} ${CATS[c].label}</option>`).join(''); $('edit-cat').value=x.category; } }
   $('edit-date').value=x.date||td();
   $('edit-desc').value=x.desc||'';
   $('edit-amt').value=gnum(x.amount||0);
@@ -1540,6 +1619,7 @@ async function saveEdit(){
   if(!amount||amount<=0){ $('edit-err').textContent='أدخل مبلغاً صحيحاً'; $('edit-amt').focus(); return; }
   const patch={date,desc,amount};
   if(editRef.hasParty){ patch.party=$('edit-party').value.trim()||desc; }
+  if(editRef.cat){ const nc=$('edit-cat').value; if(nc&&nc!==editRef.cat&&CATS[nc]) patch.category=nc; }
   { const cand=Object.assign({},findDocData(editRef.coll,editRef.id)||{},patch); if(!dupConfirm(editRef.coll,cand,editRef.id)) return; }
   try{
     await db.collection(editRef.coll).doc(editRef.id).update(patch);
@@ -1602,7 +1682,7 @@ function renderAdvances(){
           <td>${esc(x.desc)}${dupTag(d.id)}</td>
           <td class="num" style="color:var(--${rep?'green':'red'})">${rep?'−':'+'}${fmtN(x.amount)}</td>
           <td class="muted">${byHtml(x)}</td>
-          <td style="text-align:left">${x.fromPayroll?'<span class="muted" style="font-size:.7rem">تلقائي</span>':'<button class="btn-del" onclick="delTwo(this,()=>delDoc(\'advances\',\''+d.id+'\'))">✕</button>'}</td>
+          <td style="text-align:left">${x.fromPayroll?'<span class="muted" style="font-size:.7rem">تلقائي</span>':'<button class="btn-mini" onclick="openEdit(\'advances\',\''+d.id+'\')" title="تعديل">✎</button> <button class="btn-del" onclick="delTwo(this,()=>delDoc(\'advances\',\''+d.id+'\'))">✕</button>'}</td>
         </tr>`}).join('')}
       </tbody></table></div>`;
 }
@@ -1822,6 +1902,8 @@ function balanceWithout(){ return balanceWith()+meTotal(); }          // بدو�
 function updateBal(){
   $('sb-bal').textContent=fmt(balanceWith());
   const el2=$('sb-bal2'); if(el2) el2.textContent=fmt(balanceWithout());
+  if(cur==='ledger'){ renderLedger(); $('tb-total').textContent=fmt(balanceWith()); }
+  if(cur==='kassa') countPreview();
 }
 function refreshDash(force){
   if(cur!=='dash') return;
@@ -1837,6 +1919,7 @@ function refreshDash(force){
   $('ki-adv').textContent=fmt(advOut);
   $('ki-dep').textContent=fmt(totals['deposit']||0);
   $('ki-cnt').textContent=String(cnt);
+  { const pm=arcDocs[0]&&arcDocs[0].data(), pe=$('ki-sp-prev'); if(pe) pe.textContent=pm?('الشهر السابق ('+(pm.label||'')+'): '+fmtN(pm.spendTotal||0)):''; }
   totals['advNet']=(totals['advTake']||0)-(totals['advRepay']||0);
   const keys=[...Object.keys(CATS),'salaries','advNet'].filter(k=>(totals[k]||0)>0);
   const vals=keys.map(k=>totals[k]);
@@ -1851,10 +1934,14 @@ function refreshDash(force){
   const mx=Math.max(...vals,1);
   $('bk-list').innerHTML=keys.length===0
     ?'<div class="empty" style="padding:16px">لا بيانات بعد — ابدأ من «قيد جديد»</div>'
-    :keys.map((k,i)=>`<div>
-      <div class="bk-top"><span class="bk-dot" style="background:${meta(k).color}"></span><span class="bk-name">${meta(k).label}</span><span class="bk-amt">${fmt(vals[i])}</span></div>
-      <div class="bk-bar"><div class="bk-fill" style="background:${meta(k).color};width:${(vals[i]/mx*100).toFixed(1)}%"></div></div>
-    </div>`).join('');
+    :keys.map((k,i)=>{
+      const bg=+budgets[k]||0, pct=bg?vals[i]/bg*100:0;
+      const warn=bg?(pct>=100?'var(--red)':pct>=80?'var(--gold-l)':''):'';
+      return `<div>
+      <div class="bk-top"><span class="bk-dot" style="background:${meta(k).color}"></span><span class="bk-name">${meta(k).label}</span><span class="bk-amt"${warn?` style="color:${warn}"`:''}>${fmt(vals[i])}</span></div>
+      <div class="bk-bar"><div class="bk-fill" style="background:${warn||meta(k).color};width:${(bg?Math.min(100,pct):vals[i]/mx*100).toFixed(1)}%"></div></div>
+      ${bg?`<div style="font-size:.64rem;color:${warn||'var(--text3)'};margin:3px 15px 0 0">${pct.toFixed(0)}% من ميزانية ${fmtN(bg)}${pct>=100?' — تجاوز بـ '+fmtN(vals[i]-bg):''}</div>`:''}
+    </div>`;}).join('');
 }
 
 // ═══ SALARY GRID ══════════════════════════════════════════════════════════
@@ -1910,7 +1997,8 @@ function renderSalGrid(){
       </tr>`;
     }
     const dr=salDraft[id]||{};
-    const days=dr.days??'', b=dr.b??(x.basic||''), e=dr.e??'', bo=dr.bo??'', pe=dr.pe??'', a=dr.a??'';
+    const instDef=(()=>{const bl=advBalMap[id]||0,i=+x.inst||0;return (i>0&&bl>0.01)?Math.min(i,bl):'';})(); // قسط السلفة الأسبوعي
+    const days=dr.days??'', b=dr.b??(x.basic||''), e=dr.e??'', bo=dr.bo??'', pe=dr.pe??'', a=dr.a??instDef;
     const net=salNet({b,e,bo,pe,a});
     return`<tr>
       <td><span class="emp-name" title="${nameTip(id)}"><span class="emp-av">${idx+1}</span>${esc(x.name)}
@@ -1988,9 +2076,14 @@ async function _savePay(emp,date,v){
   const days=+v.days||0,b=+v.b||0,e=+v.e||0,bo=+v.bo||0,pe=+v.pe||0,a=+v.a||0;
   if(b+e+bo<=0) return false;
   const net=b+e+bo-pe-a; const now=new Date().toISOString();
+  // المرتب وخصم السلفة في دفعة واحدة: يا الاتنين يتسجلوا يا ولا واحد
   const pref=db.collection('payroll').doc();
-  await pref.set({empId:id,empName:emp.data().name,date,days,basic:b,extra:e,bonus:bo,penalty:pe,advance:a,total:net,by:me.u,at:now});
-  if(a>0) await db.collection('advances').add({kind:'repay',carry:true,fromPayroll:true,payrollId:pref.id,empId:id,empName:emp.data().name,date,desc:'خصم من مرتب أسبوع '+fmtd(date),amount:a,by:me.u,at:now});
+  const payRec={empId:id,empName:emp.data().name,date,days,basic:b,extra:e,bonus:bo,penalty:pe,advance:a,total:net,by:me.u,at:now};
+  const batch=db.batch(); batch.set(pref,payRec);
+  let aref=null, advRec=null;
+  if(a>0){ aref=db.collection('advances').doc(); advRec={kind:'repay',carry:true,fromPayroll:true,payrollId:pref.id,empId:id,empName:emp.data().name,date,desc:'خصم من مرتب أسبوع '+fmtd(date),amount:a,by:me.u,at:now}; batch.set(aref,advRec); }
+  await batch.commit();
+  try{ auditLog('add','payroll',pref.id,payRec,null); if(aref) auditLog('add','advances',aref.id,advRec,null); }catch(e3){}
   if(b>0&&b!==(+emp.data().basic||0)){ try{ await db.collection('employees').doc(id).update({basic:b}); }catch{} }
   delete salDraft[id]; persistDrafts(); return net;
 }
@@ -1999,6 +2092,7 @@ async function saveSalRow(id){
   const date=$('sal-date').value||td(); const v=salVals(id);
   if((+v.b||0)+(+v.e||0)+(+v.bo||0)<=0){ toast('أدخل الأساسي أو الإضافي أو المكافأة'); $('sg-b-'+id)?.focus(); return; }
   const balBefore=advBalMap[id]||0, aVal=+v.a||0;
+  if(aVal>balBefore+0.01 && !confirm('⚠️ خصم السلفة ('+fmt(aVal)+') أكبر من السلف المستحقة على '+emp.data().name+' ('+fmt(balBefore)+').\n\nلو كمّلت رصيد سلفته هيبقى بالسالب. تكمّل؟')) return;
   try{
     await _savePay(emp,date,v);
     const remaining=balBefore-aVal;
@@ -2016,10 +2110,12 @@ async function payAll(){
   const date=$('sal-date').value||td(); const paid=paidMap(date);
   const todo=payrollEmps().filter(d=>!paid[d.id]).map(d=>({d,v:salVals(d.id)})).filter(o=>(+o.v.b||0)+(+o.v.e||0)+(+o.v.bo||0)>0);
   if(!todo.length){ toast('لا يوجد صفوف مملوءة للصرف — املأ المبالغ أولاً'); return; }
-  if(!confirm('صرف مرتبات '+todo.length+' موظف دفعة واحدة لتاريخ '+fmtd(date)+'؟')) return;
-  let n=0;
-  for(const o of todo){ try{ if(await _savePay(o.d,date,o.v)!==false) n++; }catch(e){} }
-  toast('تم صرف مرتبات '+n+' موظف دفعة واحدة ✓',4200);
+  const over=todo.filter(o=>(+o.v.a||0)>(advBalMap[o.d.id]||0)+0.01).map(o=>o.d.data().name);
+  if(!confirm('صرف مرتبات '+todo.length+' موظف دفعة واحدة لتاريخ '+fmtd(date)+'؟'+(over.length?('\n\n⚠️ خصم السلفة أكبر من المستحق عند: '+over.join('، ')):''))) return;
+  let n=0; const fail=[];
+  for(const o of todo){ try{ if(await _savePay(o.d,date,o.v)!==false) n++; }catch(e){ fail.push(o.d.data().name); } }
+  if(fail.length) toast('تم صرف '+n+' موظف — ⚠️ لم يُصرف: '+fail.join('، ')+' (حاول تاني)',8000);
+  else toast('تم صرف مرتبات '+n+' موظف دفعة واحدة ✓',4200);
 }
 function copyLastWeek(){
   const date=$('sal-date').value||td();
@@ -2028,7 +2124,7 @@ function copyLastWeek(){
   const prev=dates[0]; let n=0;
   payrollEmps().forEach(emp=>{
     const rec=payDocs.find(d=>d.data().empId===emp.id&&d.data().date===prev);
-    if(rec){ const y=rec.data(); salDraft[emp.id]={days:y.days||'',b:y.basic||'',e:y.extra||'',bo:y.bonus||'',pe:'',a:''}; n++; }
+    if(rec){ const y=rec.data(); salDraft[emp.id]={days:y.days||'',b:y.basic||'',e:y.extra||'',bo:y.bonus||'',pe:''}; n++; }
     else salDraft[emp.id]={b:emp.data().basic||''};
   });
   persistDrafts();
@@ -2082,7 +2178,7 @@ function buildPayslip(x,nm){
       <td style="border:none;width:50%">توقيع المستلم: ..............................</td>
       <td style="border:none;width:50%">توقيع المسؤول: ..............................</td>
     </tr></tbody></table>
-    <div class="rpt-foot"><span>Gold Era Factory — قسيمة صرف داخلية</span><span>${fmtd(now.toISOString().slice(0,10))}</span></div>`;
+    <div class="rpt-foot"><span>Gold Era Factory — قسيمة صرف داخلية</span><span>${fmtd(td())}</span></div>`;
 }
 
 // ═══ حافظة الأسابيع (Weekly Keeper) ═══════════════════════════════════════
@@ -2118,7 +2214,7 @@ async function saveWeekToKeeper(){
     persistDrafts();
     // انتقل تلقائياً لتاريخ الأسبوع التالي (+7 أيام)
     const nd=new Date(date+'T00:00'); nd.setDate(nd.getDate()+7);
-    if($('sal-date')) $('sal-date').value=nd.toISOString().slice(0,10);
+    if($('sal-date')) $('sal-date').value=isoLocal(nd);
     renderSalGrid();
     toast('✓ حُفظ '+L.label+' في الحافظة ('+fmt(total)+') — ونُظّفت الشاشة وجُهّز الأسبوع التالي بالأسماء ومرتباتها الأساسية',5800);
   }catch(e){ toast('خطأ في حفظ الأسبوع: '+(e.message||e.code||'')); }
@@ -2148,6 +2244,7 @@ function renderWeeks(){
         </div>
         <div class="wk-actions">
           <button class="btn btn-gold" style="padding:6px 15px" onclick="viewWeek('${d.id}')">🧾 عرض / طباعة</button>
+          <button class="btn btn-ghost" onclick="weekSlips('${d.id}')" title="قسيمة لكل موظف — كل واحدة في صفحة">🧾 قسائم الكل</button>
           <button class="btn btn-ghost" onclick="reopenWeek('${d.id}')" title="نسخ أرقام هذا الأسبوع إلى كشف المرتبات لأسبوع جديد">⧉ نسخ لأسبوع جديد</button>
           <button class="btn-del" onclick="delWeek('${d.id}')">حذف</button>
         </div>
@@ -2184,12 +2281,12 @@ function buildWeekReport(x){
     <tbody>${body}
       <tr class="balance-row"><td colspan="8">إجمالي الأسبوع (${rows.length} موظف)</td><td class="rpt-num">${fmtN(x.total)} ج.م</td></tr>
     </tbody></table>
-    <div class="rpt-foot"><span>Gold Era Factory — كشف أسبوعي محفوظ في الحافظة</span><span>طُبع: ${fmtd(now.toISOString().slice(0,10))}</span></div>`;
+    <div class="rpt-foot"><span>Gold Era Factory — كشف أسبوعي محفوظ في الحافظة</span><span>طُبع: ${fmtd(td())}</span></div>`;
 }
 function reopenWeek(id){
   const d=weekDocs.find(x=>x.id===id); if(!d) return;
   const x=d.data();
-  (x.rows||[]).forEach(r=>{ if(r.empId) salDraft[r.empId]={days:r.days||'',b:r.basic||'',e:r.extra||'',bo:r.bonus||'',pe:'',a:''}; });
+  (x.rows||[]).forEach(r=>{ if(r.empId) salDraft[r.empId]={days:r.days||'',b:r.basic||'',e:r.extra||'',bo:r.bonus||'',pe:''}; });
   persistDrafts();
   go('salaries');
   renderSalGrid();
@@ -2200,7 +2297,10 @@ async function delWeek(id){
   const x=d.data();
   const ids=Array.isArray(x.srcIds)&&x.srcIds.length ? x.srcIds
     : payDocs.filter(p=>p.data().date===x.date&&p.data().archived).map(p=>p.id);
-  if(!confirm('حذف «'+(x.label||'الأسبوع')+'» من الحافظة؟\n\nسيُحذف الأسبوع نهائياً وتُلغى مرتباته من الحسابات، ويُعاد مبلغ '+fmt(x.total)+' إلى رصيد الخزنة.')) return;
+  const live=ids.filter(pid=>payDocs.some(p=>p.id===pid));
+  if(!confirm(live.length
+    ?('حذف «'+(x.label||'الأسبوع')+'» من الحافظة؟\n\nسيُحذف الأسبوع نهائياً وتُلغى مرتباته من الحسابات، ويُعاد مبلغ '+fmt(x.total)+' إلى رصيد الخزنة.')
+    :('حذف «'+(x.label||'الأسبوع')+'» من الحافظة؟\n\nده أسبوع من شهر اتقفل قبل كده — هيتحذف من الحافظة بس، والرصيد مش هيتغيّر.'))) return;
   try{
     auditMute++;
     try{ for(const pid of ids){
@@ -2222,7 +2322,7 @@ function rpQuick(days){
   if(!days){ $('rp-from').value=''; $('rp-to').value=''; }
   else{
     $('rp-to').value=td();
-    $('rp-from').value=new Date(Date.now()-(days-1)*864e5).toISOString().slice(0,10);
+    $('rp-from').value=isoLocal(new Date(Date.now()-(days-1)*864e5));
   }
   renderReport();
 }
@@ -2295,6 +2395,7 @@ function editEmp(id){
   row.cells[0].innerHTML=`<span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
     <input class="sg-in" style="max-width:120px;direction:rtl;text-align:right" type="text" id="en-${id}" value="${esc(e.name)}" placeholder="الاسم">
     <input class="sg-in" style="max-width:64px" type="text" inputmode="decimal" id="er-${id}" value="${gnum(e.rate||'')}" placeholder="سعر اليوم" title="سعر اليوم" oninput="grp(this)">
+    <input class="sg-in" style="max-width:74px" type="text" inputmode="decimal" id="ei-${id}" value="${gnum(e.inst||'')}" placeholder="قسط سلفة" title="قسط السلفة الأسبوعي — يتحط تلقائياً في خانة «سلفة» طول ما عليه سلف" oninput="grp(this)">
     <select class="sg-in" id="eg-${id}" style="max-width:96px" title="الوردية"><option value="boys" ${grp==='boys'?'selected':''}>👦 أولاد</option><option value="girls" ${grp==='girls'?'selected':''}>👧 بنات</option></select>
     <label style="display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap"><input type="checkbox" id="ep-${id}" ${inPay?'checked':''} style="width:15px;height:15px">بالمرتبات</label>
     <label style="display:flex;gap:4px;align-items:center;font-size:.72rem;color:var(--text2);white-space:nowrap"><input type="checkbox" id="el-${id}" ${pin?'checked':''} style="width:15px;height:15px">دائماً بالآخر</label>
@@ -2309,10 +2410,12 @@ async function saveEmpName(id){
   const inPay=$('ep-'+id)?$('ep-'+id).checked:true;
   const group=$('eg-'+id)?$('eg-'+id).value:'boys';
   const pinLast=$('el-'+id)?$('el-'+id).checked:false;
-  try{ const patch={rate,inPayroll:inPay,group,pinLast}; if(name)patch.name=name; await db.collection('employees').doc(id).update(patch); toast('تم التعديل ✓'); }catch{}
+  try{ const patch={rate,inst:numv($('ei-'+id)?.value),inPayroll:inPay,group,pinLast}; if(name)patch.name=name; await db.collection('employees').doc(id).update(patch); toast('تم التعديل ✓'); }catch{}
   renderSalGrid();
 }
 async function delEmp(id){
+  const bl=advBalMap[id]||0;
+  if(bl>0.01 && !confirm('⚠️ «'+empNameOf(id)+'» عليه سلف مستحقة '+fmt(bl)+'.\n\nلو حذفته هيختفي من القوائم وسلفته هتفضل في السجل بس من غير اسم في الكشوف. متأكد من الحذف؟')) return;
   try{ await db.collection('employees').doc(id).delete(); toast('حُذف الموظف'); }catch{}
 }
 
@@ -2454,6 +2557,7 @@ function renderArchiveList(){
 
 // ═══ CLOSE MONTH ═══
 function openClose(){
+  if(!isAdmin()){ toast('إغلاق الشهر للمدير فقط'); return; }
   const bal=closingCash();
   const advOut=Object.values(advBalMap).reduce((s,v)=>s+(v>0?v:0),0);
   const nCnt=Object.values(counts).reduce((s,c)=>s+(c||0),0);
@@ -2468,10 +2572,14 @@ function openClose(){
 }
 function closeCloseModal(){ $('modal-wrap2').style.display='none'; }
 async function doCloseMonth(){
+  if(!isAdmin()){ $('close-err').textContent='إغلاق الشهر للمدير فقط'; return; }
   const newLabel=$('new-month-label').value.trim();
   if(!newLabel){ $('close-err').textContent='اكتب اسم الشهر الجديد'; return; }
   const btn=$('close-go'); btn.disabled=true; btn.textContent='جارٍ الإغلاق…';
+  const say=m=>{ btn.textContent=m; };
+  $('close-err').textContent='';
   auditMute++;
+  let stage='prep';
   try{
     const bal=closingCash();
     const oldLabel=period?period.label:arMonth(new Date());
@@ -2481,13 +2589,13 @@ async function doCloseMonth(){
     const depBy={}; (catDocs['deposit']||[]).forEach(d=>{const x=d.data();const p=x.party||x.desc||'غير محدد';depBy[p]=(depBy[p]||0)+(x.deduct?-1:1)*(+x.amount||0);});
     const expByCat={}; Object.keys(CATS).forEach(c=>expByCat[c]=totals[c]||0);
     const empTotals={};
-    payDocs.forEach(d=>{const x=d.data();if(!x.empId)return;const t=empTotals[x.empId]||(empTotals[x.empId]={name:x.empName,basic:0,extra:0,advance:0,total:0});t.basic+=+x.basic||0;t.extra+=+x.extra||0;t.advance+=+x.advance||0;t.total+=+x.total||0;});
+    payDocs.forEach(d=>{const x=d.data();if(!x.empId)return;const t=empTotals[x.empId]||(empTotals[x.empId]={name:x.empName,basic:0,extra:0,bonus:0,penalty:0,advance:0,total:0});t.basic+=+x.basic||0;t.extra+=+x.extra||0;t.bonus+=+x.bonus||0;t.penalty+=+x.penalty||0;t.advance+=+x.advance||0;t.total+=+x.total||0;});
     const exp7Total=Object.keys(CATS).filter(c=>c!=='deposit').reduce((s,c)=>s+(totals[c]||0),0);
     const summary={
       id:oldId,label:oldLabel,startISO:period?period.startISO:'',closedAt:new Date().toISOString(),closedBy:me.u,
       opening:totals['kassa-open']||0, income:(totals['kassa-in']||0)-(totals['kassa-open']||0),
       expByCat, expensesTotal:exp7Total,
-      depositTotal:totals['deposit']||0, salariesTotal:totals['salaries']||0, kassaOut:totals['kassa-out']||0,
+      depositTotal:totals['deposit']||0, depositCash:totals['depositCash']||0, salariesTotal:totals['salaries']||0, kassaOut:totals['kassa-out']||0,
       advGiven:totals['advTake']||0, advRepaid:totals['advRepay']||0,
       spendTotal:totalSpend(), closingBalance:bal,
       pdfTotal:(totals['kassa-in']||0)-(exp7Total+(totals['salaries']||0)+(totals['kassa-out']||0)),
@@ -2499,27 +2607,49 @@ async function doCloseMonth(){
       payroll:payDocs.map(d=>({id:d.id,...d.data()})),
       advances:advDocs.map(d=>({id:d.id,...d.data()})),
     };
+    const nSnap=SNAP_KEYS.reduce((s,k)=>s+snapshot[k].length,0);
+    const wipe=[...snapshot.entries.map(r=>'entries/'+r.id),...snapshot.kassa.map(r=>'kassa/'+r.id),
+      ...snapshot.payroll.map(r=>'payroll/'+r.id),...snapshot.advances.map(r=>'advances/'+r.id)];
+    if(wipe.length>20000) throw new Error('عدد القيود كبير جداً ('+wipe.length+')');
+
+    // ① حفظ الأرشيف والتأكد من السيرفر إنه اتحفظ كامل — قبل مسح أي حاجة
+    stage='archive'; say('جارٍ حفظ الأرشيف…');
     await db.doc('archives/'+oldId).set(summary);
-    try{ await db.doc('archives/'+oldId+'/snap/data').set(snapshot); }catch(e){}
-    const wipe=[...Object.values(catDocs).flat().map(d=>['entries',d.id]),
-      ...kassaDocs.map(d=>['kassa',d.id]),
-      ...payDocs.map(d=>['payroll',d.id]),
-      ...advDocs.map(d=>['advances',d.id])];
-    for(const [c,id] of wipe){ try{ await db.collection(c).doc(id).delete(); }catch(e){} }
-    const now=new Date();
-    await db.doc('config/period').set({id:'p'+Date.now(),label:newLabel,startISO:now.toISOString(),by:me.u});
+    await saveSnap(oldId,snapshot);
+    say('جارٍ التحقق من الأرشيف…');
+    const back=await loadSnap(oldId,true);
+    const nBack=back?SNAP_KEYS.reduce((s,k)=>s+((back[k]||[]).length),0):-1;
+    if(nBack!==nSnap) throw new Error('نسخة الأرشيف غير مكتملة ('+nBack+' من '+nSnap+' قيد)');
+
+    // ② بدء الشهر الجديد + ترحيل الأرصدة + علامة «جارٍ الإغلاق» — كلها في دفعة واحدة (يا كلها يا ولا حاجة)
+    stage='carry'; say('جارٍ ترحيل الأرصدة…');
+    const nowISO=new Date().toISOString(), today=td();
+    const b=db.batch();
+    b.set(db.doc('config/closing'),{oldId,oldLabel,newLabel,ids:wipe,at:nowISO,by:me.u});
+    b.set(db.doc('config/period'),{id:'p'+Date.now(),label:newLabel,startISO:nowISO,by:me.u});
+    let nOps=2;
+    if(Math.abs(bal)>0.001){ b.set(db.collection('kassa').doc(),{type:'in',date:today,desc:'رصيد افتتاحي مُرحّل من '+oldLabel,amount:bal,opening:true,by:me.u,at:nowISO}); nOps++; }
+    for(const a of advCarry){ b.set(db.collection('advances').doc(),{kind:'take',carry:true,empId:a.empId,empName:a.empName,date:today,desc:'رصيد سلف مُرحّل من '+oldLabel,amount:a.amount,by:me.u,at:nowISO}); nOps++; }
+    for(const [p,v] of Object.entries(depBy)) if(v>0.001){ b.set(db.collection('entries').doc(),{category:'deposit',carry:true,party:p,date:today,desc:'رصيد عربون مُرحّل من '+oldLabel,amount:v,by:me.u,at:nowISO}); nOps++; }
+    if(nOps>480) throw new Error('عدد الأرصدة المُرحّلة كبير جداً ('+nOps+')');
+    await b.commit();
     sessSet('mb-dismiss','');
-    if(Math.abs(bal)>0.001)
-      await db.collection('kassa').add({type:'in',date:td(),desc:'رصيد افتتاحي مُرحّل من '+oldLabel,amount:bal,opening:true,by:me.u,at:new Date().toISOString()});
-    for(const a of advCarry)
-      await db.collection('advances').add({kind:'take',carry:true,empId:a.empId,empName:a.empName,date:td(),desc:'رصيد سلف مُرحّل من '+oldLabel,amount:a.amount,by:me.u,at:new Date().toISOString()});
-    for(const [p,v] of Object.entries(depBy)) if(v>0.001)
-      await db.collection('entries').add({category:'deposit',carry:true,party:p,date:td(),desc:'رصيد عربون مُرحّل من '+oldLabel,amount:v,by:me.u,at:new Date().toISOString()});
+
+    // ③ مسح قيود الشهر القديم على دفعات (ولو اتقطع، بيكمّل تلقائياً عند فتح البرنامج)
+    stage='wipe'; say('جارٍ تصفير الشهر القديم…');
+    await wipeMarked(wipe);
+
     auditNote('إغلاق شهر '+oldLabel+' وأرشفته — وبدء شهر '+newLabel+' (رصيد مُرحّل)','حافظة الأشهر',bal);
     closeCloseModal();
     toast('تم إغلاق '+oldLabel+' وأرشفته ✓ — بدأ شهر '+newLabel,4500);
     go('dash');
-  }catch(e){ $('close-err').textContent='خطأ: '+(e.message||e.code||''); }
+  }catch(e){
+    const m=(e&&(e.message||e.code))||'';
+    $('close-err').textContent= stage==='wipe'
+      ? 'تم حفظ الأرشيف وترحيل الرصيد ✓ لكن مسح قيود الشهر القديم لم يكتمل ('+m+'). لا تسجّل قيوداً الآن — تأكد من الإنترنت وأعد فتح البرنامج وهيكمّل تلقائياً.'
+      : (stage==='carry' ? 'تم حفظ الأرشيف لكن الشهر الجديد لم يبدأ — لم يُمسح أي شيء. حاول مرة أخرى. ('+m+')'
+                         : 'لم يتم الإغلاق ولم يُمسح أي شيء — '+m);
+  }
   auditMute--;
   btn.disabled=false; btn.textContent='تأكيد الإغلاق والأرشفة';
 }
@@ -2584,14 +2714,17 @@ function collectCurrentReport(){
   const kout   =kassaDocs.filter(d=>d.data().type==='out').map(d=>d.data());
   const cats={}; Object.keys(CATS).filter(c=>c!=='deposit'&&c!=='master'&&c!=='engineer').forEach(c=>{ cats[c]=(catDocs[c]||[]).filter(d=>!d.data().carry).map(d=>d.data()); });
   const engineerTotal=(catDocs['engineer']||[]).filter(d=>!d.data().carry).reduce((s,d)=>s+((d.data().deduct?-1:1)*(+d.data().amount||0)),0);
-  return {label:period?period.label:arMonth(new Date()),opening,income,kout,cats,engineerTotal,salariesTotal:totals['salaries']||0,by:me?me.u:''};
+  return {label:period?period.label:arMonth(new Date()),opening,income,kout,cats,engineerTotal,salariesTotal:totals['salaries']||0,by:me?me.u:'',
+    recon:{master:totals['master']||0,advNet:(totals['advTake']||0)-(totals['advRepay']||0),depositCash:totals['depositCash']||0,screen:balanceWith()}};
 }
 function collectArchiveReport(m,snap){
   const K=snap?(snap.kassa||[]):[];
   const cats={}; Object.keys(CATS).filter(c=>c!=='deposit'&&c!=='master'&&c!=='engineer').forEach(c=>cats[c]=[]);
   (snap?(snap.entries||[]):[]).forEach(x=>{ if(x.category&&x.category!=='deposit'&&x.category!=='master'&&x.category!=='engineer'&&!x.carry&&cats[x.category]) cats[x.category].push(x); });
   const engineerTotal=(m.expByCat&&m.expByCat['engineer'])||0;
-  return {label:m.label,opening:K.filter(x=>x.type==='in'&&x.opening),income:K.filter(x=>x.type==='in'&&!x.opening),kout:K.filter(x=>x.type==='out'),cats,engineerTotal,salariesTotal:m.salariesTotal||0,by:m.closedBy||''};
+  const depCash=m.depositCash!=null?(+m.depositCash||0):(snap?(snap.entries||[]):[]).filter(x=>x.category==='deposit'&&!x.carry&&!x.deduct).reduce((s,x)=>s+(+x.amount||0),0);
+  const recon=snap?{master:(m.expByCat&&m.expByCat['master'])||0,advNet:(m.advGiven||0)-(m.advRepaid||0),depositCash:depCash,screen:m.closingBalance||0}:null;
+  return {label:m.label,opening:K.filter(x=>x.type==='in'&&x.opening),income:K.filter(x=>x.type==='in'&&!x.opening),kout:K.filter(x=>x.type==='out'),cats,engineerTotal,salariesTotal:m.salariesTotal||0,by:m.closedBy||'',recon};
 }
 function itemTable(header,items){
   const rows=items.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''))
@@ -2630,7 +2763,7 @@ function buildDetailedReport(D){
   return `
     <div class="rpt-head">
       <div class="rpt-logo"><div class="rpt-gem">♦</div><div><strong>GOLD ERA FACTORY</strong><span>منظومة إدارة المصروفات</span></div></div>
-      <div class="rpt-meta">تقرير مصروفات مفصّل — شهر<br><b style="color:#7A5A1A;font-size:.95rem">${esc(D.label)}</b><br>تاريخ الإصدار: ${fmtd(now.toISOString().slice(0,10))}<br>بواسطة: ${esc(D.by||'')}</div>
+      <div class="rpt-meta">تقرير مصروفات مفصّل — شهر<br><b style="color:#7A5A1A;font-size:.95rem">${esc(D.label)}</b><br>تاريخ الإصدار: ${fmtd(td())}<br>بواسطة: ${esc(D.by||'')}</div>
     </div>
     <div class="rpt-title">الإيرادات</div>
     ${inHtml}
@@ -2646,8 +2779,9 @@ function buildDetailedReport(D){
       <tr class="total-row"><td>إجمالي المنصرف</td><td class="rpt-num rpt-neg">${fmtN(outflow)}</td></tr>
       <tr class="balance-row"><td>الرصيد الفعلي</td><td class="rpt-num">${fmtN(balance)} ج.م</td></tr>
     </tbody></table>
-    <div style="font-size:.72rem;color:#777;margin-top:6px;line-height:1.7">• مصاريف المعلم مُستبعدة من التقرير ومُضافة إلى الرصيد الفعلي.<br>• مصاريف المهندس ابرام بند مستقل مخصوم من الرصيد (غير مُدرَج في تفاصيل البنود).</div>
-    <div class="rpt-foot"><span>Gold Era Factory — نظام داخلي</span><span>${fmtd(now.toISOString().slice(0,10))}</span></div>`;
+    ${reconHtml(D.recon,balance)}
+    <div style="font-size:.72rem;color:#777;margin-top:6px;line-height:1.7">• «الرصيد الفعلي» في التقرير لا يخصم مصاريف المعلم ولا السلف ولا العربون — وجدول المطابقة يوضّح الفرق بينه وبين رصيد الخزنة الظاهر في البرنامج.<br>• مصاريف المهندس ابرام بند مستقل مخصوم من الرصيد (غير مُدرَج في تفاصيل البنود).</div>
+    <div class="rpt-foot"><span>Gold Era Factory — نظام داخلي</span><span>${fmtd(td())}</span></div>`;
 }
 function buildAnnualReport(year){
   const D=annualData(year);
@@ -2657,7 +2791,7 @@ function buildAnnualReport(year){
   return `
     <div class="rpt-head">
       <div class="rpt-logo"><div class="rpt-gem">♦</div><div><strong>GOLD ERA FACTORY</strong><span>منظومة إدارة المصروفات</span></div></div>
-      <div class="rpt-meta">التقرير السنوي المفصّل<br><b style="color:#7A5A1A;font-size:.95rem">سنة ${year}</b><br>تاريخ الإصدار: ${fmtd(now.toISOString().slice(0,10))}<br>${D.months.length} شهر مؤرشف</div>
+      <div class="rpt-meta">التقرير السنوي المفصّل<br><b style="color:#7A5A1A;font-size:.95rem">سنة ${year}</b><br>تاريخ الإصدار: ${fmtd(td())}<br>${D.months.length} شهر مؤرشف</div>
     </div>
     <div class="rpt-title">الملخص السنوي</div>
     <table><tbody>
@@ -2679,7 +2813,7 @@ function buildAnnualReport(year){
     <table><thead><tr><th>العامل</th><th class="rpt-num">الإجمالي المدفوع</th></tr></thead><tbody>
       ${emps.map(e=>`<tr><td>${esc(e.name)}</td><td class="rpt-num">${fmtN(e.total)}</td></tr>`).join('')||'<tr><td colspan=2>—</td></tr>'}
     </tbody></table>
-    <div class="rpt-foot"><span>Gold Era Factory — نظام داخلي</span><span>${fmtd(now.toISOString().slice(0,10))}</span></div>`;
+    <div class="rpt-foot"><span>Gold Era Factory — نظام داخلي</span><span>${fmtd(td())}</span></div>`;
 }
 function showReport(html,title,kind,label){
   $('report-page').innerHTML=html;
@@ -2695,7 +2829,7 @@ async function viewArchive(id){
   const m=d.data();
   toast('جارٍ تحميل تفاصيل الشهر…');
   let snap=null;
-  try{ const s=await db.doc('archives/'+id+'/snap/data').get(); snap=s.exists?s.data():null; }catch(e){}
+  try{ snap=await loadSnap(id); }catch(e){}
   const D=collectArchiveReport(m,snap);
   showReport(buildDetailedReport(D),'تقرير '+m.label,'month',m.label);
 }
@@ -2759,14 +2893,16 @@ function buildWorkbook(){
   sum.push(['إجمالي المنصرف',totalSpend()]);
   sum.push(['رصيد الخزنة الحالي',closingCash()]);
   add('ملخص',sum,[26,18]);
+  add('دفتر الرصيد',[['#','وقت التسجيل','تاريخ القيد','الورقة','البيان','إضافة','خصم','الرصيد بعد العملية','بواسطة'],
+    ...buildLedger().map(r=>[r.n,fmtDT(r.x.at),r.x.date||'',auditSheet(r.coll,r.x),auditDesc(r.coll,r.x),r.eff>0?r.eff:'',r.eff<0?-r.eff:'',r.after,r.x.by||''])],[6,22,12,26,34,12,12,16,12]);
   add('الخزنة',[['التاريخ','البيان','النوع','المبلغ','بواسطة'],
     ...sortByDate(kassaDocs).map(d=>{const x=d.data();return[x.date,x.desc,x.type==='in'?'وارد':'منصرف',+x.amount||0,x.by||''];})],[14,30,10,14,12]);
   exp7.forEach(c=>{
     add(CATS[c].label.slice(0,28),[['التاريخ','البند','المبلغ','بواسطة'],
       ...sortByDate(catDocs[c]||[]).map(d=>{const x=d.data();return[x.date,x.desc,+x.amount||0,x.by||''];})],[14,34,14,12]);
   });
-  add('المرتبات',[['التاريخ','الموظف','الأساسي','الإضافي','السلفة','الصافي','بواسطة'],
-    ...sortByDate(payDocs).map(d=>{const x=d.data();return[x.date,x.empName,+x.basic||0,+x.extra||0,+x.advance||0,+x.total||0,x.by||''];})],[14,20,12,10,10,12,12]);
+  add('المرتبات',[['التاريخ','الموظف','أيام','الأساسي','الإضافي','المكافأة','الجزاء','السلفة','الصافي','بواسطة'],
+    ...sortByDate(payDocs).map(d=>{const x=d.data();return[x.date,empNameOf(x.empId,x.empName),+x.days||0,+x.basic||0,+x.extra||0,+x.bonus||0,+x.penalty||0,+x.advance||0,+x.total||0,x.by||''];})],[14,20,7,12,10,10,10,10,12,12]);
   add('السلف',[['التاريخ','العامل','النوع','البيان','المبلغ','بواسطة'],
     ...sortByDate(advDocs).map(d=>{const x=d.data();return[x.date,x.empName,x.carry?'مُرحّل':(x.kind==='repay'?'سداد':'صرف'),x.desc,+x.amount||0,x.by||''];})],[14,20,10,24,14,12]);
   add('أرصدة السلف',[['العامل','المتبقي عليه'],
@@ -2786,7 +2922,7 @@ async function excelArchive(id){
   const d=arcDocs.find(x=>x.id===id); if(!d) return;
   toast('جارٍ تجهيز الأرشيف…');
   let snap=null;
-  try{ const s=await db.doc('archives/'+id+'/snap/data').get(); snap=s.exists?s.data():null; }catch(e){}
+  try{ snap=await loadSnap(id); }catch(e){}
   const m=d.data();
   const wb=XLSX.utils.book_new();
   const rtl=ws=>{ws['!views']=[{RTL:true}];return ws;};
@@ -2798,7 +2934,7 @@ async function excelArchive(id){
   if(snap){
     add('الخزنة',[['التاريخ','البيان','النوع','المبلغ','بواسطة'],...(snap.kassa||[]).map(x=>[x.date,x.desc,x.type==='in'?'وارد':'منصرف',+x.amount||0,x.by||''])],[14,30,10,14,12]);
     add('المصروفات',[['التاريخ','الورقة','البند','المبلغ','بواسطة'],...(snap.entries||[]).map(x=>[x.date,(CATS[x.category]||{}).label||x.category,x.desc,+x.amount||0,x.by||''])],[14,18,28,14,12]);
-    add('المرتبات',[['التاريخ','الموظف','الأساسي','الإضافي','السلفة','الصافي'],...(snap.payroll||[]).map(x=>[x.date,x.empName,+x.basic||0,+x.extra||0,+x.advance||0,+x.total||0])],[14,20,12,10,10,12]);
+    add('المرتبات',[['التاريخ','الموظف','أيام','الأساسي','الإضافي','المكافأة','الجزاء','السلفة','الصافي'],...(snap.payroll||[]).map(x=>[x.date,x.empName,+x.days||0,+x.basic||0,+x.extra||0,+x.bonus||0,+x.penalty||0,+x.advance||0,+x.total||0])],[14,20,7,12,10,10,10,10,12]);
     add('السلف',[['التاريخ','العامل','النوع','المبلغ'],...(snap.advances||[]).map(x=>[x.date,x.empName,x.kind==='repay'?'سداد':'صرف',+x.amount||0])],[14,20,10,14]);
   }
   XLSX.writeFile(wb,'GoldEra-'+m.label.replace(/\s+/g,'-')+'.xlsx'); toast('تم تحميل الأرشيف ✓');
@@ -2818,6 +2954,7 @@ function exportAnnualExcel(){
 
 // ═══ FINAL RESET ═══
 function openFinalReset(){
+  if(!isAdmin()){ toast('التصفير النهائي للمدير فقط'); return; }
   $('reset-amount').value=''; $('reset-confirm').value=''; $('reset-err').textContent='';
   $('reset-month').value=arMonth(new Date());
   $('reset-amount-preview').textContent='ستبدأ الخزنة بـ 0 ج.م';
@@ -2827,22 +2964,26 @@ function openFinalReset(){
 function closeFinalReset(){ $('modal-reset').style.display='none'; }
 async function doFinalReset(){
   const err=m=>{$('reset-err').textContent=m};
+  if(!isAdmin()){ err('التصفير النهائي للمدير فقط'); return; }
   const amt=numv($('reset-amount').value);
   const label=$('reset-month').value.trim()||arMonth(new Date());
   if(($('reset-confirm').value||'').trim()!=='تصفير'){ err('اكتب كلمة «تصفير» للتأكيد'); return; }
   const btn=$('reset-go'); btn.disabled=true; btn.textContent='جارٍ التصفير…';
   auditMute++;
   try{
-    const wipe=[
+    const ops=[
       ...Object.values(catDocs).flat().map(d=>['entries',d.id]),
       ...kassaDocs.map(d=>['kassa',d.id]),
       ...payDocs.map(d=>['payroll',d.id]),
       ...advDocs.map(d=>['advances',d.id]),
       ...weekDocs.map(d=>['payweeks',d.id]),
-    ];
-    for(const [c,id] of wipe){ try{ await db.collection(c).doc(id).delete(); }catch(e){} }
-    // wipe archives + their snapshots
-    for(const d of arcDocs){ try{ await db.doc('archives/'+d.id+'/snap/data').delete(); }catch(e){} try{ await db.collection('archives').doc(d.id).delete(); }catch(e){} }
+    ].map(([c,id])=>({t:'del',ref:db.collection(c).doc(id)}));
+    // الأشهر المؤرشفة وتفاصيلها
+    for(const d of arcDocs){ await deleteSnap(d.id); ops.push({t:'del',ref:db.collection('archives').doc(d.id)}); }
+    // سجل التغييرات كله
+    try{ const au=await db.collection('audit').get(); au.docs.forEach(d=>ops.push({t:'del',ref:db.collection('audit').doc(d.id)})); }catch(e){}
+    ops.push({t:'del',ref:db.doc('config/closing')});
+    await runBatches(ops,400);
     // fresh period
     await db.doc('config/period').set({id:'p'+Date.now(),label,startISO:new Date().toISOString(),by:me.u});
     sessSet('mb-dismiss','');
@@ -2852,7 +2993,7 @@ async function doFinalReset(){
     closeFinalReset();
     toast('تم التصفير النهائي ✓ — بدأت الخزنة بـ '+fmt(amt),4500);
     go('dash');
-  }catch(e){ err('خطأ: '+(e.message||e.code||'')); }
+  }catch(e){ err('لم يكتمل التصفير (تحقق من الإنترنت وحاول تاني): '+(e.message||e.code||'')); }
   auditMute--;
   btn.disabled=false; btn.textContent='تأكيد التصفير النهائي';
 }
@@ -2871,7 +3012,7 @@ async function backupData(){
       payweeks:weekDocs.map(d=>({id:d.id,...d.data()})),
       archives:arcDocs.map(d=>({id:d.id,...d.data()})),
       archiveSnaps:{}, period:period||null };
-    for(const d of arcDocs){ try{ const s=await db.doc('archives/'+d.id+'/snap/data').get(); if(s.exists) dump.archiveSnaps[d.id]=s.data(); }catch(e){} }
+    for(const d of arcDocs){ try{ const s=await loadSnap(d.id); if(s) dump.archiveSnaps[d.id]=s; }catch(e){} }
     const total=dump.entries.length+dump.kassa.length+dump.payroll.length+dump.advances.length+dump.employees.length+dump.payweeks.length+dump.archives.length;
     const blob=new Blob([JSON.stringify(dump)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
@@ -2879,12 +3020,14 @@ async function backupData(){
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),2000);
     if(st) st.textContent='تم الحفظ ('+total+' سجل)';
+    try{ localStorage.setItem('ge-last-backup',new Date().toISOString()); }catch(e){}
     toast('تم تنزيل نسخة احتياطية كاملة ✓ ('+total+' سجل)',4200);
   }catch(e){ if(st) st.textContent=''; toast('خطأ في النسخ: '+(e.message||e.code||'')); }
 }
 async function restoreData(ev){
   const file=ev.target.files&&ev.target.files[0]; if(!file) return; ev.target.value='';
   if(!db){ toast('لا يوجد اتصال'); return; }
+  if(!isAdmin()){ toast('استرجاع النسخة للمدير فقط'); return; }
   let dump; try{ dump=JSON.parse(await file.text()); }catch(e){ toast('الملف غير صالح — ليس نسخة صحيحة'); return; }
   if(!dump||typeof dump!=='object'){ toast('الملف غير صالح'); return; }
   if(dump._app!=='GoldEra' && !confirm('هذا الملف قد لا يكون نسخة من البرنامج. المتابعة على أي حال؟')) return;
@@ -2896,7 +3039,7 @@ async function restoreData(ev){
   try{
     const write=async(coll,arr)=>{ for(const r of (arr||[])){ if(!r||!r.id) continue; const {id,...data}=r; try{ await db.collection(coll).doc(id).set(data); }catch(e){} } };
     for(const [coll,arr] of groups) await write(coll,arr);
-    if(dump.archiveSnaps) for(const [aid,snap] of Object.entries(dump.archiveSnaps)){ try{ await db.doc('archives/'+aid+'/snap/data').set(snap); }catch(e){} }
+    if(dump.archiveSnaps) for(const [aid,snap] of Object.entries(dump.archiveSnaps)){ try{ await saveSnap(aid,snap); }catch(e){} }
     if(dump.period) { try{ await db.doc('config/period').set(dump.period); }catch(e){} }
     auditNote('استرجاع نسخة احتياطية من ملف','المنظومة كاملة',0);
     if(st) st.textContent='تم الاسترجاع ✓';
@@ -2922,7 +3065,7 @@ function downloadImportTemplate(){
   XLSX.writeFile(wb,'قالب-السلف-والعربون.xlsx'); toast('تم تحميل القالب ✓');
 }
 function normDate(v){
-  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  if(v instanceof Date && !isNaN(v)) return isoLocal(new Date(v.getTime()+12*3600e3));
   if(typeof v==='number'){ const d=new Date(Date.UTC(1899,11,30)+v*864e5); return isNaN(d)?td():d.toISOString().slice(0,10); }
   if(typeof v==='string' && v.trim()) return v.trim();
   return td();
@@ -3150,7 +3293,7 @@ function selRange(a,b){
   const p=selPos(a), q=selPos(b);
   const r1=Math.min(p.r,q.r), r2=Math.max(p.r,q.r), c1=Math.min(p.c,q.c), c2=Math.max(p.c,q.c);
   const out=[];
-  for(let r=r1;r<=r2;r++){ const row=tbody.rows[r]; if(!row) continue; for(let c=c1;c<=c2;c++){ if(row.cells[c]) out.push(row.cells[c]); } }
+  for(let r=r1;r<=r2;r++){ const row=tbody.rows[r]; if(!row||row.hidden) continue; for(let c=c1;c<=c2;c++){ if(row.cells[c]) out.push(row.cells[c]); } }
   return out;
 }
 function selSet(cells){
@@ -3268,7 +3411,7 @@ document.addEventListener('input',e=>{
 // ╚═══════════════════════════════════════════════════════════════╝
 const AUDIT_SKIP=new Set(['audit','users','config','snap']);
 const AU_META=new Set(['dupOk','archived','order','editedBy','editedAt','mark']);
-const AU_F={amount:'المبلغ',desc:'البيان',date:'التاريخ',party:'الجهة',name:'الاسم',basic:'الأساسي',rate:'سعر اليوم',group:'الوردية',inPayroll:'بالمرتبات',pinLast:'دائماً بالآخر',archived:'نُقل للحافظة',dupOk:'تأكيد: ليس مكرراً',mark:'لون العلامة',total:'الصافي'};
+const AU_F={category:'الورقة',inst:'قسط السلفة الأسبوعي',amount:'المبلغ',desc:'البيان',date:'التاريخ',party:'الجهة',name:'الاسم',basic:'الأساسي',rate:'سعر اليوم',group:'الوردية',inPayroll:'بالمرتبات',pinLast:'دائماً بالآخر',archived:'نُقل للحافظة',dupOk:'تأكيد: ليس مكرراً',mark:'لون العلامة',total:'الصافي'};
 const AU_ACT={add:{l:'➕ إضافة',c:'in'},edit:{l:'✎ تعديل',c:'ed'},del:{l:'🗑 حذف',c:'out'},bulk:{l:'📦 عملية',c:'bk'}};
 let auditMute=0, auditInner=0, auditDocs=[], auditFirst=true;
 const auditBootAt=new Date(Date.now()-60000).toISOString();
@@ -3304,6 +3447,7 @@ function auditDesc(coll,x){
 function auditVal(k,v){
   if(v===true) return 'نعم'; if(v===false) return 'لا';
   if(v==null||v==='') return '—';
+  if(k==='category') return (CATS[v]||{}).label||String(v);
   if(k==='group') return v==='girls'?'بنات':'أولاد';
   if(k==='mark'){ const m=MARKS.find(z=>z.c.toLowerCase()===String(v).toLowerCase()); return m?m.n:String(v); }
   if(k==='date') return fmtd(v);
@@ -3328,6 +3472,8 @@ function auditLog(action,coll,id,data,prev,ch){
   const rec={action,coll,docId:id||'',sheet:auditSheet(coll,x),desc:String(auditDesc(coll,x)).slice(0,200),amount:+amt||0,by:me.u,at:new Date().toISOString()};
   if(action==='edit'){ rec.changes=ch||auditDiffs(prev,data); if(!rec.changes.length) return; }
   if(prev&&prev.by) rec.owner=prev.by;
+  // نحتفظ بنسخة القيد المحذوف عشان يتسترجع بضغطة
+  if(action==='del'&&prev&&(coll==='entries'||coll==='kassa'||coll==='advances')&&!prev.fromPayroll&&!prev.opening){ try{ rec.data=JSON.parse(JSON.stringify(prev)); }catch(e){} }
   db.collection('audit').add(rec).catch(()=>{});
 }
 function auditNote(desc,sheet,amount){
@@ -3389,6 +3535,7 @@ function subscribeAudit(){
     }
     auditFirst=false;
     if(cur==='audit'){ markAuditSeen(); renderAudit(); } else updateAuditBadge();
+    if(cur==='kassa') countPreview();
   },e=>{});
 }
 function markAuditSeen(){ try{ localStorage.setItem('ge-audit-seen',new Date().toISOString()); }catch(e){} updateAuditBadge(); }
@@ -3441,6 +3588,11 @@ function auCarryLike(x){
 function auRefundable(x){ return x&&x.action==='del'&&REFUND_COLLS.has(x.coll)&&(+x.amount>0); }
 function auRefunded(x){ return !!x.refunded||kassaDocs.some(k=>k.data().refundOf===x._id); }
 function refundCell(x){
+  if(x.action==='del'&&x.data&&x.docId){
+    if(x.restored) return '<span class="badge in">✓ اتسترجع</span>';
+    if(auRefunded(x)) return '<span class="badge in">✓ رجع للرصيد</span>';
+    return '<button class="btn-mini" style="color:var(--gold-l);border-color:var(--gold-d);font-weight:700" onclick="restoreDeleted(\''+x._id+'\')" title="يرجّع القيد المحذوف زي ما كان بالظبط">↩ استرجِع القيد</button>';
+  }
   if(!auRefundable(x)) return '';
   if(auRefunded(x)) return '<span class="badge in">✓ رجع للرصيد</span>';
   return '<button class="btn-mini" style="'+(auCarryLike(x)?'color:var(--red);border-color:var(--red);font-weight:700':'')+'" onclick="refundAudit(\''+x._id+'\')" title="إضافة مبلغ القيد المحذوف للرصيد كقيد وارد في الخزنة">↩ أرجِع للرصيد</button>';
@@ -3642,6 +3794,285 @@ document.addEventListener('contextmenu',e=>{
 document.addEventListener('mousedown',e=>{ const p=$('mark-pop'); if(p&&!p.hidden&&!p.contains(e.target)&&!(e.target.closest&&e.target.closest('#sel-bar'))) closeMarkPop(); },true);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeMarkPop(); });
 window.addEventListener('scroll',()=>closeMarkPop(),{passive:true});
+
+
+// ╔═══════════════════════════════════════════════════════════════╗
+// ║  إضافات: دفتر الرصيد · دفعات آمنة · جرد · ميزانيات · قسائم · استرجاع ║
+// ╚═══════════════════════════════════════════════════════════════╝
+
+// ═══ دفتر الرصيد: كل عملية وأثرها على الرصيد الفعلي (شامل الكل) ═══
+// الأثر: + يزوّد الرصيد · − يخصم منه · 0 لا يغيّره (مُرحّل / خصم سلفة من مرتب)
+function ledgerEffect(coll,x){
+  const a=+x.amount||0;
+  if(coll==='kassa') return x.type==='in'?a:-a;
+  if(coll==='payroll') return -(+x.total||0);
+  if(coll==='advances'){ if(x.carry) return 0; return x.kind==='repay'?a:-a; }
+  if(coll==='entries'){
+    if(!CATS[x.category]) return 0;
+    if(x.category==='deposit') return (x.carry||x.deduct)?0:-a;
+    return x.deduct?a:-a;
+  }
+  return 0;
+}
+function buildLedger(){
+  const rows=[];
+  const push=(coll,d)=>{ const x=d.data(); const eff=ledgerEffect(coll,x); if(!eff) return; rows.push({coll,id:d.id,x,eff}); };
+  Object.values(catDocs).flat().forEach(d=>push('entries',d));
+  kassaDocs.forEach(d=>push('kassa',d));
+  advDocs.forEach(d=>push('advances',d));
+  payDocs.forEach(d=>push('payroll',d));
+  const key=r=>r.x.at||((r.x.date||'')+'T00:00:00');
+  rows.sort((a,b)=>((a.x.opening?0:1)-(b.x.opening?0:1))||key(a).localeCompare(key(b))||a.id.localeCompare(b.id));
+  let bal=0;
+  rows.forEach((r,i)=>{ r.n=i+1; r.before=bal; bal+=r.eff; r.after=bal; });
+  return rows;
+}
+function ledgerBadge(r){
+  if(r.coll==='payroll') return '<span class="badge out">👥 مرتب</span>';
+  return sheetBadgeX(r.x)+(r.coll==='entries'&&r.x.deduct?' <span class="badge in">استرداد</span>':'');
+}
+function ledgerDescHtml(r){
+  const x=r.x;
+  if(r.coll==='payroll') return '<b>'+esc(empNameOf(x.empId,x.empName))+'</b> — مرتب أسبوع '+fmtd(x.date);
+  const extra=r.coll==='advances'?empNameOf(x.empId,x.empName):(x.party||'');
+  return (extra?'<b>'+esc(extra)+'</b> — ':'')+esc(x.desc||'—');
+}
+let lgLimit=300;
+function renderLedger(){
+  const tb=$('tb-ledger'); if(!tb) return;
+  const all=buildLedger();
+  const inc=all.reduce((s,r)=>s+(r.eff>0?r.eff:0),0), out=all.reduce((s,r)=>s+(r.eff<0?-r.eff:0),0);
+  const bal=all.length?all[all.length-1].after:0;
+  $('lg-kpis').innerHTML=`
+    <div class="kpi gold"><div class="kl">الرصيد الحالي (بعد آخر عملية)</div><div class="kv">${fmt(bal)}</div><div class="ks">نفس «الرصيد الفعلي — شامل الكل»</div></div>
+    <div class="kpi g"><div class="kl">إجمالي ما أُضيف للرصيد</div><div class="kv">${fmt(inc)}</div></div>
+    <div class="kpi r"><div class="kl">إجمالي ما خُصم من الرصيد</div><div class="kv">${fmt(out)}</div></div>
+    <div class="kpi"><div class="kl">عدد العمليات</div><div class="kv">${all.length}</div></div>`;
+  const q=normD($('lg-q').value), ty=$('lg-type').value, from=$('lg-from').value, to=$('lg-to').value, ord=$('lg-ord').value;
+  const filtered=!!(q||ty||from||to);
+  let rows=all.filter(r=>{
+    if(ty==='in'&&r.eff<0) return false;
+    if(ty==='out'&&r.eff>0) return false;
+    const d=r.x.date||''; if(from&&d<from) return false; if(to&&d>to) return false;
+    if(q&&!normD([auditSheet(r.coll,r.x),auditDesc(r.coll,r.x),r.x.party||'',r.x.by||'',String(Math.round(Math.abs(r.eff))),String(Math.round(r.after))].join(' ')).includes(q)) return false;
+    return true;
+  });
+  const fIn=rows.reduce((s,r)=>s+(r.eff>0?r.eff:0),0), fOut=rows.reduce((s,r)=>s+(r.eff<0?-r.eff:0),0);
+  $('lg-cnt').textContent=rows.length+' عملية'+(filtered?(' · إضافات '+fmtN(fIn)+' · خصومات '+fmtN(fOut)):'');
+  if(ord!=='asc') rows=rows.slice().reverse();
+  const shown=rows.slice(0,lgLimit);
+  tb.innerHTML=rows.length===0
+    ?'<tr><td colspan="9"><div class="empty"><div class="empty-ico">📒</div>'+(all.length?'لا توجد عمليات مطابقة للبحث':'لا توجد عمليات بعد — سجّل أول قيد من «قيد جديد»')+'</div></td></tr>'
+    :shown.map(r=>{const x=r.x;return `<tr${rowA(r.coll,r.id)}>
+      <td class="muted">${r.n}</td>
+      <td class="muted">${esc(fmtDT(x.at))||'—'}</td>
+      <td class="muted">${fmtd(x.date)}</td>
+      <td>${ledgerBadge(r)}</td>
+      <td>${ledgerDescHtml(r)}${dupTag(r.id)}</td>
+      <td class="num" style="color:var(--green)">${r.eff>0?'+'+fmtN(r.eff):''}</td>
+      <td class="num" style="color:var(--red)">${r.eff<0?'−'+fmtN(-r.eff):''}</td>
+      <td class="num" style="font-weight:800;color:var(--${r.after<0?'red':'gold-l'})">${fmtN(r.after)}<span class="by-sm">قبلها: ${fmtN(r.before)}</span></td>
+      <td class="muted">${esc(x.by||'—')}</td>
+    </tr>`;}).join('');
+  $('lg-more').innerHTML=rows.length>lgLimit
+    ?'<button class="btn btn-ghost" style="margin:10px" onclick="lgLimit=1e9;renderLedger()">عرض كل العمليات ('+rows.length+')</button>':'';
+}
+// اقتراحات البيان من القيود السابقة
+function fillDescList(){
+  const dl=$('desc-list'); if(!dl) return;
+  const cnt={};
+  [...Object.values(catDocs).flat(),...kassaDocs].forEach(d=>{ const s=(d.data().desc||'').trim(); if(s&&s.length<60&&!/مُرحّل|إرجاع للرصيد|مستورد من Excel|رصيد افتتاحي/.test(s)) cnt[s]=(cnt[s]||0)+1; });
+  dl.innerHTML=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,150).map(([s])=>`<option value="${esc(s)}">`).join('');
+}
+// بحث داخل الورقة (بيخفي الصفوف غير المطابقة ويجمع الظاهر)
+const catQ={};
+function catFilter(cat,v){
+  if(v!==undefined) catQ[cat]=v;
+  const q=normD(catQ[cat]||''); const w=$('tw-'+cat); if(!w) return;
+  let sum=0,n=0,all=0;
+  w.querySelectorAll('tbody tr[data-q]').forEach(tr=>{ all++; const ok=!q||tr.dataset.q.includes(q); tr.hidden=!ok; if(ok){ sum+=+tr.dataset.a||0; n++; } });
+  const l=$('cfl-'+cat), t=$('cft-'+cat);
+  if(q){ if(l) l.textContent='إجمالي نتيجة البحث ('+n+' من '+all+'):'; if(t) t.textContent=fmt(sum); }
+  else { if(l) l.textContent='الإجمالي:'; if(t) t.textContent=fmt(w._tot||0); }
+}
+
+// ═══ دفعات آمنة + لقطة الأرشيف على أجزاء (عشان حد 1 ميجا للمستند) ═══
+async function runBatches(ops,size){
+  size=size||400;
+  for(let i=0;i<ops.length;i+=size){
+    const b=db.batch();
+    ops.slice(i,i+size).forEach(o=>{ if(o.t==='del') b.delete(o.ref); else if(o.t==='upd') b.update(o.ref,o.data); else b.set(o.ref,o.data); });
+    await b.commit();
+  }
+}
+const SNAP_KEYS=['entries','kassa','payroll','advances'];
+function snapParts(snapshot){
+  const parts=[]; let part={}, size=0, n=0;
+  const flush=()=>{ if(n){ parts.push(part); part={}; size=0; n=0; } };
+  SNAP_KEYS.forEach(k=>(snapshot[k]||[]).forEach(r=>{
+    const s=JSON.stringify(r).length*2+64; // تقدير متحفّظ للحجم بالبايت
+    if(n&&(size+s>600000||n>=1500)) flush();
+    (part[k]=part[k]||[]).push(r); size+=s; n++;
+  }));
+  flush(); return parts;
+}
+async function saveSnap(id,snapshot){
+  const parts=snapParts(snapshot||{}); const base='archives/'+id+'/snap/';
+  if(parts.length<=1){ await db.doc(base+'data').set(Object.assign({entries:[],kassa:[],payroll:[],advances:[]},parts[0]||{})); return 1; }
+  for(let i=0;i<parts.length;i++) await db.doc(base+'part'+i).set(parts[i]);
+  await db.doc(base+'data').set({parts:parts.length});
+  return parts.length;
+}
+async function loadSnap(id,fromServer){
+  const g=p=>fromServer?db.doc(p).get({source:'server'}):db.doc(p).get();
+  const s=await g('archives/'+id+'/snap/data'); if(!s.exists) return null;
+  const d=s.data(); if(!d.parts) return d;
+  const out={entries:[],kassa:[],payroll:[],advances:[]};
+  for(let i=0;i<d.parts;i++){
+    const p=await g('archives/'+id+'/snap/part'+i);
+    if(!p.exists) throw new Error('جزء ناقص من أرشيف الشهر');
+    const x=p.data(); SNAP_KEYS.forEach(k=>{ if(x[k]) out[k].push(...x[k]); });
+  }
+  return out;
+}
+async function deleteSnap(id){
+  try{ const s=await db.doc('archives/'+id+'/snap/data').get(); const n=s.exists?(+s.data().parts||0):0;
+    for(let i=0;i<n;i++){ try{ await db.doc('archives/'+id+'/snap/part'+i).delete(); }catch(e){} } }catch(e){}
+  try{ await db.doc('archives/'+id+'/snap/data').delete(); }catch(e){}
+}
+// مسح قيود الشهر القديم المعلَّمة (مع إعادة المحاولة) ثم إزالة علامة «جارٍ الإغلاق»
+async function wipeMarked(ids){
+  const ops=(ids||[]).map(p=>({t:'del',ref:db.doc(p)}));
+  let lastErr=null;
+  for(let attempt=0;attempt<3;attempt++){
+    try{ await runBatches(ops,400); lastErr=null; break; }
+    catch(e){ lastErr=e; await new Promise(r=>setTimeout(r,1200)); }
+  }
+  if(lastErr) throw lastErr;
+  await db.doc('config/closing').delete();
+}
+async function resumeClosing(){
+  try{
+    const s=await db.doc('config/closing').get(); if(!s.exists) return;
+    const c=s.data()||{}; if(!Array.isArray(c.ids)) return;
+    toast('جارٍ استكمال إغلاق شهر '+(c.oldLabel||'')+'…',5000);
+    auditMute++;
+    try{ await wipeMarked(c.ids); }finally{ auditMute--; }
+    toast('اكتمل إغلاق شهر '+(c.oldLabel||'')+' ✓',4500);
+  }catch(e){ toast('⚠️ إغلاق الشهر لم يكتمل — تأكد من الإنترنت ثم أعد فتح البرنامج',8000); }
+}
+
+// ═══ مطابقة التقرير مع رصيد الشاشة ═══
+function reconHtml(R,balance){
+  if(!R) return '';
+  const other=(+R.screen||0)-(balance-(+R.master||0)-(+R.advNet||0)-(+R.depositCash||0));
+  const row=(l,v)=>`<tr><td>${l}</td><td class="rpt-num ${v>0?'rpt-neg':(v<0?'rpt-pos':'')}">${v>0?'−':(v<0?'+':'')}${fmtN(Math.abs(v))}</td></tr>`;
+  return `<div class="rpt-sec">مطابقة مع رصيد الخزنة الظاهر في البرنامج</div>
+    <table><tbody>
+      <tr><td>الرصيد الفعلي حسب التقرير</td><td class="rpt-num">${fmtN(balance)}</td></tr>
+      ${row('مصاريف المعلم (صافي بعد الاسترداد)',+R.master||0)}
+      ${row('سلف مصروفة للعمال (صافي بعد السداد النقدي)',+R.advNet||0)}
+      ${row('عربون مدفوع نقداً',+R.depositCash||0)}
+      ${Math.abs(other)>0.5?row('فروق أخرى (استردادات / قيود مُرحّلة)',-other):''}
+      <tr class="balance-row"><td>رصيد الخزنة — شامل الكل</td><td class="rpt-num">${fmtN(R.screen)} ج.م</td></tr>
+    </tbody></table>`;
+}
+
+// ═══ جرد الخزنة ═══
+function countPreview(){
+  const b=$('cnt-book'); if(!b) return;
+  const book=balanceWith(); b.textContent=fmt(book);
+  const raw=$('cnt-amt').value, d=$('cnt-diff');
+  if(raw===''){ d.textContent='—'; d.style.color=''; }
+  else{ const diff=numv(raw)-book, ok=Math.abs(diff)<0.5;
+    d.textContent=ok?'0 ✓ مطابق':((diff>0?'+':'−')+fmtN(Math.abs(diff))+(diff>0?' زيادة':' عجز'));
+    d.style.color=ok?'var(--green)':'var(--red)'; }
+  const last=auditDocs.map(z=>z.data()).filter(x=>x.sheet==='جرد الخزنة').slice(0,3);
+  $('cnt-last').innerHTML=last.length?('<b>آخر جرد:</b><br>'+last.map(x=>esc(fmtDT(x.at))+' — '+esc(x.by||'')+' — '+esc(x.desc||'')).join('<br>')):'';
+}
+function saveCount(){
+  const raw=$('cnt-amt').value; if(raw===''){ toast('اكتب المبلغ المعدود'); $('cnt-amt').focus(); return; }
+  const c=numv(raw), book=balanceWith(), diff=c-book, ok=Math.abs(diff)<0.5;
+  const note=($('cnt-note').value||'').trim();
+  auditNote('المعدود '+fmtN(c)+' · الدفتري '+fmtN(book)+' · '+(ok?'مطابق ✓':('الفرق '+(diff>0?'+':'−')+fmtN(Math.abs(diff))+(diff>0?' زيادة':' عجز')))+(note?' · '+note:''),'جرد الخزنة',c);
+  $('cnt-amt').value=''; $('cnt-note').value='';
+  toast(ok?'تم حفظ الجرد ✓ — الخزنة مطابقة':('تم حفظ الجرد — فيه '+(diff>0?'زيادة ':'عجز ')+fmt(Math.abs(diff))),4500);
+  setTimeout(countPreview,400);
+}
+
+// ═══ الميزانيات ═══
+const budgetKeys=()=>[...Object.keys(CATS).filter(c=>c!=='deposit'),'salaries'];
+const budgetLabel=k=>k==='salaries'?'👥 المرتبات':(CATS[k].icon+' '+CATS[k].label);
+function openBudgets(){
+  $('budget-rows').innerHTML=budgetKeys().map(k=>`<div class="fg"><label>${budgetLabel(k)}</label><input type="text" inputmode="decimal" id="bg-${k}" value="${gnum(budgets[k]||'')}" placeholder="بدون حد" oninput="grp(this)"></div>`).join('');
+  $('budget-err').textContent=isAdmin()?'':'تعديل الميزانيات للمدير فقط';
+  $('modal-budget').style.display='flex';
+}
+function closeBudgets(){ $('modal-budget').style.display='none'; }
+async function saveBudgets(){
+  if(!isAdmin()){ $('budget-err').textContent='تعديل الميزانيات للمدير فقط'; return; }
+  const data={}; budgetKeys().forEach(k=>{ const v=numv($('bg-'+k)?.value); if(v>0) data[k]=v; });
+  try{ await db.doc('config/budgets').set(data); closeBudgets(); toast('تم حفظ الميزانيات ✓'); }
+  catch(e){ $('budget-err').textContent='خطأ: '+(e.message||e.code||''); }
+}
+
+// ═══ قسائم مجمّعة (كل قسيمة في صفحة) ═══
+function slipsReport(list,label){
+  if(!list.length){ toast('لا توجد مرتبات مصروفة لطباعة قسائمها'); return; }
+  const html=list.map((x,i)=>buildPayslip(x,x._nm)+(i<list.length-1?'<div style="page-break-after:always;break-after:page;height:30px"></div>':'')).join('');
+  showReport(html,'قسائم — '+label+' ('+list.length+')','payslip','قسائم-'+label);
+}
+function weekSlips(id){
+  const d=weekDocs.find(x=>x.id===id); if(!d) return; const w=d.data();
+  slipsReport((w.rows||[]).map(r=>Object.assign({},r,{date:w.date,_nm:empNameOf(r.empId,r.empName)})),w.label||fmtd(w.date));
+}
+function dateSlips(){
+  const date=$('sal-date').value||td();
+  const order=payrollEmps().map(e=>e.id);
+  const list=payDocs.filter(d=>d.data().date===date&&!d.data().archived)
+    .sort((a,b)=>order.indexOf(a.data().empId)-order.indexOf(b.data().empId))
+    .map(d=>Object.assign({},d.data(),{_nm:empNameOf(d.data().empId,d.data().empName)}));
+  slipsReport(list,'أسبوع '+fmtd(date));
+}
+
+// ═══ استرجاع قيد محذوف من سجل التغييرات ═══
+async function restoreDeleted(aid){
+  const d=auditDocs.find(z=>z.id===aid); if(!d||!db) return;
+  const x=d.data();
+  if(!x.data||!x.docId||x.restored){ toast('القيد ده مش متاح للاسترجاع'); return; }
+  if(cacheGet(x.coll,x.docId)){ toast('القيد موجود بالفعل'); return; }
+  if(!confirm('استرجاع القيد المحذوف؟\n\n'+(x.sheet||'')+(x.desc?' — '+x.desc:'')+' — '+fmt(x.amount)+'\nحذفه: '+(x.by||'—')+' — '+fmtDT(x.at)+'\n\nهيرجع زي ما كان بالظبط ويتحسب في رصيد الشهر الحالي تاني.')) return;
+  try{
+    await db.collection(x.coll).doc(x.docId).set(x.data);
+    await db.collection('audit').doc(aid).update({restored:true});
+    toast('اتسترجع القيد ✓',3500);
+  }catch(e){ toast('خطأ: '+(e.message||e.code||'')); }
+}
+
+// ═══ تذكير النسخة الاحتياطية ═══
+function backupReminder(){
+  let last=''; try{ last=localStorage.getItem('ge-last-backup')||''; }catch(e){}
+  const st=$('backup-status'); if(st&&last) st.textContent='آخر نسخة من هذا الجهاز: '+fmtDT(last);
+  if(!isAdmin()||sessGet('bk-nag')) return;
+  const days=last?Math.floor((Date.now()-new Date(last).getTime())/864e5):null;
+  if(days===null||days>=7){
+    sessSet('bk-nag','1');
+    toast('💾 '+(days===null?'لم تُحفظ نسخة احتياطية من هذا الجهاز بعد':'آخر نسخة احتياطية من '+days+' يوم')+' — نزّل نسخة من «إغلاق الشهر والأرشيف»',7000);
+  }
+}
+
+// ═══ الموبايل: ضغطة طويلة على الصف لتلوينه ═══
+let lpT=null, lpXY=null;
+const lpCancel=()=>{ if(lpT){ clearTimeout(lpT); lpT=null; } };
+document.addEventListener('touchstart',e=>{
+  const tr=e.target.closest&&e.target.closest('#content tr[data-id]');
+  if(!tr||e.touches.length!==1||e.target.closest('input,select,textarea,button')) return;
+  const t=e.touches[0]; lpXY=[t.clientX,t.clientY]; lpCancel();
+  lpT=setTimeout(()=>{ lpT=null; openMarkPop([{c:tr.dataset.c,id:tr.dataset.id}],lpXY[0],lpXY[1]); },600);
+},{passive:true});
+document.addEventListener('touchmove',e=>{ if(!lpT||!lpXY) return; const t=e.touches[0]; if(Math.abs(t.clientX-lpXY[0])>10||Math.abs(t.clientY-lpXY[1])>10) lpCancel(); },{passive:true});
+document.addEventListener('touchend',lpCancel,{passive:true});
+document.addEventListener('touchcancel',lpCancel,{passive:true});
 
 // ═══ BOOT ═══
 initAuth().catch(e=>{$('auth-loading').hidden=true;$('auth-err').textContent='خطأ غير متوقع';console.error(e)});

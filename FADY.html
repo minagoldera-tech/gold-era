@@ -696,7 +696,7 @@ td.num, th.num { display: table-cell; text-align: right; }
           id="SYNC-BTN">
           🔄
         </button>
-        <button id="CAT-BTN" onclick="openCatalogEditor()" title="أوزان الأصناف"
+        <button id="CAT-BTN" onclick="openCatalogEditor()" title="أوزان الأصناف وإضافة صنف"
           style="display:none;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--gold);cursor:pointer;font-size:12px;font-weight:700;font-family:'Cairo',sans-serif">⚖️ الأوزان</button>
         <span id="LIVE-DOT" title="مزامنة لحظية" style="width:9px;height:9px;border-radius:50%;background:#8B949E;display:inline-block;box-shadow:0 0 0 3px #3FB95022;align-self:center"></span>
         <button id="RESET-BTN" onclick="confirmResetData()" title="تصفير كل البيانات"
@@ -1842,7 +1842,7 @@ td.num, th.num { display: table-cell; text-align: right; }
 
 <div id="MOD-CAT" class="mov">
   <div class="mod" style="max-width:620px">
-    <div class="mh"><div class="mt">⚖️ أوزان الأصناف — وزن القطعة الواحدة</div><button class="mc" onclick="cm('MOD-CAT')">✕</button></div>
+    <div class="mh"><div class="mt">⚖️ الأصناف والأوزان — وزن القطعة الواحدة</div><button class="mc" onclick="cm('MOD-CAT')">✕</button></div>
     <div class="mb">
       <div style="font-size:11.5px;color:var(--muted);margin-bottom:10px;line-height:1.7">
         الوزن هنا هو الافتراضي في كل النوافذ (الخزن، الأقسام، الاستوك، التعديل). يُحفظ لكل الأجهزة.
@@ -1851,6 +1851,17 @@ td.num, th.num { display: table-cell; text-align: right; }
       <div style="max-height:52vh;overflow:auto;border:1px solid var(--bd);border-radius:10px">
         <table style="width:100%"><thead><tr><th style="text-align:right">الصنف</th><th>العيار</th><th>وزن القطعة (جرام)</th></tr></thead>
         <tbody id="CAT-ROWS"></tbody></table>
+      </div>
+      <div style="margin-top:14px;padding:12px;border:1px dashed var(--gold);border-radius:10px">
+        <div style="font-weight:800;color:var(--gold);font-size:12.5px;margin-bottom:8px">➕ إضافة صنف جديد</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div class="fg" style="margin:0;flex:2;min-width:150px"><label>اسم الصنف</label><input type="text" id="NC-NAME" placeholder="مثال: 3 جرام"></div>
+          <div class="fg" style="margin:0;flex:1;min-width:95px"><label>العيار</label><input type="number" id="NC-KT" list="NC-KT-L" step="0.1" placeholder="875">
+            <datalist id="NC-KT-L"><option value="999.9"><option value="995"><option value="875"><option value="750"><option value="1000"></datalist></div>
+          <div class="fg" style="margin:0;flex:1;min-width:95px"><label>وزن القطعة (جم)</label><input type="number" id="NC-W" step="0.001" placeholder="1"></div>
+          <button class="btn bp bsm" onclick="addCustomItem()">➕ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;margin-top:6px">يُحفظ فوراً لكل الأجهزة ويظهر في كل القوائم (الخزن، الأقسام، الاستوك) مرتّباً بالوزن بين أصناف نفس العيار. الأصناف المضافة يمكن حذفها بزر 🗑.</div>
       </div>
       <div style="margin-top:14px;padding:12px;border:1px dashed var(--warn);border-radius:10px;background:#C8983010">
         <div style="font-weight:800;color:var(--warn);font-size:12.5px;margin-bottom:4px">🛠 تصحيح السجلات القديمة</div>
@@ -2001,6 +2012,7 @@ const CATALOG = [
   {no:19, name:'1 كيلو',          karat:999.9, w24:1000},
   {no:21, name:'1 كيلو عيار 995', karat:995,   w24:1000},  // الكيلو 995 وزنه 1000 جرام ← بعيار 875 = 1000×995×العدد÷875
   {no:3,  name:'ربع جنيه',        karat:875,   w24:2},
+  {no:4,  name:'1/8 جنيه',        karat:875,   w24:1},
   {no:2,  name:'نصف جنيه',        karat:875,   w24:4},
   {no:1,  name:'جنيه',            karat:875,   w24:8},
   {no:27, name:'ربع كيلو فضة',    karat:1000,  w24:250},
@@ -3101,27 +3113,62 @@ window.addEventListener('offline',()=>setLiveDot(false));
 // الأوزان القديمة التي كانت في البرنامج (لتصحيح السجلات القديمة)
 const OLD_W24={'1 كيلو عيار 995':995.1,'1 جرام':0.99,'2.5 جرام':2.49,'5 جرام':4.99,'10 جرام':9.99,'جنيه':7.99,'نصف جنيه':3.99,'ربع جنيه':1.99,'جرام':0.99,'ربع جرام':0.24,'نصف جرام':0.49,'2.5جرام':2.49,'5جرام':4.99,'10جرام':9.99};
 let catLoaded=false;
-function applyCatalogWeights(w){
-  if(!w) return;
-  const W={}; Object.entries(w).forEach(([k,x])=>W[catName(k)]=x);
-  CATALOG.forEach(c=>{ let x=parseFloat(W[c.name]); if(c.karat===995) x=1000; /* الكيلو 995 وزنه دائماً 1000 جرام مهما كان المحفوظ */ if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
+// الأصناف المضافة من الإعدادات (settings/catalog.custom) تُدرج في CATALOG بعد آخر صنف من نفس العيار
+function applyCustomItems(list){
+  if(!Array.isArray(list)) return;
+  const names=new Set(list.map(x=>x.name));
+  for(let i=CATALOG.length-1;i>=0;i--){ if(CATALOG[i].custom&&!names.has(CATALOG[i].name)) CATALOG.splice(i,1); }
+  list.forEach(x=>{
+    const kt=parseFloat(x.karat), w=parseFloat(x.w24); const nm=String(x.name||'').trim();
+    if(!nm||!(kt>0)||!(w>0)) return;
+    const ex=CATALOG.find(c=>c.name===nm);
+    if(ex){ if(ex.custom){ ex.karat=kt; ex.w24=w; ex.w21=+(w*kt/875).toFixed(3); } return; }
+    const item={name:nm,karat:kt,w24:w,w21:+(w*kt/875).toFixed(3),custom:true};
+    const isSilv=c=>c.name.includes('فضة');
+    let pos=-1;
+    let before=-1;
+    if(!isSilv(item)) CATALOG.forEach((c,i)=>{ if(!isSilv(c)&&Math.abs(c.karat-kt)<0.01){ pos=i; if(before<0&&c.w24>w) before=i; } });
+    if(before>=0) CATALOG.splice(before,0,item);
+    else if(pos>=0) CATALOG.splice(pos+1,0,item);
+    else if(isSilv(item)) CATALOG.push(item);
+    else { const fs=CATALOG.findIndex(isSilv); CATALOG.splice(fs<0?CATALOG.length:fs,0,item); }
+  });
+}
+function applyCatalogData(d){
+  if(!d) return;
+  applyCustomItems(d.custom||[]);
+  applyCatalogWeights(d.weights,true);
+  if(id('MOD-CAT')?.classList.contains('open')) renderCatRows();
+}
+function applyCatalogWeights(w,force){
+  if(!w&&!force) return;
+  const W={}; Object.entries(w||{}).forEach(([k,x])=>W[catName(k)]=x);
+  CATALOG.forEach(c=>{ let x=parseFloat(W[c.name]); if(c.name==='1 كيلو عيار 995') x=1000; /* الكيلو 995 وزنه دائماً 1000 جرام مهما كان المحفوظ */ if(x>0){ c.w24=x; c.w21=+(x*c.karat/875).toFixed(3); } });
   try{ fillDropdowns(); }catch(e){}
+  try{ fillStockDropdown(); }catch(e){}
 }
 async function loadCatalogWeights(){
   if(catLoaded) return; catLoaded=true;
   try{
     const s=await DB.doc('settings/catalog').get();
-    if(s.exists) applyCatalogWeights(s.data().weights);
-    firestore.doc('settings/catalog').onSnapshot?.(d=>{ if(d.exists) applyCatalogWeights(d.data().weights); });
+    if(s.exists) applyCatalogData(s.data());
+    firestore.doc('settings/catalog').onSnapshot?.(d=>{ if(d.exists) applyCatalogData(d.data()); });
   }catch(e){ console.warn('catalog',e); }
 }
-function openCatalogEditor(){
+function renderCatRows(){
+  // احتفظ بما كُتب ولم يُحفظ بعد
+  const typed={}; document.querySelectorAll('#CAT-ROWS .cat-w').forEach(inp=>typed[inp.dataset.n]=inp.value);
   id('CAT-ROWS').innerHTML=CATALOG.map((c,i)=>`<tr>
-    <td style="font-weight:700">${esc(c.name)}</td><td><span class="b bgld">${c.karat}</span></td>
-    <td><input type="number" class="si cat-w" data-i="${i}" step="0.001" value="${c.w24}" style="width:120px;font-family:monospace;font-weight:800;color:var(--gold)"></td></tr>`).join('');
+    <td style="font-weight:700">${esc(c.name)}${c.custom?` <button title="حذف الصنف" onclick="delCustomItem(${i})" style="background:none;border:none;color:var(--err,#F85149);cursor:pointer;font-size:13px">🗑</button>`:''}</td><td><span class="b bgld">${c.karat}</span></td>
+    <td><input type="number" class="si cat-w" data-i="${i}" data-n="${esc(c.name)}" step="0.001" value="${typed[c.name]??c.w24}" style="width:120px;font-family:monospace;font-weight:800;color:var(--gold)"></td></tr>`).join('');
+}
+function openCatalogEditor(){
+  id('CAT-ROWS').innerHTML='';
+  renderCatRows();
   id('FIX-PREV').innerHTML='';
   om('MOD-CAT');
 }
+const catCustomList=()=>CATALOG.filter(c=>c.custom).map(c=>({name:c.name,karat:c.karat,w24:c.w24}));
 async function saveCatalogWeights(){
   const w={};
   for(const inp of document.querySelectorAll('#CAT-ROWS .cat-w')){
@@ -3129,10 +3176,40 @@ async function saveCatalogWeights(){
     if(!(x>0)){ toast('er',`وزن غير صحيح: ${c.name}`); inp.focus(); return; }
     w[c.name]=x;
   }
-  await DB.doc('settings/catalog').set({weights:w,by:CU.username,at:Date.now()});
-  applyCatalogWeights(w);
+  const custom=catCustomList().map(c=>({...c,w24:w[c.name]||c.w24}));
+  await DB.doc('settings/catalog').set({weights:w,custom,by:CU.username,at:Date.now()});
+  applyCustomItems(custom); applyCatalogWeights(w);
   toast('ok','✅ تم حفظ أوزان الأصناف لكل الأجهزة');
   cm('MOD-CAT');
+}
+// ── إضافة / حذف صنف من الإعدادات ──
+async function persistCatalog(){
+  const w={}; CATALOG.forEach(c=>w[c.name]=c.w24);
+  await DB.doc('settings/catalog').set({weights:w,custom:catCustomList(),by:CU.username,at:Date.now()});
+  try{ fillDropdowns(); }catch(e){}
+  try{ fillStockDropdown(); }catch(e){}
+}
+async function addCustomItem(){
+  const nm=id('NC-NAME').value.trim().replace(/\s+/g,' ');
+  const kt=parseFloat(id('NC-KT').value), w=parseFloat(id('NC-W').value);
+  if(!nm){ toast('er','اكتب اسم الصنف'); id('NC-NAME').focus(); return; }
+  if(!(kt>0&&kt<=1000)){ toast('er','عيار غير صحيح'); id('NC-KT').focus(); return; }
+  if(!(w>0)){ toast('er','وزن القطعة غير صحيح'); id('NC-W').focus(); return; }
+  if(catFind(nm)){ toast('er','يوجد صنف بنفس الاسم'); id('NC-NAME').focus(); return; }
+  applyCustomItems([...catCustomList(),{name:nm,karat:kt,w24:w}]);
+  try{ await persistCatalog(); }
+  catch(e){ applyCustomItems(catCustomList().filter(c=>c.name!==nm)); renderCatRows(); toast('er','تعذّر الحفظ'); return; }
+  renderCatRows();
+  id('NC-NAME').value=''; id('NC-W').value='';
+  toast('ok',`✅ تمت إضافة الصنف: ${nm}`);
+}
+async function delCustomItem(i){
+  const c=CATALOG[i]; if(!c||!c.custom) return;
+  if(!confirm(`حذف الصنف "${c.name}" من القائمة؟\nالحركات المسجّلة به سابقاً تبقى كما هي.`)) return;
+  CATALOG.splice(i,1);
+  try{ await persistCatalog(); }catch(e){ CATALOG.splice(i,0,c); toast('er','تعذّر الحفظ'); }
+  renderCatRows();
+  toast('ok','🗑 تم حذف الصنف');
 }
 
 // ── تصحيح السجلات القديمة ──
@@ -3950,7 +4027,7 @@ function matchItem(kt,wt,cnt,name){
     if(best&&bd<0.03) return best;
   }
   const n=String(name||'');
-  if(n.includes('جنيه')) return CATALOG.find(c=>c.name===(n.includes('نصف')?'نصف جنيه':n.includes('ربع')?'ربع جنيه':'جنيه'));
+  if(n.includes('جنيه')) return CATALOG.find(c=>c.name===((/1\s*[\/\\]\s*8|ثمن/.test(n))?'1/8 جنيه':n.includes('نصف')?'نصف جنيه':n.includes('ربع')?'ربع جنيه':'جنيه'));
   const x=numOf(n.replace(/^[^\d]*?(\d)/,'$1'));
   if(x>0) return gold.find(c=>Math.abs(c.w24-x)<0.006)||null;
   return null;

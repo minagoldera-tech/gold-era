@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signed() { return request.auth != null; }
+    function admin() {
+      return signed() && request.auth.token.email in get(/databases/$(database)/documents/settings/admins).data.emails;
+    }
+    match /settings/admins {
+      allow read: if signed();
+      allow create: if signed() && !exists(/databases/$(database)/documents/settings/admins);
+      allow update: if admin();
+    }
+    match /files/{fileId} {
+      allow read, create: if signed();
+      allow delete: if admin();
+      match /chunks/{chunkId} {
+        allow read, create: if signed();
+        allow delete: if admin();
+      }
+    }
+    match /{coll}/{docId} {
+      allow read, create, update: if signed() && coll != 'settings' && coll != 'files';
+      allow delete: if admin() && coll != 'settings' && coll != 'files';
+    }
+  }
+}

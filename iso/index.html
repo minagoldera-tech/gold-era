@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نظام وثائق ISO 9001 عصر الدهب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alyamama:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: fixed department rail on the right, one working pane; gold is the company's letterhead colour and marks only the active thing. */
+:root{
+  --bg:#F3F2EE; --surface:#FFFFFF; --sunk:#EAE8E1; --ink:#1B1A17; --muted:#69655C; --line:#DDD9CE;
+  --accent:#B8912F; --accent-ink:#7A5C10; --accent-soft:#F4EBD3;
+  --good:#256B45; --good-soft:#DCEFE3; --warn:#9A5B07; --warn-soft:#FBEBCF; --bad:#A3271F; --bad-soft:#F8DEDB;
+  --display:"Alyamama","IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  --body:"IBM Plex Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#14130F; --surface:#1E1C17; --sunk:#27241D; --ink:#F0EDE4; --muted:#A9A396; --line:#37332A;
+    --accent:#D4AF37; --accent-ink:#E8CB6C; --accent-soft:#3A3118;
+    --good:#7CCB9B; --good-soft:#1C3527; --warn:#F0B55A; --warn-soft:#3D2C10; --bad:#F2928A; --bad-soft:#431C19;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#14130F; --surface:#1E1C17; --sunk:#27241D; --ink:#F0EDE4; --muted:#A9A396; --line:#37332A;
+  --accent:#D4AF37; --accent-ink:#E8CB6C; --accent-soft:#3A3118;
+  --good:#7CCB9B; --good-soft:#1C3527; --warn:#F0B55A; --warn-soft:#3D2C10; --bad:#F2928A; --bad-soft:#431C19;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.35}
+.num{font-variant-numeric:tabular-nums}
+.ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}
+
+.app{display:grid;grid-template-columns:264px minmax(0,1fr);height:100%}
+.rail{background:var(--surface);border-inline-end:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.brand{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+.brand b{font-family:var(--display);font-size:19px;display:block}
+.brand span{color:var(--muted);font-size:12.5px}
+.brand i{display:block;width:44px;height:4px;background:var(--accent);border-radius:2px;margin-top:10px}
+.nav{overflow:auto;padding:10px;display:flex;flex-direction:column;gap:2px;flex:1}
+.nav h4{margin:12px 8px 4px;font-size:11.5px;color:var(--muted);font-weight:600}
+.nav a{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-weight:500}
+.nav a:hover{background:var(--sunk)}
+.nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent-ink);box-shadow:inset -3px 0 0 var(--accent)}
+.nav a small{color:var(--muted);font-weight:400}
+.main{min-width:0;overflow:auto}
+.wrap{max-width:1180px;margin:0 auto;padding:22px 24px 60px;display:flex;flex-direction:column;gap:18px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.top h1{font-size:25px}
+.top p{margin:2px 0 0;color:var(--muted)}
+.search{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 14px;flex:1 1 240px;min-width:0;max-width:360px}
+.top>div{min-width:0;display:flex;flex-wrap:wrap}
+.top>div:first-child{display:block}
+.search input{border:0;background:transparent;outline:0;flex:1;min-width:0}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.tile b{font-family:var(--display);font-size:24px;display:block;line-height:1.2}
+.tile span{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.dcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:8px}
+.dcard:hover{border-color:var(--accent)}
+.dcard h3{font-size:17px}
+.dcard .meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12.5px;color:var(--muted)}
+.bar{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--good)}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs button{border:0;background:transparent;padding:9px 14px;cursor:pointer;border-bottom:3px solid transparent;font-weight:500;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+details.sec{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+details.sec>summary{cursor:pointer;padding:11px 14px;font-weight:600;display:flex;justify-content:space-between;gap:10px;list-style:none}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:"‹";color:var(--muted);margin-inline-end:8px;transition:transform .15s}
+details.sec[open]>summary::before{transform:rotate(-90deg)}
+details.sec>summary span.t{flex:1}
+details.sec>summary small{color:var(--muted);font-weight:400}
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .ttl{font-weight:500;overflow-wrap:anywhere}
+.row .sub{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);margin-top:2px}
+.acts{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--sunk);border-radius:5px;padding:1px 6px;direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+.pill{font-size:11.5px;border-radius:999px;padding:1px 9px;border:1px solid var(--line);white-space:nowrap}
+.pill.form{background:var(--accent-soft);border-color:transparent;color:var(--accent-ink)}
+.pill.good{background:var(--good-soft);border-color:transparent;color:var(--good)}
+.pill.warn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.pill.bad{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 11px;cursor:pointer;text-decoration:none;color:var(--ink);font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#1B1A17;font-weight:600}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.5;cursor:default}
+
+.tblw{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{padding:9px 12px;text-align:start;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-size:12.5px;color:var(--muted);font-weight:600;background:var(--sunk);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td .chips{display:flex;flex-wrap:wrap;gap:5px}
+td:last-child .acts{flex-wrap:nowrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:1px 7px;font-size:12px;cursor:pointer;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace}
+.chip:hover{border-color:var(--accent)}
+.note{background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--accent);border-radius:var(--r);padding:11px 14px;color:var(--muted)}
+.find{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;border-inline-start:4px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.find.h{border-inline-start-color:var(--bad)} .find.m{border-inline-start-color:var(--warn)} .find.l{border-inline-start-color:var(--muted)}
+.find h3{font-size:15.5px;font-family:var(--body);font-weight:600}
+.find p{margin:0;max-width:75ch}
+.grp{display:flex;flex-direction:column;gap:10px}
+.mini{border:1px solid var(--line);background:var(--bg);border-radius:7px;padding:4px 8px;color:var(--ink);font-size:13px;max-width:100%}
+.track{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;border-top:1px dashed var(--line);padding-top:8px}
+.track label{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--muted)}
+.grp>h2{font-size:18px;margin-top:6px}
+.arch-y{font-family:var(--display);font-size:16px;margin:8px 0 2px}
+.arch-m{display:flex;flex-direction:column;gap:6px;padding:8px 14px}
+.afile{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;background:var(--sunk);border-radius:8px;padding:6px 10px}
+.afile span{overflow-wrap:anywhere}
+.empty{color:var(--muted);padding:18px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+
+.modal{position:fixed;inset:0;background:rgba(10,9,6,.62);display:none;z-index:50}
+.modal.on{display:flex}
+.sheet{background:var(--surface);margin:auto;border-radius:12px;width:min(520px,calc(100% - 32px));max-height:calc(100% - 32px);overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.sheet label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.sheet input,.sheet select,.sheet textarea{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 10px;color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.viewer{background:var(--bg);margin:0;width:100%;height:100%;display:flex;flex-direction:column}
+.vbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.vbar b{overflow-wrap:anywhere;flex:1;min-width:160px}
+.vpages{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.vpages canvas,.vpages img{max-width:100%;height:auto;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.25)}
+.fpage{position:relative;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.25);cursor:text;flex:none}
+.fpage canvas{width:100%;height:auto;display:block;box-shadow:none}
+.fbox{position:absolute;min-width:1.2em;padding:0 2px;color:#0b2a6f;font-family:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;font-weight:500;line-height:1.5;white-space:pre;outline:1px dashed rgba(11,42,111,.45);background:rgba(255,255,255,.55)}
+.fbox:focus{outline:2px solid var(--accent)}
+[aria-pressed="true"].btn{background:var(--accent-soft);border-color:var(--accent)}
+.toast{position:fixed;bottom:18px;inset-inline-start:18px;background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:9px;z-index:80;max-width:min(440px,calc(100% - 36px));display:none}
+.toast.on{display:block}
+.menu-btn{display:none}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .rail{position:fixed;inset:0 0 0 auto;width:min(290px,86%);z-index:40;transform:translateX(105%);transition:transform .2s}
+  .rail.on{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
+  .menu-btn{display:inline-flex}
+  .wrap{padding:16px 16px 60px}
+  .row{grid-template-columns:1fr}
+  .acts{justify-content:flex-start}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="rail" id="rail">
+    <div class="brand"><b>شركة عصر الدهب لصناعة الدهب</b><span>نظام وثائق ISO 9001 · GOLD ERA Manufacturing</span><i></i><div id="who" style="font-size:12px;color:var(--muted);margin-top:8px"></div></div>
+    <nav class="nav" id="nav" aria-label="الأقسام"></nav>
+  </aside>
+  <main class="main" id="main"><div class="wrap" id="view"><p class="empty">جارٍ تحميل الأوراق…</p></div></main>
+</div>
+
+<div class="modal" id="viewer" role="dialog" aria-modal="true" aria-label="عرض الورقة">
+  <div class="viewer">
+    <div class="vbar"><b id="vtitle"></b><span class="num" id="vinfo"></span><div class="acts" id="vacts"></div></div>
+    <div class="vpages" id="vpages"></div>
+  </div>
+</div>
+<div class="modal" id="filler" role="dialog" aria-modal="true" aria-label="تسجيل بيانات على النموذج">
+  <div class="viewer">
+    <div class="vbar"><b id="ftitle"></b><div class="acts"><label style="font-size:13px;color:var(--muted)">حجم الخط <select class="mini" data-chg="fpt"><option value="9">صغير</option><option value="11" selected>متوسط</option><option value="14">كبير</option></select></label><button class="btn" data-act="ftick" aria-pressed="false">علامة ✓</button><button class="btn pri" data-act="fsave">حفظ في الأرشيف</button><button class="btn" data-act="fclose">إغلاق</button></div></div>
+    <div class="note" style="margin:8px 14px 0;border-radius:8px">اضغط على أي مكان في النموذج واكتب. اترك الخانة فارغة لحذفها. النموذج الأصلي لا يتغير، والنسخة المملوءة تُحفظ في الأرشيف كملف PDF.</div>
+    <div class="vpages" id="fpages"></div>
+  </div>
+</div>
+<div class="modal" id="dlg" role="dialog" aria-modal="true"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<div class="modal" id="login"><form class="sheet" id="login-f"><h2>تسجيل الدخول</h2><label>البريد الإلكتروني<input id="lg-e" type="email" dir="ltr" autocomplete="username" required></label><label>كلمة المرور<input id="lg-p" type="password" dir="ltr" autocomplete="current-password" required></label><div id="lg-s" style="color:var(--bad);min-height:1.4em"></div><div class="acts"><button class="btn pri" type="submit">دخول</button></div></form></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="data.js"></script>
+<script src="fb.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

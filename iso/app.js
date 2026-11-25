@@ -578,7 +578,7 @@
     var ex = expItems().filter(function (x) { return x.days <= 30; }).length;
     $('nav').innerHTML = a('home', 'الرئيسية') + '<h4>الأقسام</h4>' + DEPTS.map(function (d) { return a(d.h, d.k, S.docs.filter(function (x) { return x.d === d.k; }).length, dIcon(d.k, 18)); }).join('') +
       '<h4>للعرض على المراجع</h4>' + a('evidence', 'قائمة الأدلة') + a('trace', 'بحث الأرشيف') + a('iso', 'بنود ISO 9001') + a('expiry', 'تواريخ الانتهاء', ex || null) +
-      '<h4>التشغيل</h4>' + (S.auditor ? '' : a('alerts', 'التنبيهات', alertData().total || null)) + a('cycles', 'دورة العمل') + a('purchases', 'المشتريات') + a('suppliers', 'سجل الموردين') + (S.auditor ? '' : a('bulk', 'رفع بيانات')) + (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + a('report', 'التقرير الشهري') + a('log', 'سجل النشاط') + (S.cap.canEdit ? a('access', 'المستخدمون') + a('library', 'مكتبة الأوراق') : '')) +
+      '<h4>التشغيل</h4>' + (S.auditor ? '' : a('alerts', 'التنبيهات', alertData().total || null)) + a('orders', 'أوامر الإنتاج', S.ord.filter(function (o) { return !o.closed; }).length || null) + a('cycles', 'خطوات الإجراءات') + a('purchases', 'المشتريات') + a('suppliers', 'سجل الموردين') + (S.auditor ? '' : a('bulk', 'رفع بيانات')) + (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + a('report', 'التقرير الشهري') + a('log', 'سجل النشاط') + (S.cap.canEdit ? a('access', 'المستخدمون') + a('library', 'مكتبة الأوراق') : '')) +
       '<button class="btn" data-act="auditor" style="margin:14px 6px 6px;justify-content:center" aria-pressed="' + S.auditor + '">' + (S.auditor ? 'إيقاف وضع المراجع' : 'تشغيل وضع المراجع') + '</button>';
   }
   var lastRoute = '';
@@ -592,7 +592,7 @@
     var hits = $('uhits') ? $('uhits').innerHTML : '';
     var open = {}; Array.prototype.forEach.call(view.querySelectorAll('details.sec'), function (el) { var t = el.querySelector('summary .t'); if (t) open[t.textContent] = el.open; });
     var st = $('main').scrollTop;
-    view.innerHTML = dr ? vDoc(dr) : d ? vDept(d) : r === 'evidence' ? vEvidence() : r === 'iso' ? vIso() : r === 'audit' ? vAudit() : r === 'trace' ? vTrace() : r === 'expiry' ? vExpiry() : r === 'access' ? vAccess() : r === 'cycles' ? vCycles() : r === 'alerts' ? vAlerts() : /^sup-/.test(r) ? vSupFile(decodeURIComponent(r.slice(4))) : r === 'purchases' ? vPurchases() : r === 'suppliers' ? vSuppliers() : r === 'library' ? vLibrary() : r === 'bulk' ? vBulk() : r === 'log' ? vLog() : r === 'report' ? vReport() : vHome();
+    view.innerHTML = dr ? vDoc(dr) : d ? vDept(d) : r === 'evidence' ? vEvidence() : r === 'iso' ? vIso() : r === 'audit' ? vAudit() : r === 'trace' ? vTrace() : r === 'expiry' ? vExpiry() : r === 'access' ? vAccess() : r === 'orders' ? vOrders() : /^order-/.test(r) ? vOrder(r.slice(6)) : r === 'cycles' ? vCycles() : r === 'alerts' ? vAlerts() : /^sup-/.test(r) ? vSupFile(decodeURIComponent(r.slice(4))) : r === 'purchases' ? vPurchases() : r === 'suppliers' ? vSuppliers() : r === 'library' ? vLibrary() : r === 'bulk' ? vBulk() : r === 'log' ? vLog() : r === 'report' ? vReport() : vHome();
     if (r === lastRoute) { Array.prototype.forEach.call(view.querySelectorAll('details.sec'), function (el) { var t = el.querySelector('summary .t'); if (t && t.textContent in open && !fid) el.open = open[t.textContent]; }); $('main').scrollTop = st; for (var k in keep) if ($(k)) $(k).value = keep[k]; if ($('uhits')) $('uhits').innerHTML = hits; } else $('main').scrollTop = 0;
     lastRoute = r; renderNav();
     if (fid && $(fid)) { $(fid).focus(); try { $(fid).setSelectionRange(pos, pos); } catch (e) { } }
@@ -877,7 +877,7 @@
   }
   function purSave(id) {
     var g = function (i) { return ($(i).value || '').trim(); }, o = { pr: g('pu-pr'), date: g('pu-d'), item: g('pu-i'), dept: g('pu-dp'), purpose: g('pu-pp'), qty: g('pu-q'), unit: g('pu-u'), value: +g('pu-v') || 0, sup: g('pu-s'), supName: g('pu-s') ? '' : g('pu-sn'), type: g('pu-t'), po: g('pu-po'), need: g('pu-n'), got: g('pu-g'), status: g('pu-st'), note: g('pu-no'), at: new Date().toISOString(), by: S.cap.uid };
-    if (!o.pr || !o.date || !o.item) { $('pu-m').textContent = 'رقم الطلب والتاريخ والبيان مطلوبة.'; return; }
+    var old = id && S.pur.filter(function (p) { return p.id === id; })[0]; o.order = old ? old.order || '' : S.purOrder || ''; if (!o.pr || !o.date || !o.item) { $('pu-m').textContent = 'رقم الطلب والتاريخ والبيان مطلوبة.'; return; }
     if (S.pur.some(function (p) { return p.pr === o.pr && p.id !== id; })) { $('pu-m').textContent = 'رقم الطلب مستخدم في بند آخر.'; return; }
     var s = o.sup && supBy(o.sup);
     (id ? S.cap.db.doc('purchases/' + id).set(o) : S.cap.db.collection('purchases').add(o)).then(function () { closeDlg(); toast(!s ? 'حُفظ البند. تنبيه: المورد غير معتمد أو غير محدد.' : s.status !== 'معتمد' ? 'حُفظ البند. تنبيه: حالة المورد «' + s.status + '».' : 'حُفظ البند.', 6000); }).catch(function () { $('pu-m').textContent = 'تعذر الحفظ.'; });
@@ -971,7 +971,7 @@
   }
 
   /* ---- activity log ---- */
-  var LOGN = { supfiles: 'مرفق مورد', cycles: 'دورة عمل', archive: 'الأرشيف', versions: 'إصدار ملف', na: 'لا ينطبق', formcfg: 'دورية نموذج', findings: 'ملاحظة تدقيق', expiry: 'تاريخ انتهاء', purchases: 'بند شراء', suppliers: 'مورد', users: 'مستخدم', lib: 'مكتبة الأوراق', logins: 'كلمة مرور' }, LOGO = { add: 'إضافة', set: 'تعديل', del: 'حذف' };
+  var LOGN = { orders: 'أمر إنتاج', supfiles: 'مرفق مورد', cycles: 'دورة عمل', archive: 'الأرشيف', versions: 'إصدار ملف', na: 'لا ينطبق', formcfg: 'دورية نموذج', findings: 'ملاحظة تدقيق', expiry: 'تاريخ انتهاء', purchases: 'بند شراء', suppliers: 'مورد', users: 'مستخدم', lib: 'مكتبة الأوراق', logins: 'كلمة مرور' }, LOGO = { add: 'إضافة', set: 'تعديل', del: 'حذف' };
   function vLog() {
     var h = head('سجل النشاط', 'من فعل ماذا ومتى. السجل لا يُعدَّل ولا يُحذف.');
     if (!S.log.length) return h + '<p class="empty">لا يوجد نشاط مسجل بعد.</p>';
@@ -1172,7 +1172,7 @@
     o.pur = S.pur.filter(function (p) { return p.date >= from && !supOk(p); });
     o.fin = allFindings().filter(function (f) { var s = S.find[f.id] || {}; return fState(f) !== 'done' && s.due && s.due < td; });
     var seen = {}; cycDefs().forEach(function (d) { d.s.forEach(function (s) { s.c.forEach(function (c) { if (!S.byCode[c] && !seen[c]) { seen[c] = 1; o.codes.push({ c: c, p: d.p, n: s.n }); } }); }); });
-    o.total = o.forms.length + o.cyc.length + o.vers.length + o.exp.length + o.pur.length + o.fin.length + o.codes.length + o.supf.length;
+    o.ord = S.ord.filter(function (x) { return ordLate(x) || Object.keys(x.steps || {}).some(function (k) { return (x.steps[k].miss || []).length; }); }); o.total = o.ord.length + o.forms.length + o.cyc.length + o.vers.length + o.exp.length + o.pur.length + o.fin.length + o.codes.length + o.supf.length;
     return o;
   }
   function vAlerts() {
@@ -1188,6 +1188,7 @@
         return '<tr><td><a href="#doc-' + r.i + '"><span class="code">' + esc(r.c || '') + '</span></a></td><td>' + esc(title(r)) + '</td><td class="num">' + (x.last ? 'آخر سجل ' + esc(fmtDate(x.last)) : 'لا يوجد سجل') + '</td><td>' + esc(x.tip) + '</td><td class="noprint"><div class="acts">' + (auto ? '<button class="btn pri" data-x="purlogall">املأه من بيانات المشتريات</button>' : '') + (w && OFFICE[r.e] ? '<button class="btn" data-act="blank" data-id="' + r.i + '">فتح نسخة للملء</button>' : '') + '</div></td></tr>';
       }).join(''));
     });
+    h += sec('أوامر إنتاج متأخرة أو بخطوات ناقصة السجلات', o.ord.length, o.ord.map(function (x) { var c = ordCur(x), ms = []; Object.keys(x.steps || {}).forEach(function (k) { (x.steps[k].miss || []).forEach(function (m) { ms.push(k + ': ' + m); }); }); return '<tr><td><a href="#order-' + esc(x.id) + '"><span class="code">' + esc(x.no) + '</span></a></td><td>' + esc(x.cust) + '</td><td>' + (ordLate(x) ? 'تجاوز موعد التسليم ' + esc(fmtDate(x.due)) + (c ? '، وهو عند ' + esc(c.o) : '') : '') + '</td><td>' + (ms.length ? 'ارفع السجلات الناقصة: ' + esc(ms.slice(0, 6).join('، ')) : 'تابع الخطوة الحالية مع المسؤول.') + '</td></tr>'; }).join(''), true);
     h += sec('صلاحيات تنتهي خلال 30 يومًا', o.exp.length + o.supf.length, o.exp.map(function (x) { return '<tr><td>' + esc(x.name) + '</td><td>' + esc(x.d || '') + '</td><td class="num">' + esc(fmtDate(x.date)) + '</td><td>' + (x.days < 0 ? 'منتهٍ. جدّده وارفع المستند الجديد.' : 'باقٍ ' + x.days + ' يوم. ابدأ التجديد.') + '</td></tr>'; }).join('') + o.supf.map(function (y) { var s = supBy(y.x.sup); return '<tr><td>' + esc(y.x.kind + ' · ' + y.x.name) + '</td><td><a href="#sup-' + esc(y.x.sup) + '">' + esc(s ? s.name : y.x.sup) + '</a></td><td class="num">' + esc(fmtDate(y.x.valid)) + '</td><td>' + (y.days < 0 ? 'منتهٍ. اطلب من المورد مستندًا ساريًا.' : 'باقٍ ' + y.days + ' يوم.') + '</td></tr>'; }).join(''), true);
     h += sec('مشتريات من مورد غير معتمد أو غير محدد', o.pur.length, o.pur.map(function (p) { return '<tr><td><span class="code">' + esc(p.pr) + '</span></td><td>' + esc(p.item) + '</td><td>' + esc(supLabel(p) || 'غير محدد') + '</td><td>اختر موردًا معتمدًا للبند، أو أضف المورد للسجل وقيّمه. <a href="#purchases">المشتريات</a></td></tr>'; }).join(''), true);
     h += sec('دورات عمل مفتوحة منذ أكثر من شهر', o.cyc.length, o.cyc.map(function (c) { return '<tr><td><span class="code">' + esc(c.proc) + '</span></td><td>' + esc(c.ref) + '</td><td class="num">' + esc(fmtDate(c.date)) + '</td><td>أكمل خطواتها وأقفلها. <a href="#cycles" data-x="gocyc" data-id="' + esc(c.proc) + '">دورة العمل</a></td></tr>'; }).join(''), true);
@@ -1227,6 +1228,71 @@
     if (c === 'bkdate') b.dt = t.value;
     else if (c === 'bkcode') { var r = S.byCode[t.value.trim()] || null; b.r = r; b.how = r ? 'اخترته أنت' : ''; b.miss = null; b.checked = false; b.rowsN = 0; if (r && /\.docx$/i.test(b.f.name)) { b.wait = true; checkDocx(b).then(function () { b.wait = false; render(); }); } setTimeout(render, 50); }
   });
+
+
+  /* ================= production orders: one order walked through the company's own process map P01 → P17 ================= */
+  S.ord = [];
+  (function () { var t = setInterval(function () { var db = S.cap.db; if (!db) return; clearInterval(t); db.collection('orders').onSnapshot(function (s) { S.ord = s.docs.map(function (d) { var o = d.data() || {}, c = {}; for (var k in o) c[k] = o[k]; c.id = d.id; return c; }).sort(function (a, b) { return String(b.date).localeCompare(String(a.date)) || String(b.no).localeCompare(String(a.no)); }); if (/^order/.test(route())) render(); }, function () { }); }, 800); })();
+  var PRODS = ['سبائك الذهب 999.9', 'سبائك الذهب 995', 'عملات الذهب 875', 'سبائك الفضة 999.0'];
+  function procs() { return ((window.GEM_PROCS || {}).p || []).filter(function (p) { return p.n !== 'P18'; }); }
+  function ordCur(o) { var ps = procs(); for (var i = 0; i < ps.length; i++) if (!(o.steps || {})[ps[i].n]) return ps[i]; return null; }
+  function ordPct(o) { var ps = procs(); return ps.length ? Math.round(ps.filter(function (p) { return (o.steps || {})[p.n]; }).length * 100 / ps.length) : 0; }
+  function ordLate(o) { return !o.closed && o.due && o.due < today(); }
+  function ordRecs(o, p, c) { var r = S.byCode[c]; return r ? S.arch.filter(function (a) { return a.order === o.id && a.doc === r.i && (!p || a.step === p.n); }) : []; }
+  function nextOrd() { var mx = 0; S.ord.forEach(function (o) { var m = /-(\d+)$/.exec(o.no || ''); if (m && String(o.no).indexOf(String(CY)) >= 0) mx = Math.max(mx, +m[1]); }); return 'OP-' + CY + '-' + ('00' + (mx + 1)).slice(-3); }
+  function vOrders() {
+    var w = canWrite(), ps = procs(), owners = {}; ps.forEach(function (p) { owners[p.o] = 1; });
+    var h = head('أوامر الإنتاج', 'كل أمر إنتاج يمشي على خريطة العمليات المعتمدة GEM-QA-F-4.4-01 من استلام طلب العميل (P01) حتى التسليم للعميل (P17).', '<select class="mini" data-chg="oo" aria-label="المسؤول"><option value="">كل المسؤولين</option>' + Object.keys(owners).map(function (k) { return '<option' + (S.oo === k ? ' selected' : '') + '>' + esc(k) + '</option>'; }).join('') + '</select>' + (w ? '<button class="btn pri" data-x="ornew">أمر إنتاج جديد</button>' : ''));
+    var list = S.ord.filter(function (o) { var c = ordCur(o); return !S.oo || (c && c.o === S.oo); }), open = S.ord.filter(function (o) { return !o.closed; });
+    h += '<div class="tiles"><div class="tile"><b class="num">' + open.length + '</b><span>أمر مفتوح</span></div><div class="tile"><b class="num" style="color:var(--' + (open.filter(ordLate).length ? 'bad' : 'good') + ')">' + open.filter(ordLate).length + '</b><span>تجاوز موعد التسليم</span></div><div class="tile"><b class="num">' + S.ord.filter(function (o) { return o.closed; }).length + '</b><span>أمر سُلِّم للعميل</span></div></div>';
+    if (!list.length) return h + '<p class="empty">لا توجد أوامر إنتاج.' + (w ? ' اضغط «أمر إنتاج جديد».' : '') + '</p>';
+    h += '<div class="tblw"><table><thead><tr><th>رقم الأمر</th><th>العميل</th><th>المنتج</th><th>الكمية</th><th>موعد التسليم</th><th>الخطوة الحالية</th><th>عند</th><th>التقدم</th><th></th></tr></thead><tbody>' + list.map(function (o) {
+      var c = ordCur(o);
+      return '<tr><td><a href="#order-' + esc(o.id) + '"><span class="code">' + esc(o.no) + '</span></a></td><td>' + esc(o.cust) + '</td><td>' + esc(o.prod) + (o.spec ? ' · ' + esc(o.spec) : '') + '</td><td class="num">' + esc(o.qty || '') + '</td><td class="num">' + esc(fmtDate(o.due)) + (ordLate(o) ? ' <span class="pill bad">متأخر</span>' : '') + '</td><td>' + (c ? '<span class="code">' + c.n + '</span> ' + esc(c.t) : '<span class="pill good">سُلِّم للعميل</span>') + '</td><td>' + (c ? esc(c.o) : '') + '</td><td class="num">' + ordPct(o) + '%</td><td><a class="btn pri" href="#order-' + esc(o.id) + '">فتح</a></td></tr>';
+    }).join('') + '</tbody></table></div>';
+    return h;
+  }
+  function vOrder(id) {
+    var o = S.ord.filter(function (x) { return x.id === id; })[0]; if (!o) return head('أمر إنتاج', '') + '<p class="empty">الأمر غير موجود. <a href="#orders">أوامر الإنتاج</a></p>';
+    var w = canWrite(), ps = procs(), cur = ordCur(o), pu = S.pur.filter(function (p) { return p.order === o.id; });
+    var h = head('أمر إنتاج <span class="code">' + esc(o.no) + '</span>', esc(o.cust) + ' · ' + esc(o.prod) + (o.spec ? ' · ' + esc(o.spec) : '') + (o.qty ? ' · الكمية ' + esc(o.qty) : '') + ' · <a href="#orders">رجوع</a>', '<button class="btn noprint" data-x="print">طباعة</button>' + (canAdmin() ? '<button class="btn danger noprint" data-act="del" data-kind="orders" data-id="' + esc(o.id) + '" data-label="' + esc(o.no) + '">حذف</button>' : ''));
+    h += '<div class="find ' + (ordLate(o) ? 'h' : 'l') + '" style="flex-direction:row;align-items:center;gap:14px;flex-wrap:wrap">' + ring(ordPct(o)) + '<div style="flex:1;min-width:220px"><div>' + (cur ? 'الأمر الآن عند: <b>' + esc(cur.o) + '</b> · <span class="code">' + cur.n + '</span> ' + esc(cur.t) : '<span class="pill good">اكتمل الأمر وسُلِّم للعميل</span>') + '</div><div style="color:var(--muted)">تاريخ الأمر <span class="num">' + esc(fmtDate(o.date)) + '</span> · موعد التسليم <span class="num">' + esc(fmtDate(o.due) || 'غير محدد') + '</span>' + (ordLate(o) ? ' <span class="pill bad">تجاوز الموعد</span>' : '') + (o.note ? ' · ' + esc(o.note) : '') + '</div></div></div>';
+    h += '<ol class="cyc">' + ps.map(function (p, i) {
+      var st = (o.steps || {})[p.n], isCur = cur && cur.n === p.n, nx = ps[i + 1];
+      var forms = p.c.map(function (c) { var r = S.byCode[c], n = ordRecs(o, p, c).length; if (!r) return '<span class="pill warn">' + esc(c) + '</span>'; return '<span class="ofm"><a class="pill ' + (n ? 'good' : 'form') + '" href="#doc-' + r.i + '" title="' + esc(title(r)) + '">' + esc(c) + ' ' + esc(title(r)) + (n ? ' · ' + n + ' سجل' : '') + '</a>' + (isCur && w ? (OFFICE[r.e] ? '<button class="btn" data-act="blank" data-id="' + r.i + '">نسخة للملء</button>' : '') + '<button class="btn" data-x="orup" data-id="' + esc(o.id) + '" data-p="' + p.n + '" data-c="' + esc(c) + '">رفع السجل</button>' : '') + '</span>'; }).join('');
+      var x = '<li class="' + (st ? 'ok' : '') + (isCur ? ' cur' : '') + '"><span class="cn num">' + (st ? (st.na ? '—' : '✓') : p.n) + '</span><div class="cb"><div class="ct"><b>' + esc(p.t) + '</b> <span style="color:var(--muted)">· ' + esc(p.o) + '</span>' + (st ? ' <span class="pill ' + (st.na ? '' : st.miss && st.miss.length ? 'warn' : 'good') + '">' + (st.na ? 'لا تنطبق على هذا الأمر' : st.miss && st.miss.length ? 'تمت مع نقص ' + st.miss.length + ' سجل' : 'تمت') + ' ' + esc(fmtDate(st.at)) + (st.by ? ' · ' + esc(st.by) : '') + '</span>' : isCur ? ' <span class="pill warn">الخطوة الحالية</span>' : '') + '</div>';
+      if (st && st.note) x += '<div style="color:var(--muted)">' + (st.na ? 'السبب: ' : 'ملاحظة: ') + esc(st.note) + '</div>';
+      if (isCur || !st) x += '<div class="oio"><div><b>المدخلات:</b> ' + esc(p['in']).replace(/\n/g, '، ') + '</div><div><b>المخرجات:</b> ' + esc(p.out).replace(/\n/g, '، ') + '</div>' + (p.kpi && p.kpi !== '—' ? '<div><b>المؤشر:</b> ' + esc(p.kpi).replace(/\n/g, ' ') + '</div>' : '') + '</div>';
+      if (forms) x += '<div class="cf" style="flex-direction:column;align-items:flex-start">' + forms + '</div>';
+      if (p.n === 'P03') x += '<div>' + (pu.length ? pu.map(function (q) { return '<span class="pill ' + (supOk(q) ? 'good' : 'bad') + '">' + esc(q.pr) + ' · ' + esc(q.item) + ' · ' + money(q.value) + '</span>'; }).join(' ') + ' ' : '') + (isCur && w ? '<button class="btn" data-x="orpur" data-id="' + esc(o.id) + '">طلب شراء لهذا الأمر</button>' : '') + '</div>';
+      x += '</div>';
+      if (isCur && w) x += '<div class="ca" style="display:flex;flex-direction:column;gap:6px"><button class="btn pri" data-x="ordone" data-id="' + esc(o.id) + '" data-p="' + p.n + '">' + (nx ? 'تمت، وتسليم إلى ' + nx.n : 'تم التسليم للعميل') + '</button><button class="btn" data-x="orna" data-id="' + esc(o.id) + '" data-p="' + p.n + '">لا تنطبق على هذا الأمر</button></div>';
+      else if (st && w && !o.closed && (!cur || ps[i + 1] === cur)) x += '<div class="ca"><button class="btn" data-x="orundo" data-id="' + esc(o.id) + '" data-p="' + p.n + '">تراجع</button></div>';
+      return x + '</li>';
+    }).join('') + '</ol>';
+    var intro = (window.GEM_PROCS || {}).intro; if (intro) h += '<div class="note">' + esc(intro) + '</div>';
+    return h;
+  }
+  function ordSave(o, msg) { var c = {}; for (var k in o) if (k !== 'id') c[k] = o[k]; c.name = o.no; return S.cap.db.doc('orders/' + o.id).set(c).then(function () { if (msg) toast(msg, 6000); }).catch(function () { toast('تعذر الحفظ.'); }); }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-x]'); if (!b) return; var x = b.dataset.x, id = b.dataset.id, pn = b.dataset.p, o = S.ord.filter(function (y) { return y.id === id; })[0], ps = procs(), p = ps.filter(function (y) { return y.n === pn; })[0];
+    if (x === 'purnew') S.purOrder = '';
+    else if (x === 'ornew') dlg('<h2>أمر إنتاج جديد</h2><div class="two"><label>رقم الأمر<input id="or-no" type="text" dir="ltr" value="' + esc(nextOrd()) + '"></label><label>تاريخ الأمر<input id="or-d" type="date" value="' + today() + '"></label></div><label>العميل<input id="or-c" type="text" maxlength="120"></label><div class="two"><label>المنتج<select id="or-p">' + PRODS.map(function (k) { return '<option>' + k + '</option>'; }).join('') + '</select></label><label>الفئة أو الوزن<input id="or-s" type="text" placeholder="مثال: 10 جم"></label></div><div class="two"><label>العدد أو الكمية<input id="or-q" type="text"></label><label>موعد التسليم المطلوب<input id="or-u" type="date"></label></div><label>متطلبات خاصة<input id="or-n" type="text" maxlength="200"></label><div id="or-m" style="color:var(--bad);min-height:1.4em"></div><div class="acts"><button class="btn" data-act="closed">إلغاء</button><button class="btn pri" data-x="orsave">فتح الأمر</button></div>');
+    else if (x === 'orsave') { var g = function (i) { return ($(i).value || '').trim(); }, n = { no: g('or-no'), name: g('or-no'), date: g('or-d'), cust: g('or-c'), prod: g('or-p'), spec: g('or-s'), qty: g('or-q'), due: g('or-u'), note: g('or-n'), steps: {}, closed: false, at: new Date().toISOString(), by: meName() }; if (!n.no || !n.date || !n.cust) { $('or-m').textContent = 'رقم الأمر والتاريخ والعميل مطلوبة.'; return; } if (S.ord.some(function (y) { return y.no === n.no; })) { $('or-m').textContent = 'رقم الأمر مستخدم.'; return; } S.cap.db.collection('orders').add(n).then(function (r) { closeDlg(); toast('فُتح الأمر. يبدأ من P01 عند ' + ps[0].o + '.', 7000); if (r && r.id) location.hash = 'order-' + r.id; }).catch(function () { $('or-m').textContent = 'تعذر الحفظ.'; }); }
+    else if (x === 'ordone' && o && p) {
+      var miss = p.c.filter(function (c) { return S.byCode[c] && !ordRecs(o, p, c).length; }), nx = ps[ps.indexOf(p) + 1];
+      if (miss.length && !window.confirm('هذه الخطوة ناقصها ' + miss.length + ' سجل لم يُرفع لهذا الأمر:\n' + miss.join('\n') + '\n\nهل تكمل وتُسجَّل الخطوة «تمت مع نقص»؟')) return;
+      var note = window.prompt('ملاحظة على الخطوة ' + p.n + ' (اختياري)'); if (note == null) return;
+      o.steps = o.steps || {}; o.steps[p.n] = { at: new Date().toISOString(), by: meName(), note: note.trim(), miss: miss }; if (!nx) { o.closed = true; o.closedAt = new Date().toISOString(); }
+      ordSave(o, nx ? 'انتقل الأمر إلى ' + nx.n + ' ' + nx.t + ' عند ' + nx.o + '.' : 'اكتمل الأمر وسُلِّم للعميل.'); render();
+    }
+    else if (x === 'orna' && o && p) { var why = window.prompt('سبب أن الخطوة ' + p.n + ' «' + p.t + '» لا تنطبق على هذا الأمر (مطلوب)'); if (why == null) return; if (!why.trim()) { toast('اكتب السبب.'); return; } var nx2 = ps[ps.indexOf(p) + 1]; o.steps = o.steps || {}; o.steps[p.n] = { at: new Date().toISOString(), by: meName(), note: why.trim(), na: true }; if (!nx2) { o.closed = true; o.closedAt = new Date().toISOString(); } ordSave(o); render(); }
+    else if (x === 'orundo' && o && p) { delete o.steps[p.n]; o.closed = false; ordSave(o); render(); }
+    else if (x === 'orup' && o && p) { var r = S.byCode[b.dataset.c]; if (!r) return; dlg('<h2>رفع سجل لأمر ' + esc(o.no) + '</h2><div><span class="code">' + esc(r.c) + '</span> ' + esc(title(r)) + ' · ' + p.n + '</div><label>الملف المملوء<input id="ou-f" type="file"></label><label>تاريخ السجل<input id="ou-d" type="date" value="' + today() + '"></label><div id="ou-m" style="color:var(--bad);min-height:1.4em"></div><div class="acts"><button class="btn" data-act="closed">إلغاء</button><button class="btn pri" data-x="orupgo" data-id="' + esc(o.id) + '" data-p="' + p.n + '" data-c="' + esc(r.c) + '">رفع وأرشفة</button></div>'); }
+    else if (x === 'orupgo' && o && p) { var r2 = S.byCode[b.dataset.c], f = ($('ou-f').files || [])[0], dt = $('ou-d').value; if (!f || !dt) { $('ou-m').textContent = 'اختر الملف والتاريخ.'; return; } if (f.size > 10 * 1048576) { $('ou-m').textContent = 'الحد الأقصى 10 ميجابايت.'; return; } b.disabled = true; $('ou-m').textContent = 'جارٍ الرفع…'; storeFile(f).then(function (res) { return S.cap.db.collection('archive').add({ doc: r2.i, code: r2.c, d: r2.d, y: +dt.slice(0, 4), m: +dt.slice(5, 7), rd: dt, no: o.no, order: o.id, step: p.n, asset: res.asset, name: res.name, ct: res.ct, size: res.size, note: 'أمر إنتاج ' + o.no + ' · ' + p.n, at: new Date().toISOString(), by: S.cap.uid }); }).then(function () { closeDlg(); toast('أُرشف السجل في ' + r2.d + ' وارتبط بالأمر.', 6000); }).catch(function () { b.disabled = false; $('ou-m').textContent = 'تعذر الرفع.'; }); }
+    else if (x === 'orpur' && o) { S.purOrder = o.id; purDialog(); if ($('pu-pp')) $('pu-pp').value = 'أمر إنتاج ' + o.no; }
+  });
+  document.addEventListener('change', function (ev) { var t = ev.target; if (t.dataset && t.dataset.chg === 'oo') { S.oo = t.value; render(); } });
 
   load().then(function () { render(); initCaps(); }).catch(function () { view.innerHTML = '<p class="empty">تعذر تحميل بيانات النظام. أعد فتح الصفحة.</p>'; });
 })();

@@ -432,15 +432,15 @@
     var h = head((r.c ? '<span class="code" style="font-size:15px">' + esc(r.c) + '</span> ' : '') + esc(title(r)), esc(r.d) + (r.s ? ' / ' + esc(r.s) : '') + ' · ' + KIND[r.k] + ' · <a href="#' + (DEPTS.filter(function (d) { return d.k === r.d; })[0] || {}).h + '">رجوع للقسم</a>');
     h += '<div class="acts" style="justify-content:flex-start"><button class="btn" data-act="view" data-id="' + r.i + '">عرض</button>' + '<button class="btn" data-act="orig" data-id="' + r.i + '">تعديل الملف</button>' + (w && r.e !== 'jpeg' ? '<button class="btn pri" data-act="fill" data-id="' + r.i + '">فتح نسخة للملء في Word</button>' : '') + (w ? '<button class="btn" data-act="up" data-id="' + r.i + '">رفع ملف للأرشيف</button><button class="btn" data-act="ver" data-id="' + r.i + '">تحديث الملف (إصدار جديد)</button>' : '') + '</div>';
     h += '<details class="sec" open><summary><span class="t">إصدارات الملف</span><small class="num">' + (vs.length + 1) + '</small></summary><div class="rows">' + vs.map(function (v, i) {
-      return '<div class="row"><div><div class="ttl">' + (i === 0 ? '<span class="pill good">الإصدار الحالي</span> ' : '') + esc(v.name) + '</div><div class="sub"><span class="num">' + esc(fmtDate(String(v.at).slice(0, 10))) + '</span>' + (v.note ? '<span>' + esc(v.note) + '</span>' : '') + '<span class="num">' + fmtSize(v.size || 0) + '</span></div></div><div class="acts">' + (recViewable(v) ? '<button class="btn" data-act="vview" data-id="' + esc(v.id) + '">عرض</button>' : '') + '<button class="btn" data-act="vsave" data-id="' + esc(v.id) + '">تحميل</button>' + (canAdmin() ? '<button class="btn danger" data-act="del" data-kind="versions" data-id="' + esc(v.id) + '" data-label="' + esc(v.name) + '">حذف</button>' : '') + '</div></div>';
-    }).join('') + '<div class="row"><div><div class="ttl">' + (vs.length ? '' : '<span class="pill good">الإصدار الحالي</span> ') + esc(r.n) + '.' + r.e + '</div><div class="sub"><span>الملف الأصلي كما استُلم</span></div></div><div class="acts"><button class="btn" data-act="' + (r.e === 'pdf' ? 'pdf' : 'orig') + '" data-id="' + r.i + '">تحميل</button></div></div></div></details>';
+      return '<div class="row"><div><div class="ttl">' + verPill(v, r.i) + esc(v.name) + '</div><div class="sub"><span class="num">' + esc(fmtDate(String(v.at).slice(0, 10))) + '</span>' + (v.note ? '<span>' + esc(v.note) + '</span>' : '') + '<span class="num">' + fmtSize(v.size || 0) + '</span></div></div><div class="acts">' + (recViewable(v) ? '<button class="btn" data-act="vview" data-id="' + esc(v.id) + '">عرض</button>' : '') + verActs(v) + '<button class="btn" data-act="vsave" data-id="' + esc(v.id) + '">تحميل</button>' + (canAdmin() ? '<button class="btn danger" data-act="del" data-kind="versions" data-id="' + esc(v.id) + '" data-label="' + esc(v.name) + '">حذف</button>' : '') + '</div></div>';
+    }).join('') + '<div class="row"><div><div class="ttl">' + (curVer(r.i) ? '' : '<span class="pill good">الإصدار الحالي</span> ') + esc(r.n) + '.' + r.e + '</div><div class="sub"><span>الملف الأصلي كما استُلم</span></div></div><div class="acts"><button class="btn" data-act="' + (r.e === 'pdf' ? 'pdf' : 'orig') + '" data-id="' + r.i + '">تحميل</button></div></div></div></details>';
     h += '<h2 style="font-size:18px">أرشيف الورقة حسب يوم التسجيل</h2>' + archNotice() + '<label class="search" style="flex:none;max-width:460px"><input id="docq" type="search" placeholder="ابحث: اسم، رقم، تاريخ، ملاحظة" value="' + esc(q) + '" aria-label="بحث في أرشيف الورقة"></label>';
     var fl = a.filter(function (x) { return amatch(x, q); });
     h += fl.length ? '<div class="sec" style="background:var(--surface);border:1px solid var(--line);border-radius:var(--r)">' + daysHtml(fl) + '</div>' : '<p class="empty">' + (a.length ? 'لا يوجد ملف بهذا البحث.' : 'لا توجد ملفات مؤرشفة لهذه الورقة بعد.') + '</p>';
     return h;
   }
   function openVer(r) {
-    dlg('<h2>تحديث الملف بإصدار جديد</h2><div>' + (r.c ? '<span class="code">' + esc(r.c) + '</span> ' : '') + esc(title(r)) + '</div><p style="margin:0;color:var(--muted)">يُحفظ الملف الجديد كإصدار حالي، ويبقى الأصل وكل الإصدارات السابقة محفوظة.</p><label>الملف الجديد بعد تعديله وحفظه (Word أو Excel أو PDF)<input id="vr-f" type="file"></label><label>وصف التعديل<input id="vr-n" type="text" maxlength="200" placeholder="مثال: إصدار 02 - تعديل البند 5.3"></label><div id="vr-s" style="color:var(--muted);min-height:1.4em"></div><div class="acts"><button class="btn" data-act="closed">إلغاء</button><button class="btn pri" id="vr-go" data-act="dover" data-id="' + r.i + '">حفظ الإصدار</button></div>');
+    dlg('<h2>تحديث الملف بإصدار جديد</h2><div>' + (r.c ? '<span class="code">' + esc(r.c) + '</span> ' : '') + esc(title(r)) + '</div><p style="margin:0;color:var(--muted)">يُحفظ الملف الجديد كإصدار حالي، ويبقى الأصل وكل الإصدارات السابقة محفوظة.</p><label>الملف الجديد بعد تعديله وحفظه (Word أو Excel أو PDF)<input id="vr-f" type="file"></label><div class="two"><label>رقم الإصدار<input id="vr-i" type="text" maxlength="10" placeholder="02" dir="ltr"></label><label>وصف التعديل<input id="vr-n" type="text" maxlength="200" placeholder="تعديل البند 5.3"></label></div><p style="margin:0;color:var(--muted);font-size:13px">الإصدار لا يصبح «الحالي» إلا بعد اعتماد المسؤول.</p><div id="vr-s" style="color:var(--muted);min-height:1.4em"></div><div class="acts"><button class="btn" data-act="closed">إلغاء</button><button class="btn pri" id="vr-go" data-act="dover" data-id="' + r.i + '">حفظ الإصدار</button></div>');
   }
   function doVer(r) {
     var f = ($('vr-f').files || [])[0], n = $('vr-n').value.trim(), st = $('vr-s');
@@ -448,8 +448,8 @@
     if (!n) { st.textContent = 'اكتب وصف التعديل ليظهر في سجل الإصدارات.'; return; }
     if (f.size > 10 * 1048576) { st.textContent = 'الملف أكبر من 10 م.ب.'; return; }
     $('vr-go').disabled = true; st.textContent = 'جارٍ الرفع…';
-    storeFile(f).then(function (res) { var row = { doc: r.i, d: r.d, asset: res.asset, name: res.name, ct: res.ct, size: res.size, note: n, at: new Date().toISOString(), by: S.cap.uid }; if (res.enc) row.enc = res.enc; return S.cap.db.collection('versions').add(row); })
-      .then(function () { closeDlg(); toast('حُفظ الإصدار الجديد.'); }).catch(function () { $('vr-go').disabled = false; st.textContent = 'تعذر الرفع. حاول مرة أخرى.'; });
+    storeFile(f).then(function (res) { var row = { doc: r.i, d: r.d, asset: res.asset, name: res.name, ct: res.ct, size: res.size, note: n, issue: ($('vr-i').value || '').trim(), st: canAdmin() ? 'approved' : 'pending', at: new Date().toISOString(), by: S.cap.uid }; if (row.st === 'approved') { row.approvedAt = row.at; row.approvedBy = meName(); } if (res.enc) row.enc = res.enc; return S.cap.db.collection('versions').add(row); })
+      .then(function () { closeDlg(); toast(canAdmin() ? 'حُفظ الإصدار واعتُمد.' : 'حُفظ الإصدار وينتظر اعتماد المسؤول.'); }).catch(function () { $('vr-go').disabled = false; st.textContent = 'تعذر الرفع. حاول مرة أخرى.'; });
   }
 
   /* ---------- fill a form on screen ---------- */
@@ -578,7 +578,7 @@
     var ex = expItems().filter(function (x) { return x.days <= 30; }).length;
     $('nav').innerHTML = a('home', 'الرئيسية') + '<h4>الأقسام</h4>' + DEPTS.map(function (d) { return a(d.h, d.k, S.docs.filter(function (x) { return x.d === d.k; }).length); }).join('') +
       '<h4>للعرض على المراجع</h4>' + a('evidence', 'قائمة الأدلة') + a('trace', 'بحث الأرشيف') + a('iso', 'بنود ISO 9001') + a('expiry', 'تواريخ الانتهاء', ex || null) +
-      (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + (S.cap.canEdit ? a('access', 'المستخدمون') : '')) +
+      '<h4>التشغيل</h4>' + a('purchases', 'المشتريات') + a('suppliers', 'سجل الموردين') + (S.auditor ? '' : a('bulk', 'رفع مجمّع للأرشيف')) + (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + a('report', 'التقرير الشهري') + a('log', 'سجل النشاط') + (S.cap.canEdit ? a('access', 'المستخدمون') + a('library', 'مكتبة الأوراق') : '')) +
       '<button class="btn" data-act="auditor" style="margin:14px 6px 6px;justify-content:center" aria-pressed="' + S.auditor + '">' + (S.auditor ? 'إيقاف وضع المراجع' : 'تشغيل وضع المراجع') + '</button>';
   }
   var lastRoute = '';
@@ -588,11 +588,11 @@
     if (act && act.dataset && act.dataset.chg && act.tagName !== 'SELECT' && act.type !== 'checkbox') { render._pending = true; return; }
     var r = route(), d = DEPTS.filter(function (x) { return x.h === r; })[0], dr = /^doc-/.test(r) ? S.byId[r.slice(4)] : null;
     var fid = act && /^(q|dq|tq|uq|aq|docq)$/.test(act.id || '') ? act.id : '', pos = fid ? act.selectionStart : 0, keep = {};
-    ['ex-n', 'ex-o', 'ex-t', 'uq', 'nu-u', 'nu-n', 'nu-p'].forEach(function (i) { if ($(i)) keep[i] = $(i).value; });
+    ['ex-n', 'ex-o', 'ex-t', 'uq', 'nu-u', 'nu-n', 'nu-p', 'bk-d'].forEach(function (i) { if ($(i)) keep[i] = $(i).value; });
     var hits = $('uhits') ? $('uhits').innerHTML : '';
     var open = {}; Array.prototype.forEach.call(view.querySelectorAll('details.sec'), function (el) { var t = el.querySelector('summary .t'); if (t) open[t.textContent] = el.open; });
     var st = $('main').scrollTop;
-    view.innerHTML = dr ? vDoc(dr) : d ? vDept(d) : r === 'evidence' ? vEvidence() : r === 'iso' ? vIso() : r === 'audit' ? vAudit() : r === 'trace' ? vTrace() : r === 'expiry' ? vExpiry() : r === 'access' ? vAccess() : vHome();
+    view.innerHTML = dr ? vDoc(dr) : d ? vDept(d) : r === 'evidence' ? vEvidence() : r === 'iso' ? vIso() : r === 'audit' ? vAudit() : r === 'trace' ? vTrace() : r === 'expiry' ? vExpiry() : r === 'access' ? vAccess() : r === 'purchases' ? vPurchases() : r === 'suppliers' ? vSuppliers() : r === 'library' ? vLibrary() : r === 'bulk' ? vBulk() : r === 'log' ? vLog() : r === 'report' ? vReport() : vHome();
     if (r === lastRoute) { Array.prototype.forEach.call(view.querySelectorAll('details.sec'), function (el) { var t = el.querySelector('summary .t'); if (t && t.textContent in open && !fid) el.open = open[t.textContent]; }); $('main').scrollTop = st; for (var k in keep) if ($(k)) $(k).value = keep[k]; if ($('uhits')) $('uhits').innerHTML = hits; } else $('main').scrollTop = 0;
     lastRoute = r; renderNav();
     if (fid && $(fid)) { $(fid).focus(); try { $(fid).setSelectionRange(pos, pos); } catch (e) { } }
@@ -727,13 +727,13 @@
   }
   function vAccess() {
     if (!canAdmin()) return head('المستخدمون', '') + '<p class="empty">هذه الصفحة للمسؤولين فقط.</p>';
-    var us = ((window.GEM_FB && window.GEM_FB.users) || []).slice().sort(function (p, q) { return String(p.username).localeCompare(String(q.username)); });
+    var us = ((window.GEM_FB && window.GEM_FB.users) || []).filter(function (u) { return !u.replaced; }).sort(function (p, q) { return String(p.username).localeCompare(String(q.username)); });
     var h = head('المستخدمون', 'أضف مستخدمين باسم مستخدم وكلمة مرور، بدون بريد إلكتروني.');
     h += '<div class="find l"><h3>إضافة مستخدم</h3><div class="track"><label>اسم المستخدم (إنجليزي)<input class="mini" id="nu-u" type="text" dir="ltr" maxlength="30" placeholder="ahmed"></label><label style="flex:1;min-width:160px">الاسم<input class="mini" id="nu-n" type="text" maxlength="60" placeholder="أحمد جمال"></label><label>كلمة المرور<input class="mini" id="nu-p" type="text" dir="ltr" maxlength="40" placeholder="6 حروف على الأقل"></label><label>الصلاحية<select class="mini" id="nu-r"><option value="user">مستخدم</option><option value="admin">مسؤول</option></select></label><button class="btn pri" data-adm="uadd" style="align-self:flex-end">إضافة</button></div></div>';
     h += '<div class="tblw"><table><thead><tr><th>اسم المستخدم</th><th>الاسم</th><th>الصلاحية</th><th>الحالة</th><th></th></tr></thead><tbody>' + (us.map(function (u) {
-      return '<tr><td class="ltr">' + esc(u.username) + '</td><td>' + esc(u.name || '') + '</td><td>' + (u.role === 'admin' ? 'مسؤول' : 'مستخدم') + '</td><td><span class="pill ' + (u.active ? 'good' : 'bad') + '">' + (u.active ? 'مفعّل' : 'موقوف') + '</span></td><td><div class="acts"><button class="btn" data-adm="urole" data-u="' + esc(u.uid) + '" data-v="' + (u.role === 'admin' ? 'user' : 'admin') + '">' + (u.role === 'admin' ? 'اجعله مستخدمًا' : 'اجعله مسؤولًا') + '</button><button class="btn ' + (u.active ? 'danger' : '') + '" data-adm="uact" data-u="' + esc(u.uid) + '" data-v="' + (u.active ? '0' : '1') + '">' + (u.active ? 'إيقاف' : 'تفعيل') + '</button></div></td></tr>';
+      return '<tr><td class="ltr">' + esc(u.username) + '</td><td>' + esc(u.name || '') + '</td><td>' + (u.role === 'admin' ? 'مسؤول' : 'مستخدم') + '</td><td><span class="pill ' + (u.active ? 'good' : 'bad') + '">' + (u.active ? 'مفعّل' : 'موقوف') + '</span></td><td><div class="acts"><button class="btn" data-adm="urole" data-u="' + esc(u.uid) + '" data-v="' + (u.role === 'admin' ? 'user' : 'admin') + '">' + (u.role === 'admin' ? 'اجعله مستخدمًا' : 'اجعله مسؤولًا') + '</button><button class="btn" data-adm="ureset" data-u="' + esc(u.uid) + '">كلمة مرور جديدة</button><button class="btn ' + (u.active ? 'danger' : '') + '" data-adm="uact" data-u="' + esc(u.uid) + '" data-v="' + (u.active ? '0' : '1') + '">' + (u.active ? 'إيقاف' : 'تفعيل') + '</button></div></td></tr>';
     }).join('') || '<tr><td colspan="5">لا يوجد مستخدمون بعد. أضف أول مستخدم من النموذج أعلاه.</td></tr>') + '</tbody></table></div>';
-    h += '<div class="note">المستخدم يدخل باسم المستخدم وكلمة المرور، ويغيّر كلمة مروره من «تغيير كلمة المرور» تحت اسم الشركة. إذا نسيها أوقف حسابه وأضف له اسم مستخدم جديدًا. «مسؤول» يحذف من الأرشيف ويدير المستخدمين.</div>';
+    h += '<div class="note">المستخدم يدخل باسم المستخدم وكلمة المرور، ويغيّر كلمة مروره من «تغيير كلمة المرور» تحت اسم الشركة. إذا نسيها اضغط «كلمة مرور جديدة» أمام اسمه. «مسؤول» يحذف من الأرشيف ويدير المستخدمين.</div>';
     return h;
   }
   document.addEventListener('click', function (ev) {
@@ -747,9 +747,273 @@
       FBX.addUser(u, n, p, $('nu-r').value).then(function () { toast('أُضيف المستخدم ' + u + '. سلّمه اسم المستخدم وكلمة المرور.', 7000); $('nu-u').value = ''; $('nu-n').value = ''; $('nu-p').value = ''; render(); })
         .catch(function (e) { b.disabled = false; toast(/already-in-use/.test(e && e.code || '') ? 'اسم المستخدم مستخدم من قبل. اختر اسمًا آخر.' : /weak-password/.test(e && e.code || '') ? 'كلمة المرور ضعيفة.' : 'تعذرت الإضافة. تأكد من نشر القواعد الجديدة ومن الاتصال.', 7000); });
     } else if (b.dataset.adm === 'urole') FBX.setUser(b.dataset.u, { role: b.dataset.v }).catch(function () { toast('تعذر الحفظ.'); });
+    else if (b.dataset.adm === 'ureset') { var FBX = window.GEM_FB || {}, uu = (FBX.users || []).filter(function (y) { return y.uid === b.dataset.u; })[0], np = uu && window.prompt('كلمة المرور الجديدة للمستخدم ' + uu.username + ' (6 حروف على الأقل)'); if (!uu || np == null) return; if (np.length < 6) { toast('كلمة المرور قصيرة.'); return; } FBX.resetPassword(uu, np).then(function () { toast('تم تعيين كلمة مرور جديدة للمستخدم ' + uu.username + '.', 7000); }).catch(function () { toast('تعذر تعيين كلمة المرور. تأكد من نشر القواعد الجديدة.', 7000); }); }
     else if (b.dataset.adm === 'uact') FBX.setUser(b.dataset.u, { active: b.dataset.v === '1' }).catch(function () { toast('تعذر الحفظ.'); });
   });
   window.addEventListener('gem-admins', function () { if (S.cap.user) Promise.resolve(S.cap.user.canEdit()).then(function (v) { S.cap.canEdit = !!v; render(); }); });
+
+
+  /* ================= extensions: library, purchases, suppliers, bulk, log, report, approvals ================= */
+  var WNS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main', LOCAL = location.protocol === 'file:';
+  S.lib = {}; S.pur = []; S.sup = {}; S.log = []; S.bulk = [];
+  function ym(d) { return String(d || '').slice(0, 7); }
+  function money(n) { return (+n || 0).toLocaleString('en-US'); }
+  function meName() { return (window.GEM_FB && window.GEM_FB.label) || ''; }
+  function extSubs() {
+    var db = S.cap.db; if (!db || extSubs.done) return; extSubs.done = true;
+    var rows = function (s) { return s.docs.map(function (d) { var o = d.data() || {}, c = {}; for (var k in o) c[k] = o[k]; c.id = d.id; return c; }); }, q = function () { };
+    db.collection('lib').onSnapshot(function (s) { S.lib = {}; rows(s).forEach(function (r) { S.lib[r.id] = r; }); render(); }, q);
+    db.collection('purchases').onSnapshot(function (s) { S.pur = rows(s); render(); }, q);
+    db.collection('suppliers').onSnapshot(function (s) { S.sup = {}; rows(s).forEach(function (r) { S.sup[r.id] = r; }); render(); }, q);
+    db.collection('log').onSnapshot(function (s) { S.log = rows(s).sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); }); if (route() === 'log') render(); }, q);
+  }
+  setInterval(extSubs, 800);
+
+  /* ---- approved versions ---- */
+  function okVer(v) { return !v.st || v.st === 'approved'; }
+  function curVer(id) { return verOf(id).filter(okVer)[0] || null; }
+  function verPill(v, id) { var c = curVer(id); return v.st === 'pending' ? '<span class="pill warn">بانتظار الاعتماد</span> ' : (c && c.id === v.id ? '<span class="pill good">الإصدار الحالي</span> ' : '') + (v.issue ? '<span class="pill">إصدار ' + esc(v.issue) + '</span> ' : ''); }
+  function verActs(v) { return v.st === 'pending' && canAdmin() ? '<button class="btn pri" data-x="vok" data-id="' + esc(v.id) + '">اعتماد</button>' : ''; }
+
+  /* ---- where a document's bytes come from ---- */
+  function docBlob(r) {
+    var v = curVer(r.i);
+    if (v) return recBlob(v);
+    if (S.lib[r.i]) return S.cap.assets.get('lib-' + r.i, EXT_TYPE[r.e] || '');
+    if (!LOCAL) return fetch(fileUrl(r)).then(function (x) { if (!x.ok) throw 0; return x.blob(); });
+    return Promise.reject(new Error('nolib'));
+  }
+  function openDoc(r, mode) {
+    var v = curVer(r.i), sc = SCHEME[r.e];
+    if (LOCAL && !v) {
+      var u = fileUrl(r);
+      if (!sc) { window.open(u, '_blank'); return; }
+      location.href = sc + ':' + (mode === 'new' ? 'nft' : mode === 'edit' ? 'ofe' : 'ofv') + '|u|' + u;
+      toast(mode === 'new' ? 'يفتح ' + OFFICE[r.e] + ' نسخة جديدة من النموذج. املأها واحفظها ثم ارفعها بزر «أرشفة».' : mode === 'edit' ? 'يفتح الملف في ' + OFFICE[r.e] + ' للتعديل. بعد الحفظ ارفعه من «تحديث الملف» ليصل لباقي الأجهزة.' : 'يفتح الملف في ' + OFFICE[r.e] + '.', 7000);
+      return;
+    }
+    toast('جارٍ تحميل الملف…', 20000);
+    docBlob(r).then(function (b) {
+      $('toast').classList.remove('on');
+      if (!sc && !v) { window.open(URL.createObjectURL(new Blob([b], { type: EXT_TYPE[r.e] || 'application/octet-stream' })), '_blank'); return; }
+      var nm = v ? v.name : r.n + '.' + r.e;
+      save(nm, b, 'نزل الملف. افتحه من شريط التنزيلات' + (mode === 'edit' ? '، وبعد التعديل ارفعه من «تحديث الملف».' : mode === 'new' ? '، املأه واحفظه ثم ارفعه بزر «أرشفة».' : '.'));
+    }).catch(function () { toast('الملف غير متاح. يرفع المسؤول الأوراق أولًا من صفحة «مكتبة الأوراق».', 7000); });
+  }
+
+  /* ---- library: all original documents kept behind sign-in ---- */
+  function vLibrary() {
+    if (!canAdmin()) return head('مكتبة الأوراق', '') + '<p class="empty">هذه الصفحة للمسؤولين فقط.</p>';
+    var n = S.docs.filter(function (r) { return S.lib[r.i]; }).length;
+    return head('مكتبة الأوراق', 'تُحفظ الأوراق الأصلية داخل قاعدة البيانات، فلا تفتح إلا لمن سجّل الدخول.') +
+      '<div class="tiles"><div class="tile"><b class="num">' + n + ' / ' + S.docs.length + '</b><span>ورقة مرفوعة للمكتبة</span></div></div>' +
+      '<div class="find l"><h3>رفع الأوراق</h3><p>اختر مجلد <span class="code">IMS</span> الموجود على هذا الجهاز. يرفع النظام الأوراق الناقصة فقط، ويمكن إيقافه وإكماله لاحقًا.</p><div class="track"><label>مجلد IMS<input id="lib-f" type="file" webkitdirectory multiple></label><button class="btn pri" data-x="libup" style="align-self:flex-end">بدء الرفع</button></div><div id="lib-s" class="num" style="color:var(--muted);min-height:1.4em"></div></div>' +
+      '<div class="note">بعد اكتمال الرفع احذف مجلد IMS من GitHub. الحذف لا يمسح النسخ القديمة من تاريخ المستودع، فإن كان المستودع عامًا اجعله خاصًا أو أنشئ مستودعًا جديدًا بملفات النظام فقط.</div>';
+  }
+  function libUpload() {
+    var fs = Array.prototype.slice.call(($('lib-f').files || [])), st = $('lib-s'), byPath = {};
+    if (!fs.length) { st.textContent = 'اختر مجلد IMS أولًا.'; return; }
+    fs.forEach(function (f) { var p = (f.webkitRelativePath || f.name).replace(/\\/g, '/'), i = p.indexOf('IMS/'); if (i >= 0) byPath[p.slice(i).normalize('NFC')] = f; });
+    var todo = S.docs.filter(function (r) { return !S.lib[r.i] && byPath[r.p.normalize('NFC')]; }), i = 0, miss = S.docs.filter(function (r) { return !S.lib[r.i] && !byPath[r.p.normalize('NFC')]; }).length;
+    if (!todo.length) { st.textContent = miss ? 'لم أجد الأوراق الناقصة (' + miss + ') في المجلد المختار. اختر مجلد IMS نفسه.' : 'كل الأوراق مرفوعة.'; return; }
+    (function next() {
+      if (i >= todo.length) { st.textContent = 'اكتمل رفع ' + todo.length + ' ورقة.' + (miss ? ' لم توجد ' + miss + ' ورقة في المجلد.' : ''); return; }
+      var r = todo[i]; st.textContent = 'جارٍ رفع ' + (i + 1) + ' من ' + todo.length + ': ' + r.n;
+      S.cap.assets.upload(byPath[r.p.normalize('NFC')], { id: 'lib-' + r.i }).then(function (res) { return S.cap.db.doc('lib/' + r.i).set({ size: res.sizeBytes, at: new Date().toISOString() }); }).then(function () { i++; next(); })
+        .catch(function () { st.textContent = 'توقف الرفع عند «' + r.n + '». تحقق من الاتصال ثم اضغط «بدء الرفع» للإكمال.'; });
+    })();
+  }
+
+  /* ---- suppliers ---- */
+  function suppliers() {
+    var m = {}; (window.GEM_SUPPLIERS || []).forEach(function (s) { m[s.code] = { code: s.code, name: s.name, scope: s.scope, cls: s.cls, src: s.src, status: 'معتمد' }; });
+    Object.keys(S.sup).forEach(function (k) { var o = S.sup[k], b = m[k] || { code: k, status: 'معتمد' }; for (var f in o) if (f !== 'id' && o[f] !== '' && o[f] != null) b[f] = o[f]; m[k] = b; });
+    return Object.keys(m).sort().map(function (k) { return m[k]; });
+  }
+  function supBy(code) { return suppliers().filter(function (s) { return s.code === code; })[0]; }
+  function supOk(p) { var s = p.sup && supBy(p.sup); return !!s && s.status === 'معتمد'; }
+  function supLabel(p) { var s = p.sup && supBy(p.sup); return s ? s.name + ' — ' + s.code : (p.supName || ''); }
+  function vSuppliers() {
+    var w = canWrite(), list = suppliers();
+    var h = head('سجل الموردين', 'الموردون المعتمدون من أوراقكم، ومن أُضيف من داخل النظام، مع مشتريات كل مورد.', w ? '<button class="btn pri" data-x="supnew">إضافة مورد</button>' : '');
+    var un = S.pur.filter(function (p) { return !supOk(p); });
+    if (un.length) h += '<div class="note">يوجد ' + un.length + ' بند شراء بقيمة ' + money(un.reduce(function (a, p) { return a + (+p.value || 0); }, 0)) + ' ج.م من مورد غير معتمد أو غير محدد. <a href="#purchases">افتح المشتريات</a></div>';
+    h += '<div class="tblw"><table><thead><tr><th>الكود</th><th>المورد</th><th>ما يورّده</th><th>التصنيف</th><th>الحالة</th><th>المستندات سارية حتى</th><th>عدد المشتريات</th><th>إجماليها</th><th></th></tr></thead><tbody>' + list.map(function (s) {
+      var ps = S.pur.filter(function (p) { return p.sup === s.code; });
+      return '<tr><td><span class="code">' + esc(s.code) + '</span></td><td>' + esc(s.name) + '</td><td>' + esc(s.scope || '') + '</td><td>' + esc(s.cls || '') + '</td><td><span class="pill ' + (s.status === 'معتمد' ? 'good' : s.status === 'موقوف' ? 'bad' : 'warn') + '">' + esc(s.status) + '</span></td><td class="num">' + esc(fmtDate(s.valid) || '') + '</td><td class="num">' + (ps.length || '—') + '</td><td class="num">' + (ps.length ? money(ps.reduce(function (a, p) { return a + (+p.value || 0); }, 0)) : '—') + '</td><td>' + (w ? '<button class="btn" data-x="supedit" data-id="' + esc(s.code) + '">تعديل</button>' : '') + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+    return h;
+  }
+  function supDialog(code) {
+    var s = code ? supBy(code) : null, list = suppliers(), nx = 'SUP-' + ('00' + (Math.max.apply(null, list.map(function (x) { return +String(x.code).replace(/\D/g, '') || 0; }).concat([0])) + 1)).slice(-3);
+    s = s || { code: nx, name: '', scope: '', cls: 'غير حرج', status: 'تحت الملاحظة', valid: '', alt: '' };
+    dlg('<h2>' + (code ? 'تعديل مورد' : 'إضافة مورد') + '</h2><div><span class="code">' + esc(s.code) + '</span></div><label>اسم المورد<input id="sp-n" type="text" maxlength="120" value="' + esc(s.name) + '"></label><label>ما يورّده<input id="sp-s" type="text" maxlength="160" value="' + esc(s.scope || '') + '"></label><div class="two"><label>التصنيف<select id="sp-c"><option' + (s.cls === 'حرج' ? ' selected' : '') + '>حرج</option><option' + (s.cls !== 'حرج' ? ' selected' : '') + '>غير حرج</option></select></label><label>الحالة<select id="sp-t">' + ['معتمد', 'تحت الملاحظة', 'موقوف'].map(function (x) { return '<option' + (s.status === x ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select></label></div><div class="two"><label>المستندات سارية حتى<input id="sp-v" type="date" value="' + esc(s.valid || '') + '"></label><label>المورد البديل<input id="sp-a" type="text" maxlength="120" value="' + esc(s.alt || '') + '"></label></div><div id="sp-m" style="color:var(--muted);min-height:1.4em"></div><div class="acts"><button class="btn" data-act="closed">إلغاء</button><button class="btn pri" data-x="supsave" data-id="' + esc(s.code) + '">حفظ</button></div>');
+  }
+
+  /* ---- purchases ---- */
+  function nextPR(year) { var mx = year === 2026 ? 86 : 0; S.pur.forEach(function (p) { var m = /^PR-(\d{4})-(\d+)$/.exec(p.pr || ''); if (m && +m[1] === year) mx = Math.max(mx, +m[2]); }); return 'PR-' + year + '-' + ('00' + (mx + 1)).slice(-3); }
+  function purMonth() { return S.pm == null ? CY + '-' + ('0' + CM).slice(-2) : S.pm; }
+  function purList() { var m = purMonth(); return S.pur.filter(function (p) { return !m || ym(p.date) === m; }).sort(function (a, b) { return String(a.date).localeCompare(String(b.date)) || String(a.pr).localeCompare(String(b.pr)); }); }
+  function vPurchases() {
+    var w = canWrite(), m = purMonth(), list = purList(), months = {}; S.pur.forEach(function (p) { months[ym(p.date)] = 1; }); months[CY + '-' + ('0' + CM).slice(-2)] = 1;
+    var h = head('المشتريات', 'كل بند يُسجَّل مرة واحدة، ويخرج منه طلب الشراء وأمر التوريد وسجل المتابعة على نماذجكم.', '<select class="mini" data-chg="pm" aria-label="الشهر"><option value="">كل الشهور</option>' + Object.keys(months).sort().reverse().map(function (k) { return '<option value="' + k + '"' + (k === m ? ' selected' : '') + '>' + MONTHS[+k.slice(5) - 1] + ' ' + k.slice(0, 4) + '</option>'; }).join('') + '</select>' + (w ? '<button class="btn pri" data-x="purnew">بند جديد</button><button class="btn" data-x="purimp">استيراد من Excel</button>' : '') + '<button class="btn" data-x="purlog">تنزيل سجل المتابعة Word</button>');
+    var tot = list.reduce(function (a, p) { return a + (+p.value || 0); }, 0), un = list.filter(function (p) { return !supOk(p); });
+    h += '<div class="tiles"><div class="tile"><b class="num">' + list.length + '</b><span>بند</span></div><div class="tile"><b class="num">' + money(tot) + '</b><span>الإجمالي ج.م</span></div><div class="tile"><b class="num" style="color:var(--' + (un.length ? 'bad' : 'good') + ')">' + un.length + '</b><span>من مورد غير معتمد أو غير محدد</span></div><div class="tile"><b class="num">' + list.filter(function (p) { return p.status !== 'تم التوريد' && p.status !== 'ملغي'; }).length + '</b><span>لم يورَّد بعد</span></div></div>';
+    if (!list.length) return h + '<p class="empty">لا توجد بنود في هذه الفترة.' + (w ? ' اضغط «بند جديد» أو «استيراد من Excel».' : '') + '</p>';
+    h += '<div class="tblw"><table><thead><tr><th>رقم الطلب</th><th>التاريخ</th><th>البيان</th><th>الإدارة</th><th>الكمية</th><th>المورد</th><th>القيمة</th><th>الحالة</th><th></th></tr></thead><tbody>' + list.map(function (p) {
+      return '<tr><td><span class="code">' + esc(p.pr) + '</span></td><td class="num">' + esc(fmtDate(p.date)) + '</td><td>' + esc(p.item) + '</td><td>' + esc(p.dept || '') + '</td><td class="num">' + esc([p.qty, p.unit].filter(Boolean).join(' ')) + '</td><td>' + esc(supLabel(p)) + (supOk(p) ? '' : ' <span class="pill bad">' + (supLabel(p) ? 'غير معتمد' : 'غير محدد') + '</span>') + '</td><td class="num">' + money(p.value) + '</td><td><span class="pill ' + (p.status === 'تم التوريد' ? 'good' : p.status === 'ملغي' ? '' : 'warn') + '">' + esc(p.status || 'مفتوح') + '</span></td><td><div class="acts">' + (w ? '<button class="btn" data-x="puredit" data-id="' + esc(p.id) + '">تعديل</button>' : '') + '<button class="btn" data-x="purpr" data-id="' + esc(p.id) + '">طلب شراء</button><button class="btn" data-x="purpo" data-id="' + esc(p.id) + '">أمر توريد</button>' + (canAdmin() ? '<button class="btn danger" data-act="del" data-kind="purchases" data-id="' + esc(p.id) + '" data-label="' + esc(p.pr) + '">حذف</button>' : '') + '</div></td></tr>';
+    }).join('') + '</tbody></table></div>';
+    return h;
+  }
+  function purDialog(id) {
+    var p = id ? S.pur.filter(function (x) { return x.id === id; })[0] : null;
+    p = p || { pr: nextPR(CY), date: today(), dept: '', item: '', qty: '', unit: '', value: '', sup: '', supName: '', po: '', type: '', need: '', got: '', status: 'مفتوح', purpose: '', note: '' };
+    var f = function (l, i, v, t, ex) { return '<label>' + l + '<input id="' + i + '" type="' + (t || 'text') + '" value="' + esc(v == null ? '' : v) + '"' + (ex || '') + '></label>'; };
+    dlg('<h2>' + (id ? 'تعديل بند شراء' : 'بند شراء جديد') + '</h2><div class="two">' + f('رقم الطلب', 'pu-pr', p.pr, 'text', ' dir="ltr"') + f('تاريخ الطلب', 'pu-d', p.date, 'date') + '</div>' + f('البيان والمواصفات', 'pu-i', p.item) +
+      '<div class="two"><label>الإدارة الطالبة<select id="pu-dp"><option value=""></option>' + DEPTS.map(function (d) { return '<option' + (p.dept === d.k ? ' selected' : '') + '>' + esc(d.k) + '</option>'; }).join('') + '</select></label>' + f('الغرض', 'pu-pp', p.purpose) + '</div>' +
+      '<div class="two">' + f('الكمية', 'pu-q', p.qty) + f('الوحدة', 'pu-u', p.unit) + '</div><div class="two">' + f('القيمة ج.م', 'pu-v', p.value, 'number') + '<label>المورد<select id="pu-s"><option value="">غير محدد / مورد آخر</option>' + suppliers().map(function (s) { return '<option value="' + esc(s.code) + '"' + (p.sup === s.code ? ' selected' : '') + '>' + esc(s.code + ' · ' + s.name) + (s.status === 'معتمد' ? '' : ' (' + esc(s.status) + ')') + '</option>'; }).join('') + '</select></label></div>' +
+      f('اسم المورد إن لم يكن في السجل', 'pu-sn', p.supName) + '<div class="two">' + f('نوع الشراء', 'pu-t', p.type) + f('رقم أمر التوريد', 'pu-po', p.po, 'text', ' dir="ltr"') + '</div><div class="two">' + f('الموعد المطلوب', 'pu-n', p.need, 'date') + f('تاريخ التوريد الفعلي', 'pu-g', p.got, 'date') + '</div>' +
+      '<div class="two"><label>الحالة<select id="pu-st">' + ['مفتوح', 'تم التوريد', 'ملغي'].map(function (x) { return '<option' + (p.status === x ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select></label>' + f('ملاحظات', 'pu-no', p.note) + '</div><div id="pu-m" style="color:var(--bad);min-height:1.4em"></div><div class="acts"><button class="btn" data-act="closed">إلغاء</button><button class="btn pri" data-x="pursave" data-id="' + esc(id || '') + '">حفظ</button></div>');
+  }
+  function purSave(id) {
+    var g = function (i) { return ($(i).value || '').trim(); }, o = { pr: g('pu-pr'), date: g('pu-d'), item: g('pu-i'), dept: g('pu-dp'), purpose: g('pu-pp'), qty: g('pu-q'), unit: g('pu-u'), value: +g('pu-v') || 0, sup: g('pu-s'), supName: g('pu-s') ? '' : g('pu-sn'), type: g('pu-t'), po: g('pu-po'), need: g('pu-n'), got: g('pu-g'), status: g('pu-st'), note: g('pu-no'), at: new Date().toISOString(), by: S.cap.uid };
+    if (!o.pr || !o.date || !o.item) { $('pu-m').textContent = 'رقم الطلب والتاريخ والبيان مطلوبة.'; return; }
+    if (S.pur.some(function (p) { return p.pr === o.pr && p.id !== id; })) { $('pu-m').textContent = 'رقم الطلب مستخدم في بند آخر.'; return; }
+    var s = o.sup && supBy(o.sup);
+    (id ? S.cap.db.doc('purchases/' + id).set(o) : S.cap.db.collection('purchases').add(o)).then(function () { closeDlg(); toast(!s ? 'حُفظ البند. تنبيه: المورد غير معتمد أو غير محدد.' : s.status !== 'معتمد' ? 'حُفظ البند. تنبيه: حالة المورد «' + s.status + '».' : 'حُفظ البند.', 6000); }).catch(function () { $('pu-m').textContent = 'تعذر الحفظ.'; });
+  }
+  function parseDate(v) {
+    if (v instanceof Date) return v.getFullYear() + '-' + ('0' + (v.getMonth() + 1)).slice(-2) + '-' + ('0' + v.getDate()).slice(-2);
+    var s = String(v == null ? '' : v).trim(), m = /^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/.exec(s); if (m) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2);
+    m = /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})$/.exec(s); if (m) return (m[3].length === 2 ? '20' + m[3] : m[3]) + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+    return '';
+  }
+  function purImportDialog() { dlg('<h2>استيراد مشتريات من Excel</h2><p style="margin:0;color:var(--muted)">أول ورقة في الملف، وأول ثلاثة أعمدة بالترتيب: التاريخ، البند، المبلغ. الصف الأول عناوين. تُسجَّل البنود بلا مورد وتكمل بياناتها من «تعديل».</p><label>ملف Excel<input id="im-f" type="file" accept=".xlsx,.xls,.csv"></label><div id="im-s" class="num" style="color:var(--muted);min-height:1.4em"></div><div class="acts"><button class="btn" data-act="closed">إلغاء</button><button class="btn pri" data-x="purimpgo" id="im-go">استيراد</button></div>'); }
+  function purImport() {
+    var f = ($('im-f').files || [])[0], st = $('im-s'); if (!f) { st.textContent = 'اختر الملف.'; return; }
+    if (!window.XLSX) { st.textContent = 'قارئ Excel غير متاح.'; return; }
+    f.arrayBuffer().then(function (buf) {
+      var wb = XLSX.read(buf, { type: 'array', cellDates: true }), rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true }).slice(1), ok = [], bad = 0;
+      rows.forEach(function (r) { if (!r || (r[0] == null && r[1] == null)) return; var d = parseDate(r[0]), a = +r[2]; if (!d || !String(r[1] || '').trim() || !(a >= 0)) { bad++; return; } ok.push({ date: d, item: String(r[1]).replace(/\s+/g, ' ').trim(), value: a }); });
+      if (!ok.length) { st.textContent = 'لم أجد بنودًا صالحة. تأكد من ترتيب الأعمدة.'; return; }
+      ok.sort(function (a, b) { return a.date.localeCompare(b.date); });
+      $('im-go').disabled = true; var i = 0, nums = {};
+      (function next() {
+        if (i >= ok.length) { closeDlg(); S.pm = ''; toast('استُورد ' + ok.length + ' بند.' + (bad ? ' تُرك ' + bad + ' صف غير صالح.' : ''), 7000); return; }
+        var r = ok[i], y = +r.date.slice(0, 4), base = nums[y] || nextPR(y), n = +base.split('-')[2]; nums[y] = 'PR-' + y + '-' + ('00' + (n + 1)).slice(-3);
+        st.textContent = 'جارٍ استيراد ' + (i + 1) + ' من ' + ok.length + '…';
+        S.cap.db.collection('purchases').add({ pr: base, date: r.date, item: r.item, value: r.value, dept: '', qty: '', unit: '', sup: '', supName: '', po: '', type: '', need: '', got: '', status: 'مفتوح', purpose: '', note: 'مستورد من ' + f.name, at: new Date().toISOString(), by: S.cap.uid }).then(function () { i++; next(); }).catch(function () { $('im-go').disabled = false; st.textContent = 'توقف الاستيراد بعد ' + i + ' بند.'; });
+      })();
+    }).catch(function () { st.textContent = 'تعذر قراءة الملف.'; });
+  }
+
+  /* ---- fill the company's own Word templates ---- */
+  function kids(el, name) { return Array.prototype.filter.call(el.childNodes, function (n) { return n.nodeType === 1 && n.localName === name; }); }
+  function cellText(tc) { return Array.prototype.map.call(tc.getElementsByTagNameNS(WNS, 't'), function (t) { return t.textContent; }).join(''); }
+  function putCell(doc, tc, text, ltr) {
+    if (text == null || text === '') return; var p = kids(tc, 'p')[0]; if (!p) return;
+    var r = doc.createElementNS(WNS, 'w:r'), rp = doc.createElementNS(WNS, 'w:rPr'), f = doc.createElementNS(WNS, 'w:rFonts'), t = doc.createElementNS(WNS, 'w:t');
+    ['ascii', 'hAnsi', 'cs'].forEach(function (a) { f.setAttributeNS(WNS, 'w:' + a, 'Alyamama SemiBold'); }); rp.appendChild(f);
+    ['sz', 'szCs'].forEach(function (a) { var e = doc.createElementNS(WNS, 'w:' + a); e.setAttributeNS(WNS, 'w:val', '16'); rp.appendChild(e); });
+    if (!ltr) rp.appendChild(doc.createElementNS(WNS, 'w:rtl'));
+    t.setAttribute('xml:space', 'preserve'); t.textContent = String(text); r.appendChild(rp); r.appendChild(t); p.appendChild(r);
+  }
+  function fillDocx(code, labels, table, filename) {
+    var r = S.byCode[code]; if (!r) { toast('النموذج ' + code + ' غير موجود.'); return; }
+    if (!window.JSZip) { toast('مولّد Word غير متاح.'); return; }
+    toast('جارٍ تجهيز الملف…', 20000);
+    var zip;
+    docBlob(r).then(function (b) { return JSZip.loadAsync(b); }).then(function (z) { zip = z; return z.file('word/document.xml').async('string'); }).then(function (xml) {
+      var doc = new DOMParser().parseFromString(xml, 'application/xml'), tbls = Array.prototype.slice.call(doc.getElementsByTagNameNS(WNS, 'tbl'));
+      tbls.forEach(function (tb) { kids(tb, 'tr').forEach(function (tr) { var cs = kids(tr, 'tc'); cs.forEach(function (c, i) { var k = cellText(c).trim(); if (labels && labels[k] != null && cs[i + 1] && !cellText(cs[i + 1]).trim()) putCell(doc, cs[i + 1], labels[k]); }); }); });
+      if (table) {
+        var tb = tbls.filter(function (x) { var tr = kids(x, 'tr')[0]; return tr && cellText(kids(tr, 'tc')[0]).trim() === 'م'; })[0];
+        if (tb) { var trs = kids(tb, 'tr'); for (var k = trs.length - 1; k < table.length; k++) trs[trs.length - 1].parentNode.insertBefore(trs[1].cloneNode(true), trs[trs.length - 1].nextSibling); trs = kids(tb, 'tr'); table.forEach(function (row, i) { var cs = kids(trs[i + 1], 'tc'); row.forEach(function (v, j) { if (cs[j]) putCell(doc, cs[j], v); }); }); }
+      }
+      var out = new XMLSerializer().serializeToString(doc); if (out.indexOf('<?xml') !== 0) out = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + out;
+      zip.file('word/document.xml', out); return zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+    }).then(function (b) { return save(filename, b, 'نزل الملف المملوء. راجعه ثم ارفعه بزر «أرشفة».'); }).catch(function () { toast('تعذر تجهيز الملف. يرفع المسؤول الأوراق أولًا من «مكتبة الأوراق».', 7000); });
+  }
+  function days(a, b) { if (!a || !b) return ''; var d = Math.round((new Date(b) - new Date(a)) / 86400000); return isFinite(d) && d >= 0 ? String(d) : ''; }
+  function purLog() {
+    var list = purList(), m = purMonth(); if (!list.length) { toast('لا توجد بنود في هذه الفترة.'); return; }
+    fillDocx('GEM-PU-F-8.4-08', null, list.map(function (p, i) { return [i + 1, p.pr, fmtDate(p.date), p.item, p.type, p.po, supLabel(p), money(p.value), fmtDate(p.need), fmtDate(p.got), days(p.date, p.got), p.status, [supOk(p) ? '' : (supLabel(p) ? 'المورد غير معتمد' : 'المورد غير محدد'), p.note].filter(Boolean).join(' – ')]; }), 'GEM-PU-F-8.4-08 سجل متابعة طلبات الشراء - ' + (m || 'كل الشهور') + '.docx');
+  }
+  function purDoc(id, po) {
+    var p = S.pur.filter(function (x) { return x.id === id; })[0]; if (!p) return;
+    if (po) { if (!p.po) { toast('اكتب رقم أمر التوريد في البند أولًا من «تعديل».'); return; }
+      fillDocx('GEM-PU-F-8.4-06', { 'رقم أمر التوريد (PO-سنة-تسلسل)': p.po, 'التاريخ': fmtDate(p.date), 'المورد وكوده': supLabel(p), 'رقم طلب الشراء': p.pr, 'موعد التسليم': fmtDate(p.need) }, [[1, p.item, '', p.unit, p.qty, '', '', money(p.value)]], 'GEM-PU-F-8.4-06 أمر توريد - ' + p.po + '.docx');
+    } else fillDocx('GEM-PU-F-8.4-04', { 'رقم الطلب (PR-سنة-تسلسل)': p.pr, 'التاريخ': fmtDate(p.date), 'الإدارة الطالبة': p.dept, 'تاريخ الاستلام المطلوب': fmtDate(p.need), 'الغرض': p.purpose, 'القيمة التقديرية': money(p.value) }, [[1, '', p.item, p.unit, p.qty, '', '']], 'GEM-PU-F-8.4-04 طلب شراء - ' + p.pr + '.docx');
+  }
+
+  /* ---- bulk archive ---- */
+  var CODE_RX = /GEM\s*-\s*HR\s*-\s*PA\s*-\s*F\s*-\s*\d\d\s*-\s*\d\d|GEM-[A-Z]{2}-(?:QP|F|WI|PL|PO|MN)-\d+(?:\.\d+)*[a-c]?(?:-\d\d)?/;
+  function vBulk() {
+    if (!canWrite() || !S.cap.assets) return head('رفع مجمّع للأرشيف', '') + '<p class="empty">سجّل الدخول بحساب له صلاحية الكتابة.</p>';
+    var h = head('رفع مجمّع للأرشيف', 'اختر عدة ملفات مرة واحدة. يوزّعها النظام على أوراقها من الكود الموجود في اسم كل ملف.');
+    h += '<div class="find l"><div class="track"><label style="flex:2;min-width:240px">الملفات<input id="bk-f" type="file" multiple data-chg="bkfiles"></label><label>تاريخ السجل لما لا يحمل تاريخًا في اسمه<input class="mini" id="bk-d" type="date" value="' + today() + '"></label><button class="btn pri" data-x="bkgo" style="align-self:flex-end"' + (S.bulk.some(function (b) { return b.r; }) ? '' : ' disabled') + '>أرشفة الملفات المطابقة</button></div><div id="bk-s" class="num" style="color:var(--muted);min-height:1.4em"></div></div>';
+    if (S.bulk.length) h += '<div class="tblw"><table><thead><tr><th>الملف</th><th>الورقة المطابقة</th><th>التاريخ من الاسم</th><th>الحالة</th></tr></thead><tbody>' + S.bulk.map(function (b) { return '<tr><td>' + esc(b.f.name) + '</td><td>' + (b.r ? '<span class="code">' + esc(b.r.c) + '</span> ' + esc(title(b.r)) : '—') + '</td><td class="num">' + esc(fmtDate(b.dt) || 'يؤخذ من الخانة') + '</td><td><span class="pill ' + (b.done ? 'good' : b.r ? '' : 'warn') + '">' + (b.done ? 'تمت الأرشفة' : b.r ? 'جاهز' : 'لا يوجد كود مطابق في الاسم') + '</span></td></tr>'; }).join('') + '</tbody></table></div>';
+    return h;
+  }
+  function bulkPick(files) {
+    S.bulk = Array.prototype.map.call(files, function (f) { var m = CODE_RX.exec(f.name), code = m ? m[0].replace(/\s+/g, '') : '', d = /(\d{4})-(\d{2})-(\d{2})/.exec(f.name), d2 = /(\d{2})-(\d{2})-(\d{4})/.exec(f.name); return { f: f, r: code ? S.byCode[code] || null : null, dt: d ? d[0] : d2 ? d2[3] + '-' + d2[2] + '-' + d2[1] : '' }; });
+    render();
+  }
+  function bulkGo() {
+    var todo = S.bulk.filter(function (b) { return b.r && !b.done; }), dflt = $('bk-d').value, st = $('bk-s'), i = 0;
+    if (!todo.length) return; if (!dflt) { st.textContent = 'اختر التاريخ.'; return; }
+    (function next() {
+      if (i >= todo.length) { toast('تمت أرشفة ' + todo.length + ' ملف.'); render(); return; }
+      var b = todo[i], dt = b.dt || dflt; st.textContent = 'جارٍ رفع ' + (i + 1) + ' من ' + todo.length + '…';
+      if (b.f.size > 10 * 1048576) { b.r = null; i++; next(); return; }
+      storeFile(b.f).then(function (res) { return S.cap.db.collection('archive').add({ doc: b.r.i, code: b.r.c || '', d: b.r.d, y: +dt.slice(0, 4), m: +dt.slice(5, 7), rd: dt, no: '', asset: res.asset, name: res.name, ct: res.ct, size: res.size, note: 'رفع مجمّع', at: new Date().toISOString(), by: S.cap.uid }); }).then(function () { b.done = true; i++; next(); }).catch(function () { st.textContent = 'توقف الرفع عند «' + b.f.name + '».'; render(); });
+    })();
+  }
+
+  /* ---- activity log ---- */
+  var LOGN = { archive: 'الأرشيف', versions: 'إصدار ملف', na: 'لا ينطبق', formcfg: 'دورية نموذج', findings: 'ملاحظة تدقيق', expiry: 'تاريخ انتهاء', purchases: 'بند شراء', suppliers: 'مورد', users: 'مستخدم', lib: 'مكتبة الأوراق', logins: 'كلمة مرور' }, LOGO = { add: 'إضافة', set: 'تعديل', del: 'حذف' };
+  function vLog() {
+    var h = head('سجل النشاط', 'من فعل ماذا ومتى. السجل لا يُعدَّل ولا يُحذف.');
+    if (!S.log.length) return h + '<p class="empty">لا يوجد نشاط مسجل بعد.</p>';
+    return h + '<div class="tblw"><table><thead><tr><th>الوقت</th><th>المستخدم</th><th>العملية</th><th>التفاصيل</th></tr></thead><tbody>' + S.log.slice(0, 500).map(function (l) {
+      var r = l.doc && S.byId[l.doc], t = new Date(l.at);
+      return '<tr><td class="num">' + esc(fmtDate(String(l.at).slice(0, 10))) + ' ' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '</td><td>' + esc(l.by || '') + '</td><td>' + (LOGO[l.op] || esc(l.op)) + ' ' + (LOGN[l.coll] || esc(l.coll)) + '</td><td>' + (r ? '<a href="#doc-' + r.i + '">' + esc(r.c || title(r)) + '</a> ' : '') + esc(l.s || '') + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+  }
+
+  /* ---- monthly report ---- */
+  function vReport() {
+    var m = S.rm || CY + '-' + ('0' + CM).slice(-2), st = DEPTS.map(function (d) { return deptStats(d.k); }), fa = allFindings(), ex = expItems().filter(function (x) { return x.days <= 30; });
+    var ar = S.arch.filter(function (a) { return a.y + '-' + ('0' + a.m).slice(-2) === m; }), pu = S.pur.filter(function (p) { return ym(p.date) === m; }), un = pu.filter(function (p) { return !supOk(p); }), late = [];
+    S.docs.filter(isArchivable).forEach(function (r) { if (evStatus(r).late) late.push(r); });
+    var opts = {}; opts[m] = 1; S.arch.forEach(function (a) { opts[a.y + '-' + ('0' + a.m).slice(-2)] = 1; }); S.pur.forEach(function (p) { opts[ym(p.date)] = 1; });
+    var h = head('التقرير الشهري', 'ملخص يُعرض في مراجعة الإدارة: ' + MONTHS[+m.slice(5) - 1] + ' ' + m.slice(0, 4), '<select class="mini noprint" data-chg="rm">' + Object.keys(opts).sort().reverse().map(function (k) { return '<option value="' + k + '"' + (k === m ? ' selected' : '') + '>' + MONTHS[+k.slice(5) - 1] + ' ' + k.slice(0, 4) + '</option>'; }).join('') + '</select><button class="btn pri noprint" data-x="print">طباعة</button>');
+    h += '<div class="tiles"><div class="tile"><b class="num">' + Math.round(st.reduce(function (a, s) { return a + s.score; }, 0) / st.length) + '%</b><span>جاهزية المصنع</span></div><div class="tile"><b class="num">' + ar.length + '</b><span>ملف أُرشف في الشهر</span></div><div class="tile"><b class="num">' + late.length + '</b><span>نموذج دوري متأخر</span></div><div class="tile"><b class="num">' + fa.filter(function (f) { return fState(f) !== 'done'; }).length + ' / ' + fa.length + '</b><span>ملاحظة تدقيق لم تُغلق</span></div><div class="tile"><b class="num">' + money(pu.reduce(function (a, p) { return a + (+p.value || 0); }, 0)) + '</b><span>مشتريات الشهر ج.م (' + pu.length + ' بند)</span></div><div class="tile"><b class="num">' + un.length + '</b><span>شراء من مورد غير معتمد</span></div></div>';
+    h += '<h2 style="font-size:17px">جاهزية الأقسام</h2><div class="tblw"><table><thead><tr><th>القسم</th><th>الجاهزية</th><th>نماذج لها دليل</th><th>دوري متأخر</th><th>ملاحظات أُغلقت</th><th>أُرشف في الشهر</th></tr></thead><tbody>' + DEPTS.map(function (d, i) { var s = st[i]; return '<tr><td>' + esc(d.k) + '</td><td class="num">' + s.score + '%</td><td class="num">' + s.ready + ' من ' + s.forms + '</td><td class="num">' + s.late + '</td><td class="num">' + (s.fs ? s.done + ' من ' + s.fs : '—') + '</td><td class="num">' + ar.filter(function (a) { return a.d === d.k; }).length + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    if (late.length) h += '<h2 style="font-size:17px">النماذج الدورية المتأخرة</h2><div class="tblw"><table><tbody>' + late.map(function (r) { return '<tr><td><span class="code">' + esc(r.c) + '</span></td><td>' + esc(title(r)) + '</td><td>' + esc(r.d) + '</td><td>' + esc(evStatus(r).txt) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    var open = fa.filter(function (f) { return fState(f) !== 'done'; });
+    if (open.length) h += '<h2 style="font-size:17px">ملاحظات التدقيق المفتوحة</h2><div class="tblw"><table><thead><tr><th>الملاحظة</th><th>الحالة</th><th>المسؤول</th><th>الموعد</th></tr></thead><tbody>' + open.map(function (f) { var o = S.find[f.id] || {}; return '<tr><td>' + esc(f.t) + '</td><td>' + (fState(f) === 'prog' ? 'جارٍ العمل' : 'مفتوحة') + '</td><td>' + esc(o.owner || '') + '</td><td class="num">' + esc(fmtDate(o.due) || '') + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    if (ex.length) h += '<h2 style="font-size:17px">ينتهي خلال 30 يومًا</h2><div class="tblw"><table><tbody>' + ex.map(function (x) { return '<tr><td>' + esc(x.name) + '</td><td>' + esc(x.d || '') + '</td><td class="num">' + esc(fmtDate(x.date)) + '</td><td class="num">' + (x.days < 0 ? 'منتهٍ' : x.days + ' يوم') + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    if (un.length) h += '<h2 style="font-size:17px">مشتريات من مورد غير معتمد أو غير محدد</h2><div class="tblw"><table><tbody>' + un.map(function (p) { return '<tr><td><span class="code">' + esc(p.pr) + '</span></td><td>' + esc(p.item) + '</td><td>' + esc(supLabel(p) || 'غير محدد') + '</td><td class="num">' + money(p.value) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+    return h;
+  }
+
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-x]'); if (!b) return; var x = b.dataset.x, id = b.dataset.id;
+    if (x === 'libup') libUpload();
+    else if (x === 'supnew') supDialog(); else if (x === 'supedit') supDialog(id);
+    else if (x === 'supsave') { var n = ($('sp-n').value || '').trim(); if (!n) { $('sp-m').textContent = 'اكتب اسم المورد.'; return; } S.cap.db.doc('suppliers/' + id).set({ name: n, scope: $('sp-s').value.trim(), cls: $('sp-c').value, status: $('sp-t').value, valid: $('sp-v').value, alt: $('sp-a').value.trim(), at: new Date().toISOString() }).then(function () { closeDlg(); toast('حُفظ المورد.'); }).catch(function () { $('sp-m').textContent = 'تعذر الحفظ.'; }); }
+    else if (x === 'purnew') purDialog(); else if (x === 'puredit') purDialog(id); else if (x === 'pursave') purSave(id);
+    else if (x === 'purimp') purImportDialog(); else if (x === 'purimpgo') purImport();
+    else if (x === 'purlog') purLog(); else if (x === 'purpr') purDoc(id, false); else if (x === 'purpo') purDoc(id, true);
+    else if (x === 'bkgo') bulkGo();
+    else if (x === 'print') window.print();
+    else if (x === 'vok') { var v = (S.vers || []).filter(function (y) { return y.id === id; })[0]; if (!v) return; var o = {}; for (var k in v) if (k !== 'id') o[k] = v[k]; o.st = 'approved'; o.approvedAt = new Date().toISOString(); o.approvedBy = meName(); S.cap.db.doc('versions/' + id).set(o).then(function () { toast('اعتُمد الإصدار وأصبح الإصدار الحالي.'); }).catch(function () { toast('تعذر الاعتماد.'); }); }
+  });
+  document.addEventListener('change', function (ev) {
+    var t = ev.target, c = t.dataset && t.dataset.chg;
+    if (c === 'pm') { S.pm = t.value; render(); } else if (c === 'rm') { S.rm = t.value; render(); } else if (c === 'bkfiles') bulkPick(t.files);
+  });
 
   load().then(function () { render(); initCaps(); }).catch(function () { view.innerHTML = '<p class="empty">تعذر تحميل بيانات النظام. أعد فتح الصفحة.</p>'; });
 })();

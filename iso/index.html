@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="icon-48.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#b8902f">
 <title>نظام وثائق ISO 9001 عصر الدهب</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Alyamama:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
@@ -145,6 +149,18 @@ td:last-child .acts{flex-wrap:nowrap}
 .fbox:focus{outline:2px solid var(--accent)}
 [aria-pressed="true"].btn{background:var(--accent-soft);border-color:var(--accent)}
 @media print{.rail,.noprint,.menu-btn,.toast,.modal{display:none!important}.app{display:block;height:auto}.main{overflow:visible}body{background:#fff;color:#000}.tblw{overflow:visible;border:0}table{min-width:0}th{position:static}}
+.cyc{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column}
+.cyc li{display:flex;gap:12px;align-items:flex-start;position:relative;padding-bottom:16px}
+.cyc li:not(:last-child)::before{content:"";position:absolute;inset-inline-start:21px;top:44px;bottom:0;width:2px;background:var(--line)}
+.cyc li.ok:not(:last-child)::before{background:var(--good)}
+.cyc .cn{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:var(--surface);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.cyc li.ok .cn{background:var(--good);border-color:var(--good);color:#fff;font-size:18px}
+.cyc .cb{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.cyc .cf{display:flex;flex-wrap:wrap;gap:6px}.cyc a.pill{text-decoration:none}
+.cyc details summary{cursor:pointer;color:var(--muted);font-size:13px}.cyc details p{margin:6px 0 0;line-height:1.9}
+.cyc .ca{flex:none;align-self:center}
+@media(max-width:640px){.cyc li{flex-wrap:wrap}.cyc .ca{margin-inline-start:56px}}
+.dic{vertical-align:-4px;margin-inline-end:6px;flex:none}
 .toast{position:fixed;bottom:18px;inset-inline-start:18px;background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:9px;z-index:80;max-width:min(440px,calc(100% - 36px));display:none}
 .toast.on{display:block}
 .menu-btn{display:none}

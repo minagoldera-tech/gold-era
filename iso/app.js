@@ -578,7 +578,7 @@
     var ex = expItems().filter(function (x) { return x.days <= 30; }).length;
     $('nav').innerHTML = a('home', 'الرئيسية') + '<h4>الأقسام</h4>' + DEPTS.map(function (d) { return a(d.h, d.k, S.docs.filter(function (x) { return x.d === d.k; }).length); }).join('') +
       '<h4>للعرض على المراجع</h4>' + a('evidence', 'قائمة الأدلة') + a('trace', 'بحث الأرشيف') + a('iso', 'بنود ISO 9001') + a('expiry', 'تواريخ الانتهاء', ex || null) +
-      (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + (S.cap.canEdit ? a('access', 'المسؤولون') : '')) +
+      (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + (S.cap.canEdit ? a('access', 'المستخدمون') : '')) +
       '<button class="btn" data-act="auditor" style="margin:14px 6px 6px;justify-content:center" aria-pressed="' + S.auditor + '">' + (S.auditor ? 'إيقاف وضع المراجع' : 'تشغيل وضع المراجع') + '</button>';
   }
   var lastRoute = '';
@@ -588,7 +588,7 @@
     if (act && act.dataset && act.dataset.chg && act.tagName !== 'SELECT' && act.type !== 'checkbox') { render._pending = true; return; }
     var r = route(), d = DEPTS.filter(function (x) { return x.h === r; })[0], dr = /^doc-/.test(r) ? S.byId[r.slice(4)] : null;
     var fid = act && /^(q|dq|tq|uq|aq|docq)$/.test(act.id || '') ? act.id : '', pos = fid ? act.selectionStart : 0, keep = {};
-    ['ex-n', 'ex-o', 'ex-t', 'uq'].forEach(function (i) { if ($(i)) keep[i] = $(i).value; });
+    ['ex-n', 'ex-o', 'ex-t', 'uq', 'nu-u', 'nu-n', 'nu-p'].forEach(function (i) { if ($(i)) keep[i] = $(i).value; });
     var hits = $('uhits') ? $('uhits').innerHTML : '';
     var open = {}; Array.prototype.forEach.call(view.querySelectorAll('details.sec'), function (el) { var t = el.querySelector('summary .t'); if (t) open[t.textContent] = el.open; });
     var st = $('main').scrollTop;
@@ -726,19 +726,28 @@
     return '<div class="row"><div><div class="ttl">' + esc(title(r)) + '</div><div class="sub">' + sub + '</div></div><div class="acts">' + a + '</div></div>';
   }
   function vAccess() {
-    if (!canAdmin()) return head('المسؤولون', '') + '<p class="empty">هذه الصفحة للمسؤولين فقط.</p>';
-    var em = (window.GEM_FB && window.GEM_FB.admins) || [];
-    return head('المسؤولون', 'المسؤول يحذف من الأرشيف ويضيف مسؤولين. كل من له حساب دخول يرفع ويسجّل.') +
-      '<div class="note">حسابات الدخول نفسها تُنشأ من لوحة Firebase: Authentication ثم Users ثم Add user.</div>' +
-      '<div class="tblw"><table><thead><tr><th>بريد المسؤول</th><th></th></tr></thead><tbody>' + em.map(function (e) { return '<tr><td class="ltr">' + esc(e) + '</td><td>' + (em.length > 1 ? '<button class="btn danger" data-adm="del" data-e="' + esc(e) + '">إزالة</button>' : '') + '</td></tr>'; }).join('') + '</tbody></table></div>' +
-      '<div class="find l"><div class="track"><label style="flex:1;min-width:220px">بريد مسؤول جديد<input class="mini" id="adm-e" type="email" dir="ltr"></label><button class="btn pri" data-adm="add" style="align-self:flex-end">إضافة</button></div></div>';
+    if (!canAdmin()) return head('المستخدمون', '') + '<p class="empty">هذه الصفحة للمسؤولين فقط.</p>';
+    var us = ((window.GEM_FB && window.GEM_FB.users) || []).slice().sort(function (p, q) { return String(p.username).localeCompare(String(q.username)); });
+    var h = head('المستخدمون', 'أضف مستخدمين باسم مستخدم وكلمة مرور، بدون بريد إلكتروني.');
+    h += '<div class="find l"><h3>إضافة مستخدم</h3><div class="track"><label>اسم المستخدم (إنجليزي)<input class="mini" id="nu-u" type="text" dir="ltr" maxlength="30" placeholder="ahmed"></label><label style="flex:1;min-width:160px">الاسم<input class="mini" id="nu-n" type="text" maxlength="60" placeholder="أحمد جمال"></label><label>كلمة المرور<input class="mini" id="nu-p" type="text" dir="ltr" maxlength="40" placeholder="6 حروف على الأقل"></label><label>الصلاحية<select class="mini" id="nu-r"><option value="user">مستخدم</option><option value="admin">مسؤول</option></select></label><button class="btn pri" data-adm="uadd" style="align-self:flex-end">إضافة</button></div></div>';
+    h += '<div class="tblw"><table><thead><tr><th>اسم المستخدم</th><th>الاسم</th><th>الصلاحية</th><th>الحالة</th><th></th></tr></thead><tbody>' + (us.map(function (u) {
+      return '<tr><td class="ltr">' + esc(u.username) + '</td><td>' + esc(u.name || '') + '</td><td>' + (u.role === 'admin' ? 'مسؤول' : 'مستخدم') + '</td><td><span class="pill ' + (u.active ? 'good' : 'bad') + '">' + (u.active ? 'مفعّل' : 'موقوف') + '</span></td><td><div class="acts"><button class="btn" data-adm="urole" data-u="' + esc(u.uid) + '" data-v="' + (u.role === 'admin' ? 'user' : 'admin') + '">' + (u.role === 'admin' ? 'اجعله مستخدمًا' : 'اجعله مسؤولًا') + '</button><button class="btn ' + (u.active ? 'danger' : '') + '" data-adm="uact" data-u="' + esc(u.uid) + '" data-v="' + (u.active ? '0' : '1') + '">' + (u.active ? 'إيقاف' : 'تفعيل') + '</button></div></td></tr>';
+    }).join('') || '<tr><td colspan="5">لا يوجد مستخدمون بعد. أضف أول مستخدم من النموذج أعلاه.</td></tr>') + '</tbody></table></div>';
+    h += '<div class="note">المستخدم يدخل باسم المستخدم وكلمة المرور، ويغيّر كلمة مروره من «تغيير كلمة المرور» تحت اسم الشركة. إذا نسيها أوقف حسابه وأضف له اسم مستخدم جديدًا. «مسؤول» يحذف من الأرشيف ويدير المستخدمين.</div>';
+    return h;
   }
   document.addEventListener('click', function (ev) {
-    var b = ev.target.closest('[data-adm]'); if (!b || !window.GEM_FB) return;
-    var em = (window.GEM_FB.admins || []).slice();
-    if (b.dataset.adm === 'add') { var v = ($('adm-e').value || '').trim().toLowerCase(); if (!/^\S+@\S+\.\S+$/.test(v)) { toast('اكتب بريدًا صحيحًا.'); return; } if (em.indexOf(v) < 0) em.push(v); }
-    else em = em.filter(function (e) { return e !== b.dataset.e; });
-    window.GEM_FB.setAdmins(em).then(function () { toast('تم الحفظ.'); render(); }).catch(function () { toast('تعذر الحفظ.'); });
+    var b = ev.target.closest('[data-adm]'), FBX = window.GEM_FB; if (!b || !FBX) return;
+    if (b.dataset.adm === 'uadd') {
+      var u = ($('nu-u').value || '').trim().toLowerCase(), n = ($('nu-n').value || '').trim(), p = $('nu-p').value || '';
+      if (!/^[a-z0-9._-]{3,30}$/.test(u)) { toast('اسم المستخدم: حروف إنجليزية وأرقام فقط، 3 حروف على الأقل.'); return; }
+      if (!n) { toast('اكتب اسم الموظف.'); return; }
+      if (p.length < 6) { toast('كلمة المرور 6 حروف على الأقل.'); return; }
+      b.disabled = true;
+      FBX.addUser(u, n, p, $('nu-r').value).then(function () { toast('أُضيف المستخدم ' + u + '. سلّمه اسم المستخدم وكلمة المرور.', 7000); $('nu-u').value = ''; $('nu-n').value = ''; $('nu-p').value = ''; render(); })
+        .catch(function (e) { b.disabled = false; toast(/already-in-use/.test(e && e.code || '') ? 'اسم المستخدم مستخدم من قبل. اختر اسمًا آخر.' : /weak-password/.test(e && e.code || '') ? 'كلمة المرور ضعيفة.' : 'تعذرت الإضافة. تأكد من نشر القواعد الجديدة ومن الاتصال.', 7000); });
+    } else if (b.dataset.adm === 'urole') FBX.setUser(b.dataset.u, { role: b.dataset.v }).catch(function () { toast('تعذر الحفظ.'); });
+    else if (b.dataset.adm === 'uact') FBX.setUser(b.dataset.u, { active: b.dataset.v === '1' }).catch(function () { toast('تعذر الحفظ.'); });
   });
   window.addEventListener('gem-admins', function () { if (S.cap.user) Promise.resolve(S.cap.user.canEdit()).then(function (v) { S.cap.canEdit = !!v; render(); }); });
 

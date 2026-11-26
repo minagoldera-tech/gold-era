@@ -576,7 +576,7 @@
   function renderNav() {
     var r = route(), a = function (h, t, n, ic) { return '<a href="#' + h + '"' + (r === h ? ' aria-current="page"' : '') + '><span>' + (ic || '') + esc(t) + '</span>' + (n != null ? '<small class="num">' + n + '</small>' : '') + '</a>'; };
     var ex = expItems().filter(function (x) { return x.days <= 30; }).length;
-    $('nav').innerHTML = a('home', 'الرئيسية') + a('search', 'بحث شامل') + '<h4>الأقسام</h4>' + DEPTS.filter(function (d) { return deptAllowed(d.k); }).map(function (d) { return a(d.h, dName(d.k), S.docs.filter(function (x) { return x.d === d.k; }).length, dIcon(d.k, 18)); }).join('') +
+    $('nav').innerHTML = '<div style="font-size:11px;color:var(--muted);padding:0 12px 6px" class="num">الإصدار 9</div>' + a('home', 'الرئيسية') + a('search', 'بحث شامل') + '<h4>الأقسام</h4>' + DEPTS.filter(function (d) { return deptAllowed(d.k); }).map(function (d) { return a(d.h, dName(d.k), S.docs.filter(function (x) { return x.d === d.k; }).length, dIcon(d.k, 18)); }).join('') +
       '<h4>للعرض على المراجع</h4>' + a('evidence', 'قائمة الأدلة') + a('trace', 'بحث الأرشيف') + a('iso', 'بنود ISO 9001') + a('expiry', 'تواريخ الانتهاء', ex || null) +
       '<h4>التشغيل</h4>' + (S.auditor ? '' : a('mine', 'شغلي') + a('m', 'شاشة الصالة') + a('notes', 'الإشعارات', unread() || null)) + (S.auditor ? '' : a('alerts', 'التنبيهات', alertData().total || null)) + a('orders', 'أوامر الإنتاج', S.ord.filter(function (o) { return !o.closed; }).length || null) + a('stock', 'الخزينة والمخزون') + a('cust', 'العملاء: شكاوى ورضا', S.x.complaints.filter(function (c) { return c.st !== 'مغلقة'; }).length || null) + a('batch', 'ملف التشغيلة') + a('ncr', 'عدم المطابقة', S.ncr.filter(function (n) { return n.st !== 'مغلقة'; }).length || null) + a('equip', 'المعدات والمعايرة', equipDue().length || null) + a('training', 'مصفوفة التدريب') + a('kpi', 'مؤشرات الأداء') + a('cycles', 'خطوات الإجراءات') + a('purchases', 'المشتريات') + a('suppliers', 'سجل الموردين') + (S.auditor ? '' : a('bulk', 'رفع بيانات')) + (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + a('audits', 'التدقيق الداخلي') + a('mr', 'مراجعة الإدارة') + a('risks', 'المخاطر والفرص') + a('report', 'التقرير الشهري') + a('log', 'سجل النشاط') + (S.cap.canEdit ? a('access', 'المستخدمون') + a('library', 'مكتبة الأوراق') : '')) +
       '<button class="btn" data-act="auditor" style="margin:14px 6px 6px;justify-content:center" aria-pressed="' + S.auditor + '">' + (S.auditor ? 'إيقاف وضع المراجع' : 'تشغيل وضع المراجع') + '</button>';
@@ -792,6 +792,8 @@
       toast(mode === 'new' ? 'يفتح ' + OFFICE[r.e] + ' نسخة جديدة من النموذج. املأها واحفظها ثم ارفعها بزر «أرشفة».' : mode === 'edit' ? 'يفتح الملف في ' + OFFICE[r.e] + ' للتعديل. بعد الحفظ ارفعه من «تحديث الملف» ليصل لباقي الأجهزة.' : 'يفتح الملف في ' + OFFICE[r.e] + '.', 7000);
       return;
     }
+    if (mode === 'new' && r.e === 'docx' && isArchivable(r) && !S.auditor) { openFos(r); return; }
+    if (mode !== 'dl') { viewDoc(r); return; }
     toast('جارٍ تحميل الملف…', 20000);
     docBlob(r).then(function (b) {
       $('toast').classList.remove('on');
@@ -1326,7 +1328,7 @@
   function viewDoc(r) {
     var v = curVer(r.i);
     if (LOCAL && !v && !S.lib[r.i]) { openDoc(r, 'view'); return; }
-    showFile((r.c ? r.c + ' · ' : '') + title(r), function () { return docBlob(r); }, v ? (v.name.split('.').pop() || r.e) : r.e, !S.auditor && OFFICE[r.e] ? '<button class="btn" data-act="orig" data-id="' + r.i + '">تعديل في ' + OFFICE[r.e] + '</button>' : '');
+    showFile((r.c ? r.c + ' · ' : '') + title(r), function () { return docBlob(r); }, v ? (v.name.split('.').pop() || r.e) : r.e, !S.auditor && r.e === 'docx' && isArchivable(r) ? '<button class="btn" data-x="fos" data-id="' + r.i + '">ملء على الشاشة</button>' : '');
   }
   function recOpen(a) { showFile(a.name || 'ملف', function () { return recBlob(a); }, (String(a.name || '').split('.').pop() || '').toLowerCase() || (a.ct === 'application/pdf' ? 'pdf' : String(a.ct || '').split('/').pop())); }
   function recViewable() { return true; }

@@ -576,7 +576,7 @@
   function renderNav() {
     var r = route(), a = function (h, t, n, ic) { return '<a href="#' + h + '"' + (r === h ? ' aria-current="page"' : '') + '><span>' + (ic || '') + esc(t) + '</span>' + (n != null ? '<small class="num">' + n + '</small>' : '') + '</a>'; };
     var ex = expItems().filter(function (x) { return x.days <= 30; }).length;
-    $('nav').innerHTML = '<div style="font-size:11px;color:var(--muted);padding:0 12px 6px" class="num">الإصدار 9</div>' + a('home', 'الرئيسية') + a('search', 'بحث شامل') + '<h4>الأقسام</h4>' + DEPTS.filter(function (d) { return deptAllowed(d.k); }).map(function (d) { return a(d.h, dName(d.k), S.docs.filter(function (x) { return x.d === d.k; }).length, dIcon(d.k, 18)); }).join('') +
+    $('nav').innerHTML = '<div style="font-size:11px;color:var(--muted);padding:0 12px 6px" class="num">الإصدار 11</div>' + a('home', 'الرئيسية') + a('search', 'بحث شامل') + '<h4>الأقسام</h4>' + DEPTS.filter(function (d) { return deptAllowed(d.k); }).map(function (d) { return a(d.h, dName(d.k), S.docs.filter(function (x) { return x.d === d.k; }).length, dIcon(d.k, 18)); }).join('') +
       '<h4>للعرض على المراجع</h4>' + a('evidence', 'قائمة الأدلة') + a('trace', 'بحث الأرشيف') + a('iso', 'بنود ISO 9001') + a('expiry', 'تواريخ الانتهاء', ex || null) +
       '<h4>التشغيل</h4>' + (S.auditor ? '' : a('mine', 'شغلي') + a('m', 'شاشة الصالة') + a('notes', 'الإشعارات', unread() || null)) + (S.auditor ? '' : a('alerts', 'التنبيهات', alertData().total || null)) + a('orders', 'أوامر الإنتاج', S.ord.filter(function (o) { return !o.closed; }).length || null) + a('stock', 'الخزينة والمخزون') + a('cust', 'العملاء: شكاوى ورضا', S.x.complaints.filter(function (c) { return c.st !== 'مغلقة'; }).length || null) + a('batch', 'ملف التشغيلة') + a('ncr', 'عدم المطابقة', S.ncr.filter(function (n) { return n.st !== 'مغلقة'; }).length || null) + a('equip', 'المعدات والمعايرة', equipDue().length || null) + a('training', 'مصفوفة التدريب') + a('kpi', 'مؤشرات الأداء') + a('cycles', 'خطوات الإجراءات') + a('purchases', 'المشتريات') + a('suppliers', 'سجل الموردين') + (S.auditor ? '' : a('bulk', 'رفع بيانات')) + (S.auditor ? '' : '<h4>إدارة داخلية</h4>' + a('audit', 'ملاحظات التدقيق', allFindings().filter(function (f) { return fState(f) !== 'done'; }).length) + a('audits', 'التدقيق الداخلي') + a('mr', 'مراجعة الإدارة') + a('risks', 'المخاطر والفرص') + a('report', 'التقرير الشهري') + a('log', 'سجل النشاط') + (S.cap.canEdit ? a('access', 'المستخدمون') + a('library', 'مكتبة الأوراق') : '')) +
       '<button class="btn" data-act="auditor" style="margin:14px 6px 6px;justify-content:center" aria-pressed="' + S.auditor + '">' + (S.auditor ? 'إيقاف وضع المراجع' : 'تشغيل وضع المراجع') + '</button>';
@@ -1306,14 +1306,15 @@
   function dName(k) { var d = DEPTS.filter(function (x) { return x.k === k; })[0], o = d && S.names['dept-' + d.h]; return (o && o.t) || k; }
   var vCur = null;
   function vClose() { vCur = null; $('viewer').classList.remove('on'); $('vpages').innerHTML = ''; $('vpages').style.cssText = ''; }
-  function showFile(name, getBlob, ext, extra) {
-    var pg = $('vpages'), my = vCur = { name: name, blob: null, ext: ext };
+  function showFile(name, getBlob, ext, extra, opt) {
+    opt = opt || {};
+    var pg = $('vpages'), my = vCur = { name: name, blob: null, ext: ext, doc: opt.doc || null };
     $('vtitle').textContent = name; $('vinfo').textContent = ''; pg.style.cssText = ''; pg.innerHTML = '<p class="empty">جارٍ فتح الملف…</p>';
     $('vacts').innerHTML = (extra || '') + '<button class="btn" data-x="vdl">تنزيل</button><button class="btn" data-x="vprint">طباعة</button><button class="btn pri" data-x="vx">إغلاق</button>';
     $('viewer').classList.add('on');
     getBlob().then(function (b) {
       if (vCur !== my) return; my.blob = b; ext = String(ext || '').toLowerCase();
-      if (ext === 'docx' && window.docx) { pg.innerHTML = ''; return window.docx.renderAsync(b, pg, null, { inWrapper: true, breakPages: true, experimental: true, useBase64URL: true }); }
+      if (ext === 'docx' && window.docx) { pg.innerHTML = ''; return window.docx.renderAsync(b, pg, null, { inWrapper: true, breakPages: true, experimental: true, useBase64URL: true }).then(function () { var n = document.createElement('div'); n.className = 'note'; n.style.alignSelf = 'stretch'; n.textContent = 'هذه معاينة تقريبية على الشاشة وقد يختلف شكلها عن الملف. الملف نفسه لم يتغير، وشكله الدقيق يظهر عند فتحه في Word من زر «تنزيل».'; pg.insertBefore(n, pg.firstChild); }); }
       if ((ext === 'xlsx' || ext === 'xls' || ext === 'csv') && window.XLSX) {
         return b.arrayBuffer().then(function (buf) {
           var wb = XLSX.read(buf, { type: 'array' }), i = 0, draw = function () { pg.innerHTML = '<div class="tabs" style="align-self:stretch">' + wb.SheetNames.map(function (n, k) { return '<button role="tab" aria-selected="' + (k === i) + '" data-sh="' + k + '">' + esc(n) + '</button>'; }).join('') + '</div><div class="xls">' + XLSX.utils.sheet_to_html(wb.Sheets[wb.SheetNames[i]], { header: '', footer: '' }) + '</div>'; };
@@ -1325,10 +1326,18 @@
       pg.innerHTML = '<p class="empty">هذا النوع (' + esc(ext) + ') لا يُعرض داخل النظام. اضغط «تنزيل» لفتحه.</p>';
     }).catch(function () { if (vCur === my) pg.innerHTML = '<p class="empty">تعذر فتح الملف. إن كانت الأوراق لم تُرفع بعد، يرفعها المسؤول من «مكتبة الأوراق».</p>'; });
   }
+  var pdfPacks = {};
+  function pdfCopy(r) {
+    var k = (window.GEM_PDF || {})[r.i]; if (!k || !window.JSZip) return Promise.reject(new Error('nopdf'));
+    if (!pdfPacks[k]) pdfPacks[k] = fetch('pdf-' + ('0' + k).slice(-2) + '.zip').then(function (x) { if (!x.ok) throw 0; return x.arrayBuffer(); }).then(function (b) { return JSZip.loadAsync(b); }).catch(function (e) { delete pdfPacks[k]; throw e; });
+    return pdfPacks[k].then(function (z) { var f = z.file(r.i + '.pdf'); if (!f) throw 0; return f.async('blob'); });
+  }
   function viewDoc(r) {
-    var v = curVer(r.i);
-    if (LOCAL && !v && !S.lib[r.i]) { openDoc(r, 'view'); return; }
-    showFile((r.c ? r.c + ' · ' : '') + title(r), function () { return docBlob(r); }, v ? (v.name.split('.').pop() || r.e) : r.e, !S.auditor && r.e === 'docx' && isArchivable(r) ? '<button class="btn" data-x="fos" data-id="' + r.i + '">ملء على الشاشة</button>' : '');
+    var v = curVer(r.i), name = (r.c ? r.c + ' · ' : '') + title(r), extra = !S.auditor && r.e === 'docx' && isArchivable(r) ? '<button class="btn" data-x="fos" data-id="' + r.i + '">ملء على الشاشة</button>' : '';
+    if (v) { showFile(name, function () { return recBlob(v); }, (v.name.split('.').pop() || r.e), extra, { doc: r }); return; }
+    if ((window.GEM_PDF || {})[r.i] && !LOCAL) { showFile(name, function () { return pdfCopy(r).then(function (b) { vCur.ext = 'pdf'; return b; }); }, 'pdf', extra, { doc: r }); pdfCopy(r).catch(function () { if (vCur && vCur.doc === r) showFile(name, function () { return docBlob(r); }, r.e, extra, { doc: r }); }); return; }
+    if (LOCAL && !S.lib[r.i]) { openDoc(r, 'view'); return; }
+    showFile(name, function () { return docBlob(r); }, r.e, extra, { doc: r });
   }
   function recOpen(a) { showFile(a.name || 'ملف', function () { return recBlob(a); }, (String(a.name || '').split('.').pop() || '').toLowerCase() || (a.ct === 'application/pdf' ? 'pdf' : String(a.ct || '').split('/').pop())); }
   function recViewable() { return true; }
@@ -1336,7 +1345,9 @@
   document.addEventListener('click', function (ev) {
     var b = ev.target.closest('[data-x]'); if (!b) return; var x = b.dataset.x, id = b.dataset.id;
     if (x === 'vx') vClose();
+    else if (x === 'vdl' && vCur && vCur.doc) openDoc(vCur.doc, 'dl');
     else if (x === 'vdl' && vCur && vCur.blob) save(/\.[a-z0-9]{2,5}$/i.test(vCur.name) ? vCur.name : vCur.name + '.' + (vCur.ext || 'docx'), vCur.blob, 'نزل الملف.');
+    else if (x === 'vprint' && $('vpages').querySelector('iframe')) { try { $('vpages').querySelector('iframe').contentWindow.print(); } catch (e) { toast('اطبع من زر الطابعة داخل العرض.'); } }
     else if (x === 'vprint') { document.body.classList.add('pv'); window.print(); setTimeout(function () { document.body.classList.remove('pv'); }, 500); }
     else if (x === 'rn') { var r = S.byId[id]; if (r) renameDlg(id, title(r), r.t || r.n, 'الورقة'); }
     else if (x === 'rndept') { var d = DEPTS.filter(function (y) { return y.h === id; })[0]; if (d) renameDlg('dept-' + id, dName(d.k), d.k, 'القسم'); }
@@ -1651,13 +1662,13 @@
   var ARES = ['لم يُراجع', 'مطابق', 'ملاحظة', 'عدم مطابقة'];
   function vAudits() {
     var w = canWrite(), l = S.x.audits, cur = l.filter(function (a) { return a.id === S.au; })[0];
-    if (cur) return vAudit(cur);
+    if (cur) return vAuditOne(cur);
     var h = head('التدقيق الداخلي', 'قائمة فحص لكل بند من ISO 9001، وتسجيل النتيجة والدليل، وتحويل عدم المطابقة لإجراء تصحيحي (بند 9.2).', w ? '<button class="btn pri" data-x="aunew">تدقيق جديد</button>' : '');
     h += '<div class="note">النماذج الرسمية: ' + formPills(['GEM-QA-F-9.2-01', 'GEM-QA-F-9.2-02', 'GEM-QA-F-9.2-03']) + '</div>';
     if (!l.length) return h + '<p class="empty">لا يوجد تدقيق مسجل.</p>';
     return h + '<div class="tblw"><table><thead><tr><th>الرقم</th><th>التاريخ</th><th>النطاق</th><th>المدقق</th><th>مطابق</th><th>ملاحظة</th><th>عدم مطابقة</th><th>لم يُراجع</th><th></th></tr></thead><tbody>' + l.map(function (a) { var c = function (r) { return (a.items || []).filter(function (i) { return (i.res || ARES[0]) === r; }).length; }; return '<tr><td><span class="code">' + esc(a.no) + '</span>' + lockPill(a) + '</td><td class="num">' + esc(fmtDate(a.date)) + '</td><td>' + esc(a.scope || 'كل الأقسام') + '</td><td>' + esc(a.auditor) + '</td><td class="num">' + c(ARES[1]) + '</td><td class="num">' + c(ARES[2]) + '</td><td class="num">' + c(ARES[3]) + '</td><td class="num">' + c(ARES[0]) + '</td><td><div class="acts"><button class="btn pri" data-x="auopen" data-id="' + esc(a.id) + '">فتح</button>' + delBtn('audits', a, a.no) + '</div></td></tr>'; }).join('') + '</tbody></table></div>';
   }
-  function vAudit(a) {
+  function vAuditOne(a) {
     var w = canWrite() && !a.locked, items = a.items || [];
     var h = head('تدقيق <span class="code">' + esc(a.no) + '</span>' + lockPill(a), esc(fmtDate(a.date)) + ' · ' + esc(a.scope || 'كل الأقسام') + ' · المدقق: ' + esc(a.auditor) + ' · <a href="#audits" data-x="auback">رجوع</a>', '<button class="btn noprint" data-x="print">طباعة</button>' + (w ? '<button class="btn pri noprint" data-x="auclose" data-id="' + esc(a.id) + '">اعتماد وإقفال التدقيق</button>' : ''));
     h += '<div class="tblw"><table><thead><tr><th>البند</th><th>المطلوب التحقق منه</th><th>الإجراء</th><th>النتيجة</th><th>الدليل أو الملاحظة</th><th></th></tr></thead><tbody>' + items.map(function (it, i) { return '<tr><td class="num">' + esc(it.cl) + '</td><td>' + esc(it.q) + '</td><td>' + (it.p || []).map(function (c) { var r = S.byCode[c]; return r ? '<a href="#doc-' + r.i + '"><span class="code">' + esc(c) + '</span></a>' : ''; }).join(' ') + '</td><td>' + (w ? '<select class="mini" data-chg="aures" data-i="' + i + '">' + ARES.map(function (r) { return '<option' + ((it.res || ARES[0]) === r ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select>' : '<span class="pill ' + (it.res === ARES[1] ? 'good' : it.res === ARES[3] ? 'bad' : it.res === ARES[2] ? 'warn' : '') + '">' + esc(it.res || ARES[0]) + '</span>') + '</td><td>' + (w ? '<input class="mini" style="width:100%;min-width:180px" value="' + esc(it.ev || '') + '" data-chg="auev" data-i="' + i + '">' : esc(it.ev || '')) + '</td><td>' + (it.res === ARES[3] ? (it.ncr ? '<span class="code">' + esc(it.ncr) + '</span>' : (canWrite() ? '<button class="btn" data-x="auncr" data-id="' + i + '">حوّلها لعدم مطابقة</button>' : '')) : '') + '</td></tr>'; }).join('') + '</tbody></table></div>';

@@ -13,11 +13,13 @@
   function toEmail(v) { v = String(v || '').trim().toLowerCase(); return v.indexOf('@') >= 0 ? v : v + DOM; }
   var FB = window.GEM_FB = {
     admins: [], users: [], me: null,
-    addUser: function (username, name, pass, role) {
+    verify: function (pass) { var u = auth.currentUser; return u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email, pass)); },
+    ts: function (d) { return firebase.firestore.Timestamp.fromDate(new Date(d + 'T23:59:59')); },
+    addUser: function (username, name, pass, role, extra) {
       var sec = firebase.apps.filter(function (a) { return a.name === 'sec'; })[0] || firebase.initializeApp(cfg, 'sec');
       return sec.auth().createUserWithEmailAndPassword(toEmail(username), pass).then(function (c) {
         var uid = c.user.uid;
-        logw('users', 'add', uid, { name: username }); return fs.doc('users/' + uid).set({ username: String(username).trim().toLowerCase(), name: name, role: role, active: true, at: new Date().toISOString() }).then(function () { return sec.auth().signOut(); });
+        logw('users', 'add', uid, { name: username }); var ud = { username: String(username).trim().toLowerCase(), name: name, role: role, active: true, at: new Date().toISOString() }; for (var k in (extra || {})) ud[k] = extra[k]; return fs.doc('users/' + uid).set(ud).then(function () { return sec.auth().signOut(); });
       });
     },
     setUser: function (uid, patch) { logw('users', 'set', uid, patch); return fs.doc('users/' + uid).update(patch); },
@@ -49,6 +51,7 @@
     ref.get().then(function (d) { if (!d.exists) return ref.set({ emails: [String(u.email).toLowerCase()] }); }).catch(function () { }).then(function () { return Promise.all([ref.get(), fs.doc('users/' + u.uid).get().catch(function () { return null; })]); }).then(function (r) {
       var boot = r[0].exists && (r[0].data().emails || []).indexOf(String(u.email).toLowerCase()) >= 0, me = r[1] && r[1].exists ? r[1].data() : null;
       if (!boot && !(me && me.active === true)) { first = true; $('lg-s').textContent = 'هذا الحساب غير مفعّل. راجع مسؤول النظام.'; auth.signOut(); return; }
+      if (!boot && me.untilTs && me.untilTs.toMillis && me.untilTs.toMillis() < Date.now()) { first = true; $('lg-s').textContent = 'انتهت صلاحية هذا الحساب.'; auth.signOut(); return; }
       FB.admins = r[0].data().emails || []; FB.me = me; if (me && me.name) { who(me.name); FB.label = me.name; }
       ref.onSnapshot(function (d) { FB.admins = (d.exists && d.data().emails) || []; window.dispatchEvent(new Event('gem-admins')); }, function () { });
       fs.doc('users/' + u.uid).onSnapshot(function (d) { FB.me = d.exists ? d.data() : null; if (FB.me && FB.me.active === false && !boot) auth.signOut(); window.dispatchEvent(new Event('gem-admins')); }, function () { });
@@ -64,7 +67,7 @@
     });
   });
   function logw(coll, op, id, o) {
-    if (coll === 'log' || coll === 'lib' || coll === 'files') return; o = o || {};
+    if (coll === 'log' || coll === 'lib' || coll === 'files' || coll === 'notes') return; o = o || {};
     try { fs.collection('log').add({ at: new Date().toISOString(), by: FB.label || '', coll: coll, op: op, id: id || '', doc: o.doc || (coll === 'formcfg' ? id : ''), s: String(o.name || o.item || o.pr || o.note || o.freq || o.st || '').slice(0, 160) }).catch(function () { }); } catch (e) { }
   }
   function isAdmin() { var u = auth.currentUser; return !!u && (FB.admins.indexOf(String(u.email).toLowerCase()) >= 0 || !!(FB.me && FB.me.active === true && FB.me.role === 'admin')); }

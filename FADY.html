@@ -282,6 +282,20 @@ body {
 .tdd.open { display: flex; }
 .tdd .tab { padding: 10px 12px; }
 @media (max-width: 900px) { .tgl { display: none; } .tabs { padding: 6px 10px; gap: 6px; } .tab { padding: 8px 10px; } }
+/* ─── موبايل ─── */
+@media (max-width: 640px) {
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; height: auto; }
+  .tuser { flex-wrap: wrap; gap: 8px; } #TOP-Q { width: 110px !important; }
+  .tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .pg { padding: 12px; } .pgh { flex-direction: column; align-items: stretch; gap: 10px; } .pgh > div { flex-wrap: wrap; }
+  .tc { overflow-x: auto; -webkit-overflow-scrolling: touch; } .tc table { min-width: 560px; }
+  .fr { grid-template-columns: 1fr; } .mod { max-width: 100vw !important; width: 100vw; max-height: 100vh; border-radius: 0; }
+  .dest-grid { grid-template-columns: 1fr 1fr !important; } .flowbar { overflow-x: auto; }
+  #pg-dash > div[style*="grid-template-columns:1fr 1fr"], #pg-ovr > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+  .btn { min-height: 34px; }
+}
+#NET-BAR { position: fixed; bottom: 12px; left: 12px; z-index: 9000; display: none; align-items: center; color: #fff; font-size: 12px; font-weight: 700;
+  padding: 8px 14px; border-radius: 10px; box-shadow: 0 8px 24px #00000066; max-width: calc(100vw - 24px); }
 
 /* ─── CONTENT ────────────────────────────── */
 .cnt { flex: 1; overflow-y: auto; background: var(--bg); }
@@ -679,15 +693,20 @@ td.num, th.num { display: table-cell; text-align: right; }
     </div>
     <div class="tuser">
       <!-- Undo + Sync buttons -->
-      <div style="display:flex;gap:6px;align-items:center;margin-left:8px">
+      <div style="display:flex;gap:6px;align-items:center;margin-left:8px;flex-wrap:wrap">
+        <button id="INSTALL-BTN" onclick="installApp()" title="تثبيت النظام كتطبيق على هذا الجهاز"
+          style="display:none;background:#4DB87A20;border:1px solid var(--ok);border-radius:8px;padding:6px 10px;color:var(--ok);cursor:pointer;font-size:12px;font-weight:700;font-family:'Cairo',sans-serif;align-items:center;gap:4px">📲 تثبيت</button>
+        <button id="ALERT-BTN" onclick="openAlerts()" title="التنبيهات"
+          style="display:none;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--tx2);cursor:pointer;font-size:13px;align-items:center;gap:4px">
+          🔔 <span id="ALERT-CNT" style="font-size:10px;font-weight:800;border-radius:9px;padding:1px 6px;display:none">0</span></button>
         <button id="UNDO-BTN" onclick="doUndo()" title="تراجع عن آخر عملية"
           style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--muted);cursor:pointer;font-size:13px;transition:.2s;display:flex;align-items:center;gap:4px"
           onmouseover="this.style.borderColor='var(--warn)';this.style.color='var(--warn)'"
           onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--muted)'">
           ↩️ <span id="UNDO-COUNT" style="font-size:10px;background:#C8983030;color:var(--warn);border-radius:4px;padding:1px 5px;display:none">0</span>
         </button>
-        <input id="TOP-Q" placeholder="🔍 بحث..." title="بحث في كل الحركات (Enter)"
-          onkeydown="if(event.key==='Enter'&&this.value.trim()){document.getElementById('ARC-Q').value=this.value.trim();this.value='';showTab('arc');}"
+        <input id="TOP-Q" placeholder="🔍 بحث / باركود..." title="بحث في كل الحركات، أو امسح باركود الفاتورة (Enter)"
+          onkeydown="if(event.key==='Enter')topSearch(this)"
           style="width:150px;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--tx);font-family:'Cairo',sans-serif;font-size:12px">
         <button onclick="doSync()" title="مزامنة البيانات"
           style="background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--muted);cursor:pointer;font-size:13px;transition:.2s"
@@ -699,7 +718,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <button id="CAT-BTN" onclick="openCatalogEditor()" title="أوزان الأصناف وإضافة صنف"
           style="display:none;background:var(--s3);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--gold);cursor:pointer;font-size:12px;font-weight:700;font-family:'Cairo',sans-serif">⚖️ الأوزان</button>
         <span id="LIVE-DOT" title="مزامنة لحظية" style="width:9px;height:9px;border-radius:50%;background:#8B949E;display:inline-block;box-shadow:0 0 0 3px #3FB95022;align-self:center"></span>
-        <button id="RESET-BTN" onclick="confirmResetData()" title="تصفير كل البيانات"
+        <button id="RESET-BTN" onclick="confirmResetData()" title="تصفير البيانات (مع إبقاء الفواتير وترقيمها)"
           style="display:none;background:#E05C5018;border:1px solid #E05C5055;border-radius:8px;padding:6px 10px;color:var(--err);cursor:pointer;font-size:12px;font-weight:700;font-family:'Cairo',sans-serif;transition:.2s;align-items:center;gap:4px"
           onmouseover="this.style.background='var(--err)';this.style.color='#fff'"
           onmouseout="this.style.background='#E05C5018';this.style.color='var(--err)'">
@@ -740,10 +759,12 @@ td.num, th.num { display: table-cell; text-align: right; }
       <div class="tab tdd-btn" id="TDD-BTN" onclick="toggleTabMenu(event)"><span class="ti">☰</span><span id="TDD-LBL">المزيد</span><span class="car">▾</span></div>
     </div>
     <div class="tdd" id="TDD">
+      <div class="tab" onclick="showTab('rep')"><span class="ti">📑</span>التقارير</div>
       <div class="tab" onclick="showTab('arc')"><span class="ti">🗂</span>الأرشيف والبحث</div>
       <div class="tab" onclick="showTab('ops')"><span class="ti">↩️</span>سجل العمليات</div>
       <div class="tab" onclick="showTab('log')"><span class="ti">📋</span>سجل الحركات</div>
       <div class="tab" onclick="showTab('ref')"><span class="ti">🔍</span>المرجع</div>
+      <div class="tab" id="tab-trail" style="display:none" onclick="showTab('trail')"><span class="ti">🕵️</span>سجل التعديلات</div>
       <div class="tab" id="tab-users" style="display:none" onclick="showTab('users')"><span class="ti">👥</span>المستخدمون</div>
     </div>
   </nav>
@@ -768,6 +789,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <div class="farr">→</div>
         <div class="fstep" style="background:#27AE6030;color:#2ecc71;border:1px solid #2ecc71">✅ DONE</div>
       </div>
+      <div id="D-ALERTS"></div>
       <div id="D-GRAND"></div>
       <div id="D-STATS" class="sgrid"></div>
 
@@ -880,6 +902,7 @@ td.num, th.num { display: table-cell; text-align: right; }
               <option value="رد سلفة">رد سلفة</option>
               <option value="خسية">خسية</option>
               <option value="تسوية استوك">تسوية استوك</option>
+              <option value="رصيد افتتاحي">رصيد افتتاحي</option>
             </select>
           </div>
         </div>
@@ -966,6 +989,7 @@ td.num, th.num { display: table-cell; text-align: right; }
               <option value="منصرف">منصرف</option>
               <option value="عباسية">العباسية</option>
               <option value="خسية">خسية</option>
+              <option value="رصيد افتتاحي">رصيد افتتاحي</option>
             </select>
           </div>
         </div>
@@ -1170,7 +1194,7 @@ td.num, th.num { display: table-cell; text-align: right; }
         <input class="si" id="OPS-Q" placeholder="🔍 بحث في العمليات..." oninput="renderOps()" style="width:220px">
         <input type="date" class="si" id="OPS-D" onchange="renderOps()" style="width:150px">
         <select class="si" id="OPS-ST" onchange="renderOps()" style="width:140px"><option value="">كل العمليات</option><option value="0">فعّالة</option><option value="1">تم التراجع عنها</option></select>
-        <button class="btn bs bsm" onclick="loadOps(true)">🔄</button>
+        <button class="btn bs bsm" onclick="loadOpsPeriod(true)">🔄</button>
       </div>
       <div class="tc"><div id="OPS-TABLE"></div></div>
     </div>
@@ -1214,6 +1238,7 @@ td.num, th.num { display: table-cell; text-align: right; }
               <option value="abb">🏪 العباسية</option>
               <option value="docs">🖨️ المستندات المطبوعة</option>
             </select>
+            <select class="si" id="ARC-ARCH" onchange="loadArchive(true)" style="width:190px;display:none" title="عرض سنة مؤرشفة"><option value="">البيانات الحالية</option></select>
             <select class="si" id="ARC-TYPE" onchange="renderArchive()" style="width:130px"><option value="">كل الأنواع</option></select>
             <select class="si" id="ARC-KT" onchange="renderArchive()" style="width:120px"><option value="">كل العيارات</option></select>
             <input type="date" class="si" id="ARC-D1" onchange="renderArchive()" style="width:140px" title="من تاريخ">
@@ -1265,11 +1290,53 @@ td.num, th.num { display: table-cell; text-align: right; }
       <div id="REF-OUT"></div>
     </div>
 
+    <!-- REPORTS -->
+    <div id="pg-rep" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">📑 التقارير</div><div class="pgs">اختر التقرير والفترة — ثم صدّره Excel أو اطبعه / احفظه PDF</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bp bsm" onclick="repExcel()">⬇️ Excel</button>
+          <button class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="printReport(repCur)">🖨️ طباعة / PDF</button>
+          <button class="btn bs bsm" onclick="repExcelAll()" title="ملف Excel واحد فيه ورقة لكل تقرير">⬇️ كل التقارير في ملف واحد</button>
+        </div>
+      </div>
+      <div class="tc" style="margin-bottom:14px;overflow:visible"><div style="padding:14px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select class="si" id="REP-KIND" onchange="loadRep()" style="min-width:260px;font-weight:700"></select>
+        <input type="date" class="si" id="REP-D1" onchange="loadRep()" style="width:145px" title="من تاريخ">
+        <input type="date" class="si" id="REP-D2" onchange="loadRep()" style="width:145px" title="إلى تاريخ">
+        <button class="btn bxs bs" onclick="repPreset('m')">هذا الشهر</button>
+        <button class="btn bxs bs" onclick="repPreset('pm')">الشهر الماضي</button>
+        <button class="btn bxs bs" onclick="repPreset('y')">هذه السنة</button>
+        <button class="btn bxs bs" onclick="repPreset('all')">كل الفترات</button>
+      </div></div>
+      <div class="tc"><div id="REP-OUT"></div></div>
+    </div>
+
+    <!-- AUDIT TRAIL -->
+    <div id="pg-trail" class="pg">
+      <div class="pgh">
+        <div><div class="pgt">🕵️ سجل التعديلات — من عدّل ماذا</div><div class="pgs">كل إضافة وتعديل وحذف باسم المستخدم والوقت والقيمة قبل وبعد — اضغط أي صف للتفاصيل</div></div>
+        <button class="btn bs bsm" onclick="loadTrail()">🔄 تحديث</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <input type="date" class="si" id="TRL-D1" onchange="loadTrail()" style="width:145px" title="من تاريخ">
+        <input type="date" class="si" id="TRL-D2" onchange="loadTrail()" style="width:145px" title="إلى تاريخ">
+        <select class="si" id="TRL-U" onchange="renderTrail()" style="width:160px"><option value="">كل المستخدمين</option></select>
+        <select class="si" id="TRL-S" onchange="renderTrail()" style="width:170px"><option value="">كل الأقسام</option></select>
+        <select class="si" id="TRL-A" onchange="renderTrail()" style="width:130px"><option value="">كل الأنواع</option><option value="create">➕ إضافة</option><option value="update">✏️ تعديل</option><option value="delete">🗑 حذف</option><option value="login">🔑 دخول</option></select>
+        <input class="si" id="TRL-Q" placeholder="🔍 بحث..." oninput="renderTrail()" style="width:180px">
+      </div>
+      <div id="TRL-SUM" class="sgrid"></div>
+      <div class="tc"><div id="TRL-TABLE"></div></div>
+    </div>
+
     <!-- USERS -->
     <div id="pg-users" class="pg">
       <div class="pgh">
         <div><div class="pgt">👥 المستخدمون</div></div>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn bs bsm" onclick="downloadBackup()">💾 نسخة احتياطية</button>
+          <button class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="openArchiveTool()">🗄 أرشفة سنوية</button>
           <button class="btn bd2 bsm" onclick="confirmResetData()">🗑 تصفير البيانات</button>
           <button class="btn bp bsm" onclick="openAddUser()">➕ مستخدم جديد</button>
         </div>
@@ -1577,7 +1644,7 @@ td.num, th.num { display: table-cell; text-align: right; }
 
 <!-- User Modal -->
 <div id="MOD-USER" class="mov">
-  <div class="mod" style="max-width:420px">
+  <div class="mod" style="max-width:540px">
     <div class="mh"><div class="mt" id="UM-T">مستخدم جديد</div><button class="mc" onclick="cm('MOD-USER')">✕</button></div>
     <div class="mb">
       <input type="hidden" id="UM-ID">
@@ -1585,6 +1652,7 @@ td.num, th.num { display: table-cell; text-align: right; }
       <div class="fg" style="margin:0"><label>اسم المستخدم *</label><input type="text" id="UM-UN"></div></div>
       <div class="fr" style="margin-top:12px"><div class="fg" style="margin:0"><label>كلمة المرور</label><input type="password" id="UM-PW"></div>
       <div class="fg" style="margin:0"><label>الدور</label><select id="UM-ROLE"><option value="admin">مدير</option><option value="supervisor">مشرف</option><option value="worker">موظف</option></select></div></div>
+      <div id="UM-PERMS"></div>
     </div>
     <div class="mf"><button class="btn bs" onclick="cm('MOD-USER')">إلغاء</button><button class="btn bp" onclick="saveUser()">💾 حفظ</button></div>
   </div>
@@ -1766,13 +1834,25 @@ td.num, th.num { display: table-cell; text-align: right; }
 </div>
 
 <div id="MOD-RESET" class="mov">
-  <div class="mod" style="max-width:420px;border-top-color:var(--err)">
-    <div class="mh"><div class="mt" style="color:var(--err)">🗑 تصفير كل البيانات</div><button class="mc" onclick="cm('MOD-RESET')">✕</button></div>
+  <div class="mod" style="max-width:460px;border-top-color:var(--err)">
+    <div class="mh"><div class="mt" style="color:var(--err)">🗑 تصفير البيانات</div><button class="mc" onclick="cm('MOD-RESET')">✕</button></div>
     <div class="mb">
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+        <label id="RESET-L-keep" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;border:1.5px solid var(--ok);border-radius:10px;padding:10px 12px;background:#4DB87A14">
+          <input type="radio" name="RESET-MODE" value="keep" checked onchange="updResetMode()" style="margin-top:4px">
+          <span><b style="font-size:13px;color:var(--ok)">تصفير كل شيء ما عدا الفواتير وترقيمها</b>
+            <span style="display:block;font-size:11px;color:var(--muted);line-height:1.7">تبقى الفواتير المطبوعة في الأرشيف ويُكمل الترقيم من آخر رقم (G.E.F).</span></span>
+        </label>
+        <label id="RESET-L-all" style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;border:1.5px solid var(--bd);border-radius:10px;padding:10px 12px">
+          <input type="radio" name="RESET-MODE" value="all" onchange="updResetMode()" style="margin-top:4px">
+          <span><b style="font-size:13px;color:var(--err)">تصفير شامل</b>
+            <span style="display:block;font-size:11px;color:var(--muted);line-height:1.7">يُحذف كل شيء حتى الفواتير، ويبدأ الترقيم من 00001.</span></span>
+        </label>
+      </div>
       <div style="background:#E05C5015;border:1px solid #E05C5040;border-radius:8px;padding:12px 14px;font-size:12.5px;color:#E07060;line-height:1.8;margin-bottom:14px">
         ⚠️ سيُحذف <b>نهائياً</b> ولا يمكن التراجع:<br>
-        الخزنة الرئيسية · الخزنة الفرعية · الأقسام · الاستوك · الفضة · العباسية · السجل
-        <div style="color:var(--muted);margin-top:6px">المستخدمون وكلمات المرور سيبقون كما هم.</div>
+        <span id="RESET-WHAT"></span>
+        <div style="color:var(--muted);margin-top:6px">المستخدمون وكلمات المرور وأوزان الأصناف سيبقون كما هم.</div>
       </div>
       <div id="RESET-COUNTS" style="font-size:12px;color:var(--tx2);margin-bottom:14px"></div>
       <div class="fg" style="margin:0">
@@ -1910,11 +1990,12 @@ td.num, th.num { display: table-cell; text-align: right; }
       </div>
       <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button type="button" class="btn bs bsm" onclick="drAddRow()">➕ إضافة سطر آخر</button>
-        <button type="button" class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="document.getElementById('VCH-FILE').click()">📷 قراءة من صورة سند</button>
-        <button type="button" class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="pasteVoucherBtn()">📋 لصق صورة</button>
-        <input type="file" id="VCH-FILE" accept="image/*" style="display:none" onchange="importVoucher(this.files[0]);this.value=''">
+        <button type="button" class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="document.getElementById('VCH-FILE').click()">📷 قراءة سند (صورة / PDF / Excel)</button>
+        <button type="button" class="btn bsm" style="background:#5A9FE820;color:var(--inf);border:1px solid var(--inf)" onclick="pasteVoucherBtn()">📋 لصق صورة أو جدول</button>
+        <input type="file" id="VCH-FILE" accept="image/*,application/pdf,.pdf,.xlsx,.xls,.csv,.txt" style="display:none" onchange="importVoucher(this.files[0]);this.value=''">
         <span id="VCH-ST" style="font-size:11.5px;color:var(--muted)">💡 أو اضغط Ctrl+V للصق صورة السند مباشرة</span>
       </div>
+      <div id="VCH-REV" style="display:none;margin-top:10px;border:1px solid var(--inf)55;border-radius:10px;padding:10px 12px;background:#5A9FE80D"></div>
       <div class="fg" style="margin-top:14px"><label>طريقة الإضافة *</label>
         <div class="dest-grid" style="grid-template-columns:1fr 1fr 1fr" id="DADD-MODE">
           <button type="button" class="dest-btn" data-m="sub" onclick="setDrMode('sub',this)">💼 عبر الخزنة الفرعية<div style="font-size:9.5px;opacity:.75;font-weight:500">وارد للفرعية ← منصرف للقسم</div></button>
@@ -1978,6 +2059,45 @@ td.num, th.num { display: table-cell; text-align: right; }
   </div>
 </div>
 
+<div id="MOD-ALERTS" class="mov">
+  <div class="mod" style="max-width:640px">
+    <div class="mh"><div class="mt">🔔 التنبيهات</div><button class="mc" onclick="cm('MOD-ALERTS')">✕</button></div>
+    <div class="mb">
+      <div id="ALERT-LIST" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow:auto"></div>
+      <details id="ALERT-CFG" style="margin-top:14px;border:1px solid var(--bd);border-radius:10px;padding:10px 12px">
+        <summary style="cursor:pointer;font-weight:800;font-size:12.5px;color:var(--gold)">⚙️ إعدادات التنبيهات</summary>
+        <div style="font-size:11px;color:var(--muted);margin:8px 0">اكتب 0 لإيقاف أي تنبيه. الإعدادات مشتركة لكل الأجهزة.</div>
+        <div class="fg" style="margin:0 0 10px;max-width:260px"><label>📋 تنبيه السلفة التي لم تُرد بعد (يوم)</label><input type="number" id="AL-LOAN" min="0" step="1" style="font-family:monospace"></div>
+        <div style="font-weight:700;font-size:12px;margin-bottom:6px">⏳ الوزنة الواقفة في القسم أكثر من:</div>
+        <div id="AL-STALE" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px"></div>
+        <div style="font-weight:700;font-size:12px;margin-bottom:6px">📦 الحد الأدنى للاستوك (بالقطعة) — اترك الخانة فارغة لعدم التنبيه:</div>
+        <div id="AL-MIN" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;max-height:200px;overflow:auto"></div>
+        <button class="btn bp bsm" style="margin-top:12px" onclick="saveAlertCfg()">💾 حفظ الإعدادات</button>
+      </details>
+    </div>
+  </div>
+</div>
+
+<div id="MOD-ARCH" class="mov">
+  <div class="mod" style="max-width:520px;border-top-color:var(--inf)">
+    <div class="mh"><div class="mt" style="color:var(--inf)">🗄 أرشفة سنوية</div><button class="mc" onclick="cm('MOD-ARCH')">✕</button></div>
+    <div class="mb">
+      <div style="background:#5A9FE814;border:1px solid #5A9FE844;border-radius:8px;padding:10px 12px;font-size:12px;color:var(--tx2);line-height:1.8;margin-bottom:12px">
+        تُنقل الحركات القديمة إلى الأرشيف ليبقى النظام سريعاً. <b>الأرصدة لا تتغير</b>، والأقسام والاستوك والفواتير والسلف المفتوحة تبقى كما هي.
+        السجلات المؤرشفة تظل متاحة في «الأرشيف والبحث» وفي «التقارير». تُنزَّل نسخة احتياطية تلقائياً قبل البدء.
+      </div>
+      <div class="fg" style="margin:0 0 12px"><label>أرشفة كل ما قبل تاريخ *</label><input type="date" id="ARCH-CUT" onchange="archPreview()"></div>
+      <div id="ARCH-PREV" style="font-size:12px;color:var(--tx2);margin-bottom:14px"></div>
+      <div class="fg" style="margin:0"><label>للتأكيد اكتب كلمة: <span style="color:var(--inf)">أرشفة</span></label>
+        <input type="text" id="ARCH-TXT" autocomplete="off" oninput="archBtn()"></div>
+      <div id="ARCH-ST" style="font-size:12px;color:var(--warn);margin-top:10px"></div>
+    </div>
+    <div class="mf"><button class="btn bs" onclick="cm('MOD-ARCH')">إلغاء</button><button class="btn bp" id="ARCH-GO" disabled style="opacity:.4" onclick="archiveRun()">🗄 بدء الأرشفة</button></div>
+  </div>
+</div>
+
+<div id="NET-BAR"></div>
+
 <div id="MOD-CONF" class="mov">
   <div class="mod" style="max-width:340px">
     <div class="mh"><div class="mt">⚠️ تأكيد</div><button class="mc" onclick="cm('MOD-CONF')">✕</button></div>
@@ -1988,6 +2108,2307 @@ td.num, th.num { display: table-cell; text-align: right; }
 
 <div id="TC"></div>
 
+<script>
+/* QR Code Generator — Kazuhiko Arase — MIT License (http://www.opensource.org/licenses/mit-license.php) */
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+</script>
 <script>
 // ================================================================
 // PRODUCT CATALOG — من جدول Station
@@ -2617,7 +5038,7 @@ function renderSubTable(){
     data.map(m=>`<tr>
       <td style="font-size:11px">${arabicDate(m.date)}</td>
       <td style="font-family:monospace;font-size:10px;color:var(--muted)">${m.time||'—'}</td>
-      <td><span class="b ${m.type==='وارد'?'bg':m.type==='عباسية'?'br':'br'}" style="${m.type==='عباسية'?'background:#E74C3C25;color:#E74C3C':''}">${m.type==='عباسية'?'🏪 عباسية':m.type}</span></td>
+      <td><span class="b ${m.type==='وارد'||m.type==='رصيد افتتاحي'?'bg':m.type==='عباسية'?'br':'br'}" style="${m.type==='عباسية'?'background:#E74C3C25;color:#E74C3C':''}">${m.type==='عباسية'?'🏪 عباسية':m.type}</span></td>
       <td style="font-weight:600">${m.item||'—'}</td>
       <td class="num">${N(m.weight)}</td>
       <td><span class="b bgld">${m.karat||875}</span></td>
@@ -2744,6 +5165,8 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
+// تخزين محلي للبيانات: النظام يفتح ويعمل بدون إنترنت، والتغييرات تُرفع عند عودة الاتصال
+try{ firestore.enablePersistence({synchronizeTabs:true}).then(()=>{ persistOn=true; }).catch(e=>console.warn('persistence',e&&e.code)); }catch(e){ console.warn('persistence',e); }
 
 // ── DB wrapper يحاكي نفس الواجهة القديمة ──
 // ربط كل السجلات التي تُنشأ في نفس العملية برقم واحد (للتراجع والتعديل المرتبط)
@@ -2760,9 +5183,10 @@ const DB = {
                             data:   () => snap.exists ? {id: snap.id, ...snap.data()} : null
                           })),
       set:    (data, opts={}) => { if(OP_COLS.has(parts[0])&&data&&typeof data==='object'&&!data.opId) data={...data,opId:curOpId()};
-                                 return opts.merge ? ref.set(data, {merge:true}) : ref.set(data); },
-      update: (data)   => ref.update(data),
-      delete: ()       => ref.delete(),
+                                 trailNote(parts[0],parts[1],'set',data);
+                                 return offW(opts.merge ? ref.set(data, {merge:true}) : ref.set(data)); },
+      update: (data)   => { trailNote(parts[0],parts[1],'update',data); return offW(ref.update(data)); },
+      delete: ()       => { trailNote(parts[0],parts[1],'delete'); return offW(ref.delete()); },
     };
   },
   collection: (col) => ({
@@ -2801,7 +5225,7 @@ async function init(){
         if(usr.role==='admin'){ id('tab-users').style.display=''; id('RESET-BTN').style.display='inline-flex'; id('CAT-BTN').style.display='inline-block'; }
         id('LOGIN').style.display='none';
         id('APP').style.display='flex';
-        await loadDash();
+        await afterLogin(false);
         return;
       }
     }
@@ -2866,13 +5290,30 @@ async function seedData(){
 // ================================================================
 // RESET DATA
 // ================================================================
-const RESET_COLS={ops:'سجل العمليات',snap:'سجل الإجمالي اليومي',loss:'الخسية',main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',docs:'المستندات المطبوعة'};
+const RESET_COLS={ops:'سجل العمليات',snap:'سجل الإجمالي اليومي',loss:'الخسية',main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'الأقسام',stock:'الاستوك',silver:'الفضة',logs:'السجل',audit:'سجل التعديلات',arc_main:'أرشيف الرئيسية',arc_sub:'أرشيف الفرعية',arc_logs:'أرشيف السجل',arc_ops:'أرشيف العمليات',arc_snap:'أرشيف الإجمالي اليومي',arc_loss:'أرشيف الخسية',arc_audit:'أرشيف سجل التعديلات',docs:'المستندات المطبوعة'};
 
 // مقارنة مرنة: تتجاهل المسافات وعلامات الاتجاه والتشكيل واختلاف ى/ي
 function normAr(t){
   return String(t||'').normalize('NFKC')
     .replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF\u0640\u064B-\u065F\s]/g,'')
     .replace(/[ىیئ]/g,'ي').replace(/[أإآ]/g,'ا').replace(/ک/g,'ك').toLowerCase();
+}
+// ما يبقى عند اختيار «ما عدا الفواتير»: المستندات المطبوعة + عدّاد الترقيم settings/counter
+const RESET_KEEP=['docs'];
+let resetCounts=null;
+const resetMode=()=>document.querySelector('input[name="RESET-MODE"]:checked')?.value==='all'?'all':'keep';
+const resetCols=()=>Object.keys(RESET_COLS).filter(c=>resetMode()==='all'||!RESET_KEEP.includes(c));
+function updResetMode(){
+  const keep=resetMode()==='keep';
+  id('RESET-L-keep').style.borderColor=keep?'var(--ok)':'var(--bd)'; id('RESET-L-keep').style.background=keep?'#4DB87A14':'';
+  id('RESET-L-all').style.borderColor=keep?'var(--bd)':'var(--err)'; id('RESET-L-all').style.background=keep?'':'#E05C5014';
+  id('RESET-WHAT').textContent='الخزنة الرئيسية · الخزنة الفرعية · الأقسام · الاستوك · الفضة · حركات العباسية · الخسية · سجل العمليات · السجل'+(keep?'':' · الفواتير المطبوعة وترقيمها');
+  if(!resetCounts){ id('RESET-COUNTS').innerHTML='<span style="color:var(--muted)">جاري حساب عدد السجلات...</span>'; return; }
+  const del=resetCols(); let total=0;
+  id('RESET-COUNTS').innerHTML=Object.entries(RESET_COLS).map(([c,n])=>{ const k=!del.includes(c); if(!k) total+=resetCounts[c]||0;
+    return `<span style="display:inline-block;background:${k?'#4DB87A18':'var(--s2)'};border:1px solid ${k?'var(--ok)':'var(--bd)'};border-radius:6px;padding:2px 8px;margin:2px">${k?'🔒 ':''}${n}: <b class="num">${resetCounts[c]??'؟'}</b>${k?' <span style="color:var(--ok)">تبقى</span>':''}</span>`; }).join('')
+    +(keep&&resetCounts._seq!=null?`<span style="display:inline-block;background:#4DB87A18;border:1px solid var(--ok);border-radius:6px;padding:2px 8px;margin:2px">🔒 آخر رقم فاتورة: <b class="num">${resetCounts._seq?fmtDocNo(resetCounts._seq):'—'}</b> <span style="color:var(--ok)">يبقى</span></span>`:'')
+    +`<div style="margin-top:8px;font-weight:700">سيُحذف: <span class="num" style="color:var(--err)">${total}</span> سجل</div>`;
 }
 function resetOk(){ const t=normAr(id('RESET-TXT').value); return t===normAr('تصفير')||t==='reset'; }
 function updResetBtn(){ const b=id('RESET-GO'); b.disabled=!resetOk(); b.style.opacity=b.disabled?.4:1; }
@@ -2881,23 +5322,24 @@ async function confirmResetData(){
   if(CU?.role!=='admin'){toast('er','التصفير للمدير فقط');return;}
   id('RESET-TXT').value='';
   id('RESET-GO').disabled=true; id('RESET-GO').style.opacity=.4;
-  id('RESET-COUNTS').innerHTML='<span style="color:var(--muted)">جاري حساب عدد السجلات...</span>';
+  document.querySelector('input[name="RESET-MODE"][value="keep"]').checked=true;   // الافتراضي الآمن: الفواتير تبقى
+  resetCounts=null; updResetMode();
   om('MOD-RESET');
   try{
-    const counts=await Promise.all(Object.keys(RESET_COLS).map(c=>firestore.collection(c).get().then(s=>s.size)));
-    const total=counts.reduce((a,b)=>a+b,0);
-    id('RESET-COUNTS').innerHTML=Object.values(RESET_COLS).map((n,i)=>
-      `<span style="display:inline-block;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;margin:2px">${n}: <b class="num">${counts[i]}</b></span>`
-    ).join('')+`<div style="margin-top:8px;font-weight:700">الإجمالي: <span class="num" style="color:var(--err)">${total}</span> سجل</div>`;
+    const keys=Object.keys(RESET_COLS);
+    const counts=await Promise.all(keys.map(c=>firestore.collection(c).get().then(s=>s.size)));
+    const rc={}; keys.forEach((c,i)=>rc[c]=counts[i]); rc._seq=await peekDocSeq();
+    resetCounts=rc; updResetMode();
   }catch(e){ id('RESET-COUNTS').textContent=''; }
 }
 
 async function resetAllData(){
   if(!resetOk()) return;
   const btn=id('RESET-GO');
+  const keep=resetMode()==='keep';
   btn.disabled=true; btn.textContent='⏳ جاري التصفير...';
   let deleted=0, failed=[];
-  for(const col of Object.keys(RESET_COLS)){
+  for(const col of resetCols()){
     try{
       const snap=await firestore.collection(col).get();
       // حذف على دفعات (حد Firestore 500 عملية للدفعة)
@@ -2910,13 +5352,15 @@ async function resetAllData(){
     }catch(e){ console.error(col,e); failed.push(RESET_COLS[col]); }
   }
   mainMovs=[];subMovs=[];deptItems=[];silvItems=[];allLogs=[];stockItems=[];
-  try{ await DB.doc('settings/counter').delete(); }catch(e){}
+  try{ await firestore.doc('settings/archive').delete(); }catch(e){}
+  // عدّاد ترقيم الفواتير يُمسح فقط في التصفير الشامل
+  if(!keep){ try{ await DB.doc('settings/counter').delete(); }catch(e){} }
   clearCache();undoStack.length=0;updateUndoBtn();
   mainRecalcDone=true;
   btn.textContent='🗑 تصفير نهائي';
   cm('MOD-RESET');
   if(failed.length) toast('er',`تم حذف ${deleted} سجل — تعذّر: ${failed.join('، ')}`);
-  else toast('ok',`✅ تم التصفير — حُذف ${deleted} سجل والنظام جاهز من جديد`);
+  else toast('ok',keep?`✅ تم التصفير — حُذف ${deleted} سجل · الفواتير وترقيمها كما هي`:`✅ تم التصفير الشامل — حُذف ${deleted} سجل والنظام جاهز من جديد`);
   showTab('dash');
 }
 
@@ -3006,7 +5450,7 @@ async function doLogin(){
       el.offsetWidth;
       el.style.animation='';
     });
-    await loadDash();
+    await afterLogin(true);
   }catch(e){
     console.error('Login error:',e);
     showErr('LERR','خطأ في الاتصال — تحقق من الإنترنت');
@@ -3416,7 +5860,7 @@ function renderMainTable(){
     data.map(m=>`<tr>
       <td style="white-space:nowrap;font-size:12px">${arabicDate(m.date)}</td>
       <td style="font-family:monospace;font-size:11px;color:var(--muted)">${m.time||'—'}</td>
-      <td><span class="b ${ m.type==="وارد"||m.type==="وارد استوك"?"bg":m.type==="سلفة"||m.type==="استرجاع"?"bo":m.type==="عباسية"?"br":"br" }" style="${ m.type==="وارد استوك"?"background:#C8983025;color:var(--warn);border-color:#C8983066":m.type==="عباسية"?"background:#E74C3C25;color:#E74C3C":m.type==="تسوية استوك"?"background:#8890A425;color:var(--muted)":"" }">${m.type}</span></td>
+      <td><span class="b ${ m.type==="وارد"||m.type==="وارد استوك"||m.type==="رصيد افتتاحي"?"bg":m.type==="سلفة"||m.type==="استرجاع"?"bo":m.type==="عباسية"?"br":"br" }" style="${ m.type==="وارد استوك"?"background:#C8983025;color:var(--warn);border-color:#C8983066":m.type==="عباسية"?"background:#E74C3C25;color:#E74C3C":m.type==="تسوية استوك"?"background:#8890A425;color:var(--muted)":"" }">${m.type}</span></td>
       <td class="num">${N(m.weight)}</td>
       <td><span class="b bgld">${m.karat}</span></td>
       <td class="num">${N(m.w875)}</td>
@@ -3874,7 +6318,7 @@ async function loadDept(dept){
 let draDept=null, drMode=null;
 function setDrMode(m,el){ drMode=m; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.toggle('sel',b===el)); }
 function openDeptMulti(dept){
-  draDept=dept; drMode=null; if(id('VCH-ST')) id('VCH-ST').textContent='💡 الصق صورة السند هنا بـ Ctrl+V — أو اضغط 📋 لصق صورة'; document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.remove('sel'));
+  draDept=dept; drMode=null; if(id('VCH-ST')) id('VCH-ST').textContent='💡 الصق صورة السند أو خانات Excel هنا بـ Ctrl+V — أو اسحب الملف (صورة / PDF / Excel) إلى النافذة'; if(id('VCH-REV')){ id('VCH-REV').style.display='none'; id('VCH-REV').innerHTML=''; } document.querySelectorAll('#DADD-MODE .dest-btn').forEach(b=>b.classList.remove('sel'));
   id('DADD-TITLE').textContent=`➕ إضافة لقسم ${DEPTS[dept].icon} ${DEPTS[dept].name}`;
   id('DADD-DATE').value=today(); id('DADD-NOTE').value='';
   id('DADD-ROWS').innerHTML=''; drAddRow(); drTotals();
@@ -3975,140 +6419,523 @@ async function saveDeptMulti(){
 }
 
 // ================================================================
-// قراءة سند تحويل من صورة (OCR) — الصنف والعدد، والوزن يُحسب من الكتالوج
+// قراءة سند من صورة / PDF / Excel / نص ملصوق — قراءة مزدوجة + تحقق من الكتالوج + مطابقة المجموع
+// الصنف والعدد يُقرآن من السند، والوزن يُحسب من الكتالوج (كما كان)
 // ================================================================
-let tessP=null;
-function loadTess(){
-  if(window.Tesseract) return Promise.resolve();
-  if(tessP) return tessP;
-  tessP=new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
-    s.onload=ok;s.onerror=()=>{tessP=null;no(new Error('tesseract'));};document.head.appendChild(s);});
-  return tessP;
+const VCH_LIB={
+  tess:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+  pdf:'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+  pdfWorker:'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+  xlsx:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+};
+const vchLibP={};
+function vchLoad(key,ready){
+  if(ready()) return Promise.resolve();
+  if(vchLibP[key]) return vchLibP[key];
+  return vchLibP[key]=new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=VCH_LIB[key];
+    s.onload=()=>ok(); s.onerror=()=>{ vchLibP[key]=null; no(new Error('lib '+key)); }; document.head.appendChild(s); });
 }
+const loadTess=()=>vchLoad('tess',()=>!!window.Tesseract);
 function fileToImg(file){ return new Promise((ok,no)=>{ const u=URL.createObjectURL(file), im=new Image(); im.onload=()=>ok(im); im.onerror=no; im.src=u; }); }
-// يكتشف خطوط الجدول ويقسّم الصورة لصفوف وخانات
-function detectTable(img){
-  const sc=Math.min(3,Math.max(1,1500/img.width));
-  const W=Math.round(img.width*sc), H=Math.round(img.height*sc);
-  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
-  const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,W,H); cx.drawImage(img,0,0,W,H);
-  const px=cx.getImageData(0,0,W,H).data, dk=new Uint8Array(W*H);
-  for(let i=0;i<W*H;i++){ const l=0.3*px[i*4]+0.59*px[i*4+1]+0.11*px[i*4+2]; dk[i]=l<150?1:0; }
-  const hl=[];
-  for(let y=0;y<H;y++){ let run=0,mx=0; for(let x=0;x<W;x++){ if(dk[y*W+x]){run++; if(run>mx)mx=run;} else run=0; } if(mx>=0.3*W) hl.push(y); }
-  const lines=[]; hl.forEach(y=>{ const L=lines[lines.length-1]; if(L&&y-L[1]<=2) L[1]=y; else lines.push([y,y]); });
-  const bands=[];
-  for(let i=0;i<lines.length-1;i++){
-    const a=lines[i][1]+1, b=lines[i+1][0]-1, h=b-a+1;
-    if(h<14*sc||h>85*sc) continue;
-    const vx=[];
-    for(let x=0;x<W;x++){ let c=0; for(let y=a;y<=b;y++) c+=dk[y*W+x]; if(c>=0.8*h) vx.push(x); }
-    const seps=[]; vx.forEach(x=>{ const S=seps[seps.length-1]; if(S&&x-S[1]<=2) S[1]=x; else seps.push([x,x]); });
-    if(seps.length<4) continue;
-    const cells=[]; for(let j=0;j<seps.length-1;j++){ const x0=seps[j][1]+1, x1=seps[j+1][0]-1; if(x1-x0>12*sc) cells.push({x0,x1,y0:a,y1:b}); }
-    if(cells.length>=4) bands.push(cells);
+
+// ── الأرقام: هندي/فارسي ← لاتيني، فواصل الآلاف، الفاصلة العشرية ──
+function vchDigits(t){
+  return String(t??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+    .replace(/٫/g,'.').replace(/٬/g,',');
+}
+function vchNumStr(s){
+  s=String(s).replace(/\s+/g,'');
+  if(s.includes(',')&&s.includes('.')){ s=s.lastIndexOf(',')>s.lastIndexOf('.')?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,''); }
+  else if(s.includes(',')){ s=/^\d{1,3}(,\d{3})+$/.test(s)?s.replace(/,/g,''):s.replace(',','.'); }
+  if((s.match(/\./g)||[]).length>1){ const p=s.split('.'); s=p.slice(0,-1).join('')+'.'+p[p.length-1]; }
+  return parseFloat(s);
+}
+const numOf=t=>{ const m=vchDigits(t).match(/\d[\d.,]*\d|\d/); return m?vchNumStr(m[0]):NaN; };
+const numsOf=t=>(vchDigits(t).match(/\d[\d.,]*\d|\d/g)||[]).map(vchNumStr).filter(x=>!isNaN(x));
+
+// ── العيار ──
+const KT_OF={18:750,21:875,22:916,24:999.9};
+function vchKarat(x){ if(!(x>0)) return 0; if(KT_OF[x]) return KT_OF[x]; if(x>=999&&x<1000) return 999.9; return x>100&&x<=1000?x:0; }
+const vchKtAlt=k=>k>=999&&k<1000?[24,999.9,999]:k===875?[21,875]:k===750?[18,750]:k===916?[22,916]:[k];
+const vchNear=(a,b)=>Math.abs(a-b)<=Math.max(0.01,Math.abs(b)*0.01);
+
+// ── مطابقة اسم الصنف مع الكتالوج ──
+const vchNrmS=s=>vchDigits(String(s??'').normalize('NFKC')).split(/\s+/).map(t=>normAr(t).replace(/ة/g,'ه')).filter(Boolean).join(' ');
+// نص PDF يأتي أحياناً بالترتيب المرئي (حروف معكوسة) — أعد ترتيبه
+const vchUnvisual=s=>String(s??'').normalize('NFKC').split(/\s+/).reverse().map(t=>/[؀-ۿ]/.test(t)?[...t].reverse().join(''):t).join(' ');
+let vchKeys=null,vchKeysN=0;
+function vchNameItem(name){
+  const n=vchNrmS(name); if(!n) return null;
+  const flat=n.replace(/ /g,'');
+  if(flat.includes('جنيه')){
+    const k=/1[\/\\]8|ثمن/.test(flat)?'1/8 جنيه':flat.includes('نصف')?'نصف جنيه':flat.includes('ربع')?'ربع جنيه':'جنيه';
+    return CATALOG.find(c=>c.name===k)||null;
   }
-  return {cv,bands,sc};
+  if(!vchKeys||vchKeysN!==CATALOG.length){ vchKeysN=CATALOG.length;
+    vchKeys=CATALOG.map(c=>{ const k=vchNrmS(c.name); return {c,len:k.length,re:new RegExp('(?<![\\d.,/])'+k.split(' ').map(t=>t.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')).join('\\s*')+'(?![\\d])')}; }); }
+  let best=null,bl=0; vchKeys.forEach(k=>{ if(k.len>bl&&k.re.test(n)){ best=k.c; bl=k.len; } });
+  return best;
 }
-function cropCell(cv,c){
-  const pad=3, w=c.x1-c.x0-2*pad, h=c.y1-c.y0-2*pad, k=2, m=12;
-  const o=document.createElement('canvas'); o.width=w*k+2*m; o.height=h*k+2*m;
-  const ox=o.getContext('2d'); ox.fillStyle='#fff'; ox.fillRect(0,0,o.width,o.height);
-  ox.imageSmoothingQuality='high'; ox.drawImage(cv,c.x0+pad,c.y0+pad,w,h,m,m,w*k,h*k);
-  return o;
-}
-const numOf=t=>{ const m=String(t||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/,/g,'.').match(/\d+(\.\d+)?/); return m?parseFloat(m[0]):NaN; };
-const KT_OF={18:750,21:875,24:999.9};
-function matchItem(kt,wt,cnt,name){
-  const gold=CATALOG.filter(c=>!c.name.includes('فضة')&&Math.abs(c.karat-kt)<1);
-  if(cnt>0&&wt>0){
-    const u=wt/cnt; let best=null,bd=1e9;
-    gold.forEach(c=>{ const d=Math.abs(c.w24-u)/c.w24; if(d<bd){bd=d;best=c;} });
-    if(best&&bd<0.03) return best;
-  }
-  const n=String(name||'');
-  if(n.includes('جنيه')) return CATALOG.find(c=>c.name===((/1\s*[\/\\]\s*8|ثمن/.test(n))?'1/8 جنيه':n.includes('نصف')?'نصف جنيه':n.includes('ربع')?'ربع جنيه':'جنيه'));
-  const x=numOf(n.replace(/^[^\d]*?(\d)/,'$1'));
-  if(x>0) return gold.find(c=>Math.abs(c.w24-x)<0.006)||null;
-  return null;
-}
-async function importVoucher(file){
-  if(!file) return;
-  const st=id('VCH-ST'); const say=t=>st.textContent=t;
-  try{
-    say('⏳ تحميل أداة القراءة (أول مرة فقط)...');
-    await loadTess();
-    const img=await fileToImg(file);
-    say('⏳ تحليل الجدول...');
-    const {cv,bands}=detectTable(img);
-    if(bands.length<2){ say('⚠️ لم أتعرف على جدول في الصورة — صوّرها مستقيمة وواضحة'); return; }
-    const wNum=await Tesseract.createWorker('eng',1);
-    await wNum.setParameters({tessedit_pageseg_mode:'7',tessedit_char_whitelist:'0123456789.,'});
-    const wAra=await Tesseract.createWorker(['ara','eng'],1);
-    await wAra.setParameters({tessedit_pageseg_mode:'7'});
-    const T=async(w,c)=>(await w.recognize(cropCell(cv,c))).data.text.trim();
-    // الأعمدة من الهيدر — وإلا بالترتيب من اليمين: كود، اسم، عيار، وزن، عدد
-    const head=bands[0]; const n=head.length; const role={};
-    for(let i=0;i<n;i++){ const t=await T(wAra,head[i]);
-      if(/عدد/.test(t)) role.cnt=i; else if(/وزن/.test(t)) role.wt=i; else if(/عيار/.test(t)) role.kt=i; else if(/اسم|مجموع|صنف/.test(t)) role.name=i; else if(/كود/.test(t)) role.code=i; }
-    if([role.cnt,role.wt,role.kt].some(v2=>v2===undefined)){ role.code=n-1; role.name=n-2; role.kt=n-3; role.wt=n-4; role.cnt=n-5; }
-    const out=[];
-    for(let r=1;r<bands.length;r++){
-      const B=bands[r]; if(B.length!==n) continue;
-      say(`⏳ قراءة السطر ${r} من ${bands.length-1}...`);
-      const ktRaw=numOf(await T(wNum,B[role.kt])), wt=numOf(await T(wNum,B[role.wt])), cnt=Math.round(numOf(await T(wNum,B[role.cnt])));
-      const name=role.name!==undefined?await T(wAra,B[role.name]):'';
-      if(!(cnt>0)&&!(wt>0)) continue;
-      const kt=KT_OF[ktRaw]||(ktRaw>100?ktRaw:875);
-      const c=matchItem(kt,wt,cnt,name);
-      out.push({c,kt,wt,cnt,name});
-    }
-    await wNum.terminate(); await wAra.terminate();
-    if(!out.length){ say('⚠️ لم أقرأ أي سطر — جرّب صورة أوضح'); return; }
-    out.sort((a,b)=>(a.c?catRank(a.c.name):900)-(b.c?catRank(b.c.name):900));
-    // املأ الجدول (يحذف الأسطر الفاضية)
-    [...id('DADD-ROWS').querySelectorAll('.dr-r')].forEach(tr=>{ if(!parseFloat(tr.querySelector('.d-wt').value)) tr.remove(); });
-    let warn=0;
-    for(const o of out){
-      drAddRow(); const rs=id('DADD-ROWS').querySelectorAll('.dr-r'); const tr=rs[rs.length-1];
-      if(o.c){
-        tr.querySelector('.d-item').value=String(CATALOG.indexOf(o.c)); drItem(tr.querySelector('.d-item'));
-        tr.querySelector('.d-cnt').value=o.cnt; drCnt(tr.querySelector('.d-cnt'));
-        const calc=o.cnt*o.c.w24;
-        if(o.wt>0&&Math.abs(calc-o.wt)>Math.max(0.01,calc*0.01)){ warn++;
-          tr.querySelector('.d-name').style.display=''; tr.querySelector('.d-name').value=`⚠️ وزن السند ${o.wt}`; tr.style.background='#C8983018'; }
-      } else {
-        warn++; tr.querySelector('.d-name').value=o.name||`وزنة عيار ${o.kt}`;
-        tr.querySelector('.d-kt').value=o.kt; tr.querySelector('.d-wt').value=o.wt||''; drWt(tr.querySelector('.d-wt'));
-        tr.style.background='#E05C5018';
-      }
-    }
-    drNum(); drTotals();
-    say(`✅ تمت قراءة ${out.length} سطر${warn?` — راجع ${warn} سطر مظلل`:''}. راجع الأعداد ثم اختر طريقة الإضافة واحفظ.`);
-  }catch(e){ console.error(e); say('⚠️ تعذّرت القراءة — تحقق من الإنترنت وجرّب مرة أخرى'); }
+const vchNameAny=t=>vchNameItem(t)||vchNameItem(vchUnvisual(t));
+function vchLev(a,b){ const m=a.length,n=b.length; if(!m||!n) return m+n; let p=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){ const q=[i]; for(let j=1;j<=n;j++) q[j]=Math.min(p[j]+1,q[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=q; } return p[n]; }
+// اسم خانة كاملة: الأرقام يجب أن تتطابق تماماً، والحروف بالتقريب (يتحمّل أخطاء القراءة مثل «ريع» بدل «ربع»)
+function vchNameCell(name,pool){
+  const n=vchNrmS(name).replace(/ثمن/g,'1/8'); if(!n) return null;
+  const dg=t=>numsOf(t).join('|'), lt=t=>t.replace(/[\d.,\/\\\s]/g,'').replace(/[^\u0600-\u06FF]/g,'').replace(/[حخ]/g,'ج');
+  const nd=dg(n), nl=lt(n); if(!nl) return null;
+  let best=null,bs=0,sec=0;
+  (pool||CATALOG).forEach(c=>{ const k=vchNrmS(c.name); if(dg(k)!==nd) return; const kl=lt(k), sim=1-vchLev(nl,kl)/Math.max(nl.length,kl.length);
+    if(sim>bs){ sec=bs; bs=sim; best=c; } else if(sim>sec) sec=sim; });
+  if(!best||bs<0.6||bs-sec<0.12) return null;
+  return {c:best,strong:bs>=0.85};
 }
 
-// لصق صورة من الحافظة
-document.addEventListener('paste',e=>{
-  const items=[...(e.clipboardData?.items||[])]; const it=items.find(i=>i.type.startsWith('image/')); if(!it) return;
-  if(!CU) return;
-  e.preventDefault();
-  const f=it.getAsFile();
-  if(!id('MOD-DADD').classList.contains('open')){
-    const d=DEPT_KEYS.includes(curTab)?curTab:'tag';
-    if(curTab!==d) showTab(d);
-    openDeptMulti(d);
+// ── التحقق الثلاثي: الكود + الاسم + (الوزن ÷ العدد) ──
+function vchResolve(raw){
+  let cnt=raw.cnt>0?raw.cnt:0, wt=raw.wt>0?raw.wt:0; const name=String(raw.name||'').trim();
+  if(!cnt&&!wt) return null;
+  const kt=vchKarat(raw.kt), notes=[];
+  const sil=/فض[ةه]/.test(name), pool=CATALOG.filter(c=>c.name.includes('فضة')===sil);
+  const cCode=raw.code>0&&Number.isInteger(raw.code)?pool.find(c=>c.no===raw.code)||null:null;
+  let nm=vchNameCell(name,pool); if(!nm){ const x=vchNameAny(name); if(x&&pool.includes(x)) nm={c:x,strong:false}; }
+  const cName=nm?nm.c:null;
+  let cUnit=null, uAmb=false;
+  if(cnt>0&&wt>0){ const u=wt/cnt;
+    const cs=pool.map(c=>({c,d:Math.abs(c.w24-u)/c.w24})).filter(x=>x.d<0.03&&(!kt||Math.abs(x.c.karat-kt)<1)).sort((p,q)=>p.d-q.d);
+    if(cs.length){ const near=cs.filter(x=>x.d<=cs[0].d+0.004).map(x=>x.c);     // صنفان بنفس وزن القطعة؟ يحسمها الكود/الاسم
+      cUnit=near.length===1?near[0]:near.find(c=>c===cCode)||near.find(c=>c===cName)||null; if(!cUnit){ uAmb=true; cUnit=near[0]; } } }
+  const tally=new Map(); [[cCode,1.1],[cName,nm&&nm.strong?1:0.8],[cUnit,kt?1.2:1.05]].forEach(([c,w])=>{ if(c) tally.set(c,(tally.get(c)||0)+w); });
+  let c=null,top=0; tally.forEach((w,k)=>{ if(w>top){ top=w; c=k; } });
+  if(!c) return {c:null,kt:kt||875,wt,cnt:0,name,conf:'low',notes:['لم يُتعرَّف على الصنف'],rd:raw};
+  let score=(c===cCode?1:0)+(c===cName?(nm.strong?1:0.75):0), fixed=false;
+  const clash=uAmb||(cCode&&cUnit&&cCode!==cUnit)||(cName&&nm.strong&&c!==cName&&!(c===cCode&&c===cUnit))||(!cUnit&&cCode&&cName&&cCode!==cName);
+  if(clash) notes.push(uAmb?'أكثر من صنف بنفس وزن القطعة':'تعارض بين الكود/الاسم/الوزن');
+  if(kt){ if(Math.abs(c.karat-kt)<1) score+=0.5; else { notes.push(`عيار السند ${raw.kt} ≠ عيار الصنف ${c.karat}`); score-=1; } }
+  const u=c.w24;
+  if(cnt>0&&wt>0){
+    if(vchNear(wt,cnt*u)) score+=1;
+    else {
+      const f=[10,100,1000,0.1,0.01].find(f=>vchNear(wt/f,cnt*u));
+      const r=wt/u, n=Math.round(r);
+      if(f){ wt=+(wt/f).toFixed(3); score+=0.5; notes.push('صُحّحت النقطة العشرية للوزن'); }
+      else if(n>0&&Math.abs(r-n)<=Math.max(0.02,n*0.002)){ notes.push(`العدد المقروء ${cnt} لا يطابق الوزن — صُحّح إلى ${n}`); cnt=n; fixed=true; score+=0.5; }
+      else { notes.push(`وزن السند ${wt} لا يطابق العدد ${cnt} × ${u}`); fixed=true; }
+    }
+  } else if(wt>0){ const r=wt/u, n=Math.round(r);
+    if(n>0&&Math.abs(r-n)<=Math.max(0.02,n*0.002)){ cnt=n; notes.push('العدد محسوب من الوزن'); } else notes.push('لم يُقرأ العدد');
+  } else if(!Number.isInteger(cnt)){ notes.push('عدد غير صحيح'); fixed=true; }
+  else notes.push('لم يُقرأ الوزن للتحقق');
+  if(raw.weak&&score<2.5){ notes.push('قراءة غير مؤكدة'); score-=0.5; }
+  const conf=(fixed||clash)?(score>=2?'mid':'low'):score>=2.5?'high':score>=1.5?'mid':'low';
+  return {c,kt:c.karat,wt,cnt,name,conf,notes,rd:raw};
+}
+// بدون أعمدة معروفة: ابحث عن (عدد × وزن القطعة = الوزن) داخل أرقام السطر
+function vchSolve(nums,text){
+  nums=nums.filter(x=>x>0); if(!nums.length) return null;
+  const sil=/فض[ةه]/.test(text), pool=CATALOG.filter(c=>c.name.includes('فضة')===sil);
+  let cName=vchNameAny(text); if(cName&&!pool.includes(cName)) cName=null;
+  let best=null,second=0;
+  pool.forEach(c=>{ for(let i=0;i<nums.length;i++){ const cnt=nums[i]; if(!Number.isInteger(cnt)) continue;
+    for(let j=0;j<nums.length;j++){ if(i===j) continue; const wt=nums[j], exp=cnt*c.w24; if(Math.abs(wt-exp)>Math.max(0.01,exp*0.005)) continue;
+      const rest=nums.filter((_,k)=>k!==i&&k!==j);
+      const hasCode=c.no!=null&&rest.includes(c.no), hasKt=vchKtAlt(c.karat).some(k=>rest.includes(k));
+      const sc=1+(c===cName?1:0)+(hasCode?0.75:0)+(hasKt?0.5:0)-Math.abs(exp-wt)/exp;
+      const same=best&&best.c===c&&best.cnt===cnt; if(!best||sc>best.sc){ if(best&&!same) second=Math.max(second,best.sc); best={sc,c,cnt,wt,hasCode,hasKt}; } else if(!same&&sc>second) second=sc; } } });
+  if(best){
+    const clear=best.sc-second>0.3, pts0=1+(best.c===cName?1:0)+(best.hasCode?1:0)+(best.hasKt?0.5:0);
+    if(pts0<1.5) return null;           // عدد×وزن فقط بلا اسم/كود/عيار = غالباً سطر تاريخ أو عنوان
+    const pts=1+(best.c===cName?1:0)+(best.hasCode?1:0)+(best.hasKt?0.5:0);
+    return {c:best.c,kt:best.c.karat,wt:best.wt,cnt:best.cnt,name:text,conf:!clear?'low':pts>=2.5?'high':pts>=1.5?'mid':'low',
+      notes:clear?[]:['أكثر من صنف يطابق الأرقام'],rd:{cnt:best.cnt,wt:best.wt,code:best.hasCode?best.c.no:NaN,kt:best.c.karat,name:text}};
   }
-  importVoucher(f);
+  if(cName){ // اسم فقط + رقم واحد حرّ
+    const own=numsOf(cName.name), free=nums.filter(x=>!own.includes(x)&&x!==cName.no&&!vchKtAlt(cName.karat).includes(x));
+    if(free.length===1){ const x=free[0], isC=Number.isInteger(x);
+      return {c:cName,kt:cName.karat,wt:isC?0:x,cnt:isC?x:0,name:text,conf:'low',notes:['سطر بدون وزن وعدد معاً — راجعه'],rd:{cnt:isC?x:NaN,wt:isC?NaN:x,name:text}}; }
+  }
+  return null;
+}
+
+// ── جدول نصي (Excel / CSV / نص ملصوق / PDF نصي) ──
+const VCH_TOT=/مجموع|[إا]جمال|total/i;
+function vchRoles(cells){
+  const r={}; cells.forEach((t,i)=>{ t=String(t||'');
+    if(/عدد|كمي|qty|count|pcs/i.test(t)) r.cnt??=i; else if(/وزن|weight/i.test(t)) r.wt??=i; else if(/عيار|karat|purity/i.test(t)) r.kt??=i;
+    else if(/كود|code/i.test(t)) r.code??=i; else if(/اسم|صنف|بيان|مجموع|item|name/i.test(t)) r.name??=i; });
+  return r;
+}
+function vchParseGrid(grid,noRoles){
+  let hi=-1, role=null;
+  if(!noRoles) for(let i=0;i<Math.min(grid.length,25);i++){ const r=vchRoles(grid[i]); if(r.cnt!==undefined&&(r.wt!==undefined||r.name!==undefined||r.code!==undefined)){ hi=i; role=r; break; } }
+  const rows=[]; let tot=null;
+  for(let i=hi+1;i<grid.length;i++){
+    const cells=grid[i].map(x=>String(x??'').trim()); const line=cells.filter(Boolean).join(' '); if(!line) continue;
+    const g=k=>role[k]!==undefined?cells[role[k]]||'':'';
+    if(role){
+      const raw={code:numOf(g('code')),kt:numOf(g('kt')),wt:numOf(g('wt')),cnt:numOf(g('cnt')),name:g('name')};
+      if(VCH_TOT.test(line)||(!g('name')&&!(raw.code>0)&&!(raw.kt>0)&&(raw.cnt>0||raw.wt>0)&&rows.length)){ tot={cnt:raw.cnt,wt:raw.wt}; continue; }
+      const o=vchResolve(raw); if(o){ o.txt=line; rows.push(o); }
+    } else {
+      if(VCH_TOT.test(line)||VCH_TOT.test(vchUnvisual(line))){ if(rows.length){ const ns=numsOf(line); tot={any:ns}; } continue; }
+      const o=vchSolve(numsOf(line),line); if(o){ o.txt=line; rows.push(o); }
+    }
+  }
+  return {rows,tot};
+}
+function vchTextGrid(text){
+  const lines=String(text).replace(/\r/g,'').split('\n').filter(l=>l.trim());
+  const delim=lines.some(l=>l.includes('\t'))?'\t':lines.filter(l=>l.includes('|')).length>=2?'|':lines.filter(l=>l.includes(';')).length>=2?';':null;
+  if(delim) return {grid:lines.map(l=>l.split(delim)),noRoles:false};
+  return {grid:lines.map(l=>[l]),noRoles:true};
+}
+
+// ── تجهيز الصورة: تكبير، قلب الخلفية الداكنة، عتبة متكيّفة، تعديل الميل ──
+function vchGray(src,sw,sh,rot){
+  let sc=1800/sw; sc=Math.min(3,Math.max(sw>2600?2400/sw:1,sc));
+  const W=Math.round(sw*sc), H=Math.round(sh*sc);
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const cx=cv.getContext('2d',{willReadFrequently:true}); cx.fillStyle='#fff'; cx.fillRect(0,0,W,H);
+  cx.imageSmoothingQuality='high';
+  if(rot){ cx.translate(W/2,H/2); cx.rotate(rot*Math.PI/180); cx.translate(-W/2,-H/2); }
+  cx.drawImage(src,0,0,W,H); cx.setTransform(1,0,0,1,0,0);
+  const im=cx.getImageData(0,0,W,H), px=im.data, g=new Uint8Array(W*H); let sum=0;
+  for(let i=0;i<W*H;i++){ const l=(px[i*4]*77+px[i*4+1]*150+px[i*4+2]*29)>>8; g[i]=l; sum+=l; }
+  if(sum/(W*H)<110){ for(let i=0;i<W*H;i++){ g[i]=255-g[i]; px[i*4]=px[i*4+1]=px[i*4+2]=g[i]; } cx.putImageData(im,0,0); }
+  return {cv,g,W,H,sc};
+}
+function vchThresh(g,W,H,t){   // Bradley: داكن لو أقل من متوسط الجوار بنسبة t
+  const I=new Float64Array((W+1)*(H+1));
+  for(let y=0;y<H;y++){ let rs=0; for(let x=0;x<W;x++){ rs+=g[y*W+x]; I[(y+1)*(W+1)+x+1]=I[y*(W+1)+x+1]+rs; } }
+  const s=Math.max(12,Math.round(W/36)), dk=new Uint8Array(W*H);
+  for(let y=0;y<H;y++){ const y0=Math.max(0,y-s), y1=Math.min(H,y+s+1);
+    for(let x=0;x<W;x++){ const x0=Math.max(0,x-s), x1=Math.min(W,x+s+1);
+      const m=(I[y1*(W+1)+x1]-I[y0*(W+1)+x1]-I[y1*(W+1)+x0]+I[y0*(W+1)+x0])/((x1-x0)*(y1-y0));
+      dk[y*W+x]=g[y*W+x]<m*(1-t)?1:0; } }
+  return dk;
+}
+// خريطة الخطوط: داكن بالنسبة لخلفية المنطقة (لا يتأثر بقرب النص) — يلتقط الخطوط الرمادية الفاتحة
+function vchThreshBg(g,W,H,t){
+  const T=24, tw=Math.ceil(W/T), th=Math.ceil(H/T), bg=new Uint8Array(tw*th), hist=new Uint32Array(256);
+  for(let ty=0;ty<th;ty++) for(let tx=0;tx<tw;tx++){ hist.fill(0); let n=0;
+    for(let y=ty*T,ye=Math.min(H,y+T);y<ye;y++) for(let x=tx*T,xe=Math.min(W,x+T);x<xe;x++){ hist[g[y*W+x]]++; n++; }
+    let acc=0,v=255; const lim=n*0.15; while(v>0&&(acc+=hist[v])<lim) v--; bg[ty*tw+tx]=v; }
+  const dk=new Uint8Array(W*H);
+  for(let y=0;y<H;y++){ const r=((y/T)|0)*tw; for(let x=0;x<W;x++){ const b=bg[r+((x/T)|0)], v=g[y*W+x]; dk[y*W+x]=(v<b*(1-t)&&b-v>=9)?1:0; } }
+  return dk;
+}
+function vchSkew(dk,W,H){
+  const s=Math.max(1,Math.floor(W/600)), w=Math.floor(W/s), h=Math.floor(H/s), xs=[], ys=[];
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++) if(dk[y*s*W+x*s]){ xs.push(x-w/2); ys.push(y); }
+  if(xs.length<200) return 0;
+  const st=Math.max(1,Math.floor(xs.length/60000)), pad=Math.ceil(w*0.1), hist=new Float32Array(h+2*pad);
+  const score=a=>{ const t=Math.tan(a*Math.PI/180); hist.fill(0);
+    for(let i=0;i<xs.length;i+=st){ const yy=Math.round(ys[i]-xs[i]*t)+pad; if(yy>=0&&yy<hist.length) hist[yy]++; }
+    let q=0; for(let i=0;i<hist.length;i++) q+=hist[i]*hist[i]; return q; };
+  let best=0,bs=score(0)*1.02;
+  for(let a=-6;a<=6;a+=0.5){ const q=score(a); if(q>bs){ bs=q; best=a; } }
+  const c0=best; for(let a=c0-0.4;a<=c0+0.4;a+=0.1){ const q=score(a); if(q>bs){ bs=q; best=a; } }
+  return Math.abs(best)<0.15?0:best;
+}
+function vchPrep(src,sw,sh){
+  let P=vchGray(src,sw,sh,0); P.dkL=vchThreshBg(P.g,P.W,P.H,0.06);
+  const a=vchSkew(P.dkL,P.W,P.H);
+  if(a){ P=vchGray(src,sw,sh,-a); P.dkL=vchThreshBg(P.g,P.W,P.H,0.06); P.skew=a; }
+  P.dk=vchThresh(P.g,P.W,P.H,0.15);
+  return P;
+}
+// يكتشف خطوط الجدول ويقسّم الصورة لصفوف وخانات
+function detectTable(P){
+  const {W,H,dkL:dk}=P, hl=[], xa=[], xb=[];
+  for(let y=0;y<H-1;y++){ let run=0,gap=0,mx=0,me=0; const o=y*W;
+    for(let x=0;x<W;x++){ if(dk[o+x]||dk[o+W+x]){ run+=gap+1; gap=0; if(run>mx){ mx=run; me=x; } } else if(run&&gap<3) gap++; else { run=0; gap=0; } }
+    if(mx>=0.25*W){ hl.push(y); xa.push(me-mx+1); xb.push(me); } }
+  // حدود الجدول = حدود خطوطه الأفقية (يستبعد حافة الورقة والخلفية)
+  const med=a=>a.slice().sort((p,q)=>p-q)[a.length>>1]||0, TX0=med(xa)-8, TX1=med(xb)+8;
+  const lines=[]; hl.forEach(y=>{ const L=lines[lines.length-1]; if(L&&y-L[1]<=3) L[1]=y; else lines.push([y,y]); });
+  let bands=[];
+  for(let i=0;i<lines.length-1;i++){
+    const a=lines[i][1]+2, b=lines[i+1][0]-1, h=b-a+1; if(h<12) continue;
+    const vx=[]; for(let x=0;x<W-1;x++){ let c=0; for(let y=a;y<=b;y++) c+=(dk[y*W+x]||dk[y*W+x+1]); if(c>=0.8*h) vx.push(x); }
+    const seps=[]; vx.forEach(x=>{ const S=seps[seps.length-1]; if(S&&x-S[1]<=3) S[1]=x; else seps.push([x,x]); });
+    if(seps.length<3) continue;
+    const cells=[]; for(let j=0;j<seps.length-1;j++){ const x0=seps[j][1]+1, x1=seps[j+1][0]-1; if(x1-x0>10&&x0>=TX0&&x1<=TX1) cells.push({x0,x1,y0:a,y1:b}); }
+    if(cells.length>=2) bands.push(cells);
+  }
+  if(bands.length>2){ const hs=bands.map(B=>B[0].y1-B[0].y0).sort((a,b)=>a-b), md=hs[hs.length>>1]; bands=bands.filter(B=>{ const h=B[0].y1-B[0].y0; return h>=md*0.45&&h<=md*3; }); }
+  return bands;
+}
+// قصّ الخانة حول الحبر وتكبيرها لارتفاع مناسب للقراءة
+function cropCell(P,c,inkH,bin){
+  const {W,g,dk}=P, pad=3; let x0=c.x0+pad,x1=c.x1-pad,y0=c.y0+pad,y1=c.y1-pad; if(x1-x0<4||y1-y0<4) return null;
+  let a=1e9,b=-1,l=1e9,r=-1,n=0;
+  for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) if(dk[y*W+x]){ n++; if(y<a)a=y; if(y>b)b=y; if(x<l)l=x; if(x>r)r=x; }
+  if(n<6||b-a<4) return null;
+  x0=Math.max(x0,l-4); x1=Math.min(x1,r+4); y0=Math.max(y0,a-4); y1=Math.min(y1,b+4);
+  const w=x1-x0+1, h=y1-y0+1, k=Math.min(4,Math.max(0.6,inkH/(b-a+1))), m=16;
+  const t=document.createElement('canvas'); t.width=w; t.height=h; const tx=t.getContext('2d'), im=tx.createImageData(w,h);
+  let lo=255,hi=0; for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const v=g[(y0+y)*W+x0+x]; if(v<lo)lo=v; if(v>hi)hi=v; }
+  const thr=(lo+hi)/2, rg=Math.max(1,hi-lo);
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ let v=g[(y0+y)*W+x0+x]; v=bin?(v<thr?0:255):Math.max(0,Math.min(255,Math.round((v-lo)*255/rg))); const i=(y*w+x)*4; im.data[i]=im.data[i+1]=im.data[i+2]=v; im.data[i+3]=255; }
+  tx.putImageData(im,0,0);
+  const o=document.createElement('canvas'); o.width=Math.round(w*k)+2*m; o.height=Math.round(h*k)+2*m;
+  const ox=o.getContext('2d'); ox.fillStyle='#fff'; ox.fillRect(0,0,o.width,o.height); ox.imageSmoothingQuality='high';
+  ox.drawImage(t,0,0,w,h,m,m,Math.round(w*k),Math.round(h*k));
+  return o;
+}
+function vchStrip(P,x0,x1,y0,y1){
+  x0=Math.max(0,x0-4); x1=Math.min(P.W-1,x1+4); y0=Math.max(0,y0-3); y1=Math.min(P.H-1,y1+3);
+  const w=x1-x0+1, h=y1-y0+1, k=Math.min(1,900/w), o=document.createElement('canvas'); o.width=Math.round(w*k); o.height=Math.round(h*k);
+  o.getContext('2d').drawImage(P.cv,x0,y0,w,h,0,0,o.width,o.height);
+  try{ return o.toDataURL('image/jpeg',0.8); }catch(e){ return ''; }
+}
+// قراءة رقم مرتين (رمادي + أبيض/أسود) وثالثة عند الاختلاف — تؤخذ القيمة المتفق عليها
+async function vchReadNum(W,P,c){
+  const rd=async(w,inkH,bin)=>{ const cv=cropCell(P,c,inkH,bin); if(!cv) return null; const r=await w.recognize(cv); return {v:numOf(r.data.text),conf:r.data.confidence||0}; };
+  const a=await rd(W.num,40,false); if(!a) return {v:NaN,empty:true};
+  const b=await rd(W.num,48,true);
+  if(!isNaN(a.v)&&a.v===b.v) return {v:a.v,ok:true};
+  const d=await rd(W.num,58,false), all=[a,b,d].filter(x=>x&&!isNaN(x.v));
+  if(!all.length){ const e=await rd(W.ara,44,false); return {v:e?e.v:NaN,weak:true}; }   // أرقام هندية ٠-٩
+  for(const x of all) if(all.filter(y=>y.v===x.v).length>=2) return {v:x.v,ok:true};
+  return {v:all.sort((x,y)=>y.conf-x.conf)[0].v,weak:true};
+}
+// اسم الصنف: الحروف بالنموذج العربي، والأرقام داخل الاسم (10 / 31.10 / 1/8) بقارئ الأرقام لأنه أدق
+async function vchReadName(W,P,c){
+  const cv=cropCell(P,c,44,false); if(!cv) return '';
+  const ar=(await W.ara.recognize(cv)).data.text.trim(); if(!/\d/.test(vchDigits(ar))) return ar;
+  const dg=(await W.dig.recognize(cv)).data.text.replace(/\s+/g,'').replace(/^[.\/]+|[.\/]+$/g,'');
+  return /\d/.test(dg)?dg+' '+vchDigits(ar).replace(/[\d.,\/\\]+/g,' ').replace(/[A-Za-z]+/g,' ').replace(/\s+/g,' ').trim():ar;
+}
+async function vchReadTxt(W,P,c){ const cv=cropCell(P,c,44,false); if(!cv) return ''; return (await W.ara.recognize(cv)).data.text.trim(); }
+
+async function vchWorkers(say){
+  say('⏳ تحميل أداة القراءة (أول مرة فقط)...'); await loadTess();
+  const num=await Tesseract.createWorker('eng',1);
+  await num.setParameters({tessedit_pageseg_mode:'7',tessedit_char_whitelist:'0123456789.,'});
+  const ara=await Tesseract.createWorker(['ara','eng'],1);
+  await ara.setParameters({tessedit_pageseg_mode:'7'});
+  const dig=await Tesseract.createWorker('eng',1);
+  await dig.setParameters({tessedit_pageseg_mode:'7',tessedit_char_whitelist:'0123456789./'});
+  return {num,ara,dig,end:async()=>{ try{ await num.terminate(); await ara.terminate(); await dig.terminate(); }catch(e){} }};
+}
+// صورة بها جدول بخطوط
+async function vchOcrGrid(W,P,bands,say){
+  const cnts={}; bands.forEach(B=>cnts[B.length]=(cnts[B.length]||0)+1);
+  const n=+Object.entries(cnts).sort((a,b)=>b[1]-a[1]||b[0]-a[0])[0][0]; if(n<3) return null;
+  const hi=bands.findIndex(B=>B.length===n), head=bands[hi];
+  let role={}; const ht=[]; for(let i=0;i<n;i++) ht.push(await vchReadTxt(W,P,head[i]));
+  role=vchRoles(ht);
+  let hasHead=Object.keys(role).length>=2;
+  if(!hasHead) hasHead=!ht.some(t=>/\d/.test(t))&&ht.some(t=>/[\u0600-\u06FF]{2}/.test(t));
+  // الأعمدة التي لم يُقرأ عنوانها تُكمَّل بالترتيب المعتاد من اليمين: كود، اسم، عيار، وزن، عدد
+  { const order=n>=5?['code','name','kt','wt','cnt']:n===4?['name','kt','wt','cnt']:['name','wt','cnt'];
+    const used=new Set(Object.values(role)), free=[]; for(let i=n-1;i>=0;i--) if(!used.has(i)) free.push(i);
+    const miss=order.filter(r=>role[r]===undefined);
+    if(miss.length===order.length) order.forEach((r,i)=>role[r]=n-1-i);
+    else if(free.length>=miss.length){ // حافظ على الترتيب النسبي
+      const known=order.filter(r=>role[r]!==undefined);
+      miss.forEach(r=>{ const oi=order.indexOf(r); let pick=free[0];
+        const after=known.filter(k=>order.indexOf(k)<oi).map(k=>role[k]), before=known.filter(k=>order.indexOf(k)>oi).map(k=>role[k]);
+        const lo=before.length?Math.max(...before):-1, hi=after.length?Math.min(...after):n;
+        const c=free.find(i=>i>lo&&i<hi); if(c!==undefined) pick=c;
+        if(pick!==undefined){ role[r]=pick; free.splice(free.indexOf(pick),1); known.push(r); } }); } }  const X0=head[0].x0, X1=head[n-1].x1, rows=[]; let tot=null;
+  const data=bands.filter((B,i)=>i>hi||(!hasHead&&i===hi));
+  for(const [k,B] of data.entries()){
+    say(`⏳ قراءة السطر ${k+1} من ${data.length}...`);
+    const pick=r=>{ if(role[r]===undefined) return null; if(B.length===n) return B[role[r]]; const h=head[role[r]], m=(h.x0+h.x1)/2; return B.find(c=>m>c.x0&&m<c.x1&&(c.x1-c.x0)<1.4*(h.x1-h.x0))||null; };
+    const rn=async r=>{ const c=pick(r); return c?await vchReadNum(W,P,c):{v:NaN}; };
+    const cnt=await rn('cnt'), wt=await rn('wt');
+    const merged=B.find(c=>head.filter(h=>{ const m=(h.x0+h.x1)/2; return m>c.x0&&m<c.x1; }).length>=2);
+    const nmC=merged||pick('name');
+    const name=nmC?(merged?await vchReadTxt(W,P,nmC):await vchReadName(W,P,nmC)):'';
+    if(merged||VCH_TOT.test(name)){ if(cnt.v>0||wt.v>0) tot={cnt:cnt.v,wt:wt.v}; continue; }
+    if(!(cnt.v>0)&&!(wt.v>0)) continue;
+    const kt=await rn('kt'), code=await rn('code');
+    let o=vchResolve({code:code.v,kt:kt.v,wt:wt.v,cnt:cnt.v,name,weak:!!(cnt.weak||wt.weak)});
+    if(!o||!o.c){ // لم يُتعرَّف على الصنف بالأعمدة: جرّب كل أرقام السطر (ما عدا خانة الاسم)
+      const wide=B.reduce((a,c)=>c.x1-c.x0>a.x1-a.x0?c:a,B[0]), ns=[];
+      for(const c of B){ if(c===wide) continue; const r=await vchReadNum(W,P,c); if(r.v>0) ns.push(r.v); }
+      const s2=vchSolve(ns,await vchReadName(W,P,wide)); if(s2&&s2.conf!=='low') o=s2; }
+    if(o){ o.img=vchStrip(P,X0,X1,B[0].y0,B[0].y1); rows.push(o); }
+  }
+  return {rows,tot};
+}
+// صورة بدون خطوط جدول: قراءة الصفحة سطراً سطراً ثم إعادة قراءة الأرقام بدقة
+async function vchOcrLines(W,P,say){
+  say('⏳ لا توجد خطوط جدول — قراءة الصفحة سطراً سطراً...');
+  await W.ara.setParameters({tessedit_pageseg_mode:'6'});
+  const res=await W.ara.recognize(P.cv,{},{blocks:true,text:true});
+  await W.ara.setParameters({tessedit_pageseg_mode:'7'});
+  const lines=res.data.lines||(res.data.blocks||[]).flatMap(b=>(b.paragraphs||[]).flatMap(p=>p.lines||[]));
+  const rows=[]; let tot=null;
+  for(const [k,L] of lines.entries()){
+    say(`⏳ قراءة السطر ${k+1} من ${lines.length}...`);
+    const words=L.words||[]; let txt=''; const nums=[]; let weak=false;
+    for(const w of words){
+      const t=vchDigits(w.text||'');
+      if(/^[\d.,]+$/.test(t)&&/\d/.test(t)){ const b=w.bbox, r=await vchReadNum(W,P,{x0:b.x0-6,x1:b.x1+6,y0:b.y0-6,y1:b.y1+6}); const v=isNaN(r.v)?numOf(t):r.v; if(!isNaN(v)) nums.push(v); if(r.weak) weak=true; }
+      else { txt+=' '+(w.text||''); numsOf(t).forEach(x=>nums.push(x)); }
+    }
+    if(VCH_TOT.test(txt)){ if(rows.length) tot={any:nums}; continue; }
+    const o=vchSolve(nums,txt.trim()); if(!o) continue;
+    if(weak&&o.conf==='high') o.conf='mid';
+    const b=L.bbox; o.img=vchStrip(P,b.x0,b.x1,b.y0,b.y1); o.txt=(L.text||'').trim(); rows.push(o);
+  }
+  return {rows,tot};
+}
+async function vchFromImage(src,sw,sh,say,W){
+  say('⏳ تجهيز الصورة وتحليل الجدول...');
+  const P=vchPrep(src,sw,sh), bands=detectTable(P);
+  let out=null;
+  if(bands.length>=2) out=await vchOcrGrid(W,P,bands,say);
+  if(!out||!out.rows.length) out=await vchOcrLines(W,P,say);
+  return out;
+}
+async function vchFromPdf(file,say){
+  say('⏳ فتح ملف PDF...'); await vchLoad('pdf',()=>!!window.pdfjsLib);
+  pdfjsLib.GlobalWorkerOptions.workerSrc=VCH_LIB.pdfWorker;
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;
+  const np=Math.min(pdf.numPages,6), grid=[];
+  for(let p=1;p<=np;p++){ const pg=await pdf.getPage(p), tc=await pg.getTextContent(), L=[];
+    tc.items.filter(i=>i.str&&i.str.trim()).forEach(i=>{ const y=i.transform[5]; let l=L.find(q=>Math.abs(q.y-y)<3); if(!l) L.push(l={y,it:[]}); l.it.push(i); });
+    L.sort((a,b)=>b.y-a.y).forEach(l=>{
+      // كلمات = عناصر متلاصقة؛ الكلمة العربية تُجمع من اليمين لليسار، والسطر العربي يُقرأ من اليمين
+      const ws=[]; let px=null; l.it.sort((a,b)=>a.transform[4]-b.transform[4]).forEach(i=>{ const x=i.transform[4], fh=Math.abs(i.transform[0])||i.height||10;
+        if(px===null||x-px>fh*0.22||/^\s|\s$/.test(i.str)) ws.push([]); ws[ws.length-1].push(i.str.trim()); px=x+(i.width||0); });
+      const AR=/[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/, words=ws.map(w=>w.some(t=>AR.test(t))?w.slice().reverse().join(''):w.join('')).filter(Boolean);
+      grid.push([(words.some(w=>AR.test(w))?words.reverse():words).join(' ').normalize('NFKC')]); }); }
+  let res=vchParseGrid(grid,true); res.kind='PDF نصي — قراءة مباشرة';
+  if(res.rows.length) return res;
+  const W=await vchWorkers(say); res={rows:[],tot:null,kind:'PDF مصوَّر'};
+  try{ for(let p=1;p<=np;p++){ const pg=await pdf.getPage(p), vp=pg.getViewport({scale:2.2}), cv=document.createElement('canvas'); cv.width=vp.width; cv.height=vp.height;
+      const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); await pg.render({canvasContext:cx,viewport:vp}).promise;
+      const r=await vchFromImage(cv,cv.width,cv.height,t=>say(`صفحة ${p}/${np}: ${t}`),W); res.rows.push(...r.rows); if(r.tot) res.tot=r.tot; } }
+  finally{ await W.end(); }
+  return res;
+}
+async function vchFromSheet(file,say){
+  say('⏳ قراءة ملف Excel...'); await vchLoad('xlsx',()=>!!window.XLSX);
+  const wb=XLSX.read(new Uint8Array(await file.arrayBuffer()),{type:'array'});
+  for(const sn of wb.SheetNames){ const grid=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:true});
+    let r=vchParseGrid(grid,false); if(!r.rows.length) r=vchParseGrid(grid.map(g=>[g.join(' ')]),true);
+    if(r.rows.length){ r.kind='Excel — قراءة مباشرة'; return r; } }
+  return {rows:[],tot:null};
+}
+function vchFromText(text){
+  const {grid,noRoles}=vchTextGrid(text); let r=vchParseGrid(grid,noRoles);
+  if(!r.rows.length&&!noRoles) r=vchParseGrid(grid.map(g=>[g.join(' ')]),true);
+  r.kind='نص ملصوق — قراءة مباشرة'; return r;
+}
+
+// ── تعبئة الجدول + لوحة المراجعة ──
+const VCH_CONF={high:['✅','مؤكد','var(--ok)',''],mid:['⚠️','راجِع','var(--warn)','#C8983018'],low:['❌','غير مؤكد','var(--err)','#E05C5018']};
+function vchFill(res){
+  const st=id('VCH-ST'), out=res.rows;
+  // مطابقة مجموع السند
+  let totMsg='';
+  const sC=out.reduce((s,o)=>s+(o.cnt||0),0), sW=out.reduce((s,o)=>s+(o.wt||0),0);
+  if(res.tot){
+    const tc=res.tot.any?res.tot.any.find(x=>x===sC):res.tot.cnt, tw=res.tot.any?res.tot.any.find(x=>vchNear(x,sW)&&x!==tc):res.tot.wt;
+    const okC=tc>0&&tc===sC, okW=tw>0&&Math.abs(tw-sW)<=Math.max(0.02,sW*0.0005);
+    if(okC&&(okW||!(tw>0))){ out.forEach(o=>{ if(o.conf==='mid'&&o.notes.every(n=>!/صُحّح|لا يطابق|تعارض|≠/.test(n))) o.conf='high'; });
+      totMsg=`<div style="color:var(--ok);font-weight:800">✅ المجموع مطابق لمجموع السند — العدد ${N3(sC)}${okW?` · الوزن ${N(sW)}`:''}</div>`; }
+    else if(tc>0||tw>0) totMsg=`<div style="color:var(--err);font-weight:800">❌ المجموع لا يطابق السند — ${tc>0?`العدد: السند ${N3(tc)} / المقروء ${N3(sC)}`:''}${tc>0&&tw>0?' · ':''}${tw>0?`الوزن: السند ${N(tw)} / المقروء ${N(sW)}`:''} — يوجد سطر ناقص أو رقم خطأ</div>`;
+  }
+  const rk={low:0,mid:1,high:2};
+  out.sort((a,b)=>(a.c?catRank(a.c.name):900)-(b.c?catRank(b.c.name):900));
+  [...id('DADD-ROWS').querySelectorAll('.dr-r')].forEach(tr=>{ if(!parseFloat(tr.querySelector('.d-wt').value)) tr.remove(); });
+  let warn=0;
+  for(const o of out){
+    drAddRow(); const rs=id('DADD-ROWS').querySelectorAll('.dr-r'), tr=rs[rs.length-1]; o.tr=tr;
+    const nm=tr.querySelector('.d-name');
+    if(o.c){
+      tr.querySelector('.d-item').value=String(CATALOG.indexOf(o.c)); drItem(tr.querySelector('.d-item'));
+      if(o.cnt>0){ tr.querySelector('.d-cnt').value=o.cnt; drCnt(tr.querySelector('.d-cnt')); }
+      else { tr.querySelector('.d-wt').value=o.wt||''; drWt(tr.querySelector('.d-wt')); }
+    } else {
+      nm.value=o.name||`وزنة عيار ${o.kt}`; tr.querySelector('.d-kt').value=o.kt; tr.querySelector('.d-wt').value=o.wt||''; drWt(tr.querySelector('.d-wt'));
+    }
+    if(o.conf!=='high'){ warn++; tr.style.background=VCH_CONF[o.conf][3];
+      if(o.c){ nm.style.display=''; nm.value='⚠️ '+(o.notes[0]||'راجع السطر'); nm.title=o.notes.join(' — '); } }
+  }
+  drNum(); drTotals();
+  // لوحة المراجعة: صورة السطر من السند بجانب ما قُرئ
+  const rev=id('VCH-REV');
+  if(rev){
+    const sorted=[...out].sort((a,b)=>rk[a.conf]-rk[b.conf]);
+    rev.style.display=''; rev._rows=out;
+    rev.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <b style="font-size:12.5px;color:var(--inf)">🔎 مراجعة القراءة — ${esc(res.kind||'صورة')}</b>
+        <span style="font-size:11px;color:var(--muted)">${out.filter(o=>o.conf==='high').length} مؤكد · ${out.filter(o=>o.conf==='mid').length} راجِع · ${out.filter(o=>o.conf==='low').length} غير مؤكد</span></div>
+      ${totMsg||(res.tot?'':'<div style="font-size:11px;color:var(--muted)">لم يُعثر على سطر «المجموع» في السند — راجع الإجمالي يدوياً.</div>')}
+      <div style="max-height:260px;overflow:auto;margin-top:8px;display:flex;flex-direction:column;gap:6px">${sorted.map(o=>{ const C=VCH_CONF[o.conf], i=out.indexOf(o);
+        return `<div onclick="vchGo(${i})" title="اضغط للذهاب للسطر" style="cursor:pointer;border:1px solid ${C[2]}55;border-right:3px solid ${C[2]};border-radius:8px;padding:6px 8px;background:var(--s2)">
+          ${o.img?`<img src="${o.img}" style="display:block;max-width:100%;max-height:46px;border-radius:4px;background:#fff;margin-bottom:5px">`:(o.txt?`<div style="font-family:monospace;font-size:11px;color:var(--tx2);direction:rtl;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.txt)}</div>`:'')}
+          <div style="font-size:11.5px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="color:${C[2]};font-weight:800;white-space:nowrap">${C[0]} ${C[1]}</span>
+            <b>${esc(o.c?o.c.name:(o.name||'وزنة حرة'))}</b><span class="num">العدد ${o.cnt?N3(o.cnt):'—'}</span><span class="num" style="color:var(--gold)">الوزن ${N(o.c&&o.cnt?o.cnt*o.c.w24:o.wt)}</span>
+            ${o.notes.length?`<span style="color:${C[2]}">— ${esc(o.notes.join(' · '))}</span>`:''}</div></div>`; }).join('')}</div>`;
+  }
+  st.textContent=`✅ تمت قراءة ${out.length} سطر${warn?` — راجع ${warn} سطر مظلل`:' — كلها مؤكدة'}. راجع الأعداد ثم اختر طريقة الإضافة واحفظ.`;
+}
+function vchGo(i){ const o=id('VCH-REV')?._rows?.[i]; if(!o?.tr?.isConnected) return; o.tr.scrollIntoView({block:'center',behavior:'smooth'}); (o.tr.querySelector(o.c?'.d-cnt':'.d-wt')||o.tr).focus(); o.tr.animate([{outline:'2px solid var(--gold)'},{outline:'2px solid transparent'}],{duration:1400}); }
+
+let vchBusy=false;
+async function importVoucher(file,text){
+  if((!file&&!text)||vchBusy) return;
+  const st=id('VCH-ST'), say=t=>st.textContent=t;
+  vchBusy=true; if(id('VCH-REV')){ id('VCH-REV').style.display='none'; id('VCH-REV').innerHTML=''; }
+  try{
+    let res; const nm=(file?.name||'').toLowerCase(), tp=file?.type||'';
+    if(text!=null&&!file) res=vchFromText(text);
+    else if(tp==='application/pdf'||nm.endsWith('.pdf')) res=await vchFromPdf(file,say);
+    else if(/\.(xlsx|xlsm|xls|ods)$/.test(nm)||/spreadsheet|ms-excel/.test(tp)) res=await vchFromSheet(file,say);
+    else if(/\.(csv|tsv|txt)$/.test(nm)||tp.startsWith('text/')) res=vchFromText(await file.text());
+    else { const img=await fileToImg(file), W=await vchWorkers(say);
+      try{ res=await vchFromImage(img,img.naturalWidth||img.width,img.naturalHeight||img.height,say,W); } finally{ await W.end(); } }
+    if(!res||!res.rows.length){ say(text!=null&&!file?'⚠️ لم أجد أسطر أصناف في النص الملصوق':'⚠️ لم أقرأ أي سطر — صوّر السند مستقيماً وواضحاً، أو ارفعه PDF / Excel'); return; }
+    vchFill(res);
+  }catch(e){ console.error(e); say('⚠️ تعذّرت القراءة — تحقق من الإنترنت وجرّب مرة أخرى'); }
+  finally{ vchBusy=false; }
+}
+function vchOpenDept(){
+  if(id('MOD-DADD').classList.contains('open')) return;
+  const d=DEPT_KEYS.includes(curTab)?curTab:'tag';
+  if(curTab!==d) showTab(d);
+  openDeptMulti(d);
+}
+// لصق من الحافظة: جدول منسوخ من Excel (نص) له الأولوية لأنه دقيق 100% — وإلا الصورة
+document.addEventListener('paste',e=>{
+  if(!CU) return;
+  const cd=e.clipboardData; if(!cd) return;
+  const it=[...(cd.items||[])].find(i=>i.type.startsWith('image/'));
+  const txt=cd.getData?.('text/plain')||'';
+  const inField=/^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName||'')||e.target?.isContentEditable;
+  const open=id('MOD-DADD').classList.contains('open');
+  if(txt&&(it||(open&&!inField))){ const r=vchFromText(txt); if(r.rows.length){ e.preventDefault(); vchOpenDept(); importVoucher(null,txt); return; } }
+  if(!it) return;
+  if(document.querySelector('.mov.open')&&!open) return;
+  e.preventDefault();
+  const f=it.getAsFile(); vchOpenDept(); importVoucher(f);
 });
 async function pasteVoucherBtn(){
   try{
     if(!navigator.clipboard?.read) throw 0;
-    const items=await navigator.clipboard.read();
-    for(const ci of items){ const t=ci.types.find(x=>x.startsWith('image/')); if(t){ const b=await ci.getType(t); importVoucher(new File([b],'paste.png',{type:t})); return; } }
-    id('VCH-ST').textContent='⚠️ لا توجد صورة في الحافظة — انسخ صورة السند أولاً (Ctrl+C أو زر نسخ الصورة)';
-  }catch(e){ id('VCH-ST').textContent='💡 اضغط Ctrl+V هنا للصق الصورة'; }
+    const items=await navigator.clipboard.read(); let img=null, txt='';
+    for(const ci of items){
+      if(ci.types.includes('text/plain')) txt=await (await ci.getType('text/plain')).text();
+      const t=ci.types.find(x=>x.startsWith('image/')); if(t) img=new File([await ci.getType(t)],'paste.png',{type:t});
+    }
+    if(txt&&vchFromText(txt).rows.length){ importVoucher(null,txt); return; }
+    if(img){ importVoucher(img); return; }
+    id('VCH-ST').textContent='⚠️ لا توجد صورة أو جدول في الحافظة — انسخ صورة السند أو خانات Excel أولاً';
+  }catch(e){ id('VCH-ST').textContent='💡 اضغط Ctrl+V هنا للصق الصورة أو الجدول'; }
 }
+// سحب وإفلات ملف السند على النافذة
+['dragover','drop'].forEach(ev=>document.addEventListener(ev,e=>{
+  if(!id('MOD-DADD')?.classList.contains('open')||!e.dataTransfer?.types?.includes('Files')) return;
+  e.preventDefault(); if(ev==='drop'&&e.dataTransfer.files[0]) importVoucher(e.dataTransfer.files[0]);
+}));
 
 // ── بعد DONE: اقتراح القسم التالي ──
 const NEXT_STEPS={hal:['tam','sub'],tam:['dam'],dam:['tag'],tag:['abb','sub']};
@@ -5550,7 +8377,7 @@ function openAbbDoc(rows,{d1,d2,src,docNo:fixedNo,docId,reprint,win,corr,revised
   <img class="wm" src="${BRAND_LOGO}" alt="">
   <div class="fit">
   <header>
-    <div class="doc"><h1>إذن تسليم</h1><div class="en">DELIVERY NOTE</div><div class="no">${docNo}</div>${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
+    <div class="doc"><h1>إذن تسليم</h1><div class="en">DELIVERY NOTE</div><div class="no">${docNo}</div>${docCodesHtml(docNo)}${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
     <div class="brand"><img src="${BRAND_LOGO}" alt="GOLD ERA"><div class="tag"><b>عصر الذهب لصناعة الذهب</b><span>GOLD ERA FOR GOLD INDUSTRY</span></div></div>
   </header>
 
@@ -5644,7 +8471,7 @@ function openDamDoc(rows,meta={}){
   <img class="wm" src="${BRAND_LOGO}" alt="">
   <div class="fit">
   <header>
-    <div class="doc"><h1>كشف أعداد الدمغة</h1><div class="en">HALLMARK COUNT SHEET</div><div class="no">${docNo}</div>${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
+    <div class="doc"><h1>كشف أعداد الدمغة</h1><div class="en">HALLMARK COUNT SHEET</div><div class="no">${docNo}</div>${docCodesHtml(docNo)}${revised||corr?'<div class="rev">نسخة مُصحّحة ✎</div>':''}</div>
     <div class="brand"><img src="${BRAND_LOGO}" alt="GOLD ERA"><div class="tag"><b>عصر الذهب لصناعة الذهب</b><span>GOLD ERA FOR GOLD INDUSTRY</span></div></div>
   </header>
   <div class="meta">
@@ -5940,6 +8767,7 @@ async function loadArchive(force){
   silver.forEach(r=>push('silver',r,{type:r.done?'DONE ✅':'فضة',item:r.item||'',w875:+r.w1000||+r.weight||0,unit1000:true}));
   docs.forEach(r=>push('docs',r,{type:(r.title||'مستند')+(r.revCount?' ✎':''),item:r.docNo||r.id,count:r.totals?.count||0,weight:r.totals?.weight||0,w875:r.totals?.w875||0,
     note:(r.rows||[]).map(x=>x.item).join('، ')}));
+  await arcAddArchived(push);
   arcData=R.sort((a,b)=>(b.at||0)-(a.at||0));
   // قوائم الفلاتر من البيانات الفعلية
   const fill=(sid,vals,lbl)=>{ const el=id(sid),cur=el.value; el.innerHTML=`<option value="">${lbl}</option>`+vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join(''); if(vals.map(String).includes(cur)) el.value=cur; };
@@ -5990,7 +8818,7 @@ function renderArchive(){
     <th>التاريخ</th><th>القسم</th><th>النوع</th><th>الصنف / المستند</th><th>العدد</th><th>الوزن</th><th>العيار</th><th>875</th><th>البيان</th><th>بواسطة</th><th></th>
   </tr></thead><tbody>${shown.map(r=>{
     const [ic,lb,co]=arcSrcLabel(r);
-    const act=r.src==='docs'
+    const act=r.arc?'<span title="سجل مؤرشف — للعرض فقط" style="color:var(--muted)">🗄</span>':r.src==='docs'
       ? `<button class="btn bxs bp" onclick="reprintDoc('${esc(r.id)}')" title="إعادة طباعة">🖨️</button>`
       : `<button class="btn bxs bs" onclick="openEditRec('${r.src}','${esc(r.id)}')" title="تعديل">✏️</button>`;
     return `<tr>
@@ -6083,8 +8911,8 @@ async function loadAbb(){
 
 async function loadLog(){
   const dept=v('LF-DEPT'),from=v('LF-FROM'),to=v('LF-TO'),q=id('LF-Q').value.trim();
-  const snap=await DB.collection('logs').orderBy('at','desc').limit(300).get();
-  let data=snap.docs.map(d=>d.data());
+  let data=(from||to)?(await byPeriod('logs',from,to)).sort((a,b)=>(b.at||0)-(a.at||0))
+    :(await DB.collection('logs').orderBy('at','desc').limit(300).get()).docs.map(d=>d.data());
   if(dept)data=data.filter(l=>l.from===dept||l.to===dept);
   if(from)data=data.filter(l=>l.date>=from);
   if(to)data=data.filter(l=>l.date<=to);
@@ -6111,8 +8939,8 @@ async function loadLog(){
 async function loadRef(){
   const from=v('RF-FROM'),to=v('RF-TO'),dept=v('RF-DEPT'),item=id('RF-ITEM').value.trim();
   if(!from&&!to){toast('er','اختر تاريخاً');return;}
-  const snap=await DB.collection('logs').orderBy('at','desc').get();
-  let data=snap.docs.map(d=>d.data()).filter(l=>!['login','main_mov'].includes(l.type));
+  // تحميل سجلات الفترة المطلوبة فقط (مع الأرشيف) بدل تحميل السجل كله
+  let data=(await byPeriod('logs',from,to)).sort((a,b)=>(b.at||0)-(a.at||0)).filter(l=>!['login','main_mov'].includes(l.type));
   if(from)data=data.filter(l=>l.date>=from);
   if(to)data=data.filter(l=>l.date<=to);
   if(dept)data=data.filter(l=>l.from===dept||l.to===dept);
@@ -6153,7 +8981,7 @@ async function loadUsers(){
     <div class="tc" style="overflow:visible">
       <div style="padding:16px;display:flex;align-items:center;gap:12px">
         <div style="width:42px;height:42px;border-radius:50%;background:${u.role==='admin'?'var(--gold)':'var(--s3)'};color:${u.role==='admin'?'#000':'var(--tx)'};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0">${u.name[0]}</div>
-        <div style="flex:1"><div style="font-weight:800">${u.name}</div><div style="font-size:10px;color:var(--muted)">@${u.username} · ${ROLES[u.role]||u.role}</div></div>
+        <div style="flex:1"><div style="font-weight:800">${u.name}</div><div style="font-size:10px;color:var(--muted)">@${u.username} · ${ROLES[u.role]||u.role}</div><div style="font-size:10px;color:var(--inf);margin-top:2px">🔐 ${esc(userPermLbl(u))}</div></div>
         <div style="display:flex;gap:6px">
           ${u.username!=='MINA'&&u.username!==CU?.username?`<button class="btn bxs ${u.active?'bd2':'bg2'}" onclick="toggleUser('${u.username}')">${u.active?'تعطيل':'تفعيل'}</button>`:''}
           <button class="btn bxs bs" onclick="editUser('${u.username}')">✏️</button>
@@ -6163,14 +8991,17 @@ async function loadUsers(){
   `).join('');
 }
 
-function openAddUser(){id('UM-ID').value='';['UM-NAME','UM-UN','UM-PW'].forEach(x=>id(x).value='');id('UM-ROLE').value='worker';id('UM-T').textContent='مستخدم جديد';om('MOD-USER');}
-function editUser(un){const u=users.find(u=>u.username===un);if(!u)return;id('UM-ID').value=un;id('UM-NAME').value=u.name;id('UM-UN').value=u.username;id('UM-PW').value='';id('UM-ROLE').value=u.role;id('UM-T').textContent='تعديل: '+u.name;om('MOD-USER');}
+function openAddUser(){id('UM-ID').value='';['UM-NAME','UM-UN','UM-PW'].forEach(x=>id(x).value='');id('UM-ROLE').value='worker';id('UM-T').textContent='مستخدم جديد';umPermsFill(null);om('MOD-USER');}
+function editUser(un){const u=users.find(u=>u.username===un);if(!u)return;id('UM-ID').value=un;id('UM-NAME').value=u.name;id('UM-UN').value=u.username;id('UM-PW').value='';id('UM-ROLE').value=u.role;id('UM-T').textContent='تعديل: '+u.name;umPermsFill(u);om('MOD-USER');}
 
 async function saveUser(){
   const eid=v('UM-ID'),name=v('UM-NAME').trim(),un=v('UM-UN').trim(),pw=v('UM-PW'),role=v('UM-ROLE');
   if(!name||!un){toast('er','أكمل البيانات');return;}
   if(!eid&&!pw){toast('er','كلمة المرور مطلوبة');return;}
-  const data={username:un,name,role,active:true};if(pw)data.password=pw;if(!eid)data.createdAt=Date.now();
+  if(CU?.role!=='admin'){toast('er','إدارة المستخدمين للمدير فقط');return;}
+  const pm=role==='admin'?{depts:null,viewAll:false}:umPermsRead();
+  if(Array.isArray(pm.depts)&&!pm.depts.length&&!pm.viewAll){toast('er','اختر قسماً واحداً على الأقل أو فعّل «كل الأقسام»');return;}
+  const data={username:un,name,role,...pm};if(!eid)data.active=true;if(pw)data.password=pw;if(!eid)data.createdAt=Date.now();
   await DB.doc(`users/${un}`).set(data,{merge:true});
   toast('ok',eid?'تم التحديث':'تمت الإضافة');cm('MOD-USER');loadUsers();
 }
@@ -6181,7 +9012,7 @@ async function toggleUser(un){if(un==='MINA'||un===CU?.username){toast('er','ل�
 // UTILS
 // ================================================================
 function movDelta(m){
-  if(m.type==='وارد'||m.type==='استرجاع'||m.type==='وارد استوك'||m.type==='سلفة') return (m.w875||0);
+  if(m.type==='وارد'||m.type==='استرجاع'||m.type==='وارد استوك'||m.type==='سلفة'||m.type==='رصيد افتتاحي') return (m.w875||0);
   if(m.type==='منصرف'||m.type==='عباسية'||m.type==='رد سلفة'||m.type==='تسوية استوك'||m.type==='خسية') return -(m.w875||0);
   return 0;
 }
@@ -6280,6 +9111,624 @@ function toast(type,msg){
   el.innerHTML=`<span>${icons[type]}</span><span>${msg}</span>`;
   id('TC').appendChild(el);setTimeout(()=>el.remove(),4500);
 }
+
+// ================================================================
+// ================================================================
+//  v8 — صلاحيات الأقسام · سجل التعديلات · التقارير · التنبيهات
+//       الأرشفة والتحميل بالفترة · العمل بدون إنترنت · باركود/QR
+// ================================================================
+// ================================================================
+const SECTIONS={main:'🏦 الخزنة الرئيسية',sub:'💼 الخزنة الفرعية',hal:'🔥 الحل',tam:'⚙️ التصنيع',dam:'🔨 الدمغة',tag:'📦 التغليف',sil:'🥈 الفضة',abb:'🏪 العباسية',loss:'📉 الخسية'};
+const SEC_KEYS=Object.keys(SECTIONS);
+// تبويبات المتابعة العامة (تظهر لمن يرى كل الأقسام)
+const GENERAL_TABS=['dash','ovr','aud','arc','ops','log','ref','rep'];
+const ADMIN_TABS=['users','trail'];
+
+// ───────────────────────── 1) الصلاحيات ─────────────────────────
+// المدير: كل شيء. مستخدم بلا قائمة أقسام (حسابات قديمة): كما كان. مستخدم له قائمة أقسام: يرى ويعدّل أقسامه فقط.
+const isAdmin=()=>CU?.role==='admin';
+const restricted=()=>!!CU&&!isAdmin()&&Array.isArray(CU.depts);
+const canEdit=sec=>!!CU&&(!restricted()||CU.depts.includes(sec));
+const canView=sec=>canEdit(sec)||(restricted()&&!!CU.viewAll);
+const seeAll=()=>!!CU&&(!restricted()||!!CU.viewAll);
+function tabAllowed(t){
+  if(!CU) return false;
+  if(ADMIN_TABS.includes(t)) return isAdmin()||(t==='trail'&&!restricted()&&CU.role==='supervisor');
+  if(SECTIONS[t]) return canView(t);
+  return seeAll();
+}
+function firstTab(){ return tabAllowed('dash')?'dash':(SEC_KEYS.find(k=>tabAllowed(k))||'dash'); }
+function applyPerms(){
+  document.querySelectorAll('.tab[onclick*="showTab("]').forEach(el=>{
+    const t=(el.getAttribute('onclick').match(/showTab\('(\w+)'\)/)||[])[1]; if(!t) return;
+    el.style.display=tabAllowed(t)?'':'none';
+  });
+  const adm=isAdmin();
+  id('RESET-BTN').style.display=adm?'inline-flex':'none';
+  id('CAT-BTN').style.display=adm?'inline-block':'none';
+  const q=id('TOP-Q'); if(q) q.style.display=seeAll()?'':'none';
+  document.body.classList.toggle('ro-user',restricted());
+}
+const deptOfRec=iid=>((cache.dept||[]).find(d=>d.id===iid)||(deptItems||[]).find(d=>d.id===iid)||{}).dept||null;
+const secOfCol=(col,rid,rec)=>col==='dept'?((rec&&rec.dept)||deptOfRec(rid)):col==='silver'?'sil':col==='stock'?'main':col==='loss'?'loss':col;
+function deny(sec){ toast('er',`🔒 ليس لديك صلاحية التعديل في ${SECTIONS[sec]||'هذا القسم'}`); }
+// حماية كل نقاط الإدخال والحذف والتعديل
+const GUARDS={
+  openAddStock:'main',saveStock:'main',openRecovery:'main',saveRecovery:'main',delMain:'main',delStock:'main',openStockTransfer:'main',saveStockTransfer:'main',
+  openSubTransfer:'sub',saveSubTransfer:'sub',openSubAbbasiya:'sub',saveSubAbbasiya:'sub',delSub:'sub',
+  openAddSilver:'sil',saveAddSilver:'sil',markSilDone:'sil',delSil:'sil',
+  openLoss:'loss',saveLoss:'loss',delLoss:'loss',openAbbSheet:'abb',printDamSheet:'dam',
+  openMainMov:m=>m==='addSub'?'sub':'main', saveMainMov:()=>mmMode==='addSub'?'sub':'main',
+  openDeptMulti:d=>d, saveDeptMulti:()=>draDept, openNextStepAll:d=>d, openNextStep:(i,d)=>d||deptOfRec(i),
+  markDone:(i,d)=>d||deptOfRec(i), delDept:(i,d)=>d||deptOfRec(i), openDeptTr:i=>deptOfRec(i), saveDeptTransfer:()=>deptOfRec(trItemId),
+  openEditCnt:i=>deptOfRec(i), saveEditCnt:()=>deptOfRec(editItemId), openAddDept:d=>d, saveAddDept:()=>addDeptKey,
+  openEditRec:(c,r)=>secOfCol(c,r), saveEditRec:()=>secOfCol(erCol,erRec&&erRec.id,erRec), undoByRecord:(c,r)=>secOfCol(c,r),
+};
+function installGuards(){
+  Object.entries(GUARDS).forEach(([fn,g])=>{
+    const orig=window[fn]; if(typeof orig!=='function') return;
+    window[fn]=function(...a){
+      if(restricted()){ const sec=typeof g==='function'?g(...a):g; if(!sec||!canEdit(sec)){ deny(sec); return; } }
+      return orig.apply(this,a);
+    };
+  });
+  // التراجع وتعديل العمليات: المستخدم المقيَّد يتراجع عن عملياته هو فقط
+  ['undoOperation','editOperation'].forEach(fn=>{ const orig=window[fn];
+    window[fn]=async function(docId,...r){
+      if(restricted()){ const op=(opsAll||[]).find(o=>o.id===docId)||undoStack.find(o=>o.docId===docId);
+        const by=op?(op.by??CU.username):null; if(by!==CU.username){ toast('er','🔒 يمكنك التراجع عن عملياتك أنت فقط'); return; } }
+      return orig.call(this,docId,...r);
+    }; });
+  // الرصيد الافتتاحي المُرحَّل من الأرشيف لا يُحذف ولا يُعدَّل
+  ['delMain','delSub'].forEach(fn=>{ const orig=window[fn]; window[fn]=function(mid){
+    const m=(fn==='delMain'?mainMovs:subMovs).find(x=>x.id===mid); if(m&&m.type==='رصيد افتتاحي'){ toast('er','الرصيد الافتتاحي المُرحَّل من الأرشيف لا يُحذف'); return; }
+    return orig.apply(this,arguments); }; });
+  const st=window.showTab; window.showTab=function(t){ if(CU&&!tabAllowed(t)){ toast('er','🔒 هذه الصفحة غير متاحة لحسابك'); return; } return st.apply(this,arguments); };
+  const pu=window.pushUndo; window.pushUndo=function(e){ trailLabel=e&&e.label||trailLabel; const r=pu.apply(this,arguments); trailSoon(300); alertsSoon(); return r; };
+  const lo=window.logout; window.logout=function(){ trailFlush(); id('ALERT-BTN').style.display='none'; return lo.apply(this,arguments); };
+}
+// بعد الدخول: طبّق الصلاحيات وافتح أول صفحة مسموحة، وحدّث بيانات الحساب من القاعدة
+async function afterLogin(isNew){
+  applyPerms(); id('ALERT-BTN').style.display='inline-flex';
+  if(isNew){ trailFlush(); trailAdd({col:'users',id:CU.username,act:'login',sec:'',item:CU.name||CU.username},'تسجيل دخول'); trailFlush(); }
+  loadAlertCfg().then(refreshAlerts).catch(()=>{});
+  refreshMe();
+  const ft=firstTab();
+  if(ft!=='dash'){ startLive(); loadCatalogWeights(); }
+  showTab(ft);
+  const dc=new URLSearchParams(location.search).get('doc');
+  if(dc&&seeAll()) conf(`فتح المستند ${dc}؟`,()=>openDocByCode(dc));
+}
+async function refreshMe(){
+  try{ const s=await DB.doc(`users/${CU.username}`).get(); if(!s.exists||!CU) return; const u=s.data();
+    if(!u.active){ toast('er','تم تعطيل هذا الحساب'); logout(); return; }
+    const ch=JSON.stringify([u.role,u.depts||null,!!u.viewAll,u.name])!==JSON.stringify([CU.role,CU.depts||null,!!CU.viewAll,CU.name]);
+    CU=u; try{ localStorage.setItem('ge_session',JSON.stringify(u)); }catch(e){}
+    if(ch){ id('TN').textContent=u.name; id('TR').textContent=ROLES[u.role]||u.role; applyPerms(); if(!tabAllowed(curTab)) showTab(firstTab()); }
+  }catch(e){}
+}
+// نافذة المستخدم: اختيار الأقسام
+function umPermsHtml(u){
+  const all=!u||!Array.isArray(u.depts);
+  return `<div style="margin-top:14px;border:1px solid var(--bd);border-radius:10px;padding:12px">
+    <div style="font-weight:800;font-size:12.5px;margin-bottom:8px">🔐 الصلاحيات <span style="color:var(--muted);font-weight:500;font-size:11px">(المدير له كل الصلاحيات دائماً)</span></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:12.5px;cursor:pointer;margin-bottom:8px"><input type="checkbox" id="UM-ALL" ${all?'checked':''} onchange="umPermsToggle()"> كل الأقسام (بدون تقييد)</label>
+    <div id="UM-DEPTS" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">${SEC_KEYS.map(k=>
+      `<label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:6px 8px"><input type="checkbox" class="um-d" value="${k}" ${!all&&u.depts.includes(k)?'checked':''}> ${SECTIONS[k]}</label>`).join('')}</div>
+    <label id="UM-VA-W" style="display:flex;gap:8px;align-items:center;font-size:12px;cursor:pointer;margin-top:10px;color:var(--tx2)"><input type="checkbox" id="UM-VA" ${u&&u.viewAll?'checked':''}> يرى باقي الأقسام ولوحة التحكم (قراءة فقط)</label>
+  </div>`;
+}
+function umPermsToggle(){ const all=id('UM-ALL').checked; id('UM-DEPTS').style.opacity=all?.4:1; id('UM-DEPTS').style.pointerEvents=all?'none':''; id('UM-VA-W').style.display=all?'none':'flex'; }
+function umPermsFill(u){ id('UM-PERMS').innerHTML=umPermsHtml(u); umPermsToggle(); }
+function umPermsRead(){ if(id('UM-ALL').checked) return {depts:null,viewAll:false};
+  return {depts:[...document.querySelectorAll('#UM-DEPTS .um-d:checked')].map(x=>x.value),viewAll:id('UM-VA').checked}; }
+const userPermLbl=u=>u.role==='admin'?'كل الصلاحيات':!Array.isArray(u.depts)?'كل الأقسام':(u.depts.length?u.depts.map(k=>SECTIONS[k]||k).join(' · '):'بدون أقسام')+(u.viewAll?' · 👁 يرى الباقي':'');
+
+// ───────────────────────── 2) سجل التعديلات (من عدّل ماذا) ─────────────────────────
+const TRAIL_COLS=new Set(['main','sub','dept','stock','silver','loss','users','docs']);
+const TRAIL_SKIP=new Set(['balance','at','opId','time','by','versions','rows','totals','createdAt','issuedAt','revisedAt','w24','w1000']);
+const TRAIL_F={weight:'الوزن',karat:'العيار',w875:'بعيار 875',count:'العدد',date:'التاريخ',note:'البيان',item:'الصنف',name:'الاسم',type:'النوع',done:'DONE',dept:'القسم',
+  role:'الدور',active:'مفعّل',depts:'الأقسام',viewAll:'يرى الباقي',password:'كلمة المرور',loss:'الخسية',takhyeef:'التحييف',revCount:'عدد التصحيحات',loanName:'اسم السلفة',username:'اسم المستخدم'};
+const TRAIL_COLN={main:'الخزنة الرئيسية',sub:'الخزنة الفرعية',dept:'قسم',stock:'الاستوك',silver:'الفضة',loss:'الخسية',users:'المستخدمون',docs:'الفواتير'};
+const TRAIL_ACT={create:['➕','إضافة','var(--ok)'],update:['✏️','تعديل','var(--warn)'],delete:['🗑','حذف','var(--err)'],login:['🔑','دخول','var(--inf)'],archive:['🗄','أرشفة','var(--inf)']};
+let trailBuf=[], trailTimer=null, trailLabel='';
+function trailNote(col,rid,action,data){
+  try{
+    if(!CU||!TRAIL_COLS.has(col)) return;
+    const before=(cache[col]||[]).find(x=>x.id===rid)||(col==='users'?(users||[]).find(u=>u.username===rid):null)||null;
+    let act=action==='set'?(before?'update':'create'):action, ch=null;
+    if(act==='update'){ ch={};
+      if(before) for(const k in data){ if(TRAIL_SKIP.has(k)) continue;
+        if(JSON.stringify(before[k]??null)!==JSON.stringify(data[k]??null)) ch[k]=k==='password'?['•••','•••']:[before[k]??null,data[k]??null]; }
+      else for(const k in data){ if(!TRAIL_SKIP.has(k)) ch[k]=[null,k==='password'?'•••':data[k]]; }
+      if(!Object.keys(ch).length) return; }
+    const src=act==='delete'?(before||{}):act==='create'?(data||{}):{...(before||{}),...(data||{})};
+    trailAdd({col,id:rid,act,sec:secOfCol(col,rid,src)||'',item:String(src.item||src.name||src.docNo||src.username||''),type:src.type||'',
+      weight:+src.weight||0,karat:src.karat??'',w875:+src.w875||0,date:src.date||'',ch});
+  }catch(e){ console.warn('trail',e); }
+}
+function trailAdd(entry,label){ if(label) trailLabel=label; trailBuf.push(entry); trailSoon(1500); }
+function trailSoon(ms){ clearTimeout(trailTimer); trailTimer=setTimeout(trailFlush,ms); }
+function trailFlush(){
+  clearTimeout(trailTimer);
+  if(!trailBuf.length||!CU){ trailBuf=[]; trailLabel=''; return; }
+  const items=trailBuf.splice(0), at=Date.now(), tid='tr'+at+Math.random().toString(36).slice(2,5);
+  const A=k=>items.filter(i=>i.act===k).length;
+  const label=trailLabel||(items.length===1?`${(TRAIL_ACT[items[0].act]||['','تغيير'])[1]} — ${TRAIL_COLN[items[0].col]||items[0].col}${items[0].item?': '+items[0].item:''}`:(items.every(i=>i.col===items[0].col&&i.act===items[0].act)?`${(TRAIL_ACT[items[0].act]||['','تغيير'])[1]} ${items.length} سجل — ${TRAIL_COLN[items[0].col]||items[0].col}`:`${items.length} تغيير`));
+  trailLabel='';
+  firestore.collection('audit').doc(tid).set({id:tid,at,date:today(),time:nowTime(),by:CU.username,name:CU.name||'',role:CU.role||'',label,
+    secs:[...new Set(items.map(i=>i.sec).filter(Boolean))],n:items.length,c:A('create'),u:A('update'),d:A('delete'),
+    items:JSON.parse(JSON.stringify(items.slice(0,80)))}).catch(e=>console.warn('audit',e));
+}
+let trailRows=[];
+async function loadTrail(){
+  if(!id('TRL-D1').value){ const d=new Date(Date.now()-13*864e5); id('TRL-D1').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); id('TRL-D2').value=today(); }
+  id('TRL-TABLE').innerHTML='<div class="empty"><span class="eic">⏳</span><p>جاري التحميل...</p></div>';
+  trailRows=(await byPeriod('audit',id('TRL-D1').value,id('TRL-D2').value)).sort((a,b)=>b.at-a.at);
+  const us=[...new Set(trailRows.map(r=>r.by))].sort(), cur=id('TRL-U').value;
+  id('TRL-U').innerHTML='<option value="">كل المستخدمين</option>'+us.map(u=>`<option value="${esc(u)}">${esc(u)}</option>`).join(''); if(us.includes(cur)) id('TRL-U').value=cur;
+  if(id('TRL-S').options.length<2) id('TRL-S').innerHTML='<option value="">كل الأقسام</option>'+SEC_KEYS.map(k=>`<option value="${k}">${SECTIONS[k]}</option>`).join('')+'<option value="users">👥 المستخدمون</option><option value="docs">🖨️ الفواتير</option>';
+  renderTrail();
+}
+const trailVal=(k,x)=>x===null||x===undefined||x===''?'—':k==='depts'?(Array.isArray(x)?x.map(d=>SECTIONS[d]||d).join('، ')||'لا شيء':'الكل'):typeof x==='boolean'?(x?'نعم':'لا'):typeof x==='number'?N3(x):String(x);
+function renderTrail(){
+  const u=id('TRL-U').value, s=id('TRL-S').value, a=id('TRL-A').value, q=normAr(id('TRL-Q').value);
+  const rows=trailRows.filter(r=>(!u||r.by===u)&&(!s||(r.secs||[]).includes(s)||(r.items||[]).some(i=>i.col===s))&&(!a||(r.items||[]).some(i=>i.act===a))
+    &&(!q||normAr([r.label,r.by,r.name,...(r.items||[]).map(i=>i.item+' '+i.weight)].join(' ')).includes(q)));
+  const per={}; rows.forEach(r=>per[r.by]=(per[r.by]||0)+1);
+  id('TRL-SUM').innerHTML=`<div class="sc" style="border-right:3px solid var(--gold)"><div class="slb">عدد العمليات</div><div class="sv">${rows.length}</div><div class="su">في الفترة المختارة</div></div>
+    <div class="sc"><div class="slb">➕ إضافة · ✏️ تعديل · 🗑 حذف</div><div class="sv num" style="font-size:18px">${rows.reduce((t,r)=>t+(r.c||0),0)} · ${rows.reduce((t,r)=>t+(r.u||0),0)} · ${rows.reduce((t,r)=>t+(r.d||0),0)}</div><div class="su">سجل</div></div>
+    <div class="sc" style="font-size:11px"><div class="slb">حسب المستخدم</div><div style="line-height:1.8">${Object.entries(per).sort((x,y)=>y[1]-x[1]).slice(0,6).map(([k,n])=>`${esc(k)}: <b>${n}</b>`).join(' · ')||'—'}</div></div>`;
+  id('TRL-TABLE').innerHTML=rows.length?`<table><thead><tr><th>التاريخ والوقت</th><th>المستخدم</th><th>العملية</th><th>الأقسام</th><th>السجلات</th><th></th></tr></thead><tbody>${rows.slice(0,400).map((r,i)=>`
+    <tr style="cursor:pointer" onclick="const x=document.getElementById('trd${i}');x.style.display=x.style.display==='none'?'':'none'">
+      <td style="font-size:11px;white-space:nowrap">${arabicDate(r.date)}<div style="font-family:monospace;font-size:10px;color:var(--muted)">${r.time||''}</div></td>
+      <td style="font-weight:700">${esc(r.name||r.by)}<div style="font-size:10px;color:var(--muted)">@${esc(r.by)}</div></td>
+      <td style="font-weight:700">${esc(r.label)}</td>
+      <td style="font-size:11px">${(r.secs||[]).map(k=>esc(SECTIONS[k]||TRAIL_COLN[k]||k)).join(' · ')||'—'}</td>
+      <td style="white-space:nowrap;font-size:11.5px">${r.c?`<span style="color:var(--ok)">➕${r.c}</span> `:''}${r.u?`<span style="color:var(--warn)">✏️${r.u}</span> `:''}${r.d?`<span style="color:var(--err)">🗑${r.d}</span>`:''}</td>
+      <td style="color:var(--muted)">▾</td></tr>
+    <tr id="trd${i}" style="display:none"><td colspan="6" style="background:var(--s2);padding:8px 14px">${(r.items||[]).map(it=>{ const A=TRAIL_ACT[it.act]||['•',it.act,'var(--muted)'];
+      return `<div style="font-size:11.5px;padding:4px 0;border-bottom:1px dashed var(--bd)"><b style="color:${A[2]}">${A[0]} ${A[1]}</b> · ${esc(it.col==='dept'?(SECTIONS[it.sec]||'قسم'):(TRAIL_COLN[it.col]||it.col))}
+        ${it.type?` · ${esc(it.type)}`:''}${it.item?` · <b>${esc(it.item)}</b>`:''}${it.weight?` · <span class="num">${N(it.weight)}</span> جرام عيار ${esc(it.karat)}`:''}
+        ${it.ch?`<div style="margin:3px 14px 0;color:var(--tx2)">${Object.entries(it.ch).map(([k,[x,y]])=>`${esc(TRAIL_F[k]||k)}: <span style="color:var(--err)">${esc(trailVal(k,x))}</span> ← <span style="color:var(--ok)">${esc(trailVal(k,y))}</span>`).join(' &nbsp;|&nbsp; ')}</div>`:''}</div>`; }).join('')||'<span style="color:var(--muted);font-size:11px">—</span>'}
+      ${r.n>(r.items||[]).length?`<div style="font-size:10.5px;color:var(--muted);padding-top:4px">+ ${r.n-(r.items||[]).length} سجل آخر</div>`:''}</td></tr>`).join('')}</tbody></table>`
+    :'<div class="empty"><span class="eic">🕵️</span><p>لا توجد تعديلات في هذه الفترة</p></div>';
+}
+
+// ───────────────────────── 4) التحميل بالفترة + الأرشفة السنوية ─────────────────────────
+const ARC_COLS=['main','sub','logs','ops','snap','loss','audit'];
+const dayTs=(d,end)=>new Date(d+(end?'T23:59:59.999':'T00:00:00')).getTime();
+// يحمّل سجلات فترة محددة فقط (من البيانات الحالية + الأرشيف) بدل تحميل المجموعة كلها
+async function byPeriod(col,d1,d2,withArc=true){
+  const run=async c=>{ try{
+      let q=firestore.collection(c);
+      if(col==='audit'||col==='ops'){ if(d1) q=q.where('at','>=',dayTs(d1)); if(d2) q=q.where('at','<=',dayTs(d2,true)); }
+      else { if(d1) q=q.where('date','>=',d1); if(d2) q=q.where('date','<=',d2); }
+      const s=await q.get(); return s.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){ console.warn('byPeriod',c,e); return []; } };
+  const [a,b]=await Promise.all([run(col),withArc?run('arc_'+col):Promise.resolve([])]);
+  return [...a,...b.map(x=>({...x,_arc:true}))];
+}
+function downloadFile(name,content,type){ const b=content instanceof Blob?content:new Blob([content],{type:type||'application/octet-stream'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500); }
+const BACKUP_COLS=['main','sub','dept','stock','silver','loss','logs','ops','snap','docs','audit','settings','arc_main','arc_sub','arc_logs','arc_ops','arc_snap','arc_loss','arc_audit'];
+async function downloadBackup(silent){
+  if(!isAdmin()){ toast('er','النسخة الاحتياطية للمدير فقط'); return false; }
+  if(!silent) toast('in','⏳ جاري تجهيز النسخة الاحتياطية...');
+  const out={app:'GOLD ERA',exportedAt:new Date().toISOString(),by:CU.username,data:{}};
+  for(const c of BACKUP_COLS){ try{ const s=await firestore.collection(c).get(); out.data[c]=s.docs.map(d=>({id:d.id,...d.data()})); }catch(e){ out.data[c]=[]; } }
+  downloadFile(`GoldEra-backup-${today()}-${nowTime().replace(/:/g,'')}.json`,JSON.stringify(out),'application/json');
+  if(!silent) toast('ok','✅ تم تنزيل النسخة الاحتياطية');
+  return true;
+}
+let arcPlan=null;
+function openArchiveTool(){
+  if(!isAdmin()){ toast('er','الأرشفة للمدير فقط'); return; }
+  id('ARCH-CUT').value=new Date().getFullYear()+'-01-01'; id('ARCH-TXT').value=''; id('ARCH-GO').disabled=true; id('ARCH-GO').style.opacity=.4; id('ARCH-ST').textContent='';
+  om('MOD-ARCH'); archPreview();
+}
+const archOpen=main=>{ const open=new Set(loanOutstanding(main).filter(l=>l.rem>0.0005).map(l=>l.id)); return m=>(m.type==='سلفة'&&open.has(m.id))||(m.type==='رد سلفة'&&open.has(m.loanRef)); };
+async function archPreview(){
+  const cut=id('ARCH-CUT').value; arcPlan=null; archBtn();
+  if(!cut){ id('ARCH-PREV').textContent='اختر التاريخ'; return; }
+  id('ARCH-PREV').innerHTML='<span style="color:var(--muted)">جاري الحساب...</span>';
+  clearCache();
+  const [main,sub]=await Promise.all([getCol('main'),getCol('sub')]);
+  const keep=archOpen(main), mvM=main.filter(m=>m.date&&m.date<cut&&!keep(m)), mvS=sub.filter(m=>m.date&&m.date<cut);
+  const kept=main.filter(m=>m.date&&m.date<cut&&keep(m)).length;
+  const others={}; for(const c of ['logs','ops','snap','loss','audit']){ const r=await byPeriod(c,null,null,false); const cutTs=dayTs(cut); others[c]=r.filter(x=>x.date?x.date<cut:(x.at||0)<cutTs); }
+  arcPlan={cut,main,sub,mvM,mvS,others,balM:calcBal(main),balS:calcBal(sub)};
+  const L={logs:'سجل الحركات',ops:'سجل العمليات',snap:'الإجمالي اليومي',loss:'الخسية',audit:'سجل التعديلات'};
+  const chip=(n,v)=>`<span style="display:inline-block;background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;margin:2px">${n}: <b class="num">${v}</b></span>`;
+  const total=mvM.length+mvS.length+Object.values(others).reduce((s,a)=>s+a.length,0);
+  id('ARCH-PREV').innerHTML=chip('حركات الرئيسية',mvM.length)+chip('حركات الفرعية',mvS.length)+Object.entries(others).map(([c,a])=>chip(L[c],a.length)).join('')
+    +`<div style="margin-top:8px;font-weight:700">سيُنقل للأرشيف: <span class="num" style="color:var(--inf)">${total}</span> سجل قبل ${arabicDate(cut)}</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.8">رصيد الرئيسية <b class="num" style="color:var(--gold)">${N(arcPlan.balM)}</b> ورصيد الفرعية <b class="num" style="color:var(--inf)">${N(arcPlan.balS)}</b> يبقيان كما هما (يُسجَّل رصيد افتتاحي لكل صنف).
+      ${kept?`<br>🔒 ${kept} حركة سلف مفتوحة تبقى في مكانها حتى تُرد.`:''}</div>`;
+  arcPlan.total=total; archBtn();
+}
+function archBtn(){ const ok=!!arcPlan&&arcPlan.total>0&&normAr(id('ARCH-TXT').value)===normAr('أرشفة'); id('ARCH-GO').disabled=!ok; id('ARCH-GO').style.opacity=ok?1:.4; }
+const arcHash=s=>{ let h=0; for(const ch of String(s)) h=(h*31+ch.codePointAt(0))>>>0; return h.toString(36); };
+// ينقل حركات خزنة للأرشيف على دفعات؛ كل دفعة ذرّية (نسخ + حذف + تحديث الرصيد الافتتاحي معاً) فلا يتغير الرصيد في أي لحظة
+async function archMoveVault(col,recs,cut,all,say){
+  const pre=col==='main'?'m':'s', base=dayTs(cut)-100000, G={};
+  const key=m=>col==='sub'?'':(isStockOrigin(m)?'@stock':(m.item||'')+'|'+(m.karat||875));
+  const grp=k=>{ if(G[k]) return G[k];
+    const oid=`${pre}0open_${cut}_${arcHash(k)}`, ex=all.find(x=>x.id===oid);
+    const g=G[k]={oid,k,st:k==='@stock',w875:ex?+ex.w875||0:0,weight:0,count:0,n:Object.keys(G).length};
+    if(ex){ const sg=Math.sign(g.w875)||1; g.weight=sg*(+ex.weight||0); g.count=sg*(+ex.count||0); }
+    return g; };
+  for(let i=0;i<recs.length;i+=150){
+    const part=recs.slice(i,i+150), batch=firestore.batch(), touched=new Set();
+    part.forEach(m=>{ const k=key(m), g=grp(k), d=movDelta(m), sg=Math.sign(d);
+      g.w875+=d; if(!g.st&&d){ g.weight+=sg*(+m.weight||0); g.count+=sg*(+m.count||0); } touched.add(k);
+      batch.set(firestore.collection('arc_'+col).doc(m.id),{...m,arcKey:cut});
+      batch.delete(firestore.collection(col).doc(m.id)); });
+    touched.forEach(k=>{ const g=G[k], sg=Math.sign(g.w875)||1, parts=k.split('|');
+      if(Math.abs(g.w875)<0.0005&&Math.abs(g.weight)<0.0005){ batch.delete(firestore.collection(col).doc(g.oid)); return; }   // صافي صفر: لا حاجة لسطر افتتاحي
+      batch.set(firestore.collection(col).doc(g.oid),{id:g.oid,date:cut,type:'رصيد افتتاحي',opening:true,
+        item:col==='sub'||g.st?'رصيد افتتاحي':parts.slice(0,-1).join('|'),karat:col==='sub'||g.st?875:(parseFloat(parts[parts.length-1])||875),
+        weight:+(sg*g.weight||Math.abs(g.w875)).toFixed(3),count:+(sg*g.count).toFixed(3),w875:+g.w875.toFixed(6),w24:to24(g.w875,875),balance:0,
+        note:(g.st?'[استوك] ':'')+'رصيد افتتاحي مُرحَّل من الأرشيف حتى '+cut,time:'00:00:00',by:CU.username,at:base+g.n}); });
+    await batch.commit();
+    say(`${col==='main'?'الرئيسية':'الفرعية'}: ${Math.min(i+150,recs.length)} / ${recs.length}`);
+  }
+}
+async function archiveRun(){
+  if(!arcPlan||!isAdmin()) return;
+  if(!navigator.onLine){ toast('er','الأرشفة تحتاج اتصالاً بالإنترنت'); return; }
+  const {cut}=arcPlan, btn=id('ARCH-GO'), say=t=>id('ARCH-ST').textContent='⏳ '+t;
+  btn.disabled=true; btn.style.opacity=.4;
+  try{
+    say('تنزيل نسخة احتياطية أولاً...'); await downloadBackup(true);
+    clearCache(); const main=await getCol('main'), sub=await getCol('sub');
+    const b0m=calcBal(main), b0s=calcBal(sub), keep=archOpen(main);
+    const mvM=main.filter(m=>m.date&&m.date<cut&&!keep(m)), mvS=sub.filter(m=>m.date&&m.date<cut);
+    await archMoveVault('main',mvM,cut,main,say);
+    await archMoveVault('sub',mvS,cut,sub,say);
+    let moved=mvM.length+mvS.length;
+    for(const c of ['logs','ops','snap','loss','audit']){
+      const cutTs=dayTs(cut), recs=(await byPeriod(c,null,null,false)).filter(x=>x.date?x.date<cut:(x.at||0)<cutTs);
+      for(let i=0;i<recs.length;i+=200){ const batch=firestore.batch();
+        recs.slice(i,i+200).forEach(r=>{ batch.set(firestore.collection('arc_'+c).doc(r.id),{...r,arcKey:cut}); batch.delete(firestore.collection(c).doc(r.id)); });
+        await batch.commit(); say(`${c}: ${Math.min(i+200,recs.length)} / ${recs.length}`); }
+      moved+=recs.length;
+    }
+    say('إعادة حساب الأرصدة والتحقق...');
+    await recalcBalances('main'); await recalcBalances('sub'); clearCache();
+    const b1m=calcBal(await getCol('main')), b1s=calcBal(await getCol('sub'));
+    const ok=Math.abs(b1m-b0m)<0.002&&Math.abs(b1s-b0s)<0.002;
+    const st=await DB.doc('settings/archive').get(); const keys=[...new Set([...(st.exists?st.data().keys||[]:[]),cut])].sort();
+    await DB.doc('settings/archive').set({keys,last:cut,by:CU.username,at:Date.now()});
+    trailAdd({col:'main',id:'archive',act:'archive',sec:'main',item:`${moved} سجل قبل ${cut}`},`أرشفة سنوية حتى ${cut}`);
+    cm('MOD-ARCH'); mainRecalcDone=true;
+    toast(ok?'ok':'er',ok?`✅ تمت الأرشفة — نُقل ${moved} سجل · الأرصدة مطابقة (الرئيسية ${N(b1m)} · الفرعية ${N(b1s)})`:`⚠️ تمت الأرشفة لكن الرصيد اختلف: الرئيسية ${N(b0m)} ← ${N(b1m)} · الفرعية ${N(b0s)} ← ${N(b1s)} — راجع صفحة المراجعة`);
+    showTab(tabAllowed(curTab)?curTab:'dash');
+  }catch(e){ console.error(e); id('ARCH-ST').textContent='⚠️ توقفت الأرشفة — الأرصدة سليمة، يمكنك إعادة المحاولة لإكمال الباقي'; btn.disabled=false; btn.style.opacity=1; }
+}
+// عرض سنة مؤرشفة داخل صفحة الأرشيف والبحث
+async function arcFillKeys(){
+  const sel=id('ARC-ARCH'); if(!sel) return;
+  try{ const st=await DB.doc('settings/archive').get(); const keys=st.exists?(st.data().keys||[]):[]; const cur=sel.value;
+    sel.innerHTML='<option value="">البيانات الحالية</option>'+keys.map(k=>`<option value="${esc(k)}">🗄 + أرشيف ما قبل ${esc(k)}</option>`).join('');
+    sel.style.display=keys.length?'':'none'; if(keys.includes(cur)) sel.value=cur; }catch(e){}
+}
+async function arcAddArchived(push){
+  await arcFillKeys(); const key=id('ARC-ARCH')?.value; if(!key) return;
+  for(const c of ['main','sub']){ try{ const s=await firestore.collection('arc_'+c).where('arcKey','==',key).get();
+      s.docs.forEach(d=>{ const r={id:d.id,...d.data()}; push(c,r,{type:r.type,item:r.item||'',abb:r.type==='عباسية',dest:r.to||r.from||'',arc:true}); }); }catch(e){ console.warn(e); } }
+}
+// سجل العمليات: آخر 60 يوماً فقط، والأقدم عند الطلب
+let opsDays=60;
+async function loadOpsPeriod(force){
+  if(force) clearCache('ops');
+  const d=new Date(Date.now()-opsDays*864e5), d1=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  opsAll=(await byPeriod('ops',opsDays?d1:null,null,false)).sort((a,b)=>b.at-a.at);
+  renderOps();
+  id('OPS-TABLE').insertAdjacentHTML('beforeend',opsDays?`<div style="text-align:center;padding:12px;font-size:11.5px;color:var(--muted)">تُعرض عمليات آخر ${opsDays} يوماً — <button class="btn bxs bs" onclick="opsDays=0;loadOpsPeriod(true)">تحميل كل العمليات الأقدم</button></div>`:'');
+}
+
+// ───────────────────────── 2) التقارير والتصدير ─────────────────────────
+const REPORTS={sum:'📊 ملخص الفترة',loss_m:'📉 الخسية الشهرية — حسب القسم',loss_i:'📉 الخسية — حسب الصنف والقسم',loss_d:'📉 الخسية — تفصيلي',
+  main:'🏦 حركات الخزنة الرئيسية',sub:'💼 حركات الخزنة الفرعية',abb:'🏪 المنصرف للعباسية — حسب الصنف',depts:'🏭 محتويات الأقسام الآن',stock:'📦 الاستوك الآن',loans:'📋 السلف المفتوحة'};
+const LOSS_SRC=[['main','الرئيسية'],['sub','الفرعية'],['hal','الحل'],['tam','التصنيع'],['dam','الدمغة'],['tag','التغليف']];
+const lossKey=l=>l.dept||l.refCol||'main';
+const MONTHS_AR=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const monLbl=ym=>MONTHS_AR[+ym.slice(5,7)-1]+' '+ym.slice(0,4);
+const daysSince=(date,at)=>Math.max(0,Math.floor((Date.now()-(at||dayTs(date||today())))/864e5));
+let repCur=null;
+async function buildReport(kind,d1,d2){
+  const per=d1||d2?`من ${d1||'البداية'} إلى ${d2||'اليوم'}`:'كل الفترات';
+  const R={kind,title:REPORTS[kind].replace(/^\S+\s/,''),sub:per,cols:[],rows:[],foot:null,num:[]};
+  const sum=(a,f)=>a.reduce((s,x)=>s+(+f(x)||0),0), r3=x=>+(+x||0).toFixed(3);
+  if(kind==='loss_m'||kind==='loss_i'||kind==='loss_d'){
+    const L=(await byPeriod('loss',d1,d2)).filter(l=>canView(l.dept||l.refCol||'loss')||canView('loss')).sort((a,b)=>a.date<b.date?-1:1);
+    if(kind==='loss_d'){
+      R.cols=['التاريخ','القسم','الصنف','الوزن','العيار','بعيار 875','بعيار 24','ملاحظة','بواسطة']; R.num=[3,5,6];
+      R.rows=L.map(l=>[l.date,(LOSS_SRC.find(s=>s[0]===lossKey(l))||['',''])[1],l.item||'',r3(l.weight),l.karat,r3(l.w875),r3(l.w24??to24(l.w875,875)),l.note||'',l.by||'']);
+      R.foot=['الإجمالي','','',r3(sum(L,l=>l.weight)),'',r3(sum(L,l=>l.w875)),r3(to24(sum(L,l=>l.w875),875)),`${L.length} عملية`,''];
+    } else {
+      const byRow={}; L.forEach(l=>{ const k=kind==='loss_m'?String(l.date||'').slice(0,7):(l.item||'—'); const g=byRow[k]=byRow[k]||{n:0}; g[lossKey(l)]=(g[lossKey(l)]||0)+(+l.w875||0); g.n++; });
+      R.cols=[kind==='loss_m'?'الشهر':'الصنف',...LOSS_SRC.map(s=>s[1]),'الإجمالي (875)','بعيار 24','عدد العمليات']; R.num=[1,2,3,4,5,6,7,8,9];
+      const keys=Object.keys(byRow).sort((a,b)=>kind==='loss_m'?(a<b?-1:1):catRank(a)-catRank(b)||(a<b?-1:1));
+      R.rows=keys.map(k=>{ const g=byRow[k], t=LOSS_SRC.reduce((s,x)=>s+(g[x[0]]||0),0); return [kind==='loss_m'?monLbl(k):k,...LOSS_SRC.map(x=>r3(g[x[0]])),r3(t),r3(to24(t,875)),g.n]; });
+      const T=LOSS_SRC.map(x=>r3(sum(L.filter(l=>lossKey(l)===x[0]),l=>l.w875))), tt=sum(L,l=>l.w875);
+      R.foot=['الإجمالي',...T,r3(tt),r3(to24(tt,875)),L.length];
+      R.sub+=' — الأوزان بعيار 875';
+    }
+  } else if(kind==='main'||kind==='sub'){
+    const M=canView(kind)?(await byPeriod(kind,d1,d2)).sort((a,b)=>(a.at||0)-(b.at||0)):[];
+    R.cols=['التاريخ','الوقت','النوع','الصنف','العدد','الوزن','العيار','بعيار 875','الحركة (875)','البيان','بواسطة']; R.num=[4,5,7,8];
+    R.rows=M.map(m=>[m.date,m.time||'',m.type,m.item||'',m.count?r3(m.count):'',r3(m.weight),m.karat??'',r3(m.w875),r3(movDelta(m)),m.type==='سلفة'?`${m.loanName||''} ${m.loanPurpose||''}`.trim():(m.note||''),m.by||'']);
+    R.foot=['الإجمالي','','','','',r3(sum(M,m=>m.weight)),'','',r3(sum(M,movDelta)),`${M.length} حركة`,''];
+  } else if(kind==='abb'){
+    const M=canView('abb')?[...(await byPeriod('main',d1,d2)),...(await byPeriod('sub',d1,d2))].filter(m=>m.type==='عباسية'):[];
+    const g={}; M.forEach(m=>{ const k=(m.item||'—')+'|'+(m.karat||875); const x=g[k]=g[k]||{item:m.item||'—',karat:m.karat||875,count:0,weight:0,w875:0,ops:0};
+      x.count+=itemCount(m); x.weight+=+m.weight||0; x.w875+=+m.w875||0; x.ops++; });
+    const items=Object.values(g).sort((a,b)=>catRank(a.item)-catRank(b.item)||b.w875-a.w875);
+    R.cols=['الصنف','العيار','العدد','الوزن','بعيار 875','بعيار 24','عدد العمليات']; R.num=[2,3,4,5,6];
+    R.rows=items.map(x=>[x.item,x.karat,r3(x.count),r3(x.weight),r3(x.w875),r3(to24(x.w875,875)),x.ops]);
+    R.foot=['الإجمالي','',r3(sum(items,x=>x.count)),r3(sum(items,x=>x.weight)),r3(sum(items,x=>x.w875)),r3(to24(sum(items,x=>x.w875),875)),M.length];
+  } else if(kind==='depts'){
+    const D=(await getCol('dept')).filter(d=>DEPTS[d.dept]&&canView(d.dept)).sort((a,b)=>DEPT_KEYS.indexOf(a.dept)-DEPT_KEYS.indexOf(b.dept)||catRank(a.item)-catRank(b.item));
+    R.sub='الموجود الآن'; R.cols=['القسم','الصنف','العدد','الوزن','العيار','بعيار 875','الحالة','تاريخ الدخول','أيام في القسم']; R.num=[2,3,5,8];
+    R.rows=D.map(d=>[DEPTS[d.dept].name,d.item||'',d.count?r3(d.count):'',r3(d.weight),d.karat??'',r3(d.w875),d.done?'DONE':'قيد العمل',d.date||'',daysSince(d.date,d.at)]);
+    R.foot=['الإجمالي','',r3(sum(D,d=>d.count)),r3(sum(D,d=>d.weight)),'',r3(sum(D,d=>d.w875)),`${D.length} وزنة`,'',''];
+  } else if(kind==='stock'){
+    const S=canView('main')?await getCol('stock'):[]; const g={};
+    S.forEach(s=>{ const k=s.name+'|'+s.karat; const x=g[k]=g[k]||{name:s.name,karat:s.karat,count:0,weight:0,w875:0}; x.count+=+s.count||0; x.weight+=+s.weight||0; x.w875+=+s.w875||0; });
+    const items=Object.values(g).sort((a,b)=>catRank(a.name)-catRank(b.name));
+    R.sub='الموجود الآن'; R.cols=['الصنف','العيار','العدد','الوزن','بعيار 875','بعيار 24','الحد الأدنى']; R.num=[2,3,4,5];
+    R.rows=items.map(x=>[x.name,x.karat,r3(x.count),r3(x.weight),r3(x.w875),r3(to24(x.w875,875)),alertCfg.stockMin[x.name]||'']);
+    R.foot=['الإجمالي','',r3(sum(items,x=>x.count)),r3(sum(items,x=>x.weight)),r3(sum(items,x=>x.w875)),r3(to24(sum(items,x=>x.w875),875)),''];
+  } else if(kind==='loans'){
+    const L=canView('main')?loanOutstanding(await getCol('main')).filter(l=>l.rem>0.0005).sort((a,b)=>(a.at||0)-(b.at||0)):[];
+    R.sub='حتى اليوم'; R.cols=['الاسم','البيان','تاريخ السلفة','أصل السلفة (875)','المتبقي (875)','عدد الأيام']; R.num=[3,4,5];
+    R.rows=L.map(l=>[l.loanName||'',l.loanPurpose||'',l.date,r3(l.w875),r3(l.rem),daysSince(l.date)]);
+    R.foot=['الإجمالي','','',r3(sum(L,l=>l.w875)),r3(sum(L,l=>l.rem)),`${L.length} سلفة`];
+  } else if(kind==='sum'){
+    const [M,S,L]=await Promise.all([byPeriod('main',d1,d2),byPeriod('sub',d1,d2),byPeriod('loss',d1,d2)]);
+    const row=(lbl,arr,f)=>{ const a=arr.filter(f); return [lbl,a.length,r3(sum(a,m=>m.w875)),r3(to24(sum(a,m=>m.w875),875))]; };
+    R.cols=['البند','عدد الحركات','بعيار 875','بعيار 24']; R.num=[1,2,3];
+    R.rows=[row('وارد الخزنة الرئيسية',M,m=>m.type==='وارد'),row('وارد استوك',M,m=>m.type==='وارد استوك'),row('منصرف من الرئيسية للفرعية',M,m=>m.type==='منصرف'),
+      row('سلف مُعطاة',M,m=>m.type==='سلفة'),row('سلف مردودة',M,m=>m.type==='رد سلفة'),row('وارد الخزنة الفرعية',S,m=>m.type==='وارد'),row('منصرف الفرعية للأقسام',S,m=>m.type==='منصرف'),
+      row('المنصرف للعباسية',[...M,...S],m=>m.type==='عباسية'),row('الخسية',L,()=>true)].filter(()=>seeAll());
+  }
+  return R;
+}
+async function loadRep(){
+  if(!id('REP-D1').value&&!id('REP-D2').dataset.init){ const t=today(); id('REP-D1').value=t.slice(0,8)+'01'; id('REP-D2').value=t; id('REP-D2').dataset.init=1; }
+  if(id('REP-KIND').options.length<2) id('REP-KIND').innerHTML=Object.entries(REPORTS).map(([k,t])=>`<option value="${k}">${t}</option>`).join('');
+  const kind=id('REP-KIND').value||'sum';
+  id('REP-OUT').innerHTML='<div class="empty"><span class="eic">⏳</span><p>جاري تجهيز التقرير...</p></div>';
+  repCur=await buildReport(kind,id('REP-D1').value,id('REP-D2').value);
+  id('REP-OUT').innerHTML=repHtml(repCur,true);
+}
+function repPreset(p){ const n=new Date(), f=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  let a=null,b=n;
+  if(p==='m') a=new Date(n.getFullYear(),n.getMonth(),1);
+  else if(p==='pm'){ a=new Date(n.getFullYear(),n.getMonth()-1,1); b=new Date(n.getFullYear(),n.getMonth(),0); }
+  else if(p==='y') a=new Date(n.getFullYear(),0,1);
+  id('REP-D1').value=a?f(a):''; id('REP-D2').value=p==='all'?'':f(b); loadRep(); }
+const repCell=(v,isNum)=>isNum&&typeof v==='number'?(Number.isInteger(v)?v.toLocaleString('en-US'):N(v)):esc(v);
+function repHtml(R,inApp){
+  if(!R.rows.length) return '<div class="empty"><span class="eic">📄</span><p>لا توجد بيانات في هذه الفترة</p></div>';
+  const th=inApp?'':'', n=i=>R.num.includes(i);
+  return `<table><thead><tr>${R.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${
+    R.rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${n(i)?'num':''}"${i===0?' style="font-weight:700"':''}>${repCell(v,n(i))}</td>`).join('')}</tr>`).join('')}</tbody>
+    ${R.foot?`<tfoot><tr style="background:var(--s2)">${R.foot.map((v,i)=>`<td class="${n(i)?'num':''}" style="font-weight:900;${inApp&&n(i)?'color:var(--gold)':''}">${repCell(v,n(i))}</td>`).join('')}</tr></tfoot>`:''}</table>`;
+}
+// Excel (ورقة لكل تقرير) — وعند تعذّر تحميل المكتبة يُنزَّل CSV يفتحه Excel
+async function exportSheets(reports,fname){
+  reports=reports.filter(r=>r&&r.rows.length); if(!reports.length){ toast('in','لا توجد بيانات للتصدير'); return; }
+  const aoa=R=>[[`GOLD ERA — ${R.title}`],[R.sub],[],R.cols,...R.rows,...(R.foot?[R.foot]:[])];
+  try{
+    await vchLoad('xlsx',()=>!!window.XLSX);
+    const wb=XLSX.utils.book_new(); wb.Workbook={Views:[{RTL:true}]};
+    reports.forEach(R=>{ const ws=XLSX.utils.aoa_to_sheet(aoa(R));
+      ws['!cols']=R.cols.map((c,i)=>({wch:Math.min(42,Math.max(String(c).length+2,...R.rows.slice(0,200).map(r=>String(r[i]??'').length+2)))}));
+      XLSX.utils.book_append_sheet(wb,ws,R.title.replace(/[\\/?*[\]:]/g,' ').slice(0,31)); });
+    XLSX.writeFile(wb,fname+'.xlsx'); toast('ok','✅ تم تنزيل ملف Excel');
+  }catch(e){
+    const q=v=>{ v=String(v??''); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+    downloadFile(fname+'.csv','﻿'+reports.map(R=>aoa(R).map(r=>r.map(q).join(',')).join('\n')).join('\n\n'),'text/csv;charset=utf-8');
+    toast('in','تعذّر تحميل مكتبة Excel — نُزّل الملف بصيغة CSV (يفتح في Excel)');
+  }
+}
+const repName=k=>`GoldEra-${k}-${id('REP-D1').value||'all'}_${id('REP-D2').value||today()}`;
+function repExcel(){ if(repCur) exportSheets([repCur],repName(repCur.kind)); }
+async function repExcelAll(){ toast('in','⏳ جاري تجهيز كل التقارير...'); const out=[]; for(const k of Object.keys(REPORTS)) out.push(await buildReport(k,id('REP-D1').value,id('REP-D2').value)); exportSheets(out,repName('all')); }
+// طباعة / حفظ PDF (من نافذة الطباعة: الوجهة «حفظ كـ PDF») — يدعم التقارير متعددة الصفحات
+function printReport(R){
+  if(!R||!R.rows.length){ toast('in','لا توجد بيانات للطباعة'); return; }
+  const w=window.open('','_blank'); if(!w){ toast('er','اسمح بالنوافذ المنبثقة للطباعة'); return; }
+  const n=i=>R.num.includes(i);
+  w.document.open(); w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>${esc(R.title)} — GOLD ERA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box}body{font-family:'Cairo',Tahoma,sans-serif;margin:0;padding:18px 22px;color:#1C1E22;background:#fff}
+.bar{display:flex;gap:8px;margin-bottom:14px}.bar button{font-family:inherit;font-weight:800;padding:8px 16px;border-radius:8px;border:1px solid #C8A84B;background:#C8A84B;cursor:pointer}
+header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #C8A84B;padding-bottom:10px;margin-bottom:12px}
+header img{height:52px}h1{font-size:19px;margin:0}.sub{font-size:12px;color:#555}
+table{width:100%;border-collapse:collapse;font-size:11.5px}th{background:#1C1E22;color:#E8CB7A;padding:7px 6px;text-align:right}
+td{padding:6px;border-bottom:1px solid #ddd}tbody tr:nth-child(even){background:#FAF6EA}td.n{font-family:monospace;direction:ltr;text-align:right;white-space:nowrap}
+tfoot td{font-weight:900;background:#F3E7C4;border-top:2px solid #C8A84B}thead{display:table-header-group}tr{page-break-inside:avoid}
+footer{margin-top:14px;font-size:10px;color:#777;display:flex;justify-content:space-between}
+@media print{.bar{display:none}body{padding:0}@page{size:A4 ${R.cols.length>7?'landscape':'portrait'};margin:11mm}}</style></head><body>
+<div class="bar"><button onclick="print()">🖨️ طباعة / حفظ PDF</button><button style="background:#fff" onclick="close()">إغلاق</button></div>
+<header><div><h1>${esc(R.title)}</h1><div class="sub">${esc(R.sub)}</div></div><img src="${BRAND_LOGO}" alt="GOLD ERA"></header>
+<table><thead><tr>${R.cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${R.rows.map(r=>`<tr>${r.map((v,i)=>`<td class="${n(i)?'n':''}">${repCell(v,n(i))}</td>`).join('')}</tr>`).join('')}</tbody>
+${R.foot?`<tfoot><tr>${R.foot.map((v,i)=>`<td class="${n(i)?'n':''}">${repCell(v,n(i))}</td>`).join('')}</tr></tfoot>`:''}</table>
+<footer><span>GOLD ERA FACTORY</span><span>طُبع بواسطة ${esc(CU?.username||'')} · ${new Date().toLocaleString('en-GB')}</span></footer></body></html>`); w.document.close();
+}
+// تصدير أي جدول معروض في الصفحة كما هو
+function tableReport(boxId,title){
+  const t=id(boxId)?.querySelector('table'); if(!t) return null;
+  const txt=c=>c.innerText.replace(/\s+/g,' ').trim(), val=s=>/^-?[\d,]+(\.\d+)?$/.test(s)?parseFloat(s.replace(/,/g,'')):s;
+  const head=[...t.querySelectorAll('thead th')].map(txt), keep=head.map((h,i)=>h!==''||i<head.length-1);
+  const rows=[...t.querySelectorAll('tbody tr')].filter(r=>r.offsetParent!==null||r.style.display!=='none').map(r=>[...r.cells].map(c=>val(txt(c))).filter((_,i)=>keep[i]!==false));
+  const num=[]; head.forEach((h,i)=>{ if(rows.length&&rows.every(r=>typeof r[i]==='number'||r[i]==='—'||r[i]==='')) num.push(i); });
+  return {kind:boxId,title,sub:'تصدير بتاريخ '+today(),cols:head.filter((_,i)=>keep[i]),rows,foot:null,num};
+}
+function exportTable(boxId,title){ const R=tableReport(boxId,title); if(!R||!R.rows.length){ toast('in','لا يوجد جدول للتصدير'); return; } exportSheets([R],`GoldEra-${title.replace(/\s+/g,'-')}-${today()}`); }
+function printTable(boxId,title){ printReport(tableReport(boxId,title)); }
+const expBtns=(boxId,title)=>`<button class="btn bxs bs" onclick="exportTable('${boxId}','${title}')" title="تصدير Excel">⬇️ Excel</button><button class="btn bxs bs" onclick="printTable('${boxId}','${title}')" title="طباعة / PDF">🖨️ PDF</button>`;
+function installExportButtons(){
+  [['MAIN-TABLE','حركات الخزنة الرئيسية'],['SUB-TABLE','حركات الخزنة الفرعية'],['ABB-TABLE','حركات العباسية'],['LOSS-TABLE','الخسية'],['ARC-TABLE','نتائج الأرشيف'],['LOG-TABLE','سجل الحركات'],['OPS-TABLE','سجل العمليات'],['TRL-TABLE','سجل التعديلات']].forEach(([b,t])=>{
+    const box=id(b); if(!box||id('EXP-'+b)) return;
+    const bar=document.createElement('div'); bar.id='EXP-'+b; bar.style.cssText='display:flex;gap:6px;justify-content:flex-end;padding:8px 12px'; bar.innerHTML=expBtns(b,t);
+    box.parentNode.insertBefore(bar,box);
+  });
+}
+
+// ───────────────────────── 3) التنبيهات ─────────────────────────
+let alertCfg={loanDays:7,stale:{hal:3,tam:5,dam:3,tag:3},stockMin:{}}, alertList=[], alertTimer=null;
+async function loadAlertCfg(){ try{ const s=await DB.doc('settings/alerts').get(); if(s.exists){ const d=s.data(); alertCfg={loanDays:d.loanDays??7,stale:{...alertCfg.stale,...(d.stale||{})},stockMin:d.stockMin||{}}; } }catch(e){} }
+async function calcAlerts(){
+  const [main,dept,stock]=await Promise.all(['main','dept','stock'].map(c=>getCol(c).catch(()=>[])));
+  const A=[];
+  if(alertCfg.loanDays>0) loanOutstanding(main).filter(l=>l.rem>0.0005).forEach(l=>{ const d=daysSince(l.date);
+    if(d>=alertCfg.loanDays) A.push({sec:'main',tab:'main',lvl:d>=alertCfg.loanDays*2?'err':'warn',ic:'📋',days:d,t:`سلفة لم تُرد منذ ${d} يوم — ${l.loanName||'بدون اسم'}`,d:`المتبقي ${N(l.rem)} جرام (875) · ${arabicDate(l.date)}${l.loanPurpose?' · '+l.loanPurpose:''}`}); });
+  dept.filter(x=>DEPTS[x.dept]&&(+x.weight||0)>0).forEach(x=>{ const lim=+alertCfg.stale[x.dept]||0, d=daysSince(x.date,x.at);
+    if(lim>0&&d>=lim) A.push({sec:x.dept,tab:x.dept,lvl:d>=lim*2?'err':'warn',ic:DEPTS[x.dept].icon,days:d,t:`وزنة واقفة في ${DEPTS[x.dept].name} منذ ${d} يوم — ${x.item||'وزنة'}`,d:`${N(x.weight)} جرام عيار ${x.karat}${x.count?' · عدد '+N3(x.count):''}${x.done?' · DONE ولم تُنقل':''} · الحد ${lim} يوم`}); });
+  const have={}; stock.forEach(s=>have[s.name]=(have[s.name]||0)+(+s.count||0));
+  Object.entries(alertCfg.stockMin).forEach(([nm,min])=>{ const h=have[nm]||0; if(min>0&&h<min) A.push({sec:'main',tab:'main',lvl:h<=0?'err':'warn',ic:'📦',days:0,t:`استوك ${nm} تحت الحد الأدنى`,d:`الموجود ${N3(h)} قطعة · الحد الأدنى ${N3(min)}`}); });
+  return A.filter(a=>canView(a.sec)).sort((a,b)=>(a.lvl==='err'?0:1)-(b.lvl==='err'?0:1)||b.days-a.days);
+}
+const alertRow=a=>`<div onclick="cm('MOD-ALERTS');showTab('${a.tab}')" style="cursor:pointer;display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid ${a.lvl==='err'?'var(--err)':'var(--warn)'}55;border-right:3px solid ${a.lvl==='err'?'var(--err)':'var(--warn)'};border-radius:8px;background:var(--s2)">
+  <span style="font-size:17px">${a.ic}</span><div style="flex:1;min-width:0"><div style="font-weight:800;font-size:12.5px">${esc(a.t)}</div><div style="font-size:11px;color:var(--muted)">${esc(a.d)}</div></div></div>`;
+async function refreshAlerts(){
+  if(!CU) return;
+  try{ alertList=await calcAlerts(); }catch(e){ return; }
+  const n=alertList.length, c=id('ALERT-CNT'), err=alertList.some(a=>a.lvl==='err');
+  c.textContent=n; c.style.display=n?'inline':'none'; c.style.background=err?'var(--err)':'var(--warn)'; c.style.color=err?'#fff':'#000';
+  const box=id('D-ALERTS');
+  if(box) box.innerHTML=n?`<div style="border:1.5px solid ${err?'var(--err)':'var(--warn)'}88;border-radius:14px;padding:12px 14px;margin-bottom:16px;background:${err?'#E05C5010':'#C8983010'}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b style="font-size:13px;color:${err?'var(--err)':'var(--warn)'}">🔔 ${n} تنبيه يحتاج متابعة</b>
+        <button class="btn bxs bs" onclick="openAlerts()">عرض الكل والإعدادات</button></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px">${alertList.slice(0,4).map(alertRow).join('')}</div></div>`:'';
+  if(id('MOD-ALERTS').classList.contains('open')) renderAlerts();
+}
+function alertsSoon(){ clearTimeout(alertTimer); alertTimer=setTimeout(refreshAlerts,2500); }
+setInterval(()=>{ if(CU&&navigator.onLine) refreshAlerts(); },5*60*1000);
+function renderAlerts(){
+  id('ALERT-LIST').innerHTML=alertList.length?alertList.map(alertRow).join(''):'<div class="empty" style="padding:26px"><span class="eic">✅</span><p>لا توجد تنبيهات — كل شيء في موعده</p></div>';
+}
+function openAlerts(){
+  renderAlerts();
+  const ed=seeAll()&&(isAdmin()||CU.role==='supervisor');
+  id('ALERT-CFG').style.display=ed?'':'none';
+  if(ed){
+    id('AL-LOAN').value=alertCfg.loanDays;
+    id('AL-STALE').innerHTML=DEPT_KEYS.map(k=>`<div class="fg" style="margin:0"><label>${DEPTS[k].icon} ${DEPTS[k].name} (يوم)</label><input type="number" min="0" step="1" class="al-st" data-k="${k}" value="${alertCfg.stale[k]??0}" style="font-family:monospace"></div>`).join('');
+    id('AL-MIN').innerHTML=CATALOG.filter(c=>!c.name.includes('فضة')).map(c=>`<label style="display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11.5px;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:4px 8px">${esc(c.name)}
+      <input type="number" min="0" step="1" class="al-min" data-n="${esc(c.name)}" value="${alertCfg.stockMin[c.name]||''}" placeholder="—" style="width:70px;font-family:monospace;padding:4px 6px"></label>`).join('');
+  }
+  om('MOD-ALERTS');
+}
+async function saveAlertCfg(){
+  const stale={}; document.querySelectorAll('#AL-STALE .al-st').forEach(i=>stale[i.dataset.k]=Math.max(0,parseInt(i.value)||0));
+  const stockMin={}; document.querySelectorAll('#AL-MIN .al-min').forEach(i=>{ const v2=parseFloat(i.value)||0; if(v2>0) stockMin[i.dataset.n]=v2; });
+  alertCfg={loanDays:Math.max(0,parseInt(id('AL-LOAN').value)||0),stale,stockMin};
+  await DB.doc('settings/alerts').set({...alertCfg,by:CU.username,at:Date.now()});
+  toast('ok','✅ تم حفظ إعدادات التنبيهات لكل الأجهزة'); refreshAlerts();
+}
+
+// ───────────────────────── 5) العمل بدون إنترنت + التطبيق ─────────────────────────
+let netPend=0, persistOn=false;
+// الكتابة لا تنتظر رد الخادم: تُحفظ فوراً على الجهاز وتُرفع عند توفر الاتصال
+function offW(p){
+  netPend++; netUi();
+  const done=()=>{ netPend=Math.max(0,netPend-1); netUi(); };
+  p.then(done,e=>{ done(); console.warn('write',e); });
+  if(!navigator.onLine) return Promise.resolve();
+  return Promise.race([p,new Promise(r=>setTimeout(r,4000))]);
+}
+function netUi(){
+  const off=!navigator.onLine, b=id('NET-BAR'); if(!b) return;
+  b.style.display=(off||netPend>0)?'flex':'none';
+  b.style.background=off?'#B03A2E':'#8a6d1a';
+  b.textContent=off?`📴 بدون إنترنت — التغييرات محفوظة على هذا الجهاز${netPend?` (${netPend} في الانتظار)`:''} وتُرفع تلقائياً عند عودة الاتصال`:`⏳ جاري رفع ${netPend} تغيير...`;
+  const d=id('LIVE-DOT'); if(d&&off){ d.style.background='#E05C50'; d.title='بدون اتصال'; }
+}
+window.addEventListener('offline',netUi);
+window.addEventListener('online',()=>{ netUi(); if(!CU) return;
+  (firestore.waitForPendingWrites?firestore.waitForPendingWrites():Promise.resolve()).then(()=>{ toast('ok','🌐 عاد الاتصال — تم رفع كل التغييرات'); clearCache(); TAB_LOADERS[curTab]?.(); refreshAlerts(); }).catch(()=>{}); });
+window.addEventListener('beforeunload',e=>{ if(netPend>0&&!persistOn){ e.preventDefault(); e.returnValue=''; } });
+function setupOffline(){
+  // دفعات الكتابة (إعادة حساب الأرصدة) لا تُعلّق الواجهة بدون اتصال
+  const mk=firestore.batch.bind(firestore);
+  firestore.batch=()=>{ const b=mk(), c=b.commit.bind(b); b.commit=()=>offW(c()); return b; };
+}
+// تثبيت كتطبيق (يعمل عند فتح النظام من رابط https وبجواره ملفات manifest و sw.js)
+let installEvt=null;
+function setupPwa(){
+  if(!/^https?:$/.test(location.protocol)) return;
+  const add=(tag,attrs)=>{ const el=document.createElement(tag); Object.entries(attrs).forEach(([k,v2])=>el.setAttribute(k,v2)); document.head.appendChild(el); };
+  add('link',{rel:'manifest',href:'manifest.webmanifest'}); add('meta',{name:'theme-color',content:'#2C2F36'});
+  add('meta',{name:'apple-mobile-web-app-capable',content:'yes'}); add('link',{rel:'apple-touch-icon',href:'icon-192.png'});
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installEvt=e; const b=id('INSTALL-BTN'); if(b) b.style.display='inline-flex'; });
+  window.addEventListener('appinstalled',()=>{ installEvt=null; const b=id('INSTALL-BTN'); if(b) b.style.display='none'; toast('ok','📲 تم تثبيت التطبيق'); });
+}
+async function installApp(){ if(!installEvt) return; installEvt.prompt(); try{ await installEvt.userChoice; }catch(e){} installEvt=null; id('INSTALL-BTN').style.display='none'; }
+
+// ───────────────────────── 6) باركود / QR على المطبوعات ─────────────────────────
+const docCode=no=>String(no||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const C128=['212222','222122','222221','121223','121322','131222','122213','122312','132212','221213','221312','231212','112232','122132','122231','113222','123122','123221','223211','221132','221231','213212','223112','312131','311222','321122','321221','312212','322112','322211','212123','212321','232121','111323','131123','131321','112313','132113','132311','211313','231113','231311','112133','112331','132131','113123','113321','133121','313121','211331','231131','213113','213311','213131','311123','311321','331121','312113','312311','332111','314111','221411','431111','111224','111422','121124','121421','141122','141221','112214','112412','122114','122411','142112','142211','241211','221114','413111','241112','134111','111242','121142','121241','114212','124112','124211','411212','421112','421211','212141','214121','412121','111143','111341','131141','114113','114311','411113','411311','113141','114131','311141','411131','211412','211214','211232','2331112'];
+// Code 128 (B) كصورة PNG — يقرؤه أي قارئ باركود
+function barcodePng(text){
+  try{
+    const codes=[104]; for(const ch of text){ const v2=ch.charCodeAt(0)-32; if(v2<0||v2>94) return ''; codes.push(v2); }
+    codes.push(codes.reduce((s,c,i)=>s+c*(i||1),0)%103,106);
+    const pat=codes.map(c=>C128[c]).join(''), u=3, q=10*u, w=[...pat].reduce((s,d)=>s+ +d,0)*u+2*q, h=64;
+    const cv=document.createElement('canvas'); cv.width=w; cv.height=h; const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,w,h); cx.fillStyle='#000';
+    let x=q; [...pat].forEach((d,i)=>{ const bw=+d*u; if(i%2===0) cx.fillRect(x,0,bw,h); x+=bw; });
+    return cv.toDataURL('image/png');
+  }catch(e){ return ''; }
+}
+function qrPng(text){
+  try{ if(!window.qrcode) return '';
+    const q=qrcode(0,'M'); q.addData(text); q.make(); const n=q.getModuleCount(), u=6, m=4*u, cv=document.createElement('canvas'); cv.width=cv.height=n*u+2*m;
+    const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.fillStyle='#000';
+    for(let r=0;r<n;r++) for(let c=0;c<n;c++) if(q.isDark(r,c)) cx.fillRect(m+c*u,m+r*u,u,u);
+    return cv.toDataURL('image/png');
+  }catch(e){ return ''; }
+}
+// يُدرج في رأس المستند المطبوع: QR يفتح المستند من الموبايل + باركود لقارئ الباركود
+function docCodesHtml(docNo){
+  const code=docCode(docNo); if(!code) return '';
+  const url=/^https?:$/.test(location.protocol)?location.origin+location.pathname+'?doc='+code:code;
+  const qr=qrPng(url), bc=barcodePng(code);
+  return `<div style="display:flex;align-items:center;gap:8px;margin-top:6px;direction:ltr">${qr?`<img src="${qr}" alt="QR" style="width:62px;height:62px">`:''}${bc?`<div style="text-align:center"><img src="${bc}" alt="${code}" style="height:30px;width:150px;display:block"><span style="font-family:monospace;font-size:8.5px;letter-spacing:2px;color:#333">${code}</span></div>`:''}</div>`;
+}
+async function openDocByCode(raw){
+  const code=docCode(raw); if(!code) return false;
+  clearCache('docs');
+  const d=(await getCol('docs')).find(x=>docCode(x.docNo)===code||docCode(x.id)===code);
+  if(!d){ toast('er',`لا يوجد مستند بالرقم ${raw}`); return false; }
+  const no=d.docNo||d.id;
+  if(d.kind==='abb') openAbbDoc(d.rows,{d1:d.d1,d2:d.d2,src:d.src,docNo:no,reprint:true,revised:d.revCount>0});
+  else if(d.kind==='dam') openDamDoc(d.rows,{docNo:no,date:d.date,reprint:true,revised:d.revCount>0});
+  else { id('ARC-Q').value=no; showTab('arc'); }
+  return true;
+}
+// مسح الباركود في خانة البحث (القارئ يكتب الرقم ثم Enter) أو كتابة رقم الفاتورة يدوياً
+function topSearch(el){
+  const v2=el.value.trim(); if(!v2) return;
+  el.value='';
+  const m=v2.match(/[?&]doc=([A-Za-z0-9]+)/), code=docCode(m?m[1]:v2);
+  if(/^GEF\d{3,}$/.test(code)||m){ openDocByCode(code); return; }
+  id('ARC-Q').value=v2; showTab('arc');
+}
+
+installGuards();
+setupOffline();
+setupPwa();
+TAB_LOADERS.rep=loadRep; TAB_LOADERS.trail=loadTrail; TAB_LOADERS.ops=()=>loadOpsPeriod();
+document.addEventListener('DOMContentLoaded',installExportButtons); if(document.readyState!=='loading') installExportButtons();
+
+window.loadOps=function(f){ return loadOpsPeriod(f); };
+{ const ld=window.loadDash; window.loadDash=async function(){ const r=await ld.apply(this,arguments); refreshAlerts(); return r; }; TAB_LOADERS.dash=window.loadDash; }
+
 
 init();
 

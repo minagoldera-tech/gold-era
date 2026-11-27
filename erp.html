@@ -405,6 +405,25 @@ label.btn{cursor:pointer}
 .review p .i{flex:none;margin-top:5px}
 @media (max-width:640px){.review .card__b{font-size:14px}}
 
+/* scanner */
+.scanbtn{height:36px}
+@media (max-width:520px){.scanbtn span{display:none}.scanbtn{padding:0 9px}}
+.scanv{display:block;width:100%;aspect-ratio:4/3;background:#000;border-radius:var(--r);object-fit:cover}
+.codes{display:flex;flex-wrap:wrap;gap:6px}
+/* sidebar order editor */
+.naved{display:grid;gap:14px;padding:16px}
+.navg{border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.navg__h{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.navg__h .in{height:32px;max-width:220px;font-weight:700}
+.navg__h small{color:var(--muted);font-size:12px;white-space:nowrap}
+.navg__h .sp{margin-inline-start:auto;display:flex;gap:2px}
+.navrow{display:flex;align-items:center;gap:10px;padding:6px 10px}
+.navrow+.navrow{border-top:1px solid var(--line)}
+.navrow>svg{color:var(--muted)}
+.navrow b{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.navrow select.in{width:auto;height:30px;font-size:12.5px;max-width:140px}
+.navg__e{padding:10px;color:var(--muted);font-size:12.5px}
+
 </style>
 </head>
 <body>
@@ -573,7 +592,7 @@ window.GOLD_ERA_CONFIG = {
     const people = () => (store["settings/people"] || {}).map || {};
     return {
       mode: "local",
-      db: { doc, collection: coll },
+      db: { doc, collection: coll, counter: async (path, floor) => { if (!can(path, true)) throw denied(); const v = Math.max(+((store[path] || {}).n) || 0, +floor || 0) + 1; store[path] = { n: v }; save(); notify(); return v; } },
       needsSetup: async () => Object.keys(auth.users).length === 0,
       setupOwner: async (username, password, name) => {
         const u = cleanUser(username); if (!validUser(u)) throw "اسم المستخدم: 3 إلى 32 حرفاً إنجليزياً أو أرقاماً.";
@@ -627,6 +646,21 @@ window.GOLD_ERA_CONFIG = {
   function firebaseBackend() {
     const app = firebase.initializeApp(CFG.firebase);
     const fs = firebase.firestore(app);
+    /* offline cache: reads come from the device when the connection drops, writes queue and sync later */
+    let persisted = false;
+    try { fs.enablePersistence({ synchronizeTabs: true }).then(() => { persisted = true; }).catch(e => console.warn("offline cache off:", e && e.code)); } catch (e) {}
+    /* a queued write never resolves while offline; after 3s treat it as saved-on-device and report a late failure */
+    const w = p => !persisted ? p : new Promise((res, rej) => {
+      let done = false;
+      const t = setTimeout(() => { if (!done) { done = true; try { dispatchEvent(new CustomEvent("ge-queued")); } catch (e) {} res(); } }, 3000);
+      p.then(() => { clearTimeout(t); if (!done) { done = true; res(); } },
+             e => { clearTimeout(t); if (!done) { done = true; rej(e); } else { try { dispatchEvent(new CustomEvent("ge-write-failed", { detail: dbError(e) })); } catch (x) {} } });
+    });
+    const counter = async (path, floor) => {
+      const ref = fs.doc(path);
+      try { return await fs.runTransaction(async t => { const d = await t.get(ref); const v = Math.max(+(d.exists && d.data().n) || 0, +floor || 0) + 1; t.set(ref, { n: v, updatedAt: new Date().toISOString() }); return v; }); }
+      catch (e) { throw dbError(e); }
+    };
     const auth = firebase.auth(app);
     let current = null, peopleCache = {};
     const wrapDoc = d => snapOf(d.id, d.exists, d.exists ? d.data() : undefined);
@@ -635,8 +669,8 @@ window.GOLD_ERA_CONFIG = {
       return {
         id: ref.id, path,
         get: async () => { try { return wrapDoc(await ref.get()); } catch (e) { if (e && e.code === "permission-denied") return snapOf(ref.id, false); throw dbError(e); } },
-        set: async d => { try { await ref.set(d); } catch (e) { throw dbError(e); } },
-        update: async d => { try { await ref.set(d, { merge: true }); } catch (e) { throw dbError(e); } },
+        set: async d => { try { await w(ref.set(d)); } catch (e) { throw dbError(e); } },
+        update: async d => { try { await w(ref.set(d, { merge: true })); } catch (e) { throw dbError(e); } },
         delete: async () => { try { await ref.delete(); } catch (e) { throw dbError(e); } },
         acquire: async () => ({ acquired: true }),
         onSnapshot: (next, err) => ref.onSnapshot(s => next(wrapDoc(s)), e => err && err(dbError(e))),
@@ -648,7 +682,7 @@ window.GOLD_ERA_CONFIG = {
       return {
         path,
         doc: id => doc(path + "/" + (id || ref.doc().id)),
-        add: async d => { try { const r = await ref.add(d); return doc(path + "/" + r.id); } catch (e) { throw dbError(e); } },
+        add: async d => { try { const r = ref.doc(); await w(r.set(d)); return doc(path + "/" + r.id); } catch (e) { throw dbError(e); } },
         get: async () => { try { const q = await ref.get(); const docs = q.docs.map(wrapDoc); return { docs, size: docs.length, empty: !docs.length }; } catch (e) { throw dbError(e); } },
         onSnapshot: (next, err) => ref.onSnapshot(q => { const docs = q.docs.map(wrapDoc); next({ docs, size: docs.length, empty: !docs.length, docChanges: () => [] }); }, e => err && err(dbError(e)))
       };
@@ -657,7 +691,7 @@ window.GOLD_ERA_CONFIG = {
     const toMe = u => { const username = userOfEmail(u.email); return { id: u.uid, username, name: (peopleCache[u.uid] || {}).name || username, email: null, avatarUrl: avatar((peopleCache[u.uid] || {}).name || username), color: "#ddb546", isOwner: owners.includes(username), canEdit: owners.includes(username) }; };
     return {
       mode: "firebase",
-      db: { doc, collection: coll },
+      db: { doc, collection: coll, counter },
       needsSetup: async () => false,
       setupOwner: async (username, password) => {
         const u = cleanUser(username); if (!owners.includes(u)) throw "هذا الاسم ليس اسم المالك في config.js.";
@@ -729,7 +763,10 @@ window.GOLD_ERA_CONFIG = {
     const mine = async () => { const users = await readAuth(); return Object.entries(users).find(([, r]) => current && r.uid === current.id); };
     return {
       mode: "claude",
-      db: { doc, collection: coll },
+      db: { doc, collection: coll, counter: async (path, floor) => {
+        if (!can(path, true)) throw denied(); const r = cdb.doc(path);
+        for (let i = 0; i < 10; i++) { let l; try { l = await r.acquire({ holder: (current && current.id) || "anon", ttlMs: 4000 }); } catch (e) { l = { acquired: true }; } if (l.acquired) break; await new Promise(z => setTimeout(z, 300 + Math.random() * 300)); }
+        const d = await r.get(); const v = Math.max(+(d.exists && d.data().n) || 0, +floor || 0) + 1; await r.set({ n: v }); return v; } },
       needsSetup: async () => Object.keys(await readAuth()).length === 0,
       setupOwner: async (username, password, name) => {
         const u = cleanUser(username); if (!validUser(u)) throw "اسم المستخدم: 3 إلى 32 حرفاً إنجليزياً أو أرقاماً.";
@@ -971,7 +1008,7 @@ const priceKey=k=>(+k>=990?"g24":+k>=870?"g21":"g18");
 const ROLES={manager:{label:"مدير",pages:"*"},production:{label:"تصنيع وخزنة",pages:["bars","refine","strips","casting","orders","labels"]},stages:{label:"المراحل",pages:["prep","hallmark","finish","labels"]},sales:{label:"مبيعات وحسابات",pages:["sales","customers"]},viewer:{label:"مشاهد",pages:[]}};
 const NAV=[
   ["الرئيسية",[["dash","لوحة التحكم"],["review","المراجعة"]]],
-  ["الذهب",[["stock","الخزنة"],["bars","وارد محل"],["refine","الحل"],["strips","الشرايط"],["casting","التصنيع"],["orders","أوامر التصنيع"]]],
+  ["الذهب",[["stock","الخزنة"],["bars","وارد محل"],["refine","الحل"],["orders","أوامر التصنيع"],["strips","الشرايط"],["casting","التصنيع"]]],
   ["المراحل",[["prep","التجهيز"],["hallmark","الدمغة"],["qc","مراجعة الجودة"],["finish","التشطيب"]]],
   ["المخزون",[["count","الجرد والتسويات"],["labels","ملصقات QR"]]],
   ["التجارة",[["sales","المبيعات"],["customers","العملاء والحسابات"]]],
@@ -1024,8 +1061,9 @@ const addDays=(k,i)=>{const [y,m,d]=k.split("-").map(Number);return dkey(new Dat
 const tme=iso=>{try{const d=new Date(iso);return pad(d.getHours())+":"+pad(d.getMinutes())}catch(e){return""}};
 const newId=()=>(crypto.randomUUID?crypto.randomUUID().replace(/-/g,"").slice(0,16):Math.random().toString(36).slice(2,12)+Date.now().toString(36));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const MAPS=["bars","strips","casting","moves","sales","payments","counts","labels","sessions","evals","attend","pen"];
-const MAP_COLL={attend:"evals",pen:"evals"};
+const MAPS=["bars","strips","casting","moves","sales","returns","payments","counts","labels","sessions","evals","attend","pen"];
+/* maps kept inside another collection's day document */
+const MAP_COLL={attend:"evals",pen:"evals",returns:"sales"};
 
 function buildLedger(days,catalog,until){
   const all=[];
@@ -1067,12 +1105,14 @@ function buildLedger(days,catalog,until){
       if(!e.opening)pa(W.mfg,-used,-used*kOf(it)/1000);add("vault",e.item,n(e.count),n(e.scale));const kh=khisya(e);if(kh&&!e.opening)losses.push({_date:e._date,job:"mfg",wname:e.worker,w:kh,f:kh*kOf(it)/1000,id:e.id})}
     else if(m==="moves"){add(e.from,e.item,-n(e.count),-n(e.weight));add(e.to,e.item,n(e.count),n(e.weight))}
     else if(m==="sales"){for(const ln of e.lines||[]){add("master",ln.item,-n(ln.count),-n(ln.weight));add("sold",ln.item,n(ln.count),n(ln.weight))}}
+    else if(m==="returns"){for(const ln of e.lines||[]){add("sold",ln.item,-n(ln.count),-n(ln.weight));add("master",ln.item,n(ln.count),n(ln.weight))}}
     else if(m==="counts"){const pool=COUNT_POOL[e.loc];for(const l of e.lines||[]){if(pool)pa(P[pool],n(l.dw),n(l.dw)*n(l.karat||999.9)/1000);else add(e.loc,l.item,n(l.dc),n(l.dw))}}
   }
   const custBal={};
   for(const e of live){if(!ok(e._date))continue;
     if(e._map==="sales"){custBal[e.customer]=(custBal[e.customer]||0)+n(e.total)-n(e.paid)}
     if(e._map==="payments"){custBal[e.customer]=(custBal[e.customer]||0)-n(e.amount)}
+    if(e._map==="returns"){custBal[e.customer]=(custBal[e.customer]||0)-n(e.total)+n(e.refund)}
   }
   const wip={w:W.refine.w+W.strip.w+W.mfg.w,fine:W.refine.f+W.strip.f+W.mfg.f};
   return {all,live:live.concat(prod),stock,raw:{w:P.vault.w,fine:P.vault.f},wip,P,W,bars,custBal,prod,losses};
@@ -1085,7 +1125,8 @@ const S={db:null,user:null,uid:null};
 async function ensureDay(map,k){
   const ref=S.db.doc(map+"/"+k);
   for(let i=0;i<8;i++){
-    const s=await ref.get();if(s.exists)return ref;
+    let s;try{s=await ref.get()}catch(e){return ref} /* offline and not cached: the write itself creates the day */
+    if(s.exists)return ref;
     const l=await ref.acquire({holder:S.uid||"anon",ttlMs:5000});
     if(l.acquired){const s2=await ref.get();if(!s2.exists)await ref.set({date:k,createdAt:new Date().toISOString()});return ref}
     await sleep(400+Math.random()*400);
@@ -1094,13 +1135,19 @@ async function ensureDay(map,k){
 }
 async function addEntry(map,body,k=today()){
   if(!S.db)throw {code:"no_db"};
-  const ref=await ensureDay(map,k);const id=newId();
+  const ref=await ensureDay(MAP_COLL[map]||map,k);const id=newId();
   const e={...body,id,ts:new Date().toISOString(),by:S.uid||null};
   await ref.update({[map]:{[id]:e}});return e;
 }
 async function voidEntry(e,reason){
   if(!S.db)throw {code:"no_db"};
   await S.db.doc((MAP_COLL[e._map]||e._map)+"/"+e._date).update({[e._map]:{[e.id]:{void:true,voidReason:reason||"",voidBy:S.uid||null,voidAt:new Date().toISOString()}}});
+}
+/* invoice and order numbers come from one counter in the database, so two devices never get the same number */
+async function nextNo(coll,floor){
+  if(typeof navigator!=="undefined"&&navigator.onLine===false)return floor+1;
+  try{return await Promise.race([S.db.counter(coll+"/__counter",floor),new Promise((_,rej)=>setTimeout(()=>rej({code:"timeout"}),5000))])}
+  catch(e){console.warn("counter fallback",e);return floor+1}
 }
 const errText=e=>{const c=e&&e.code;
   if(c==="no_db")return "قاعدة البيانات غير متاحة. تحقق من إعداد config.js.";
@@ -1131,7 +1178,7 @@ const IP={
   check:"M4.5 12.5l5 5 10-11",
   qr:"M3.5 3.5h6v6h-6zM14.5 3.5h6v6h-6zM3.5 14.5h6v6h-6zM14.5 14.5h2.5V17h-2.5zM18 18h2.5v2.5H18zM18 14.5h2.5M14.5 18.5v2",
   ban:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM5.7 5.7l12.6 12.6",
-  menu:"M4 7h16M4 12h16M4 17h16",chev:"M9 6l6 6-6 6",
+  menu:"M4 7h16M4 12h16M4 17h16",chev:"M9 6l6 6-6 6",scan:"M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16",up:"M6 15l6-6 6 6",down:"M6 9l6 6 6-6",
   clock:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7.5V12l3 2",
   wallet:"M3.5 7h16v13h-16zM3.5 7l12-3.5V7M15 13.5h2",
   eye:"M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
@@ -1139,7 +1186,7 @@ const IP={
 };
 const I=({n,s})=>html`<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style=${s?{width:s+"px",height:s+"px"}:null}><path d=${IP[n]}/></svg>`;
 const NAV_ICON={qc:"shield",presence:"door",dash:"dash",review:"eye",refine:"drop",bars:"bar",strips:"strips",casting:"flame",prep:"prep",hallmark:"stamp",finish:"finish",stock:"box",sales:"receipt",customers:"users",reports:"chart",settings:"gear",orders:"clip",count:"check",labels:"qr",workers:"users",attendance:"clock",daily:"clip"};
-const MAP_ICON={attend:"door",pen:"alert",bars:"bar",strips:"strips",casting:"flame",moves:"arrow",sales:"receipt",payments:"wallet",counts:"check",labels:"qr",sessions:"clock",evals:"check"};
+const MAP_ICON={returns:"receipt",attend:"door",pen:"alert",bars:"bar",strips:"strips",casting:"flame",moves:"arrow",sales:"receipt",payments:"wallet",counts:"check",labels:"qr",sessions:"clock",evals:"check"};
 const PAGE_GROUP=Object.fromEntries(NAV.flatMap(([g,items])=>items.map(([k])=>[k,g])));
 const BADGE_TONE={prep:"gold",recv:"warn",dlv:"ok",done:"ok",ret:"bad","":"plain"};
 
@@ -1208,6 +1255,7 @@ function fieldsOf(e,catalog,customers){const it=catalog[e.item]?.name;const F=[]
     case "casting":g("الصانع",e.worker||"—");if(e.order)g("أمر التصنيع",e.orderNo?"#"+e.orderNo:"مرتبط");g("الوزنة المتسلمة",fg(n(e.received)));g("وزنة السبك",fg(n(e.castW)));g("وزنة التقطيع",fg(n(e.cutW)));g("خسية السبك",fg(n(e.castLoss)));g("خسية التقطيع",fg(n(e.cutLoss)));g("الصنف",it||"—");g("العدد",fi(n(e.count)));g("الوزن علي الميزان",fg(n(e.scale)));g("الوزن الفعلي",fg(n(e.actual)));g("الفرق",fg(n(e.diff)));g("الوزنة المتبقية",fg(n(e.remaining)));break;
     case "moves":g("الحركة",ACTIONS[e.action]?.label||e.action);g("من ← إلى",LOC[e.from]+" ← "+LOC[e.to]);g("الصنف",it||"—");g("العدد",fi(n(e.count)));g(n(e.bagW)?"الوزن قبل الأكياس":"الوزن",fg(n(e.weight))+" جم");if(n(e.bagW)){g("الوزن بعد الأكياس",fg(n(e.bagW))+" جم");g("وزن الأكياس",fg(n(e.bagW)-n(e.weight))+" جم")}if(e.boxes)g("العلب",fi(n(e.boxes)));if(e.worker)g("المستلم",e.worker+(e.work?" · "+e.work:""));if(e.reason)g("سبب الرفض",e.reason);if(e.fee)g("رسوم الدمغة",fm(n(e.fee))+" ج.م");break;
     case "sales":g("رقم الفاتورة",e.no);g("العميل",customers[e.customer]?.name||"—");g("الإجمالي",fm(n(e.total))+" ج.م");g("المدفوع",fm(n(e.paid))+" ج.م");break;
+    case "returns":g("فاتورة",e.no?"#"+e.no:"—");g("العميل",customers[e.customer]?.name||"—");(e.lines||[]).forEach(l=>g(catalog[l.item]?.name||l.item,fi(n(l.count))+" قطعة · "+fg(n(l.weight))+" جم · "+fm(n(l.total))+" ج.م"));g("قيمة المرتجع",fm(n(e.total))+" ج.م");g("مردود نقداً",fm(n(e.refund))+" ج.م");g("خُصم من الحساب",fm(n(e.total)-n(e.refund))+" ج.م");break;
     case "payments":g("العميل",customers[e.customer]?.name||"—");g("المبلغ",fm(n(e.amount))+" ج.م");g("الطريقة",e.method||"—");break;
     case "counts":g("المكان",(COUNT_LOCS.find(x=>x[0]===e.loc)||[0,""])[1]);if(e.owner)g("بواسطة","تعديل المالك");(e.lines||[]).forEach(l=>g(l.item?(catalog[l.item]?.name||l.item):"الخام",(COUNT_POOL[e.loc]?"":fi(n(l.cntC))+" قطعة ("+(n(l.dc)>0?"+":"")+fi(n(l.dc))+") · ")+fg(n(l.cntW))+" جم ("+(n(l.dw)>0?"+":"")+fg(n(l.dw))+")"));break;
     case "sessions":g("العامل",e.wname||"—");g("القسم",e.dept||"—");g("الشغل",e.task||"—");
@@ -1223,6 +1271,8 @@ function voidBlock(e,L,catalog){const it=catalog[e.item]?.name||"الصنف";
   if(e._map==="moves"){const a=(L.stock[e.to]||{})[e.item]||{c:0};if(a.c+0.0001<n(e.count))return "لا يمكن الإلغاء: المتبقي من "+it+" في "+LOC[e.to]+" "+fi(a.c)+" قطعة فقط، أي أن القطع تحركت بعد هذا القيد. ألغِ الحركات اللاحقة أولاً."}
   if(e._map==="casting"){const a=L.stock.vault[e.item]||{c:0};if(a.c+0.0001<n(e.count))return "لا يمكن الإلغاء: المتبقي من "+it+" في الخزنة الفرعية "+fi(a.c)+" قطعة فقط. ألغِ الحركات اللاحقة أولاً."}
   if(e._map==="counts"){for(const l of e.lines||[]){if(COUNT_POOL[e.loc]){if(n(l.dw)>0&&L.P[COUNT_POOL[e.loc]].w+0.001<n(l.dw))return "لا يمكن الإلغاء: الرصيد الحالي أقل من التسوية."}else{const a=(L.stock[e.loc]||{})[l.item]||{c:0};if(n(l.dc)>0&&a.c+0.0001<n(l.dc))return "لا يمكن الإلغاء: الرصيد الحالي من "+(catalog[l.item]?.name||"الصنف")+" أقل من التسوية."}}}
+  if(e._map==="sales"&&L.live.some(x=>x._map==="returns"&&x.invoice===e.id))return "لا يمكن الإلغاء: على الفاتورة مرتجع. ألغِ المرتجع أولاً.";
+  if(e._map==="returns")for(const l of e.lines||[]){const a=L.stock.master[l.item]||{c:0};if(a.c+0.0001<n(l.count))return "لا يمكن الإلغاء: القطع المرتجعة اتباعت أو اتحركت من عند المعلم.";}
   if(e._map==="bars"&&(e.dest==="shop"?L.P.shop:L.P.vault).w+0.001<n(e.weight))return "لا يمكن الإلغاء: اتسلّم من الرصيد بعد استلام هذه السبيكة.";
   if(e._map==="sessions"&&e.end&&GOLD_JOBS.includes(e.job)){if(e.job==="refine"&&L.P.vault.w+0.001<n(e.outW))return "لا يمكن الإلغاء: دهب الحل اتسلّم من الخزنة بعدها.";
     if(e.job==="strip"&&L.P.strips.w+0.001<n(e.outW))return "لا يمكن الإلغاء: الشرايط اتسلّمت للتصنيع بعدها.";
@@ -1241,7 +1291,7 @@ function EntrySheet({e,L,catalog,customers,names,role,perm,onClose,toast}){
     ${ask&&html`<${F} label="سبب الإلغاء" hint="يظهر في سجل التدقيق ولا يمكن التراجع عنه"><textarea id="void-reason" class="in" value=${reason} onInput=${x=>setReason(x.target.value)}></textarea></${F}>`}
   </${Sheet}>`;
 }
-const MAP_TITLE={bars:"سبيكة",strips:"قيد شرايط (قديم)",casting:"صف سبك وتقطيع",moves:"حركة مرحلة",sales:"فاتورة بيع",payments:"تحصيل",counts:"جرد وتسوية",labels:"دفعة ملصقات",sessions:"جلسة عمل",evals:"تقييم يومي",attend:"حضور وانصراف",pen:"جزاء"};
+const MAP_TITLE={returns:"مرتجع مبيعات",bars:"سبيكة",strips:"قيد شرايط (قديم)",casting:"صف سبك وتقطيع",moves:"حركة مرحلة",sales:"فاتورة بيع",payments:"تحصيل",counts:"جرد وتسوية",labels:"دفعة ملصقات",sessions:"جلسة عمل",evals:"تقييم يومي",attend:"حضور وانصراف",pen:"جزاء"};
 const voidCls=r=>r.void?"void":"";
 const stCol=()=>({key:"st",label:"",sort:false,cls:"keep",render:r=>r.void?html`<${Badge} tone="bad">ملغى</${Badge}>`:null});
 
@@ -1292,7 +1342,7 @@ function Dashboard({L,catalog,go,names,customers,prices,config}){
   const last14=[...Array(14)].map((_,i)=>addDays(t,i-13));
   const kh=dayVal(t,khisya),khY=dayVal(y1,khisya);
   const pc=dayVal(t,e=>n(e.count)),pcY=dayVal(y1,e=>n(e.count)),pw=dayVal(t,e=>n(e.scale));
-  const sales=d=>L.live.filter(e=>e._map==="sales"&&e._date===d).reduce((a,e)=>a+n(e.total),0);
+  const sales=d=>L.live.filter(e=>(e._map==="sales"||e._map==="returns")&&e._date===d).reduce((a,e)=>a+(e._map==="sales"?1:-1)*n(e.total),0);
   const hm=locTotal(L.stock,"hallmark");
   const recv=Object.values(L.custBal).reduce((a,v)=>a+(v>0?v:0),0);
   const inStages=LOC_ORDER.filter(l=>l!=="sold").reduce((a,l)=>a+locTotal(L.stock,l).w,0);
@@ -1337,6 +1387,7 @@ function describe(e,catalog,customers){
     case "casting":return "سبك "+it+" × "+fi(n(e.count))+" — خسية "+fg(khisya(e))+" جم";
     case "moves":return (ACTIONS[e.action]?.label||"حركة")+": "+it+" × "+fi(n(e.count));
     case "sales":return "فاتورة "+(e.no||"")+" — "+((customers[e.customer]||{}).name||"عميل")+" — "+fm(n(e.total))+" ج.م";
+    case "returns":return "مرتجع فاتورة "+(e.no||"")+" — "+((customers[e.customer]||{}).name||"عميل")+" — "+fm(n(e.total))+" ج.م";
     case "payments":return "تحصيل من "+((customers[e.customer]||{}).name||"عميل")+" — "+fm(n(e.amount))+" ج.م";
     case "counts":{const ls=e.lines||[];const dw=ls.reduce((a,l)=>a+n(l.dw),0);return "جرد "+((COUNT_LOCS.find(x=>x[0]===e.loc)||[0,""])[1])+" — "+ls.length+" صنف، فرق "+fg(dw)+" جم"}
     case "labels":return "ملصقات "+e.prefix+" — "+fi(n(e.count))+" × "+it;
@@ -1565,8 +1616,9 @@ function StageTimers({job,L,catalog,workers,can,toast,open}){
 
 
 /* ---------- stages ---------- */
-function StagePage({cfg,L,catalog,workers,can,toast,role,open}){
-  const [sheet,setSheet]=useState(null);const [rg,setRg]=useState("30");const [tab,setTab]=useState("log");
+function StagePage({cfg,L,catalog,workers,can,toast,role,open,intent}){
+  const [sheet,setSheet]=useState(null);const [init,setInit]=useState(null);
+  useEffect(()=>{if(intent&&intent.move&&can&&cfg.actions.includes(intent.move.action)){setInit(intent.move);setSheet(intent.move.action)}},[intent]);const [rg,setRg]=useState("30");const [tab,setTab]=useState("log");
   const rows=L.all.filter(e=>e._map==="moves"&&(e.from===cfg.loc||e.to===cfg.loc||(cfg.also&&(e.from===cfg.also||e.to===cfg.also)))&&inRange(e,rg)).reverse();
   const here=locTotal(L.stock,cfg.loc);const live=rows.filter(e=>!e.void);
   const inP=live.filter(e=>e.to===cfg.loc).reduce((a,e)=>a+n(e.count),0),outP=live.filter(e=>e.from===cfg.loc).reduce((a,e)=>a+n(e.count),0);
@@ -1600,12 +1652,12 @@ function StagePage({cfg,L,catalog,workers,can,toast,role,open}){
         :html`<${DataTable} key="stock" cols=${[{key:"id",label:"الصنف",get:r=>catalog[r.id]?.name||r.id},{key:"c",label:"العدد",num:1,render:r=>html`<span class=${r.c<0?"neg":""}>${fi(r.c)}</span>`},{key:"w",label:"الوزن (جم)",num:1,render:r=>fg(r.w)}]} rows=${stockRows} foot=${stockRows.length?{c:fi(here.c),w:fg(here.w)}:null} empty=${html`<${Empty} t=${"لا يوجد شيء في "+LOC[cfg.loc]+" الآن"} s=""/>`}/>`}
     </${Card}>
     ${cfg.job&&html`<${StageTimers} job=${cfg.job} L=${L} catalog=${catalog} workers=${workers} can=${can} toast=${toast} open=${open}/>`}
-    ${sheet&&html`<${MoveSheet} action=${sheet} L=${L} catalog=${catalog} workers=${workers} toast=${toast} onClose=${()=>setSheet(null)}/>`}
+    ${sheet&&html`<${MoveSheet} key=${sheet+(init?init.t||"i":"")} action=${sheet} init=${init} L=${L} catalog=${catalog} workers=${workers} toast=${toast} onClose=${()=>{setSheet(null);setInit(null)}}/>`}
   </${React.Fragment}>`;
 }
-function MoveSheet({action,L,catalog,workers,toast,onClose}){
+function MoveSheet({action,L,catalog,workers,toast,onClose,init}){
   const A=ACTIONS[action];
-  const [f,setF]=useState({from:A.from[0],item:"",count:"",weight:"",worker:"",work:WORKS[0],boxes:"",note:"",jobWorker:"",bagW:"",reason:""});
+  const [f,setF]=useState({from:init&&A.from.includes(init.from)?init.from:A.from[0],item:(init&&init.item)||"",count:init&&init.count?String(init.count):"",weight:"",worker:"",work:WORKS[0],boxes:init&&init.boxes?String(init.boxes):"",note:"",jobWorker:"",bagW:"",reason:""});
   const openJobs=A.closeJob?L.live.filter(e=>e._map==="sessions"&&e.job===A.closeJob&&!e.end):[];
   const jobWs=[...new Map(openJobs.map(e=>[e.worker,e.wname])).entries()];const [wEd,setWEd]=useState(false);const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
   const up=(k,v)=>setF(o=>({...o,[k]:v}));
@@ -1772,7 +1824,7 @@ function ReviewPage({L,days,catalog,workers,config,go,dailies}){
   const mvOut=sum(L.live.filter(e=>e._map==="moves"&&e._date===d&&e.from==="vault"),e=>n(e.count)),mvIn=sum(L.live.filter(e=>e._map==="moves"&&e._date===d&&e.to==="vault"),e=>n(e.count));
   const vO=locTotal(O.stock,"vault"),vC=locTotal(C.stock,"vault");
   const inF=sum(bars,e=>n(e.weight)*n(e.karat)/1000);
-  const soldF=sum(L.live.filter(e=>e._map==="sales"&&e._date===d),e=>(e.lines||[]).reduce((a,l)=>a+n(l.weight)*n(l.karat||catalog[l.item]?.karat||999.9)/1000,0));
+  const soldF=sum(L.live.filter(e=>(e._map==="sales"||e._map==="returns")&&e._date===d),e=>(e._map==="sales"?1:-1)*(e.lines||[]).reduce((a,l)=>a+n(l.weight)*n(l.karat||catalog[l.item]?.karat||999.9)/1000,0));
   const lossF=sum(L.losses.filter(x=>x._date===d),x=>x.f);
   const adjF=sum(L.live.filter(e=>e._map==="counts"&&e._date===d),e=>(e.lines||[]).reduce((a,l)=>a+n(l.dw)*n(l.karat||999.9)/1000,0));
   const f0=totalFine(O,catalog),f1=totalFine(C,catalog),bal=f1-(f0+inF-soldF-lossF+adjF);
@@ -2006,8 +2058,30 @@ function invoiceHtml(e,catalog,customers){
   const rows=(e.lines||[]).map(l=>`<tr><td>${esc(catalog[l.item]?.name||l.item)}</td><td class="n">${fi(n(l.count))}</td><td class="n">${fg(n(l.weight))}</td><td class="n">${fm(n(l.price))}</td><td class="n">${fm(n(l.gold))}</td><td class="n">${fm(n(l.laborT))}</td><td class="n">${fm(n(l.total))}</td></tr>`).join("");
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>فاتورة ${esc(e.no)}</title><style>body{font-family:Tahoma,sans-serif;margin:0;color:#17140e}.top{background:#000;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:20px 28px}.top img{height:56px}h1{color:#ddb546;margin:0;font-size:20px}.b{padding:24px 28px}.m{display:flex;gap:12px;margin-bottom:18px}.m div{flex:1;border:1px solid #e7e4dd;border-radius:4px;padding:10px 12px;font-size:13px}.m span{display:block;color:#676b74;font-size:11px}table{width:100%;border-collapse:collapse;font-size:13px}th{background:#f9f8f5;color:#676b74;text-align:right;padding:8px 10px;border-bottom:1px solid #e7e4dd}td{padding:9px 10px;border-bottom:1px solid #eee}.n{text-align:left;direction:ltr}.t{width:300px;margin:18px 0 0 auto;font-size:14px}.t div{display:flex;justify-content:space-between;padding:4px 0}.g{border-top:2px solid #17140e;font-weight:bold}</style></head><body><div class="top"><img src="${LOGO}" alt="GOLD ERA"><div style="text-align:left"><h1>فاتورة بيع</h1><div>رقم ${esc(e.no)} · ${esc(e._date)}</div></div></div><div class="b"><div class="m"><div><span>العميل</span>${esc(c.name||"—")}</div><div><span>الهاتف</span>${esc(c.phone||"—")}</div><div><span>عدد القطع</span>${fi((e.lines||[]).reduce((a,l)=>a+n(l.count),0))}</div></div><table><thead><tr><th>الصنف</th><th>العدد</th><th>الوزن (جم)</th><th>سعر الجرام</th><th>قيمة الذهب</th><th>المصنعية</th><th>الإجمالي</th></tr></thead><tbody>${rows}</tbody></table><div class="t"><div><span>الإجمالي</span><b>${fm(n(e.total))} ج.م</b></div><div><span>المدفوع</span><span>${fm(n(e.paid))} ج.م</span></div><div class="g"><span>المتبقي</span><span>${fm(n(e.total)-n(e.paid))} ج.م</span></div></div>${e.note?`<p style="color:#676b74;font-size:12px">ملاحظة: ${esc(e.note)}</p>`:""}</div></body></html>`;
 }
-function InvoiceView({e,catalog,customers,onClose,toast}){
-  const c=customers[e.customer]||{};
+const returnsOf=(L,id)=>L.live.filter(x=>x._map==="returns"&&x.invoice===id);
+function ReturnSheet({sale,L,catalog,customers,toast,onClose}){
+  const done={};returnsOf(L,sale.id).forEach(x=>(x.lines||[]).forEach(l=>{done[l.item]=(done[l.item]||0)+n(l.count)}));
+  const base=(sale.lines||[]).map((l,i)=>{const used=Math.min(n(l.count),done[l.item]||0);done[l.item]=(done[l.item]||0)-used;return {...l,i,left:n(l.count)-used}});
+  const [q,setQ]=useState({});const [lab,setLab]=useState(true);const [refund,setRefund]=useState("");const [note,setNote]=useState("");const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
+  const calc=base.map(l=>{const c=n(q[l.i]);const u=n(l.count)?c/n(l.count):0;const rg=r2(n(l.gold)*u),rl=lab?r2(n(l.laborT)*u):0;return {...l,c,rw:r2(n(l.weight)*u),rg,rl,rt:r2(rg+rl)}});
+  const total=r2(calc.reduce((a,l)=>a+l.rt,0));const bal=L.custBal[sale.customer]||0;const rf=n(refund);
+  const save=async()=>{setErr("");const ok=calc.filter(l=>l.c>0);if(!ok.length)return setErr("اكتب عدد القطع المرتجعة.");
+    for(const l of ok){if(l.c>l.left+0.0001)return setErr("المتبقي من "+(catalog[l.item]?.name||"الصنف")+" في الفاتورة "+fi(l.left)+" فقط.")}
+    if(rf>total+0.001)return setErr("المردود نقداً أكبر من قيمة المرتجع.");
+    setBusy(true);try{await addEntry("returns",{invoice:sale.id,no:sale.no,customer:sale.customer,lines:ok.map(l=>({item:l.item,count:l.c,weight:l.rw,karat:n(l.karat),price:n(l.price),gold:l.rg,laborT:l.rl,total:l.rt})),total,refund:r2(rf),note:note.trim()});
+      toast("سُجل مرتجع فاتورة #"+sale.no);onClose()}catch(e){setErr(errText(e))}setBusy(false)};
+  return html`<${Sheet} title=${"مرتجع — فاتورة #"+sale.no} sub=${(customers[sale.customer]?.name||"")+" · القطع بترجع لمخزون المعلم"} onClose=${onClose} footer=${html`<span class="msg">${err}</span><button class="btn" onClick=${onClose}>إلغاء</button><button class="btn p" disabled=${busy} onClick=${save}><${I} n="check"/>تسجيل المرتجع</button>`}>
+    <div class="tw"><table class="t lines"><thead><tr><th>الصنف</th><th class="n">في الفاتورة</th><th class="n">متاح للإرجاع</th><th class="n">المرتجع</th><th class="n">القيمة</th></tr></thead><tbody>
+      ${calc.map(l=>html`<tr key=${l.i}><td class="strong">${catalog[l.item]?.name||l.item}</td><td class="n">${fi(n(l.count))}</td><td class="n">${fi(l.left)}</td>
+        <td style=${{width:"96px"}}>${l.left>0?html`<${Num} id=${"rt-"+l.i} ph="0" value=${q[l.i]||""} set=${v=>setQ(o=>({...o,[l.i]:v}))}/>`:"—"}</td><td class="n strong">${fm(l.rt)}</td></tr>`)}
+    </tbody></table></div>
+    <label class="chk"><input type="checkbox" checked=${lab} onChange=${e=>setLab(e.target.checked)}/> رد المصنعية مع الذهب (شيل العلامة لو المصنعية مش بتترد)</label>
+    <div class="fg"><${F} label="مردود نقداً للعميل (ج.م)" hint="الباقي يتخصم من رصيده"><${Num} id="rt-refund" value=${refund} set=${setRefund}/></${F}><${F} label="سبب / ملاحظة"><input id="rt-note" class="in" value=${note} onInput=${e=>setNote(e.target.value)}/></${F}></div>
+    <${Calc} items=${[["قيمة المرتجع",fm(total)+" ج.م","hl"],["وزن المرتجع",fg(calc.reduce((a,l)=>a+l.rw,0))+" جم"],["مردود نقداً",fm(rf)],["رصيد العميل الآن",fm(bal)],["بعد المرتجع",fm(bal-total+rf),bal-total+rf<-0.01?"neg":""],["بسعر الفاتورة","نفس سعر يوم البيع"]]}/>
+  </${Sheet}>`;
+}
+function InvoiceView({e,catalog,customers,onClose,toast,L,can}){
+  const c=customers[e.customer]||{};const rets=L?returnsOf(L,e.id):[];const [ret,setRet]=useState(false);
   const dl=async()=>{const d=await platform.use("downloads");if(!d)return toast("التنزيل غير متاح في هذا العرض.");try{await d.save({filename:"invoice-"+e.no+".html",data:invoiceHtml(e,catalog,customers)})}catch(er){if(er&&er.code!=="declined")toast("تعذر التنزيل.")}};
   return html`<${Modal} label=${"فاتورة "+e.no} onClose=${onClose}>
     <div class="inv"><div class="inv__top"><img src=${LOGO} alt="GOLD ERA"/><div><h4>فاتورة بيع</h4>رقم <span class="num">${e.no}</span> · <span class="num">${e._date}</span></div></div>
@@ -2016,14 +2090,18 @@ function InvoiceView({e,catalog,customers,onClose,toast}){
         <div class="inv__meta"><div><span>العميل</span><b>${c.name||"—"}</b></div><div><span>الهاتف</span><b class="num">${c.phone||"—"}</b></div><div><span>القطع / الوزن</span><b class="num">${fi((e.lines||[]).reduce((a,l)=>a+n(l.count),0))} / ${fg((e.lines||[]).reduce((a,l)=>a+n(l.weight),0))} جم</b></div></div>
         <div class="tw"><table><thead><tr><th>الصنف</th><th class="n">العدد</th><th class="n">الوزن</th><th class="n">سعر الجرام</th><th class="n">قيمة الذهب</th><th class="n">المصنعية</th><th class="n">الإجمالي</th></tr></thead><tbody>${(e.lines||[]).map((l,i)=>html`<tr key=${i}><td>${catalog[l.item]?.name||l.item}</td><td class="n">${fi(n(l.count))}</td><td class="n">${fg(n(l.weight))}</td><td class="n">${fm(n(l.price))}</td><td class="n">${fm(n(l.gold))}</td><td class="n">${fm(n(l.laborT))}</td><td class="n">${fm(n(l.total))}</td></tr>`)}</tbody></table></div>
         <div class="inv__tot"><div><span>الإجمالي</span><b class="num">${fm(n(e.total))} ج.م</b></div><div><span>المدفوع</span><span class="num">${fm(n(e.paid))} ج.م</span></div><div class="g"><span>المتبقي</span><span class="num">${fm(n(e.total)-n(e.paid))} ج.م</span></div></div>
-        <div class="inv__foot"><span>GOLD ERA FACTORY</span><span style=${{display:"flex",gap:"8px"}}><button class="btn" onClick=${onClose}>إغلاق</button><button class="btn p" onClick=${dl}><${I} n="dl"/>تنزيل الفاتورة</button></span></div>
+        ${rets.length>0&&html`<div style=${{fontSize:"13px",color:"#b42318"}}>مرتجع على الفاتورة: <b class="num">${fi(rets.reduce((a,x)=>a+(x.lines||[]).reduce((b,l)=>b+n(l.count),0),0))}</b> قطعة بقيمة <b class="num">${fm(rets.reduce((a,x)=>a+n(x.total),0))}</b> ج.م</div>`}
+        <div class="inv__foot"><span>GOLD ERA FACTORY</span><span style=${{display:"flex",gap:"8px"}}><button class="btn" onClick=${onClose}>إغلاق</button>${can&&L&&!e.void&&html`<button class="btn" onClick=${()=>setRet(true)}>مرتجع</button>`}<button class="btn p" onClick=${dl}><${I} n="dl"/>تنزيل الفاتورة</button></span></div>
       </div></div>
+    ${ret&&html`<${ReturnSheet} sale=${e} L=${L} catalog=${catalog} customers=${customers} toast=${toast} onClose=${()=>setRet(false)}/>`}
   </${Modal}>`;
 }
-function SalesPage({L,catalog,customers,prices,can,toast,role,go,intent}){
+function SalesPage({L,catalog,customers,prices,can,toast,role,go,intent,open}){
   const [sheet,setSheet]=useState(false);const [rg,setRg]=useState("30");const [view,setView]=useState(null);
-  useEffect(()=>{if(intent&&intent.invoice){const v=L.all.find(e=>e._map==="sales"&&e.id===intent.invoice);if(v)setView(v)}},[intent]);
+  useEffect(()=>{if(intent&&intent.invoice){const v=L.all.find(e=>e._map==="sales"&&e.id===intent.invoice);if(v)setView(v)}if(intent&&intent.sell&&can)setSheet(intent.sell)},[intent]);
   const rows=L.all.filter(e=>e._map==="sales"&&inRange(e,rg)).reverse();const live=rows.filter(e=>!e.void);
+  const rets=L.all.filter(e=>e._map==="returns"&&inRange(e,rg)).reverse();const retT=rets.filter(e=>!e.void).reduce((a,e)=>a+n(e.total),0);
+  const retBy={};L.live.filter(e=>e._map==="returns").forEach(e=>{retBy[e.invoice]=(retBy[e.invoice]||0)+n(e.total)});
   const tot=live.reduce((a,e)=>a+n(e.total),0),paid=live.reduce((a,e)=>a+n(e.paid),0),wt=live.reduce((a,e)=>a+(e.lines||[]).reduce((b,l)=>b+n(l.weight),0),0);
   const cols=[
     {key:"no",label:"رقم",num:1,get:r=>n(r.no),render:r=>html`<span class="strong">#${r.no}</span>`},
@@ -2032,25 +2110,27 @@ function SalesPage({L,catalog,customers,prices,can,toast,role,go,intent}){
     {key:"pcs",label:"القطع",num:1,get:r=>(r.lines||[]).reduce((a,l)=>a+n(l.count),0),render:r=>fi((r.lines||[]).reduce((a,l)=>a+n(l.count),0))},
     {key:"w",label:"الوزن",num:1,get:r=>(r.lines||[]).reduce((a,l)=>a+n(l.weight),0),render:r=>fg((r.lines||[]).reduce((a,l)=>a+n(l.weight),0))},
     {key:"total",label:"الإجمالي",num:1,get:r=>n(r.total),render:r=>html`<span class="strong">${fm(n(r.total))}</span>`},
+    {key:"ret",label:"مرتجع",num:1,get:r=>retBy[r.id]||0,render:r=>retBy[r.id]?html`<span class="neg">${fm(retBy[r.id])}</span>`:"—"},
     {key:"paid",label:"الحالة",get:r=>n(r.total)-n(r.paid),render:r=>r.void?html`<${Badge} tone="bad">ملغاة</${Badge}>`:(n(r.total)-n(r.paid)<0.01?html`<${Badge} tone="ok">مدفوعة</${Badge}>`:n(r.paid)>0?html`<${Badge} tone="warn">جزئي · ${fm(n(r.total)-n(r.paid))}</${Badge}>`:html`<${Badge} tone="info">على الحساب</${Badge}>`),cls:"keep"}];
   return html`<${React.Fragment}>
     <${PH} title="المبيعات" desc="فواتير البيع من مخزون المعلم بسعر الجرام اليومي + المصنعية"><${Range} value=${rg} set=${setRg}/>${can&&html`<button class="btn p" onClick=${()=>setSheet(true)}><${I} n="plus"/>فاتورة جديدة</button>`}</${PH}>
     ${!can&&html`<${ReadOnly} role=${role}/>`}
     ${!(prices.g21||prices.g24)&&html`<div class="note warn"><${I} n="alert"/><span>لم تُحدد أسعار الذهب بعد. <button class="link" onClick=${()=>go("settings")}>حددها من الإعدادات</button> قبل إصدار الفواتير.</span></div>`}
     <div class="kpis">
-      <${Kpi} icon="receipt" label="مبيعات الفترة" value=${fm(tot)} unit="ج.م" sub=${fi(live.length)+" فاتورة · "+fg(wt)+" جم"}/>
+      <${Kpi} icon="receipt" label="مبيعات الفترة" value=${fm(tot-retT)} unit="ج.م" sub=${fi(live.length)+" فاتورة · "+fg(wt)+" جم"+(retT?" · بعد مرتجع "+fm(retT):"")}/>
       <${Kpi} icon="wallet" label="المحصّل مع الفواتير" value=${fm(paid)} unit="ج.م" sub=${"على الحساب "+fm(tot-paid)}/>
       <${Kpi} icon="bar" label="جرام 21 / 24" value=${prices.g21?fm(n(prices.g21)):"—"} unit=${prices.g24?"/ "+fm(n(prices.g24)):""} sub=${prices.updatedAt?"تحديث "+String(prices.updatedAt).slice(0,10):"غير محدد"}/>
       <${Kpi} icon="box" label="متاح لدى المعلم" value=${fi(locTotal(L.stock,"master").c)} unit="قطعة" sub=${fg(locTotal(L.stock,"master").w)+" جم"}/>
     </div>
     <${Card} title="الفواتير"><${DataTable} cols=${cols} rows=${rows} sort=${["no","desc"]} rowCls=${voidCls} onRow=${setView} searchPh="رقم الفاتورة أو العميل" foot=${live.length?{total:fm(tot)}:null} empty=${html`<${Empty} icon="receipt" t="لا توجد فواتير في هذه الفترة" s=""/>`}/></${Card}>
-    ${sheet&&html`<${SaleSheet} L=${L} catalog=${catalog} customers=${customers} prices=${prices} toast=${toast} onClose=${()=>setSheet(false)} onSaved=${setView}/>`}
-    ${view&&html`<${InvoiceView} e=${view} catalog=${catalog} customers=${customers} toast=${toast} onClose=${()=>setView(null)}/>`}
+    ${rets.length>0&&html`<${Card} title="المرتجعات" sub="افتح الفاتورة واضغط «مرتجع» لتسجيل مرتجع جديد — اضغط على المرتجع لتفاصيله أو إلغائه"><${DataTable} cols=${[{key:"_date",label:"التاريخ",get:r=>r.ts,render:r=>html`<span class="num">${r._date}</span>`},{key:"no",label:"فاتورة",num:1,get:r=>n(r.no),render:r=>html`<span class="strong">#${r.no}</span>`},{key:"cust",label:"العميل",get:r=>customers[r.customer]?.name||"—"},{key:"pcs",label:"القطع",num:1,get:r=>(r.lines||[]).reduce((a,l)=>a+n(l.count),0)},{key:"total",label:"القيمة",num:1,get:r=>n(r.total),render:r=>fm(n(r.total))},{key:"refund",label:"مردود نقداً",num:1,get:r=>n(r.refund),render:r=>n(r.refund)?fm(n(r.refund)):"—"},stCol()]} rows=${rets} sort=${["_date","desc"]} rowCls=${voidCls} onRow=${open} pageSize=${8}/></${Card}>`}
+    ${sheet&&html`<${SaleSheet} L=${L} catalog=${catalog} customers=${customers} prices=${prices} toast=${toast} init=${sheet===true?null:sheet} onClose=${()=>setSheet(false)} onSaved=${setView}/>`}
+    ${view&&html`<${InvoiceView} e=${view} L=${L} can=${can} catalog=${catalog} customers=${customers} toast=${toast} onClose=${()=>setView(null)}/>`}
   </${React.Fragment}>`;
 }
-function SaleSheet({L,catalog,customers,prices,toast,onClose}){
+function SaleSheet({L,catalog,customers,prices,toast,onClose,init}){
   const blank={item:"",count:"",labor:""};
-  const [cust,setCust]=useState("");const [lines,setLines]=useState([{...blank}]);const [paid,setPaid]=useState("");const [note,setNote]=useState("");const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
+  const [cust,setCust]=useState("");const [lines,setLines]=useState([init&&init.item?{item:init.item,count:String(init.count||""),labor:""}:{...blank}]);const [paid,setPaid]=useState("");const [note,setNote]=useState("");const [err,setErr]=useState("");const [busy,setBusy]=useState(false);
   const avail=L.stock.master;
   const calc=lines.map(ln=>{const it=catalog[ln.item];const a=avail[ln.item]||{c:0,w:0};const w=a.c>0?a.w/a.c*n(ln.count):(it?n(it.w)*n(ln.count):0);
     const pg=it?n(prices[priceKey(it.karat)]):0;const gold=w*pg,labor=n(ln.labor)*n(ln.count);return {...ln,weight:r2(w),price:pg,gold:r2(gold),laborT:r2(labor),total:r2(gold+labor),avail:a.c,karat:it?n(it.karat):0}});
@@ -2058,7 +2138,7 @@ function SaleSheet({L,catalog,customers,prices,toast,onClose}){
   const setLn=(i,k,v)=>setLines(ls=>ls.map((l,j)=>j===i?{...l,[k]:v}:l));
   const save=async()=>{setErr("");if(!cust)return setErr("اختر العميل.");const ok=calc.filter(l=>l.item&&n(l.count)>0);if(!ok.length)return setErr("أضف صنفاً واحداً على الأقل.");
     for(const l of ok){if(n(l.count)>l.avail+0.0001)return setErr("المتاح لدى المعلم من "+catalog[l.item].name+" "+fi(l.avail)+" فقط.");if(!l.price)return setErr("حدد سعر جرام عيار "+karatLabel(l.karat)+" من الإعدادات.")}
-    setBusy(true);try{const t=r2(ok.reduce((a,l)=>a+l.total,0));const no=Math.max(0,...L.all.filter(e=>e._map==="sales").map(e=>n(e.no)))+1;
+    setBusy(true);try{const t=r2(ok.reduce((a,l)=>a+l.total,0));const no=await nextNo("sales",Math.max(0,...L.all.filter(e=>e._map==="sales").map(e=>n(e.no))));
       await addEntry("sales",{no,customer:cust,lines:ok.map(l=>({item:l.item,count:n(l.count),weight:l.weight,karat:l.karat,price:l.price,gold:l.gold,labor:n(l.labor),laborT:l.laborT,total:l.total})),total:t,paid:Math.min(n(paid),t)||0,note:note.trim()});
       toast("حُفظت الفاتورة رقم "+no);onClose()}catch(er){setErr(errText(er))}setBusy(false)};
   const custList=Object.entries(customers).sort((a,b)=>(a[1].name||"").localeCompare(b[1].name||"","ar"));
@@ -2082,7 +2162,7 @@ function SaleSheet({L,catalog,customers,prices,toast,onClose}){
 function CustomersPage({L,customers,can,toast,role,intent}){
   const [sheet,setSheet]=useState(null);const [stmt,setStmt]=useState(null);
   useEffect(()=>{if(intent&&intent.customer&&customers[intent.customer])setStmt({k:intent.customer,...customers[intent.customer]})},[intent]);
-  const rows=Object.entries(customers).map(([k,c])=>({id:k,k,...c,bal:L.custBal[k]||0,last:(L.live.filter(e=>(e._map==="sales"||e._map==="payments")&&e.customer===k).map(e=>e._date).sort().pop())||""}));
+  const rows=Object.entries(customers).map(([k,c])=>({id:k,k,...c,bal:L.custBal[k]||0,last:(L.live.filter(e=>(e._map==="sales"||e._map==="payments"||e._map==="returns")&&e.customer===k).map(e=>e._date).sort().pop())||""}));
   const total=rows.reduce((a,c)=>a+(c.bal>0?c.bal:0),0);const todayColl=L.live.filter(e=>e._map==="payments"&&e._date===today()).reduce((a,e)=>a+n(e.amount),0);
   const cols=[{key:"name",label:"العميل",render:r=>html`<span class="strong">${r.name}</span><span class="sub num">${r.phone||""}</span>`},
     {key:"kind",label:"النوع",render:r=>html`<${Badge} tone="plain">${r.kind||"—"}</${Badge}>`},
@@ -2126,15 +2206,15 @@ function PaySheet({rows,toast,onClose}){
   </${Sheet}>`;
 }
 function StatementSheet({c,L,onClose}){
-  let bal=0;const rows=L.live.filter(e=>(e._map==="sales"||e._map==="payments")&&e.customer===c.k).map(e=>{const d=e._map==="sales"?n(e.total):0,cr=e._map==="sales"?n(e.paid):n(e.amount);bal+=d-cr;return {id:e.id,e,d,cr,bal}});
+  let bal=0;const rows=L.live.filter(e=>(e._map==="sales"||e._map==="payments"||e._map==="returns")&&e.customer===c.k).map(e=>{const d=e._map==="sales"?n(e.total):e._map==="returns"?n(e.refund):0,cr=e._map==="sales"?n(e.paid):e._map==="returns"?n(e.total):n(e.amount);bal+=d-cr;return {id:e.id,e,d,cr,bal}});
   return html`<${Sheet} title=${"كشف حساب — "+c.name} sub=${(c.kind||"")+(c.phone?" · "+c.phone:"")} onClose=${onClose}>
     <${Calc} items=${[["إجمالي الفواتير",fm(rows.reduce((a,r)=>a+r.d,0))],["إجمالي المدفوع",fm(rows.reduce((a,r)=>a+r.cr,0))],["الرصيد",fm(bal),"hl"]]}/>
-    ${rows.length?html`<div class="card"><div class="tw"><table class="t"><thead><tr><th>التاريخ</th><th>البيان</th><th class="n">مدين</th><th class="n">دائن</th><th class="n">الرصيد</th></tr></thead><tbody>${rows.map(r=>html`<tr key=${r.id}><td class="num">${r.e._date}</td><td>${r.e._map==="sales"?"فاتورة #"+(r.e.no||""):"تحصيل "+(r.e.method||"")}</td><td class="n">${r.d?fm(r.d):"—"}</td><td class="n">${r.cr?fm(r.cr):"—"}</td><td class="n strong">${fm(r.bal)}</td></tr>`)}</tbody></table></div></div>`:html`<${Empty} t="لا توجد حركات لهذا العميل" s=""/>`}
+    ${rows.length?html`<div class="card"><div class="tw"><table class="t"><thead><tr><th>التاريخ</th><th>البيان</th><th class="n">مدين</th><th class="n">دائن</th><th class="n">الرصيد</th></tr></thead><tbody>${rows.map(r=>html`<tr key=${r.id}><td class="num">${r.e._date}</td><td>${r.e._map==="sales"?"فاتورة #"+(r.e.no||""):r.e._map==="returns"?"مرتجع فاتورة #"+(r.e.no||""):"تحصيل "+(r.e.method||"")}</td><td class="n">${r.d?fm(r.d):"—"}</td><td class="n">${r.cr?fm(r.cr):"—"}</td><td class="n strong">${fm(r.bal)}</td></tr>`)}</tbody></table></div></div>`:html`<${Empty} t="لا توجد حركات لهذا العميل" s=""/>`}
   </${Sheet}>`;
 }
 
 /* ---------- reports ---------- */
-function ReportsPage({L,catalog,customers,names,toast,open,prices,months,role,perm,workers,config}){
+function ReportsPage({L,catalog,customers,names,toast,open,prices,months,role,perm,workers,config,phist}){
   const [from,setFrom]=useState(addDays(today(),-29));const [to,setTo]=useState(today());const [tab,setTab]=useState("monthly");
   const E=L.live.filter(e=>e._date>=from&&e._date<=to);const ALL=L.all.filter(e=>e._date>=from&&e._date<=to).slice().reverse();
   const cast=E.filter(e=>e._map==="casting");
@@ -2144,7 +2224,7 @@ function ReportsPage({L,catalog,customers,names,toast,open,prices,months,role,pe
   const fees=E.filter(e=>e._map==="moves").reduce((a,e)=>a+n(e.fee),0),sales=E.filter(e=>e._map==="sales").reduce((a,e)=>a+n(e.total),0);
   const coll=E.filter(e=>e._map==="payments").reduce((a,e)=>a+n(e.amount),0)+E.filter(e=>e._map==="sales").reduce((a,e)=>a+n(e.paid),0);
   const khT=cast.reduce((a,e)=>a+khisya(e),0),recT=cast.reduce((a,e)=>a+n(e.received),0);
-  const M={bars:"السبائك",strips:"الشرايط",casting:"السبك والتقطيع",moves:"المراحل",sales:"المبيعات",payments:"التحصيل",counts:"الجرد",labels:"الملصقات"};
+  const M={bars:"السبائك",strips:"الشرايط",casting:"السبك والتقطيع",moves:"المراحل",sales:"المبيعات",payments:"التحصيل",counts:"الجرد",labels:"الملصقات",returns:"المرتجعات",sessions:"الشغل",evals:"التقييم",attend:"الحضور",pen:"الجزاءات"};
   const exportCsv=async()=>{const dl=await platform.use("downloads");if(!dl)return toast("التصدير غير متاح في هذا العرض.");
     const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';const rows=[["التاريخ","الوقت","القسم","البيان","الصنف","العدد","الوزن","المبلغ","بواسطة","الحالة"]];
     ALL.forEach(e=>rows.push([e._date,tme(e.ts),M[e._map],describe(e,catalog,customers),catalog[e.item]?.name||"",e.count??"",e.weight??e.scale??"",e.total??e.amount??e.fee??"",(e.by&&names[e.by]?.name)||"",e.void?"ملغى: "+(e.voidReason||""):""]));
@@ -2152,7 +2232,7 @@ function ReportsPage({L,catalog,customers,names,toast,open,prices,months,role,pe
   const tabsEl=html`<div class="tabs" role="tablist">${[["monthly","الشهر والأرباح"],["attm","الحضور والجزاءات"],["wprod","إنتاجية العمال"],["khisya","الخسية اليومية"],["items","الإنتاج حسب الصنف"],["workers","خسية الصناع"],["audit","سجل التدقيق"]].map(([k,l])=>html`<button key=${k} role="tab" aria-selected=${tab===k?"true":"false"} onClick=${()=>setTab(k)}>${l}</button>`)}</div>`;
   if(tab==="attm")return html`<${React.Fragment}><${PH} title="التقارير" desc="حضور وغياب وتأخير وجزاءات كل عامل في الشهر، وشغله وإنتاجه في نفس الوقت"/>${tabsEl}<${AttendMonth} L=${L} workers=${workers||{}} config=${config||{}} toast=${toast}/></${React.Fragment}>`;
   if(tab==="wprod")return html`<${React.Fragment}><${PH} title="التقارير" desc="إنتاجية كل عامل لشهر أو عدة شهور أو سنة"/>${tabsEl}<${WorkerReport} L=${L} workers=${workers||{}} config=${config||{}} toast=${toast}/></${React.Fragment}>`;
-  if(tab==="monthly")return html`<${React.Fragment}><${PH} title="التقارير" desc="الملخص الشهري والربح التقديري، والخسية والإنتاج، وسجل التدقيق"/>${tabsEl}<${MonthlyReport} L=${L} catalog=${catalog} prices=${prices} months=${months} perm=${perm} toast=${toast}/></${React.Fragment}>`;
+  if(tab==="monthly")return html`<${React.Fragment}><${PH} title="التقارير" desc="الملخص الشهري والربح التقديري، والخسية والإنتاج، وسجل التدقيق"/>${tabsEl}<${MonthlyReport} L=${L} catalog=${catalog} prices=${prices} phist=${phist} months=${months} perm=${perm} toast=${toast}/></${React.Fragment}>`;
   return html`<${React.Fragment}>
     <${PH} title="التقارير" desc="الخسية والإنتاج والدمغة والمبيعات، وسجل التدقيق الكامل">
       <input id="r-from" type="date" class="in" style=${{width:"auto",height:"36px"}} value=${from} onChange=${e=>setFrom(e.target.value)} aria-label="من"/><span style=${{color:"var(--muted)"}}>إلى</span><input id="r-to" type="date" class="in" style=${{width:"auto",height:"36px"}} value=${to} onChange=${e=>setTo(e.target.value)} aria-label="إلى"/>
@@ -2174,13 +2254,14 @@ function ReportsPage({L,catalog,customers,names,toast,open,prices,months,role,pe
 }
 
 /* ---------- settings ---------- */
-function SettingsPage({catalog,workers,prices,names,toast,perm,isOwner,config}){
+function SettingsPage({catalog,workers,prices,names,toast,perm,isOwner,config,phist}){
   const [tab,setTab]=useState(isOwner?"users":"catalog");const mgr=!!(perm&&perm.settings);
   return html`<${React.Fragment}>
     <${PH} title="الإعدادات" desc="الأصناف، العمال، الأسعار، حدود التشغيل، والمستخدمون"/>
-    <div class="tabs" role="tablist">${[...(isOwner?[["users","المستخدمون والصلاحيات"]]:[]),["catalog","الأصناف"],["prices","أسعار الذهب"],["ops","حدود التشغيل"],["backup","النسخ الاحتياطي"]].map(([k,l])=>html`<button key=${k} role="tab" aria-selected=${tab===k?"true":"false"} onClick=${()=>setTab(k)}>${l}</button>`)}</div>
+    <div class="tabs" role="tablist">${[...(isOwner?[["users","المستخدمون والصلاحيات"]]:[]),["catalog","الأصناف"],["prices","أسعار الذهب"],["ops","حدود التشغيل"],["nav","ترتيب القائمة"],["backup","النسخ الاحتياطي"]].map(([k,l])=>html`<button key=${k} role="tab" aria-selected=${tab===k?"true":"false"} onClick=${()=>setTab(k)}>${l}</button>`)}</div>
+    ${tab==="nav"&&html`<${NavEdit} config=${config} can=${mgr} toast=${toast}/>`}
     ${tab==="catalog"&&html`<${CatalogEdit} catalog=${catalog} can=${mgr} toast=${toast}/>`}
-    ${tab==="prices"&&html`<${PricesEdit} prices=${prices} can=${mgr} toast=${toast}/>`}
+    ${tab==="prices"&&html`<${PricesEdit} prices=${prices} phist=${phist} can=${mgr} toast=${toast}/>`}
     ${tab==="ops"&&html`<${OpsEdit} config=${config} can=${mgr} toast=${toast}/>`}
     ${tab==="backup"&&html`<${BackupEdit} isOwner=${isOwner} mgr=${mgr} toast=${toast}/>`}
     ${tab==="backup"&&isOwner&&html`<${WipeData} toast=${toast}/>`}
@@ -2217,14 +2298,25 @@ function WorkersEdit({workers,can,toast}){
       <button class="btn p" onClick=${async()=>{setErr("");if(!name.trim())return setErr("اكتب الاسم.");if(await save({...workers,["w"+newId().slice(0,8)]:{name:name.trim(),kind}})){toast("أُضيف "+name.trim());setName("")}}}><${I} n="plus"/>إضافة</button></div>${err&&html`<p class="msg">${err}</p>`}</div>`}
   </${Card}>`;
 }
-function PricesEdit({prices,can,toast}){
-  const [f,setF]=useState({g24:prices.g24||"",g21:prices.g21||"",g18:prices.g18||""});const [err,setErr]=useState("");
-  useEffect(()=>setF({g24:prices.g24||"",g21:prices.g21||"",g18:prices.g18||""}),[prices.updatedAt]);
-  return html`<${Card} title="أسعار جرام الذهب" sub=${prices.updatedAt?"آخر تحديث "+String(prices.updatedAt).replace("T"," ").slice(0,16):"لم تُحدد بعد"} body=${true}>
-    ${can?html`<div class="fg" style=${{gridTemplateColumns:"repeat(3,minmax(0,1fr)) auto",alignItems:"end"}}>${[["g24","عيار 24 (ج.م)"],["g21","عيار 21 (ج.م)"],["g18","عيار 18 (ج.م)"]].map(([k,l])=>html`<${F} key=${k} label=${l}><${Num} id=${"pr-"+k} value=${String(f[k])} set=${v=>setF(o=>({...o,[k]:v}))}/></${F}>`)}
-      <button class="btn p" onClick=${async()=>{setErr("");if(await saveDoc("settings/prices",{g24:n(f.g24),g21:n(f.g21),g18:n(f.g18)},setErr))toast("حُدثت الأسعار")}}>حفظ الأسعار</button></div>${err&&html`<p class="msg">${err}</p>`}`
+/* price of the day: the last recorded price on or before that day; before the first record, the first one; otherwise today's */
+const priceAt=(phist,prices,d,k)=>{let best="",first="";for(const x in (phist||{})){if(!phist[x]||!n(phist[x][k]))continue;if(x<=d&&x>best)best=x;if(!first||x<first)first=x}return best?n(phist[best][k]):first?n(phist[first][k]):n(prices[k])};
+function PricesEdit({prices,phist,can,toast}){
+  const pf=h=>({g24:(h&&h.g24)||"",g21:(h&&h.g21)||"",g18:(h&&h.g18)||""});
+  const [f,setF]=useState(pf(prices));const [d,setD]=useState(today());const [err,setErr]=useState("");const isT=d===today();
+  useEffect(()=>{if(d===today())setF(pf(prices))},[prices.updatedAt]);
+  const pick=v=>{const x=v||today();setD(x);setF(pf(x===today()?prices:(phist||{})[x]))};
+  const save=async()=>{setErr("");const v={g24:n(f.g24),g21:n(f.g21),g18:n(f.g18)};if(!v.g24&&!v.g21)return setErr("اكتب السعر.");
+    try{if(isT&&!(await saveDoc("settings/prices",v,setErr)))return;
+      await S.db.doc("settings/priceHistory").update({days:{[d]:v}});toast(isT?"حُدثت الأسعار":"حُفظ سعر يوم "+d)}catch(e){setErr(errText(e))}};
+  const hist=Object.entries(phist||{}).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,90).map(([k,v])=>({id:k,...v}));
+  return html`<${React.Fragment}><${Card} title="أسعار جرام الذهب" sub=${prices.updatedAt?"آخر تحديث "+String(prices.updatedAt).replace("T"," ").slice(0,16):"لم تُحدد بعد"} body=${true}>
+    ${can?html`<div class="fg" style=${{gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",alignItems:"end"}}><${F} label="اليوم" hint=${isT?"سعر النهارده":"سعر يوم سابق — للتقارير فقط"}><input id="pr-d" type="date" class="in" value=${d} max=${today()} onChange=${e=>pick(e.target.value)}/></${F}>${[["g24","عيار 24 (ج.م)"],["g21","عيار 21 (ج.م)"],["g18","عيار 18 (ج.م)"]].map(([k,l])=>html`<${F} key=${k} label=${l}><${Num} id=${"pr-"+k} value=${String(f[k])} set=${v=>setF(o=>({...o,[k]:v}))}/></${F}>`)}
+      <button class="btn p" onClick=${save}>${isT?"حفظ الأسعار":"حفظ سعر اليوم ده"}</button></div>${err&&html`<p class="msg">${err}</p>`}`
       :html`<div class="kpis">${[["عيار 24","g24"],["عيار 21","g21"],["عيار 18","g18"]].map(([l,k])=>html`<${Kpi} key=${k} label=${l} value=${prices[k]?fm(n(prices[k])):"—"} unit="ج.م"/>`)}</div>`}
-  </${Card}>`;
+  </${Card}>
+  <${Card} title="سجل الأسعار" sub="سعر كل يوم بيتحفظ هنا مع كل تحديث — وتقرير الأرباح بيحسب تكلفة الخسية بسعر يومها">
+    <${DataTable} cols=${[{key:"id",label:"اليوم",render:r=>html`<span class="num strong">${r.id}</span>`},{key:"g24",label:"عيار 24",num:1,get:r=>n(r.g24),render:r=>n(r.g24)?fm(n(r.g24)):"—"},{key:"g21",label:"عيار 21",num:1,get:r=>n(r.g21),render:r=>n(r.g21)?fm(n(r.g21)):"—"},{key:"g18",label:"عيار 18",num:1,get:r=>n(r.g18),render:r=>n(r.g18)?fm(n(r.g18)):"—"}]} rows=${hist} sort=${["id","desc"]} pageSize=${10} onRow=${can?r=>pick(r.id):null} empty=${html`<${Empty} icon="chart" t="لسه مفيش سجل" s="أول ما تحفظ الأسعار هيتسجل سعر اليوم."/>`}/>
+  </${Card}></${React.Fragment}>`;
 }
 function OpsEdit({config,can,toast}){
   const Sd=schedOf(config);const [f,setF]=useState({lim:String(config.khisyaLimit||0.5),start:Sd.start,end:Sd.end,grace:String(Sd.grace),off:Sd.off,absPen:String(Sd.absPen),latePen:String(Sd.latePen),lateFree:String(Sd.lateFree)});const [err,setErr]=useState("");
@@ -2245,12 +2337,107 @@ function OpsEdit({config,can,toast}){
     ${can&&html`<div class="ph__a" style=${{justifyContent:"flex-end",marginTop:"12px"}}>${err&&html`<span class="msg">${err}</span>`}<button class="btn p" onClick=${save}>حفظ</button></div>`}
   </${Card}>`;
 }
+/* ---------- QR scan by camera: labels (pieces / boxes) and bars ---------- */
+const JSQR_URL="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
+const loadScript=src=>new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)});
+function parseScan(text,L){const t=String(text||"").trim();if(!t)return null;
+  const m=t.match(/GE\d{6}-[A-Z0-9]{4}-\d{3}/i);
+  if(m){const code=m[0].toUpperCase();const prefix=code.slice(0,code.lastIndexOf("-"));const b=L.all.find(e=>e._map==="labels"&&!e.void&&String(e.prefix).toUpperCase()===prefix);
+    if(!b)return {type:"unknown",text:code,why:"الكود مش موجود في دفعات الملصقات، أو الدفعة ملغية."};
+    if(+code.slice(-3)<1||+code.slice(-3)>n(b.count))return {type:"unknown",text:code,why:"رقم الملصق خارج الدفعة ("+fi(n(b.count))+" ملصق)."};
+    return {type:"label",code,b}}
+  const sr=serialClean(t);if(L.bars[sr])return {type:"bar",serial:sr,bar:L.bars[sr]};
+  return {type:"unknown",text:t.slice(0,80),why:"الكود ده مش ملصق ولا سبيكة مسجلة."}}
+function ScanSheet({L,catalog,go,can,onClose}){
+  const vid=useRef();const [on,setOn]=useState(true);const [st,setSt]=useState({res:null,codes:[]});const [camErr,setCamErr]=useState("");const [txt,setTxt]=useState("");
+  const take=text=>{const r=parseScan(text,L);if(!r)return;
+    setSt(p=>{if(r.type!=="label")return {res:r,codes:[]};const same=p.res&&p.res.type==="label"&&p.res.b.id===r.b.id;const base=same?p.codes:[];return {res:r,codes:base.includes(r.code)?base:[...base,r.code],dup:base.includes(r.code)}});setOn(false)};
+  const takeRef=useRef(take);takeRef.current=take;
+  useEffect(()=>{if(!on)return;let stop=false,stream=null,tm=0,det=null;const cv=document.createElement("canvas");setCamErr("");
+    (async()=>{try{
+      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw {name:"NoCam"};
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false});
+      if(stop){stream.getTracks().forEach(t=>t.stop());return}
+      const v=vid.current;if(!v)return;v.srcObject=stream;try{await v.play()}catch(e){}
+      if("BarcodeDetector" in window){try{det=new window.BarcodeDetector({formats:["qr_code"]})}catch(e){det=null}}
+      if(!det&&!window.jsQR){try{await loadScript(JSQR_URL)}catch(e){throw {name:"NoLib"}}}
+      const tick=async()=>{if(stop)return;let out="";
+        try{if(v.readyState>=2&&v.videoWidth){
+          if(det){const r=await det.detect(v);if(r&&r[0])out=r[0].rawValue}
+          else if(window.jsQR){const w=Math.min(640,v.videoWidth),h=Math.round(w*v.videoHeight/v.videoWidth);cv.width=w;cv.height=h;const cx=cv.getContext("2d",{willReadFrequently:true});cx.drawImage(v,0,0,w,h);const r=window.jsQR(cx.getImageData(0,0,w,h).data,w,h);if(r&&r.data)out=r.data}}}catch(e){}
+        if(stop)return;if(out){takeRef.current(out);return}tm=setTimeout(tick,160)};
+      tick();
+    }catch(e){if(!stop)setCamErr(e&&e.name==="NotAllowedError"?"اسمح للمتصفح باستخدام الكاميرا من إعدادات الموقع، أو اكتب الكود تحت.":e&&e.name==="NoLib"?"تعذر تحميل قارئ الـ QR — تأكد من الإنترنت، أو اكتب الكود تحت.":"الكاميرا غير متاحة على الجهاز ده (لازم الموقع يكون https) — اكتب الكود تحت.")}})();
+    return()=>{stop=true;clearTimeout(tm);if(stream)stream.getTracks().forEach(t=>t.stop())}},[on]);
+  const res=st.res,codes=st.codes;let view=null;
+  if(res&&res.type==="label"){const b=res.b,it=catalog[b.item],box=b.kind==="box",per=box?n(b.perBox):1,cnt=codes.length*per;
+    const where=LOC_ORDER.filter(l=>l!=="sold"&&((L.stock[l]||{})[b.item]||{c:0}).c>0).map(l=>LOC[l]+" "+fi(L.stock[l][b.item].c)).join(" · ");
+    const acts=[];for(const [k,A] of Object.entries(ACTIONS))for(const from of A.from){if((((L.stock[from]||{})[b.item])||{c:0}).c<=0)continue;const pg=Object.keys(STAGES).find(p=>STAGES[p].actions.includes(k));if(pg&&can(pg))acts.push({k,from,pg,label:A.label+" — من "+LOC[from]})}
+    const sell=((L.stock.master||{})[b.item]||{c:0}).c>0&&can("sales");
+    view=html`<${React.Fragment}>
+      ${st.dup&&html`<div class="note warn"><${I} n="alert"/><span>الملصق <b class="num">${res.code}</b> اتمسح قبل كده في نفس المرة — متحسبش تاني.</span></div>`}
+      <${Calc} items=${[["الصنف",it?it.name:"—","hl"],[box?"علب ممسوحة":"ملصقات ممسوحة",fi(codes.length)],["القطع",fi(cnt)],["الوزن",fg(n(b.weightEach)*codes.length)+" جم"],["الدفعة",b.prefix],["الصنف واقف على",where||"لا يوجد رصيد"]]}/>
+      <div class="codes">${codes.map(c=>html`<span key=${c} class="bd plain num">${c}</span>`)}</div>
+      <div class="sect">سجّل حركة بالكمية دي</div>
+      ${acts.length||sell?html`<div class="ph__a">${acts.map(a=>html`<button key=${a.k+a.from} class="btn" onClick=${()=>{go(a.pg,{move:{action:a.k,from:a.from,item:b.item,count:cnt,boxes:box?codes.length:0}});onClose()}}>${a.label}</button>`)}${sell&&html`<button class="btn p" onClick=${()=>{go("sales",{sell:{item:b.item,count:cnt}});onClose()}}><${I} n="receipt"/>بيع — فاتورة جديدة</button>`}</div>`
+        :html`<div class="note"><${I} n="info"/><span>مفيش رصيد من الصنف ده في مرحلة عندك صلاحية تسجّل فيها.</span></div>`}
+    </${React.Fragment}>`}
+  else if(res&&res.type==="bar"){const b=res.bar;view=html`<${React.Fragment}><${Calc} items=${[["سبيكة",res.serial,"hl"],["الوزن",fg(n(b.weight))+" جم"],["العيار",karatLabel(b.karat)],["المكان",b.dest==="shop"?"وارد محل":"الخزنة"],["صُرف منها",fg(b.issued||0)+" جم"],["المتبقي",fg(n(b.weight)-(b.issued||0))+" جم"]]}/>
+      <div class="ph__a"><button class="btn p" onClick=${()=>{go("bars",{bar:res.serial});onClose()}}>فتح السبيكة</button></div></${React.Fragment}>`}
+  else if(res){view=html`<div class="note warn"><${I} n="alert"/><span>${res.why}<small style=${{display:"block"}} class="num">${res.text}</small></span></div>`}
+  return html`<${Sheet} title="مسح QR" sub="وجّه الكاميرا على ملصق القطعة أو العلبة أو السبيكة" onClose=${onClose} footer=${res?html`<button class="btn" onClick=${()=>setSt({res:null,codes:[]})}>مسح من الأول</button><button class="btn p" onClick=${()=>setOn(true)}><${I} n="scan"/>${res.type==="label"?"مسح ملصق كمان":"مسح تاني"}</button>`:null}>
+    ${on&&html`<video ref=${vid} class="scanv" playsInline muted></video>`}
+    ${on&&camErr&&html`<div class="note warn"><${I} n="alert"/><span>${camErr}</span></div>`}
+    ${view}
+    <div class="fg" style=${{gridTemplateColumns:"minmax(0,1fr) auto",alignItems:"end"}}><${F} label="أو اكتب / الصق الكود" hint="مثال: GE261127-AB12-001 أو رقم السبيكة"><input id="scan-txt" class="in nm" value=${txt} onInput=${e=>setTxt(e.target.value)} onKeyDown=${e=>{if(e.key==="Enter"&&txt.trim()){take(txt);setTxt("")}}}/></${F}><button class="btn" onClick=${()=>{if(txt.trim()){take(txt);setTxt("")}}}>بحث</button></div>
+  </${Sheet}>`;
+}
+/* ---------- sidebar order: saved in settings/config, so every device shows the same order ---------- */
+function navOf(order){
+  if(!Array.isArray(order)||!order.length)return NAV;
+  const seen=new Set(),out=[];
+  for(const g of order){if(!g||typeof g.g!=="string"||!g.g.trim())continue;
+    const its=(Array.isArray(g.items)?g.items:[]).filter(k=>{if(!PAGE_TITLE[k]||seen.has(k))return false;seen.add(k);return true});
+    out.push([g.g,its.map(k=>[k,PAGE_TITLE[k]])])}
+  /* pages added to the app after the order was saved go to their default group */
+  NAV.forEach(([g,items])=>items.forEach(([k,l])=>{if(seen.has(k))return;let t=out.find(x=>x[0]===g);if(!t){t=[g,[]];out.push(t)}t[1].push([k,l])}));
+  return out;
+}
+function NavEdit({config,can,toast}){
+  const toG=o=>navOf(o).map(([g,its])=>({g,items:its.map(x=>x[0])}));
+  const [gs,setGs]=useState(()=>toG(config.navOrder));const [dirty,setDirty]=useState(false);const [err,setErr]=useState("");const [ng,setNg]=useState("");
+  useEffect(()=>{if(!dirty)setGs(toG(config.navOrder))},[config.navOrder]);
+  const ch=f=>{setDirty(true);setErr("");setGs(x=>{const c=x.map(g=>({g:g.g,items:[...g.items]}));f(c);return c})};
+  const mvI=(gi,i,d)=>ch(c=>{const a=c[gi].items,j=i+d;if(j>=0&&j<a.length){const t=a[i];a[i]=a[j];a[j]=t;return}const t=c[gi+d];if(!t)return;const k=a.splice(i,1)[0];if(d<0)t.items.push(k);else t.items.unshift(k)});
+  const toGroup=(gi,i,ti)=>ch(c=>{if(ti===gi||!c[ti])return;c[ti].items.push(c[gi].items.splice(i,1)[0])});
+  const mvG=(gi,d)=>ch(c=>{const j=gi+d;if(j<0||j>=c.length)return;const t=c[gi];c[gi]=c[j];c[j]=t});
+  const reset=()=>{setErr("");setDirty(true);setGs(NAV.map(([g,its])=>({g,items:its.map(x=>x[0])})))};
+  const addG=()=>{const v=ng.trim();if(!v)return;if(gs.some(g=>g.g.trim()===v))return setErr("المجموعة موجودة.");ch(c=>{c.push({g:v,items:[]})});setNg("")};
+  const save=async()=>{setErr("");const nm=gs.map(g=>g.g.trim());if(nm.some(x=>!x))return setErr("كل مجموعة تحتاج اسماً.");if(new Set(nm).size!==nm.length)return setErr("فيه اسم مجموعة مكرر.");
+    if(await saveDoc("settings/config",{...config,navOrder:gs.filter(g=>g.items.length).map(g=>({g:g.g.trim(),items:g.items}))},setErr)){setDirty(false);toast("حُفظ ترتيب القائمة")}};
+  const B=(icon,label,dis,fn)=>html`<button type="button" class="btn ghost sm" aria-label=${label} title=${label} disabled=${dis} onClick=${fn}><${I} n=${icon}/></button>`;
+  const lastG=gs.length-1;
+  return html`<${Card} title="ترتيب القائمة الجانبية" sub="رتّب الصفحات بالأسهم أو انقلها لمجموعة تانية — الترتيب بيتطبق على كل الأجهزة والمستخدمين بعد الحفظ" actions=${can&&html`<div class="ph__a">${err&&html`<span class="msg">${err}</span>`}<button class="btn" onClick=${reset}>الترتيب الافتراضي</button><button class="btn p" disabled=${!dirty} onClick=${save}><${I} n="check"/>حفظ الترتيب</button></div>`}>
+    ${!can&&html`<div class="card__b"><${ReadOnly}/></div>`}
+    <div class="naved">
+      ${gs.map((g,gi)=>html`<div class="navg" key=${gi}>
+        <div class="navg__h">${can?html`<input class="in" aria-label="اسم المجموعة" value=${g.g} onInput=${e=>{const v=e.target.value;ch(c=>{c[gi].g=v})}}/>`:html`<b>${g.g}</b>`}<small><span class="num">${fi(g.items.length)}</span> صفحة</small>
+          ${can&&html`<span class="sp">${B("up","تحريك المجموعة لأعلى",gi===0,()=>mvG(gi,-1))}${B("down","تحريك المجموعة لأسفل",gi===lastG,()=>mvG(gi,1))}${!g.items.length&&B("x","حذف المجموعة",false,()=>ch(c=>{c.splice(gi,1)}))}</span>`}</div>
+        ${g.items.length?g.items.map((k,i)=>html`<div class="navrow" key=${k}><${I} n=${NAV_ICON[k]}/><b>${PAGE_TITLE[k]}</b>
+          ${can&&html`<select class="in" aria-label=${"مجموعة "+PAGE_TITLE[k]} value=${String(gi)} onChange=${e=>toGroup(gi,i,+e.target.value)}>${gs.map((x,xi)=>html`<option key=${xi} value=${String(xi)}>${x.g||"—"}</option>`)}</select>
+            ${B("up","لأعلى",gi===0&&i===0,()=>mvI(gi,i,-1))}${B("down","لأسفل",gi===lastG&&i===g.items.length-1,()=>mvI(gi,i,1))}`}</div>`)
+          :html`<div class="navg__e">مجموعة فاضية — انقل لها صفحة، وإلا مش هتتحفظ.</div>`}
+      </div>`)}
+      ${can&&html`<div class="fg" style=${{gridTemplateColumns:"minmax(0,280px) auto",alignItems:"end",justifyContent:"start"}}><${F} label="مجموعة جديدة"><input id="nav-new" class="in" value=${ng} onInput=${e=>setNg(e.target.value)} placeholder="مثال: الإنتاج"/></${F}><button class="btn" onClick=${addG}><${I} n="plus"/>إضافة</button></div>`}
+    </div>
+  </${Card}>`;
+}
 /* ---------- command palette ---------- */
-function Command({L,catalog,customers,onClose,go,visible}){
+function Command({L,catalog,customers,onClose,go,visible,nav}){
   const [q,setQ]=useState("");const [sel,setSel]=useState(0);useEsc(onClose);
   const s=q.trim();
   const res=useMemo(()=>{const R=[];
-    NAV.forEach(([g,items])=>items.forEach(([k,l])=>{if((!visible||visible.includes(k))&&(!s||l.includes(s)))R.push({g:"الصفحات",icon:NAV_ICON[k],t:l,sub:g,act:()=>go(k)})}));
+    (nav||NAV).forEach(([g,items])=>items.forEach(([k,l])=>{if((!visible||visible.includes(k))&&(!s||l.includes(s)))R.push({g:"الصفحات",icon:NAV_ICON[k],t:l,sub:g,act:()=>go(k)})}));
     if(s){Object.values(L.bars).filter(b=>String(b.serial).includes(serialClean(s))).slice(0,5).forEach(b=>R.push({g:"السبائك",icon:"bar",t:b.serial,sub:fg(n(b.weight))+" جم",act:()=>go("bars",{bar:b.serial})}));
       Object.entries(customers).filter(([,c])=>(c.name||"").includes(s)||(c.phone||"").includes(s)).slice(0,5).forEach(([k,c])=>R.push({g:"العملاء",icon:"users",t:c.name,sub:"رصيد "+fm(L.custBal[k]||0),act:()=>go("customers",{customer:k})}));
       L.all.filter(e=>e._map==="sales"&&(String(e.no)===s.replace("#","")||(customers[e.customer]?.name||"").includes(s))).slice(-5).reverse().forEach(e=>R.push({g:"الفواتير",icon:"receipt",t:"فاتورة #"+e.no,sub:(customers[e.customer]?.name||"")+" · "+fm(n(e.total)),act:()=>go("sales",{invoice:e.id})}));
@@ -2258,7 +2445,7 @@ function Command({L,catalog,customers,onClose,go,visible}){
       L.all.filter(e=>e._map==="labels"&&s.length>=4&&String(e.prefix).toUpperCase().includes(s.toUpperCase().split("-").slice(0,2).join("-"))).slice(0,4).forEach(e=>R.push({g:"الملصقات",icon:"qr",t:e.prefix,sub:(catalog[e.item]?.name||"")+" · "+fi(n(e.count))+" ملصق",act:()=>go("labels",{label:e.id})}));
       Object.values(window.__WORKERS||{}).filter(w=>(w.name||"").includes(s)||(w.code||"")===s).slice(0,4).forEach(w=>R.push({g:"العمال",icon:"users",t:w.name,sub:wDept(w),act:()=>go("workers")}));
       Object.entries(catalog).filter(([,it])=>it.name.includes(s)).slice(0,4).forEach(([k,it])=>R.push({g:"الأصناف",icon:"box",t:it.name,sub:"المخزون",act:()=>go("stock")}))}
-    return R.slice(0,14)},[s,L,customers,catalog]);
+    return R.slice(0,14)},[s,L,customers,catalog,nav]);
   useEffect(()=>setSel(0),[s]);
   const key=e=>{if(e.key==="ArrowDown"){e.preventDefault();setSel(x=>Math.min(res.length-1,x+1))}else if(e.key==="ArrowUp"){e.preventDefault();setSel(x=>Math.max(0,x-1))}else if(e.key==="Enter"&&res[sel]){res[sel].act();onClose()}};
   let lastG="";
@@ -2309,7 +2496,7 @@ function OrderSheet({catalog,customers,orders,toast,onClose}){
   const [f,setF]=useState({item:"",qty:"",due:addDays(today(),7),customer:"",note:""});const [err,setErr]=useState("");const [busy,setBusy]=useState(false);const up=(k,v)=>setF(o=>({...o,[k]:v}));
   const it=catalog[f.item];
   const save=async()=>{setErr("");if(!f.item)return setErr("اختر الصنف.");if(n(f.qty)<=0)return setErr("اكتب العدد المطلوب.");if(!S.db)return setErr(errText({code:"no_db"}));
-    setBusy(true);try{const id=newId();const no=Math.max(0,...Object.values(orders).map(o=>n(o.no)))+1;
+    setBusy(true);try{const id=newId();const no=await nextNo("orders",Math.max(0,...Object.values(orders).map(o=>n(o.no))));
       await S.db.doc("orders/"+id).set({id,no,item:f.item,qty:n(f.qty),due:f.due||"",customer:f.customer,note:f.note.trim(),status:"open",createdAt:new Date().toISOString(),by:S.uid});toast("أُنشئ أمر التصنيع #"+no);onClose()}catch(e){setErr(errText(e))}setBusy(false)};
   return html`<${Sheet} title="أمر تصنيع جديد" onClose=${onClose} footer=${html`<span class="msg">${err}</span><button class="btn" onClick=${onClose}>إلغاء</button><button class="btn p" disabled=${busy} onClick=${save}><${I} n="check"/>إنشاء الأمر</button>`}>
     <div class="fg">
@@ -2460,17 +2647,18 @@ function LabelView({b,catalog,orders,toast,onClose}){
 const ymOf=d=>d.slice(0,7);
 const monthName=ym=>{const [y,m]=ym.split("-").map(Number);return new Date(y,m-1,1).toLocaleDateString("ar-EG",{month:"long",year:"numeric"})};
 const addMonths=(ym,k)=>{const [y,m]=ym.split("-").map(Number);const d=new Date(y,m-1+k,1);return d.getFullYear()+"-"+pad(d.getMonth()+1)};
-function monthStats(L,catalog,ym,prices,months){
+function monthStats(L,catalog,ym,prices,months,phist){
   const E=L.live.filter(e=>ymOf(e._date)===ym);const cast=E.filter(e=>e._map==="casting");
   const LS=L.losses.filter(x=>ymOf(x._date)===ym);const kh=LS.reduce((a,x)=>a+x.w,0);const khFine=LS.reduce((a,x)=>a+x.f,0);
   const rec=cast.reduce((a,e)=>a+n(e.received),0);const pcs=cast.reduce((a,e)=>a+n(e.count),0),pw=cast.reduce((a,e)=>a+n(e.scale),0);
-  const g24=n(prices.g24);const khCost=g24?khFine/0.9999*g24:0;
+  const p24=d=>priceAt(phist,prices,d,"g24");const khCost=LS.reduce((a,x)=>a+x.f/0.9999*p24(x._date),0);
   const fees=E.filter(e=>e._map==="moves").reduce((a,e)=>a+n(e.fee),0);
-  const sl=E.filter(e=>e._map==="sales");const sales=sl.reduce((a,e)=>a+n(e.total),0);const labor=sl.reduce((a,e)=>a+(e.lines||[]).reduce((b,l)=>b+n(l.laborT),0),0);
-  const goldV=sl.reduce((a,e)=>a+(e.lines||[]).reduce((b,l)=>b+n(l.gold),0),0);const soldW=sl.reduce((a,e)=>a+(e.lines||[]).reduce((b,l)=>b+n(l.weight),0),0);
-  const coll=E.filter(e=>e._map==="payments").reduce((a,e)=>a+n(e.amount),0)+sl.reduce((a,e)=>a+n(e.paid),0);
+  const sl=E.filter(e=>e._map==="sales"),rt=E.filter(e=>e._map==="returns");const lsum=(arr,k)=>arr.reduce((a,e)=>a+(e.lines||[]).reduce((b,l)=>b+n(l[k]),0),0);
+  const sales=sl.reduce((a,e)=>a+n(e.total),0)-rt.reduce((a,e)=>a+n(e.total),0);const labor=lsum(sl,"laborT")-lsum(rt,"laborT");
+  const goldV=lsum(sl,"gold")-lsum(rt,"gold");const soldW=lsum(sl,"weight")-lsum(rt,"weight");
+  const coll=E.filter(e=>e._map==="payments").reduce((a,e)=>a+n(e.amount),0)+sl.reduce((a,e)=>a+n(e.paid),0)-rt.reduce((a,e)=>a+n(e.refund),0);
   const adj=E.filter(e=>e._map==="counts").reduce((a,e)=>a+(e.lines||[]).reduce((b,l)=>b+n(l.dw)*n(l.karat||999.9)/1000,0),0);
-  const adjCost=g24?-adj/0.9999*g24:0;
+  const adjCost=-E.filter(e=>e._map==="counts").reduce((a,e)=>a+(e.lines||[]).reduce((b,l)=>b+n(l.dw)*n(l.karat||999.9)/1000,0)/0.9999*p24(e._date),0);
   const exp=((months[ym]||{}).expenses||[]).reduce((a,x)=>a+n(x.amount),0);
   const profit=labor-fees-khCost-Math.max(0,adjCost)-exp+Math.max(0,-adjCost);
   return {ym,pcs,pw,kh,khFine,rec,khCost,fees,sales,labor,goldV,soldW,coll,adj,adjCost,exp,profit,days:new Set(cast.map(e=>e._date)).size,invoices:sl.length}
@@ -2487,10 +2675,10 @@ function MonthBars({data,label}){
       <text x=${x+w/2} y=${H-8} text-anchor="middle">${d.l}</text><rect class="hit" x=${xr(i)} y=${pt} width=${bw} height=${ih} onMouseEnter=${()=>setHv(i)}/></g>`})}
   </svg>${hv>=0&&html`<div class="tip" style=${{left:((xr(hv)+bw/2)/W*100)+"%",top:(y(Math.max(0,data[hv].v))/H*100)+"%"}}>${data[hv].t}<b><span class="num">${fm(data[hv].v)}</span> ج.م</b></div>`}</div>`;
 }
-function MonthlyReport({L,catalog,prices,months,perm,toast}){
+function MonthlyReport({L,catalog,prices,months,perm,toast,phist}){
   const [ym,setYm]=useState(ymOf(today()));const mgr=!!(perm&&perm.settings);
-  const st=monthStats(L,catalog,ym,prices,months);const prev=monthStats(L,catalog,addMonths(ym,-1),prices,months);
-  const last12=[...Array(12)].map((_,i)=>addMonths(ym,i-11)).map(m=>({m,s:monthStats(L,catalog,m,prices,months)}));
+  const st=monthStats(L,catalog,ym,prices,months,phist);const prev=monthStats(L,catalog,addMonths(ym,-1),prices,months,phist);
+  const last12=[...Array(12)].map((_,i)=>addMonths(ym,i-11)).map(m=>({m,s:monthStats(L,catalog,m,prices,months,phist)}));
   const [lbl,setLbl]=useState("");const [amt,setAmt]=useState("");const [err,setErr]=useState("");
   const exps=(months[ym]||{}).expenses||[];
   const saveExp=async list=>{setErr("");try{await S.db.doc("months/"+ym).set({expenses:list,updatedAt:new Date().toISOString(),by:S.uid});return true}catch(e){setErr(errText(e));return false}};
@@ -2498,7 +2686,7 @@ function MonthlyReport({L,catalog,prices,months,perm,toast}){
   const exportCsv=async()=>{const q=s=>'"'+String(s??"").replace(/"/g,'""')+'"';const rows=[["الشهر","القطع","وزن الإنتاج","الخسية (جم)","تكلفة الخسية","رسوم الدمغة","المبيعات","إيراد المصنعية","مصروفات أخرى","الربح التقديري"]];
     last12.forEach(({m,s})=>rows.push([m,s.pcs,r2(s.pw),r2(s.kh),r2(s.khCost),r2(s.fees),r2(s.sales),r2(s.labor),r2(s.exp),r2(s.profit)]));
     try{const d=await platform.use("downloads");await d.save({filename:"gold-era-monthly-"+ym+".csv",data:"﻿"+rows.map(r=>r.map(q).join(",")).join("\r\n")})}catch(e){if(e&&e.code!=="declined")toast("تعذر التصدير.")}};
-  const pl=[["إيراد المصنعية",st.labor,"من فواتير الشهر"],["رسوم الدمغة",-st.fees,"تسليمات الدمغة"],["تكلفة الخسية",-st.khCost,fg(st.khFine)+" جم فاين × سعر عيار 24"],
+  const pl=[["إيراد المصنعية",st.labor,"من فواتير الشهر"],["رسوم الدمغة",-st.fees,"تسليمات الدمغة"],["تكلفة الخسية",-st.khCost,fg(st.khFine)+" جم فاين × سعر عيار 24 يوم الخسية"],
     ...(st.adj?[["تسويات الجرد",-st.adjCost,fg(st.adj)+" جم فاين"]]:[]),["مصروفات أخرى",-st.exp,exps.length+" بند"]];
   return html`<${React.Fragment}>
     <div class="ph__a" style=${{justifyContent:"space-between"}}><div class="ph__a"><button class="btn sm" onClick=${()=>setYm(addMonths(ym,-1))}>الشهر السابق</button><input id="m-ym" type="month" class="in" style=${{width:"auto",height:"30px"}} value=${ym} onChange=${e=>e.target.value&&setYm(e.target.value)} aria-label="الشهر"/><button class="btn sm" disabled=${ym>=ymOf(today())} onClick=${()=>setYm(addMonths(ym,1))}>الشهر التالي</button></div><button class="btn sm" onClick=${exportCsv}><${I} n="dl"/>تصدير آخر 12 شهراً</button></div>
@@ -2515,7 +2703,7 @@ function MonthlyReport({L,catalog,prices,months,perm,toast}){
       <${Card} title=${"قائمة الربح — "+monthName(ym)} sub="الذهب يُباع بسعر الجرام ويُشترى بسعره، فالربح من المصنعية ناقص التكاليف">
         <div class="tw"><table class="t"><tbody>${pl.map(([k,v,s])=>html`<tr key=${k}><td><span class="strong">${k}</span><span class="sub">${s}</span></td><td class=${"n strong "+(v<0?"neg":"")}>${fm(v)}</td></tr>`)}</tbody>
           <tfoot><tr><td>الربح التقديري</td><td class=${"n "+(st.profit<0?"neg":"")}>${fm(st.profit)} ج.م</td></tr></tfoot></table></div>
-        <div class="card__b" style=${{borderTop:"1px solid var(--line)",fontSize:"12.5px",color:"var(--muted)"}}>قيمة الذهب في فواتير الشهر <b class="num">${fm(st.goldV)}</b> ج.م (تمرير بسعر اليوم، لا تدخل في الربح). تكلفة الخسية محسوبة بسعر عيار 24 الحالي <b class="num">${g24?fm(g24):"—"}</b>.</div>
+        <div class="card__b" style=${{borderTop:"1px solid var(--line)",fontSize:"12.5px",color:"var(--muted)"}}>قيمة الذهب في فواتير الشهر <b class="num">${fm(st.goldV)}</b> ج.م (تمرير بسعر اليوم، لا تدخل في الربح). تكلفة الخسية محسوبة بسعر عيار 24 في يوم كل خسية من سجل الأسعار (الأيام اللي قبل أول سعر مسجل بتاخد أقرب سعر).</div>
       </${Card}>
       <${Card} title="مصروفات الشهر" sub="أجور، كهرباء، إيجار… تدخل في الربح التقديري">
         ${exps.length?html`<div class="tw"><table class="t"><tbody>${exps.map((x,i)=>html`<tr key=${i}><td>${x.label}</td><td class="n strong">${fm(n(x.amount))}</td>${mgr&&html`<td class="n" style=${{width:"60px"}}><button class="btn ghost sm" aria-label="حذف" onClick=${()=>saveExp(exps.filter((_,j)=>j!==i))}><${I} n="x"/></button></td>`}</tr>`)}</tbody><tfoot><tr><td>الإجمالي</td><td class="n">${fm(st.exp)}</td>${mgr&&html`<td></td>`}</tr></tfoot></table></div>`:html`<${Empty} icon="wallet" t="لا توجد مصروفات مسجلة لهذا الشهر" s=""/>`}
@@ -2531,11 +2719,15 @@ function MonthlyReport({L,catalog,prices,months,perm,toast}){
 }
 
 async function seedDefaults(){try{const d=window.__DEFAULTS;const s=await S.db.doc("settings/catalog").get();if((!s.exists||!Object.keys((s.data()||{}).items||{}).length)&&d.catalog)await S.db.doc("settings/catalog").set({items:d.catalog,updatedAt:new Date().toISOString(),by:S.uid});return true}catch(e){console.warn("seed failed",e);return false}}
+const BK_LAST="gold-era-erp:lastBackup",BK_AUTO="gold-era-erp:autoBackup";
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}};const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+async function backupAll(auto){const out={app:"gold-era-erp",version:1,exportedAt:new Date().toISOString(),docs:{}};
+  for(const c of ["settings","customers","orders","months","staff","dailies",...ALL_LEDGER]){const q=await S.db.collection(c).get();q.docs.forEach(d=>{out.docs[c+"/"+d.id]=d.data()})}
+  const dl=await platform.use("downloads");await dl.save({filename:"gold-era-backup-"+today()+(auto?"-auto":"")+".json",data:JSON.stringify(out,null,1)});lsSet(BK_LAST,new Date().toISOString())}
 function BackupEdit({isOwner,mgr,toast}){
   const [err,setErr]=useState("");const [busy,setBusy]=useState(false);const [pending,setPending]=useState(null);
-  const exportAll=async()=>{setErr("");setBusy(true);try{const out={app:"gold-era-erp",version:1,exportedAt:new Date().toISOString(),docs:{}};
-      for(const c of ["settings","customers","orders","months","staff","dailies",...ALL_LEDGER]){const q=await S.db.collection(c).get();q.docs.forEach(d=>{out.docs[c+"/"+d.id]=d.data()})}
-      const dl=await platform.use("downloads");await dl.save({filename:"gold-era-backup-"+today()+".json",data:JSON.stringify(out,null,1)});toast("تم تنزيل النسخة الاحتياطية")}catch(e){setErr(errText(e))}setBusy(false)};
+  const [last,setLast]=useState(lsGet(BK_LAST));const [auto,setAuto]=useState(lsGet(BK_AUTO)!=="off");
+  const exportAll=async()=>{setErr("");setBusy(true);try{await backupAll(false);setLast(lsGet(BK_LAST));toast("تم تنزيل النسخة الاحتياطية")}catch(e){setErr(errText(e))}setBusy(false)};
   const pick=async ev=>{setErr("");const f=ev.target.files&&ev.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||d.app!=="gold-era-erp"||!d.docs)throw 0;setPending(d)}catch(e){setErr("الملف ليس نسخة احتياطية من هذا النظام.")}ev.target.value=""};
   const restore=async()=>{setBusy(true);setErr("");try{for(const [p,v] of Object.entries(pending.docs)){if(!/^(settings|customers|orders|months|staff|dailies|bars|strips|casting|moves|sales|payments|counts|labels|sessions|evals)\/[A-Za-z0-9_.~:@+-]+$/.test(p))continue;await S.db.doc(p).set(v)}toast("تمت الاستعادة");setPending(null)}catch(e){setErr(errText(e))}setBusy(false)};
   return html`<${Card} title="النسخ الاحتياطي" sub="تنزيل كل البيانات في ملف واحد، واستعادتها عند الحاجة" body=${true}>
@@ -2543,7 +2735,8 @@ function BackupEdit({isOwner,mgr,toast}){
       <div class="ph__a"><button class="btn p" disabled=${busy||!mgr} onClick=${exportAll}><${I} n="dl"/>تنزيل نسخة احتياطية</button>
         ${isOwner&&html`<label class="btn"><${I} n="plus"/>استعادة من ملف<input type="file" accept="application/json,.json" hidden onChange=${pick}/></label>`}</div>
       ${pending&&html`<div class="note warn"><${I} n="alert"/><span>الملف يحتوي <b class="num">${fi(Object.keys(pending.docs).length)}</b> مستند، بتاريخ <span class="num">${String(pending.exportedAt||"").slice(0,10)}</span>. الاستعادة تستبدل المستندات التي تحمل نفس الأسماء. <span style=${{display:"flex",gap:"8px",marginTop:"8px"}}><button class="btn d sm" disabled=${busy} onClick=${restore}>تأكيد الاستعادة</button><button class="btn sm" onClick=${()=>setPending(null)}>إلغاء</button></span></span></div>`}
-      <div class="note"><${I} n="info"/><span>احفظ نسخة أسبوعياً على الأقل خارج المتصفح. الاستعادة للمالك فقط.</span></div>
+      <div class="note"><${I} n="info"/><span>آخر نسخة من هذا الجهاز: <b class="num">${last?String(last).slice(0,16).replace("T"," "):"لا يوجد"}</b>. انقل الملف لمكان خارج الجهاز (فلاشة أو درايف). الاستعادة للمالك فقط.</span></div>
+      ${isOwner&&html`<label class="chk"><input type="checkbox" checked=${auto} onChange=${e=>{setAuto(e.target.checked);lsSet(BK_AUTO,e.target.checked?"on":"off")}}/> نسخة تلقائية كل أسبوع: لما المالك يفتح النظام وعدّى 7 أيام على آخر نسخة، الملف بينزل لوحده على الجهاز ده</label>`}
       ${err&&html`<span class="msg">${err}</span>`}
     </div></${Card}>`}
 /* ---------- workers, departments ---------- */
@@ -2953,7 +3146,7 @@ function App(){
   const [gate,setGate]=useState("loading");const [access,setAccess]=useState(null);
   const [ready,setReady]=useState(false);const [online,setOnline]=useState(false);
   const [catalog,setCatalog]=useState({});const [workers,setWorkers]=useState({});const [depts,setDepts]=useState(DEFAULT_DEPTS);const [prices,setPrices]=useState({});const [config,setConfig]=useState({});
-  const [days,setDays]=useState({});const [dailies,setDailies]=useState({});const snapRef=useRef({});const [customers,setCustomers]=useState({});const [orders,setOrders]=useState({});const [months,setMonths]=useState({});
+  const [days,setDays]=useState({});const [dailies,setDailies]=useState({});const snapRef=useRef({});const [customers,setCustomers]=useState({});const [orders,setOrders]=useState({});const [months,setMonths]=useState({});const [phist,setPhist]=useState({});const [scan,setScan]=useState(false);
   const [me,setMe]=useState(null);const [names,setNames]=useState({});
   const [page,setPage]=useState(()=>{const h=(location.hash||"").slice(1);return PAGE_TITLE[h]?h:"dash"});
   const [intent,setIntent]=useState(null);const [entry,setEntry]=useState(null);const [cmd,setCmd]=useState(false);const [menu,setMenu]=useState(false);const [pwSheet,setPwSheet]=useState(false);
@@ -2972,20 +3165,21 @@ function App(){
     if(!m.isOwner)un.push(db.doc("access/"+m.id).onSnapshot(s=>{if(s.exists){const x=s.data();if(x.active!==true)location.reload();else setAccess(x)}},()=>{}));
     d("settings/catalog",(x,ex)=>{setCatalog(x.items||{});if((!ex||!Object.keys(x.items||{}).length)&&m.isOwner)seedDefaults()});
     if(m.isOwner)recompileAccess();
-    if(R.has("dailies"))un.push(db.collection("dailies").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]={...x.data(),date:x.id});setDailies(o)},()=>{}));d("settings/prices",setPrices);d("settings/config",x=>{window.__CONFIG=x;setConfig(x)});
+    if(R.has("dailies"))un.push(db.collection("dailies").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]={...x.data(),date:x.id});setDailies(o)},()=>{}));d("settings/prices",setPrices);d("settings/priceHistory",x=>setPhist(x.days||{}));d("settings/config",x=>{window.__CONFIG=x;setConfig(x)});
     d("settings/people",x=>setNames(Object.fromEntries(Object.entries(x.map||{}).map(([k,v])=>[k,{id:k,name:v.name,avatarUrl:null}]))));
     if(R.has("staff")||m.isOwner)un.push(db.collection("staff").onSnapshot(qs=>{const o={};let dp=null;qs.docs.forEach(x=>{if(x.id==="__departments")dp=x.data().list;else{const v=x.data();o[x.id]={...v,id:x.id,kind:v.dept}}});window.__WORKERS=o;setWorkers(o);setDepts([...new Set([...(dp&&dp.length?dp:DEFAULT_DEPTS),...CORE_DEPTS])]);
       if(m.isOwner&&!qs.docs.length)migrateWorkers()},fail));
-    if(R.has("orders"))un.push(db.collection("orders").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]={...x.data(),id:x.id});window.__ORDERS=o;setOrders(o)},fail));
+    if(R.has("orders"))un.push(db.collection("orders").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>{if(x.id[0]!=="_")o[x.id]={...x.data(),id:x.id}});window.__ORDERS=o;setOrders(o)},fail));
     if(R.has("months"))un.push(db.collection("months").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]=x.data());setMonths(o)},fail));
     if(R.has("customers"))un.push(db.collection("customers").onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]=x.data());setCustomers(o)},fail));
     const parts={};let pending=ALL_LEDGER.filter(c=>R.has(c)).length;if(!pending)setReady(true);
-    const rebuild=()=>{const o={};for(const [c,docs] of Object.entries(parts))for(const [id,v] of Object.entries(docs)){const t=o[id]||(o[id]={date:id});t[c]=v[c];if(c==="evals"){t.attend=v.attend;t.pen=v.pen}}setDays(o)};
-    ALL_LEDGER.filter(c=>R.has(c)).forEach(c=>{let first=true;un.push(db.collection(c).onSnapshot(qs=>{const o={};qs.docs.forEach(x=>o[x.id]=x.data());parts[c]=o;rebuild();if(first){first=false;if(--pending<=0)setReady(true)}},fail))});
+    const rebuild=()=>{const o={};for(const [c,docs] of Object.entries(parts))for(const [id,v] of Object.entries(docs)){const t=o[id]||(o[id]={date:id});t[c]=v[c];if(c==="evals"){t.attend=v.attend;t.pen=v.pen}if(c==="sales")t.returns=v.returns}setDays(o)};
+    ALL_LEDGER.filter(c=>R.has(c)).forEach(c=>{let first=true;un.push(db.collection(c).onSnapshot(qs=>{const o={};qs.docs.forEach(x=>{if(x.id[0]!=="_")o[x.id]=x.data()});parts[c]=o;rebuild();if(first){first=false;if(--pending<=0)setReady(true)}},fail))});
     setTimeout(()=>setReady(true),4000);
   })();return()=>un.forEach(f=>{try{f()}catch(e){}})},[]);
   useEffect(()=>{const h=e=>{if((e.ctrlKey||e.metaKey)&&(e.key==="k"||e.key==="K")){e.preventDefault();setCmd(true)}};addEventListener("keydown",h);return()=>removeEventListener("keydown",h)},[]);
   const L=useMemo(()=>buildLedger(days,catalog),[days,catalog]);
+  const nav=useMemo(()=>navOf(config.navOrder),[config.navOrder]);
   /* the daily report is saved by itself: today and yesterday, whenever their numbers change */
   useEffect(()=>{if(gate!=="app"||!ready||!access||!S.db)return;if(!(access.owner||(access.write||[]).includes("dailies")))return;
     const back=Object.keys(days).filter(d=>d<addDays(today(),-1)&&d>=addDays(today(),-62)&&!dailies[d]&&!snapRef.current[d]).slice(-10);
@@ -2993,6 +3187,12 @@ function App(){
       if(!s.workers.length&&!s.made&&!s.received&&!s.refineOut)continue;const key=JSON.stringify(s);if(snapRef.current[d]===key)continue;
       try{await S.db.doc("dailies/"+d).set({...s,savedAt:new Date().toISOString(),by:S.uid});snapRef.current[d]=key}catch(e){console.warn("daily save",e)}}},8000);
     return()=>clearTimeout(tm)},[L,workers,gate,ready,access]);
+  /* weekly backup, by itself: when the owner opens the app and the last backup on this device is over 7 days old */
+  useEffect(()=>{if(gate!=="app"||!ready||!me||!me.isOwner||lsGet(BK_AUTO)==="off")return;const last=lsGet(BK_LAST);if(last&&Date.now()-new Date(last).getTime()<7*864e5)return;
+    const tm=setTimeout(async()=>{try{await backupAll(true);toast("نزلت النسخة الاحتياطية الأسبوعية تلقائياً")}catch(e){console.warn("auto backup",e)}},20000);return()=>clearTimeout(tm)},[gate,ready,me]);
+  useEffect(()=>{const off=()=>setOnline(false),on=()=>setOnline(true),q=()=>toast("اتحفظ على الجهاز — هيترفع أول ما النت يرجع"),bad=e=>toast("قيد محفوظ على الجهاز اترفض عند الرفع: "+errText(e.detail));
+    addEventListener("offline",off);addEventListener("online",on);addEventListener("ge-queued",q);addEventListener("ge-write-failed",bad);
+    return()=>{removeEventListener("offline",off);removeEventListener("online",on);removeEventListener("ge-queued",q);removeEventListener("ge-write-failed",bad)}},[]);
   const visible=access?PAGE_LIST.filter(p=>access.owner||access.pages?.[p.k]==="view"||access.pages?.[p.k]==="edit").map(p=>p.k):[];
   useEffect(()=>{if(access&&visible.length&&!visible.includes(page))setPage(visible[0])},[access]);
   useEffect(()=>{try{history.replaceState(null,"","#"+page)}catch(e){}window.scrollTo(0,0);setMenu(false)},[page]);
@@ -3006,7 +3206,7 @@ function App(){
   const role=perm.owner?"manager":"user";
   const go=(p,it)=>{if(!visible.includes(p))return;setPage(p);setIntent(it?{...it,t:Date.now()}:null)};
   const counts={qc:locTotal(L.stock,"qc").c,hallmark:locTotal(L.stock,"hallmark").c,prep:locTotal(L.stock,"prep").c,finish:locTotal(L.stock,"finish").c,orders:openOrders(orders).length,refine:runningOf(L,"refine").length,strips:runningOf(L,"strip").length,casting:runningOf(L,"mfg").length};
-  const props={L,days,catalog,workers,prices,customers,names,toast,role,perm,go,open:setEntry,intent,config,orders,months,dailies};
+  const props={L,days,catalog,workers,prices,customers,names,toast,role,perm,go,open:setEntry,intent,config,orders,months,dailies,phist};
   const cur=visible.includes(page)?page:visible[0];
   let body;
   if(STAGES[cur])body=html`<${StagePage} key=${cur} cfg=${STAGES[cur]} ...${props} can=${can(cur)}/>`;
@@ -3033,7 +3233,7 @@ function App(){
   return html`<div class="layout">
     <aside class=${"rail"+(menu?" open":"")} aria-label="القائمة الرئيسية">
       <div class="rail__brand"><img alt="GOLD ERA" src=${LOGO}/><small>نظام إدارة<br/>المصنع</small></div>
-      <nav class="rail__nav">${NAV.map(([g,items])=>{const its=items.filter(([k])=>visible.includes(k));return its.length?html`<${React.Fragment} key=${g}><div class="rail__g">${g}</div>${its.map(([k,l])=>html`<button key=${k} class="rail__i" aria-current=${cur===k?"page":undefined} onClick=${()=>go(k)}><${I} n=${NAV_ICON[k]}/><span>${l}</span>${perm.pages?.[k]==="view"&&!perm.owner?html`<${I} n="eye" s=${14}/>`:null}${counts[k]>0&&html`<span class="cnt num">${fi(counts[k])}</span>`}</button>`)}</${React.Fragment}>`:null})}</nav>
+      <nav class="rail__nav">${nav.map(([g,items])=>{const its=items.filter(([k])=>visible.includes(k));return its.length?html`<${React.Fragment} key=${g}><div class="rail__g">${g}</div>${its.map(([k,l])=>html`<button key=${k} class="rail__i" aria-current=${cur===k?"page":undefined} onClick=${()=>go(k)}><${I} n=${NAV_ICON[k]}/><span>${l}</span>${perm.pages?.[k]==="view"&&!perm.owner?html`<${I} n="eye" s=${14}/>`:null}${counts[k]>0&&html`<span class="cnt num">${fi(counts[k])}</span>`}</button>`)}</${React.Fragment}>`:null})}</nav>
       <div class="rail__me"><img alt="" src=${me?.avatarUrl}/><div style=${{minWidth:0,flex:1}}><b>${me?.name||me?.username}</b><span><i class=${"dot"+(online?"":" off")}></i>${perm.owner?"المالك":"@"+me?.username} · ${platform.mode==="local"?"وضع محلي":online?(platform.mode==="claude"?"متزامن":"متصل"):"غير متصل"}</span></div>
         <div style=${{display:"grid",gap:"2px"}}><button class="btn ghost sm rail__btn" onClick=${()=>setPwSheet(true)}>كلمة المرور</button><button class="btn ghost sm rail__btn" onClick=${()=>platform.signOut()}>خروج</button></div></div>
     </aside>
@@ -3041,8 +3241,9 @@ function App(){
     <div class="main">
       <header class="top">
         <button class="menubtn" onClick=${()=>setMenu(true)} aria-label="فتح القائمة"><${I} n="menu"/></button>
-        <div class="crumb"><span>${PAGE_GROUP[cur]}</span><${I} n="chev"/><b>${PAGE_TITLE[cur]}</b></div>
+        <div class="crumb"><span>${(nav.find(g=>g[1].some(x=>x[0]===cur))||[PAGE_GROUP[cur]])[0]}</span><${I} n="chev"/><b>${PAGE_TITLE[cur]}</b></div>
         <button class="gsearch" onClick=${()=>setCmd(true)} aria-label="بحث شامل"><${I} n="search" s=${16}/><span>بحث شامل…</span><kbd>Ctrl K</kbd></button>
+        <button class="btn sm scanbtn" onClick=${()=>setScan(true)} aria-label="مسح QR"><${I} n="scan"/><span>مسح QR</span></button>
         <span class="datechip">${new Date().toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long"})}</span>
       </header>
       <main class="content">
@@ -3052,7 +3253,8 @@ function App(){
       </main>
     </div>
     ${entry&&html`<${EntrySheet} e=${entry} L=${L} catalog=${catalog} customers=${customers} names=${names} role=${role} perm=${perm} toast=${toast} onClose=${()=>setEntry(null)}/>`}
-    ${cmd&&html`<${Command} L=${L} catalog=${catalog} customers=${customers} go=${go} visible=${visible} onClose=${()=>setCmd(false)}/>`}
+    ${cmd&&html`<${Command} L=${L} catalog=${catalog} customers=${customers} go=${go} visible=${visible} nav=${nav} onClose=${()=>setCmd(false)}/>`}
+    ${scan&&html`<${ScanSheet} L=${L} catalog=${catalog} go=${go} can=${can} onClose=${()=>setScan(false)}/>`}
     ${pwSheet&&html`<${PasswordSheet} toast=${toast} onClose=${()=>setPwSheet(false)}/>`}
     ${toastMsg&&html`<div class="toast" role="status"><${I} n="check"/>${toastMsg}</div>`}
   </div>`;

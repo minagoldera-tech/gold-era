@@ -262,6 +262,7 @@ tfoot td { font-weight:800; background:#fef3c7; border-top:2px solid var(--gold)
         <div class="sync-pulse"></div>
         <span id="syncText">جاري الاتصال…</span>
       </div>
+      <div id="lastUploadInfo" class="hidden" title="آخر رفع حضور وصل للنظام" style="font-size:0.78rem;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.12);color:#e2e8f0;font-weight:600;white-space:nowrap;"></div>
       <div class="header-user-badge">
         <div class="user-avatar" id="currentAvatar">م</div>
         <div>
@@ -957,6 +958,9 @@ let dataReady = false;
 let appInited = false;
 let CURRENT_IMAGE = '';
 let EXCEL_RESULTS = null;
+let EXCEL_FILE_TIME = 0;   // وقت آخر تعديل لملف الإكسيل المرفوع
+let LAST_UPLOAD = null;    // {by, days, count, ts, src} — آخر رفع حضور وصل للنظام
+const LAST_UPLOAD_KEY = 'gold_era_v2_last_upload';
 let CURRENT_SLIP = null;
 let loginFails = 0, loginLockUntil = 0;
 
@@ -1390,6 +1394,45 @@ function setSync(state) {
   else if (state === 'offline') { el.classList.add('offline'); tx.textContent = 'غير متصل — يُحفظ محلياً'; }
   else { el.classList.add('local'); tx.textContent = state === 'connecting' ? 'جاري الاتصال…' : 'بيانات محلية فقط'; }
 }
+// ---- آخر رفع: من / متى ----
+function uploadTs(v) {
+  const raw = v && (v.ts != null ? v.ts : v.at != null ? v.at : v.time != null ? v.time : v.timestamp != null ? v.timestamp : v.date);
+  if (raw == null || raw === '') return 0;
+  let n = typeof raw === 'number' ? raw : (/^\d+$/.test(String(raw)) ? Number(raw) : Date.parse(raw));
+  if (!isFinite(n) || n <= 0) return 0;
+  if (n < 1e11) n *= 1000;                       // ثوانٍ ← ملي ثانية
+  return n;
+}
+function uploadSig(v) { return [v.by || '', v.days || '', num(v.count), v.src || ''].join('|'); }
+function setLastUpload(v, live) {
+  if (!v) { LAST_UPLOAD = null; renderLastUpload(); return; }
+  let ts = uploadTs(v), approx = false;
+  if (!ts) {                                     // جهاز التسجيل لم يكتب وقت الرفع: نعتمد وقت وصوله لهذا الجهاز
+    const sig = uploadSig(v);
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(LAST_UPLOAD_KEY) || 'null'); } catch (e) {}
+    if (live) ts = Date.now();
+    else if (saved && saved.sig === sig) ts = num(saved.ts);
+    approx = !!ts;
+    if (ts) { try { localStorage.setItem(LAST_UPLOAD_KEY, JSON.stringify({ sig, ts })); } catch (e) {} }
+  }
+  LAST_UPLOAD = { by: v.by || 'جهاز التسجيل', days: v.days || '', count: num(v.count), ts, approx, src: v.src || 'device' };
+  renderLastUpload();
+}
+function fmtStamp(ts) {
+  const d = new Date(ts);
+  const names = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  let h = d.getHours(); const ap = h >= 12 ? 'م' : 'ص'; h = h % 12 || 12;
+  return names[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1) + ' — ' + h + ':' + String(d.getMinutes()).padStart(2, '0') + ' ' + ap;
+}
+function renderLastUpload() {
+  const el = $('lastUploadInfo'); if (!el) return;
+  const u = LAST_UPLOAD;
+  el.classList.toggle('hidden', !u);
+  if (!u) return;
+  el.textContent = '📥 آخر رفع: ' + u.by + (u.src === 'excel' ? ' (إكسيل)' : '') + ' — ' +
+    (u.ts ? fmtStamp(u.ts) + (u.approx ? ' (وقت الوصول)' : '') : 'الوقت غير مسجل');
+}
 function withTimeout(p, ms) {
   return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 }
@@ -1409,8 +1452,33 @@ function audit(action, detail) {
   if (fbdb) { try { fbdb.ref(ROOT + '/audit').push(entry).catch(() => {}); } catch (e) {} }
 }
 
+let cloudBusy = false, retryHooked = false, retryTimer = null;
+// إذا فشل الاتصال عند الفتح: نعيد المحاولة تلقائياً فور عودة الإنترنت (ثم كل 20 ثانية) حتى يعمل التحديث اللحظي
+function hookCloudRetry() {
+  if (!fbdb) return;
+  if (!retryHooked) {
+    retryHooked = true;
+    fbdb.ref('.info/connected').on('value', s => { if (s.val() && !listenersOn) retryCloud(); });
+    window.addEventListener('online', () => { if (!listenersOn) retryCloud(); });
+  }
+  clearTimeout(retryTimer);
+  retryTimer = setTimeout(() => { if (!listenersOn) retryCloud(); }, 20000);
+}
+async function retryCloud() {
+  if (cloudBusy || listenersOn) return;
+  await initCloud();
+  if (!listenersOn) return;
+  if (currentUser) {
+    const fresh = USERS.find(u => u.id === currentUser.id);
+    if (fresh) currentUser = fresh;
+    scheduleRender();
+    showNotification('🔄 عاد الاتصال — تم تحميل أحدث البيانات');
+  } else if (dataReady) refreshLoginScreen();
+}
 async function initCloud() {
   if (!fbdb) { setSync('local'); return; }
+  if (cloudBusy) return;
+  cloudBusy = true;
   setSync('connecting');
   try {
     const snap = await withTimeout(fbdb.ref(ROOT).once('value'), 9000);
@@ -1438,7 +1506,8 @@ async function initCloud() {
     setSync('offline');
     scrubLegacyUsers();
     saveLocal();
-  }
+    hookCloudRetry();
+  } finally { cloudBusy = false; }
 }
 let listenersOn = false;
 function attachListeners() {
@@ -1459,7 +1528,9 @@ function attachListeners() {
   let firstUpload = true;
   fbdb.ref(ROOT + '/lastUpload').on('value', s => {
     const v = s.val();
+    setLastUpload(v, !firstUpload);
     if (firstUpload) { firstUpload = false; return; }
+    if (v && v.src === 'excel' && currentUser && v.by === currentUser.name) return;   // رفعي أنا — لا داعي للإشعار
     if (v && currentUser) showNotification('📥 رفع حضور جديد من ' + (v.by || 'جهاز التسجيل') + ' — ' + (v.days || '') + ' (' + num(v.count) + ' سجل)');
   });
   fbdb.ref('.info/connected').on('value', s => setSync(s.val() ? 'online' : 'offline'));
@@ -2612,6 +2683,7 @@ function handleExcelFile(file) {
   if (!requireEdit()) return;
   if (!xlsxReady()) return;
   $('excelLog').innerHTML = '';
+  EXCEL_FILE_TIME = num(file.lastModified);
   excelLog('⏳ جاري قراءة: ' + file.name);
   if (!file.name.match(/\.xlsx?$/i)) { excelLog('❌ يجب أن يكون الملف xlsx أو xls'); return; }
   const reader = new FileReader();
@@ -2699,7 +2771,27 @@ function applyExcelImport() {
   const valid = chosen.filter(r => empByCode(r.choice));
   const news = R.filter(r => r.choice === '__new__');
   if (!valid.length && !news.length) { alert('لا توجد بيانات للاعتماد.'); return; }
-  if (valid.length && !confirm('سيتم استبدال حضور هذا الأسبوع لـ ' + valid.length + ' عامل ببيانات الملف. متابعة؟')) return;
+  // أيام مسجلة حالياً في النظام وسيغيّرها الملف أو يمسحها
+  const recorded = d => !!(d.inTime || d.outTime) || [ST.PRESENT, ST.ABSENT, ST.LEAVE, ST.OFFICIAL].includes(d.status);
+  const lost = [];
+  valid.forEach(r => {
+    const cur = ATT[r.choice]; if (!cur) return;
+    const days = cur.filter((d, i) => { const n = r.days[i] || {}; return recorded(d) && (d.inTime !== n.inTime || d.outTime !== n.outTime || d.status !== n.status); }).map(d => d.day);
+    if (days.length) lost.push({ name: empByCode(r.choice).name, days });
+  });
+  const U = LAST_UPLOAD;
+  const deviceNewer = !!(U && U.src !== 'excel' && U.ts && EXCEL_FILE_TIME && U.ts > EXCEL_FILE_TIME);
+  if (lost.length && deviceNewer) {
+    const list = lost.slice(0, 12).map(x => '• ' + x.name + ' (' + x.days.join('، ') + ')').join('\n') + (lost.length > 12 ? '\n… و' + (lost.length - 12) + ' آخرين' : '');
+    const msg = '⚠️ تحذير: يوجد رفع أحدث من هذا الملف\n\n' +
+      'آخر رفع من ' + U.by + ': ' + fmtStamp(U.ts) + (U.approx ? ' (وقت الوصول)' : '') + '\n' +
+      'آخر تعديل لملف الإكسيل: ' + fmtStamp(EXCEL_FILE_TIME) + '\n\n' +
+      'الاعتماد سيستبدل الحضور المسجل حالياً لـ ' + lost.length + ' عامل:\n' + list + '\n\nللمتابعة رغم ذلك اكتب: استبدال';
+    if ((prompt(msg) || '').trim() !== 'استبدال') { showNotification('تم إلغاء الاعتماد — لم يتغير شيء'); return; }
+  } else if (valid.length) {
+    const extra = lost.length ? '\n\n⚠️ ' + lost.length + ' عامل لديهم أيام مسجلة حالياً ستتغير:\n' + lost.slice(0, 8).map(x => '• ' + x.name + ' (' + x.days.join('، ') + ')').join('\n') + (lost.length > 8 ? '\n… و' + (lost.length - 8) + ' آخرين' : '') : '';
+    if (!confirm('سيتم استبدال حضور هذا الأسبوع لـ ' + valid.length + ' عامل ببيانات الملف.' + extra + '\n\nمتابعة؟')) return;
+  }
   const map = {};
   valid.forEach(r => {
     ATT[r.choice] = r.days; map['attendance/' + r.choice] = r.days;
@@ -2709,6 +2801,8 @@ function applyExcelImport() {
     }
   });
   if (valid.length) {
+    map['lastUpload'] = { by: currentUser.name, days: 'ملف إكسيل', count: valid.length, ts: Date.now(), src: 'excel' };
+    setLastUpload(map['lastUpload'], true);
     cloudUpdate(map);
     audit('استيراد حضور من إكسيل', valid.length + ' عامل' + (R.some(r => r.match.kind !== 'exact' && r.match.kind !== 'code' && !r.choice.startsWith('__')) ? ' (مع مطابقة يدوية)' : ''));
     showNotification('✅ تم تحديث حضور ' + valid.length + ' عامل');

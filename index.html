@@ -487,6 +487,18 @@ tfoot td { font-weight:800; background:#fef3c7; border-top:2px solid var(--gold)
           <input type="file" id="excelFileInput" accept=".xlsx,.xls" class="hidden" onchange="handleExcelFileChange(event)">
           <button class="btn btn-gold" onclick="document.getElementById('excelFileInput').click()">📁 اختيار ملف إكسيل</button>
         </div>
+        <div style="margin-top:14px;border:2px dashed #cbd5e1;border-radius:10px;padding:18px;background:#fafafa;">
+          <p style="font-size:0.95rem;margin-bottom:10px;color:#475569;font-weight:700;">📟 أو استورد من جهاز البصمة ZKTeco (ملف attlog.dat من الفلاشة)</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+            <input type="file" id="zkFileInput" accept=".dat,.txt,.csv,.log" class="hidden" onchange="handleZkFileChange(event)">
+            <button class="btn btn-gold" onclick="document.getElementById('zkFileInput').click()">📟 اختيار ملف البصمة</button>
+            <label style="font-size:0.85rem;color:#475569;">الأسبوع (أي يوم فيه):
+              <input type="date" id="zkWeekDate" class="form-control" style="display:inline-block;width:auto;" onchange="buildZkResults()"></label>
+            <label style="font-size:0.85rem;color:#475569;display:flex;align-items:center;gap:6px;">
+              <input type="checkbox" id="zkAbsent" checked onchange="buildZkResults()"> اليوم بدون بصمة = غياب</label>
+          </div>
+          <div id="zkWeekLabel" class="muted" style="margin-top:8px;"></div>
+        </div>
         <div id="excelLog" class="hidden" style="font-size:0.85rem;color:#64748b;max-height:130px;overflow:auto;background:#f8fafc;border-radius:8px;padding:10px;margin-top:12px;"></div>
         <div id="excelResultsBox" class="hidden" style="margin-top:18px;">
           <div class="kpi-grid">
@@ -958,6 +970,8 @@ let dataReady = false;
 let appInited = false;
 let CURRENT_IMAGE = '';
 let EXCEL_RESULTS = null;
+let IMPORT_SRC = 'excel';     // مصدر الاستيراد الحالي: excel | zk
+let ZK_PUNCHES = null;        // بصمات الملف: [{id, t(Date)}]
 let EXCEL_FILE_TIME = 0;   // وقت آخر تعديل لملف الإكسيل المرفوع
 let LAST_UPLOAD = null;    // {by, days, count, ts, src} — آخر رفع حضور وصل للنظام
 const LAST_UPLOAD_KEY = 'gold_era_v2_last_upload';
@@ -1430,7 +1444,7 @@ function renderLastUpload() {
   const u = LAST_UPLOAD;
   el.classList.toggle('hidden', !u);
   if (!u) return;
-  el.textContent = '📥 آخر رفع: ' + u.by + (u.src === 'excel' ? ' (إكسيل)' : '') + ' — ' +
+  el.textContent = '📥 آخر رفع: ' + u.by + (u.src === 'excel' ? ' (إكسيل)' : u.src === 'zk' ? ' (بصمة)' : '') + ' — ' +
     (u.ts ? fmtStamp(u.ts) + (u.approx ? ' (وقت الوصول)' : '') : 'الوقت غير مسجل');
 }
 function withTimeout(p, ms) {
@@ -1530,7 +1544,7 @@ function attachListeners() {
     const v = s.val();
     setLastUpload(v, !firstUpload);
     if (firstUpload) { firstUpload = false; return; }
-    if (v && v.src === 'excel' && currentUser && v.by === currentUser.name) return;   // رفعي أنا — لا داعي للإشعار
+    if (v && (v.src === 'excel' || v.src === 'zk') && currentUser && v.by === currentUser.name) return;   // رفعي أنا — لا داعي للإشعار
     if (v && currentUser) showNotification('📥 رفع حضور جديد من ' + (v.by || 'جهاز التسجيل') + ' — ' + (v.days || '') + ' (' + num(v.count) + ' سجل)');
   });
   fbdb.ref('.info/connected').on('value', s => setSync(s.val() ? 'online' : 'offline'));
@@ -2683,7 +2697,7 @@ function handleExcelFile(file) {
   if (!requireEdit()) return;
   if (!xlsxReady()) return;
   $('excelLog').innerHTML = '';
-  EXCEL_FILE_TIME = num(file.lastModified);
+  EXCEL_FILE_TIME = num(file.lastModified); IMPORT_SRC = 'excel';
   excelLog('⏳ جاري قراءة: ' + file.name);
   if (!file.name.match(/\.xlsx?$/i)) { excelLog('❌ يجب أن يكون الملف xlsx أو xls'); return; }
   const reader = new FileReader();
@@ -2717,6 +2731,99 @@ function handleExcelFile(file) {
     } catch (err) { excelLog('❌ خطأ في قراءة الملف: ' + err.message); console.error(err); }
   };
   reader.readAsArrayBuffer(file);
+}
+// =============================================
+// ===== استيراد من جهاز البصمة ZKTeco (attlog.dat) =====
+// =============================================
+const ZK_DAY_START = 5 * 60;      // بصمة قبل 5 ص تُحسب على اليوم السابق (انصراف بعد منتصف الليل)
+const ZK_MIN_GAP = 20;            // بصمتان بينهما أقل من 20 دقيقة = بصمة واحدة مكررة
+function zkName(id) { return 'بصمة رقم ' + id; }
+function dateKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function parseZkText(text) {
+  const out = [];
+  String(text).split(/\r?\n/).forEach(line => {
+    const m = line.match(/^\s*"?(\d+)"?\s*[\t,; ]\s*"?(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if (!m) return;
+    const t = new Date(+m[2], +m[3] - 1, +m[4], +m[5], +m[6], +(m[7] || 0));
+    if (!isNaN(t)) out.push({ id: String(+m[1]), t });
+  });
+  return out;
+}
+function handleZkFileChange(e) {
+  const file = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!file || !requireEdit()) return;
+  $('excelLog').innerHTML = '';
+  excelLog('⏳ جاري قراءة ملف البصمة: ' + file.name);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const punches = parseZkText(ev.target.result);
+    if (!punches.length) {
+      excelLog('❌ لم أجد بصمات بالصيغة المتوقعة (رقم الموظف ثم التاريخ والوقت). تأكد أنه ملف attlog.dat المسحوب من الجهاز.');
+      ZK_PUNCHES = null; EXCEL_RESULTS = null; $('excelResultsBox').classList.add('hidden'); return;
+    }
+    punches.sort((a, b) => a.t - b.t);
+    ZK_PUNCHES = punches;
+    EXCEL_FILE_TIME = num(file.lastModified); IMPORT_SRC = 'zk';
+    const last = punches[punches.length - 1].t, first = punches[0].t;
+    excelLog('✅ ' + punches.length + ' بصمة — من ' + dateKey(first) + ' إلى ' + dateKey(last) + ' — ' + new Set(punches.map(p => p.id)).size + ' رقم بصمة');
+    $('zkWeekDate').value = dateKey(new Date(last.getTime() - ZK_DAY_START * 60000));     // الافتراضي: أسبوع آخر بصمة
+    buildZkResults();
+  };
+  reader.onerror = () => excelLog('❌ تعذر قراءة الملف');
+  reader.readAsText(file);
+}
+function buildZkResults() {
+  if (!ZK_PUNCHES) return;
+  const v = $('zkWeekDate').value; if (!v) return;
+  const p = v.split('-').map(Number);
+  const start = new Date(p[0], p[1] - 1, p[2]); start.setDate(start.getDate() - start.getDay());     // الأحد
+  const keys = DAYS.map((_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); return dateKey(d); });
+  const lastKey = dateKey(new Date(ZK_PUNCHES[ZK_PUNCHES.length - 1].t.getTime() - ZK_DAY_START * 60000));
+  $('zkWeekLabel').textContent = 'الأسبوع المختار: من الأحد ' + keys[0] + ' إلى السبت ' + keys[6];
+  const markAbsent = $('zkAbsent').checked;
+  const byId = {};                                  // id -> dayKey -> [دقائق منذ بداية اليوم، قد تتجاوز 1440]
+  ZK_PUNCHES.forEach(x => {
+    const shifted = new Date(x.t.getTime() - ZK_DAY_START * 60000), k = dateKey(shifted);
+    if (keys.indexOf(k) < 0) return;
+    const base = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate());
+    ((byId[x.id] = byId[x.id] || {})[k] = byId[x.id][k] || []).push(Math.round((x.t - base) / 60000));
+  });
+  // عامل مربوط برقم بصمة وليس له أي بصمة هذا الأسبوع يظهر أيضاً (غياب الأسبوع كله)
+  new Set(ZK_PUNCHES.map(x => x.id)).forEach(id => {
+    if (!byId[id] && ALIASES[aliasKey(zkName(id), 1)] && empByCode(ALIASES[aliasKey(zkName(id), 1)])) byId[id] = {};
+  });
+  const used = {};
+  const all = Object.keys(byId).sort((a, b) => a - b).map(id => {
+    const days = DAYS.map((day, i) => {
+      const list = (byId[id][keys[i]] || []).sort((a, b) => a - b);
+      if (!list.length) {
+        const st = day === WEEK_OFF_DAY ? ST.WEEKOFF : (markAbsent && keys[i] <= lastKey ? ST.ABSENT : ST.PENDING);
+        return { day, inTime: '', outTime: '', status: st, note: '' };
+      }
+      const a = list[0], b = list[list.length - 1];
+      if (b - a < ZK_MIN_GAP) {                      // بصمة واحدة: قبل 1 ظهراً حضور، وبعدها انصراف
+        return a < 13 * 60 ? { day, inTime: fmtTime(a % 1440), outTime: '', status: ST.PRESENT, note: '' }
+                           : { day, inTime: '', outTime: fmtTime(a % 1440), status: ST.PRESENT, note: '' };
+      }
+      return { day, inTime: fmtTime(a % 1440), outTime: fmtTime(b % 1440), status: ST.PRESENT, note: '' };
+    });
+    const raw = zkName(id), saved = ALIASES[aliasKey(raw, 1)];
+    let match;
+    if (saved && empByCode(saved)) match = { kind: 'saved', emp: empByCode(saved), candidates: [empByCode(saved)] };
+    else {
+      const guess = EMPLOYEES.find(e => e.code.toUpperCase() === 'EMP-' + id);     // رقم البصمة = رقم الكود؟ اقتراح يحتاج مراجعتك
+      match = guess ? { kind: 'approx', emp: guess, candidates: [guess] } : { kind: 'ambiguous', emp: null, candidates: [] };
+    }
+    const r = { rawName: raw, side: 0, occ: 1, days: normWeek(days), match, choice: match.emp ? match.emp.code : '', guessCat: 'شباب' };
+    if (r.choice) { if (used[r.choice]) { r.choice = ''; r.dup = true; } else used[r.choice] = true; }
+    return r;
+  });
+  if (!all.length) { excelLog('⚠️ لا توجد بصمات في هذا الأسبوع — اختر تاريخاً آخر.'); EXCEL_RESULTS = null; $('excelResultsBox').classList.add('hidden'); return; }
+  EXCEL_RESULTS = all;
+  $('excelResultsBox').classList.remove('hidden');
+  renderExcelPreview();
+  const pend = all.filter(r => !r.choice).length;
+  excelLog('📅 ' + keys[0] + ' → ' + keys[6] + ': ' + all.length + ' رقم بصمة' + (pend ? ' — ⚠️ ' + pend + ' رقم يحتاج ربطه بعامل (مرة واحدة فقط).' : ' — راجع ثم اضغط "اعتماد".'));
 }
 function renderExcelPreview() {
   const R = EXCEL_RESULTS || [];
@@ -2780,12 +2887,12 @@ function applyExcelImport() {
     if (days.length) lost.push({ name: empByCode(r.choice).name, days });
   });
   const U = LAST_UPLOAD;
-  const deviceNewer = !!(U && U.src !== 'excel' && U.ts && EXCEL_FILE_TIME && U.ts > EXCEL_FILE_TIME);
+  const deviceNewer = !!(U && U.ts && EXCEL_FILE_TIME && U.ts > EXCEL_FILE_TIME);
   if (lost.length && deviceNewer) {
     const list = lost.slice(0, 12).map(x => '• ' + x.name + ' (' + x.days.join('، ') + ')').join('\n') + (lost.length > 12 ? '\n… و' + (lost.length - 12) + ' آخرين' : '');
     const msg = '⚠️ تحذير: يوجد رفع أحدث من هذا الملف\n\n' +
       'آخر رفع من ' + U.by + ': ' + fmtStamp(U.ts) + (U.approx ? ' (وقت الوصول)' : '') + '\n' +
-      'آخر تعديل لملف الإكسيل: ' + fmtStamp(EXCEL_FILE_TIME) + '\n\n' +
+      'آخر تعديل للملف المرفوع: ' + fmtStamp(EXCEL_FILE_TIME) + '\n\n' +
       'الاعتماد سيستبدل الحضور المسجل حالياً لـ ' + lost.length + ' عامل:\n' + list + '\n\nللمتابعة رغم ذلك اكتب: استبدال';
     if ((prompt(msg) || '').trim() !== 'استبدال') { showNotification('تم إلغاء الاعتماد — لم يتغير شيء'); return; }
   } else if (valid.length) {
@@ -2801,10 +2908,10 @@ function applyExcelImport() {
     }
   });
   if (valid.length) {
-    map['lastUpload'] = { by: currentUser.name, days: 'ملف إكسيل', count: valid.length, ts: Date.now(), src: 'excel' };
+    map['lastUpload'] = { by: currentUser.name, days: IMPORT_SRC === 'zk' ? 'جهاز البصمة' : 'ملف إكسيل', count: valid.length, ts: Date.now(), src: IMPORT_SRC };
     setLastUpload(map['lastUpload'], true);
     cloudUpdate(map);
-    audit('استيراد حضور من إكسيل', valid.length + ' عامل' + (R.some(r => r.match.kind !== 'exact' && r.match.kind !== 'code' && !r.choice.startsWith('__')) ? ' (مع مطابقة يدوية)' : ''));
+    audit(IMPORT_SRC === 'zk' ? 'استيراد حضور من جهاز البصمة' : 'استيراد حضور من إكسيل', valid.length + ' عامل' + (R.some(r => r.match.kind !== 'exact' && r.match.kind !== 'code' && !r.choice.startsWith('__')) ? ' (مع مطابقة يدوية)' : ''));
     showNotification('✅ تم تحديث حضور ' + valid.length + ' عامل');
   }
   EXCEL_RESULTS = null;
